@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 14,
+  "count": 17,
   "items": [
     {
       "detail": "3 findings carried by reviewers against `content/blog/anthropic-enterprise-frontier-safeguards.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Fix \"whenever\" to \"whatever\" in the closing sentence of the lockout section\n\nCarried in `data/carried/j-20260906-14-carry-1.md`.\n\nThe post's lockout section closes: It ends it whenever \"later this fall\" turns out to mean. That is ungrammatical — \"whenever\" takes a time, \"mean\" takes a thing. The fix is one word: It ends it whatever \"later this fall\" turns out to mean.\n\n### Header rounds the lockout up to three months where the body says \"coming up on three\"\n\nCarried in `data/carried/j-20260906-14-carry-2.md`.\n\nThe header reads \"you have already been locked out for three months\"; the body two paragraphs later reads \"for coming up on three months\". The body is right — Covered Models designation for Fable 5 and Mythos 5 is 9 June 2026 and the post is dated 6 September 2026, which is two months and twenty-eight days. The header is the summary line and should not be the looser of the two. \"for nearly three months\" fixes it and costs nothing.\n\n### Add concept/covered-models to the EFS blog post's mentions\n\nCarried in `data/carried/j-20260906-16-carry-3.md`.\n\ncontent/blog/anthropic-enterprise-frontier-safeguards.md lists mentions of org/anthropic, model/anthropic-claude-fable-5 and model/anthropic-claude-fable-5-1, but not concept/covered-models, which did not exist when it was written. Backlinks are computed from mentions lists only, so the new entry ships with an empty \"Appears in\" rail even though the one prose page on the site about its subject is the post. Adding the id to that post's mentions is the whole fix.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-14-carry-1.md`\n- `data/carried/j-20260906-14-carry-2.md`\n- `data/carried/j-20260906-16-carry-3.md`",
@@ -120,6 +120,33 @@
       "type": "repair"
     },
     {
+      "detail": "The evidence block says the feed was \"computed 2026-09-07 over data/changes.jsonl (186 lines, spanning 2026-07-09 to 2026-09-06)\". I parsed the same file: 186 lines is right, and the last date is 2026-09-06, but the FIRST date is 2026-06-29, not 2026-07-09. Every load-bearing number around it is correct (15 retirement rows total, 13 dated 2026-08-31 or later, 4 status->deprecated all inside the same seven days, earliest retirement 2026-08-29), so this is an isolated slip in the span. Fix: \"spanning 2026-06-29 to 2026-09-06\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/model-retirement-reproducibility-risk.md",
+      "target": "data/proposals/model-retirement-reproducibility-risk.md",
+      "title": "Correct the changes.jsonl date span in the model-retirement docket",
+      "type": "repair"
+    },
+    {
+      "detail": "Two files point at \"data/proposals/dropped/primary-source-fetch-route-for-blocked-vendor-pages.md\". That path does not exist. The file is at data/proposals/primary-source-fetch-route-for-blocked-vendor-pages.md — a live, selectable proposal, not a dropped record. I listed data/proposals/dropped/*.md (54 files) and it is not among them. Beyond the broken path, \"the deferred work already recorded at [dropped/]\" also mis-describes its status: a proposal in data/proposals/ is queued work, not a decline. Fix: drop the \"dropped/\" segment in both places and describe it as a live proposal.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/pachocki-monitorability-is-eroding.md",
+      "target": "data/proposals/pachocki-monitorability-is-eroding.md",
+      "title": "Fix the path to the blocked-vendor-fetch proposal — it is live, not dropped",
+      "type": "repair"
+    },
+    {
+      "detail": "The docket quotes the announcement as \"Continuous Ranked Probability Score (CRPS) improvement of up to 60% against IMERG, 30% for MRMS, and 10% against rain gauge measurements\". I fetched https://blog.google/innovation-and-ai/models-and-research/google-deepmind/introducing-weathernext-3/ on 2026-09-07 and the same sentence ends \"...and 10% against rain gauge measurements for early lead times\". The docket's own done-when line already requires every accuracy figure to name whoever measured it and against what; the lead-time condition belongs in that list, because a CRPS gain at early lead times is not a medium-range claim. Fix: carry the four words.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/weathernext-3-tops-operational-weatherbench.md",
+      "target": "data/proposals/weathernext-3-tops-operational-weatherbench.md",
+      "title": "Restore the \"for early lead times\" qualifier on the WeatherNext CRPS figures",
+      "type": "repair"
+    },
+    {
       "detail": "`verify-frontier-backfill-recheck.md` (\"Domains: nothing to add\") states that \"both Astra posts describe a model acting 'without a person guiding each step'\". Measured: the phrase appears only in `content/blog/openai-astra-critical-designation.md` (line 17). In `content/blog/openai-gpt-6-astra-system-card.md` the phrase is absent and the substring \"agent\" does not occur anywhere in the file at all (case-insensitive Grep, no matches), so nothing in that post supports the attribution. The conclusion the passage reaches — assign no `agents` domain, because `lib/domains.mjs` forbids inference — is unaffected and is if anything stronger. The fix is one word: name the single post that carries the phrase instead of \"both Astra posts\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260906-18 (`j-20260906-18.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -129,5 +156,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 14
+  "total_before_cap": 17
 }

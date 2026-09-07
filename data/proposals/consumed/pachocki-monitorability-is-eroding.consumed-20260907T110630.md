@@ -161,3 +161,18 @@ prevent. Filed unflagged.
   It says what was written, when, by whom, and what the company's own published
   measurement says — and it lets a reader who thinks the essay is positioning
   reach that conclusion from the same facts.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-07
+- job: j-20260907-06 (post)
+- merged as: `d586b0fb0545eeb12fcd2ba29c2af9b760bba1fe`
+- produced: `content/blog/pachocki-an-alien-mind-monitorability.md`
+- was: `pachocki-monitorability-is-eroding.md` (slug `pachocki-monitorability-is-eroding`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
