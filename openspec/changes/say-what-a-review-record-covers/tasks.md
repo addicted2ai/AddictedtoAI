@@ -12,7 +12,7 @@ that no test attempts is a refusal that has never run.
 
 ## The carry-forward field, and the parser that reads it
 
-- [ ] 1. **N1's shape half** — `loop/lib/verdict.mjs`: parse a
+- [x] 1. **N1's shape half** — `loop/lib/verdict.mjs`: parse a
       `reads-human-from` block into `readsHumanFrom: [{ subject, record, why }]`
       — a **list**, one entry per post answered for, each naming the post it
       answers for, the record it stands on and the reviewer's own-words
@@ -36,7 +36,7 @@ that no test attempts is a refusal that has never run.
       less the `README.md` both loaders skip, `lib/reviews.mjs:143` and
       `loop/lib/review.mjs:579`; re-counted 2026-09-06) is such a record and
       none of them may start parsing differently.
-- [ ] 2. `loop/lib/verdict.mjs` + `loop/lib/review.mjs`
+- [x] 2. `loop/lib/verdict.mjs` + `loop/lib/review.mjs`
       (`writeVerdictRecord`): write `reads-human-from` only when given, on the
       same terms as `readsHuman` at `review.mjs:947-961` — an empty list
       produces **no key**, never an empty one, because absent and empty are
@@ -46,7 +46,7 @@ that no test attempts is a refusal that has never run.
 
 ## The gate, which is where sentences N1–N3 become mechanisms
 
-- [ ] 3. **N1** — `loop/lib/review.mjs`, the merge gate beside the existing
+- [x] 3. **N1** — `loop/lib/review.mjs`, the merge gate beside the existing
       `reads-human-empty` branch (`review.mjs:682-706`). **The choose-one-of-two
       gate keys on `subjects`, not on `type`.** `mergeGate` already receives the
       merged subject list (`review.mjs:611`, the same list it compares against
@@ -76,7 +76,17 @@ that no test attempts is a refusal that has never run.
       every other job that lands on a post. A call with no `subjects` measured
       is not gated here, exactly as the `reviewed:`/`subject:` equality check at
       `:709` is not.
-- [ ] 4. **N2** — the anchor refusal, new code `reads-human-from-unanchored`,
+      **Correction (review round, 2026-09-07): this task's text named only the
+      non-empty half of the fresh answer.** The delta itself (specs/review,
+      "answer the question afresh, in a non-empty, non-duplicated
+      `reads-human`, as above") asks for both. A fresh, non-empty
+      `reads-human` on a job whose subjects include a post but whose type does
+      not itself demand the field (`!needsReadsHuman(type)`) is now swept
+      through `existingFieldValues` the same way the `post`-keyed branch
+      already sweeps it, and refused as `reads-human-duplicate` on a
+      collision — reusing the code the type-keyed branch already uses, so
+      nothing new joins `REISSUE_CODES`.
+- [x] 4. **N2** — the anchor refusal, new code `reads-human-from-unanchored`,
       applied **to every entry**, whenever a `reads-human-from` is present and
       not only inside task 3's branch, so the three refusals are three separable
       mechanisms and a record cannot dodge the anchor check by carrying the
@@ -96,7 +106,7 @@ that no test attempts is a refusal that has never run.
       sent to name the record that actually answered. Do not follow the anchor's
       own carry-forward; the spec's refusal is the whole rule, and a resolver
       that walked a chain here would accept records the merge refuses.
-- [ ] 5. **N3** — the statement refusal, new code
+- [x] 5. **N3** — the statement refusal, new code
       `reads-human-from-duplicate`: each entry's `why` is held to the same two
       rules `reads-human` carries — non-empty after trimming, and not exactly
       identical after trimming to the `why` of any entry in any **other**
@@ -110,7 +120,7 @@ that no test attempts is a refusal that has never run.
       pastes the same "the diff did not move the voice" sentence into every
       repair is the exact failure the duplicate rule exists to catch, and it is
       the failure most likely here.
-- [ ] 6. Both new codes join `REISSUE_CODES` (`review.mjs:117-123`). They are
+- [x] 6. Both new codes join `REISSUE_CODES` (`review.mjs:117-123`). They are
       the reviewer's clerical failure in a field about the record, not a defect
       in the work: sending the **author** into a revision pass to fix a
       reviewer's anchor is the exact waste that list was built for
@@ -118,14 +128,14 @@ that no test attempts is a refusal that has never run.
 
 ## The brief and the checklist, because a reviewer is told or it cannot know
 
-- [ ] 7. `loop/lib/review.mjs`, the reviewer brief template (`review.mjs:433`
+- [x] 7. `loop/lib/review.mjs`, the reviewer brief template (`review.mjs:433`
       and the record skeleton at `:523`): document both branches — answer the
       voice question, or name the record you stand on and say why this diff did
       not move the voice — and say plainly that a diff which rewrites the post's
       prose is not a carry-forward. A mechanism a reviewer is not told about is
       a mechanism that does not run, which is the rule the `carry:` requirement
       already states in those words.
-- [ ] 8. `loop/lib/review.mjs`, `CHECKLISTS.post` and — the list a `repair` job
+- [x] 8. `loop/lib/review.mjs`, `CHECKLISTS.post` and — the list a `repair` job
       actually gets — `CHECKLISTS.directory` (`review.mjs:172`), reached through
       `CHECKLIST_FOR_TYPE.repair` (`review.mjs:187`); there is no list named
       `repair`, and editing one that does not exist is the way this task gets
@@ -137,7 +147,7 @@ that no test attempts is a refusal that has never run.
 
 ## The launch check, sentences N4 and N7
 
-- [ ] 9. **N4** — `scripts/verify-launch.mjs:613-661`: the voice check follows
+- [x] 9. **N4** — `scripts/verify-launch.mjs:613-661`: the voice check follows
       the carry-forward, **resolving per post**. This loop already runs over
       pieces, so for the post in hand it must select the `reads-human-from`
       entry whose `subject` is **that post** and ignore the record's other
@@ -156,7 +166,7 @@ that no test attempts is a refusal that has never run.
       change exists to stop. Export the carry-forward resolver so it is testable
       without running a build — `hasProseBody` is already exported from this
       file for that reason.
-- [ ] 10. **N7** — the same function, the `hit.declaredBy` reach-back at
+- [x] 10. **N7** — the same function, the `hit.declaredBy` reach-back at
       `verify-launch.mjs:632-637`, which today accepts any approving record
       naming the piece that carries a non-empty `reads-human` and is how the
       verdict stopped being *lost*. It **stays**, and it stops being unstated:
@@ -174,7 +184,7 @@ that no test attempts is a refusal that has never run.
 
 ## The reviewable set, sentences N5–N6
 
-- [ ] 11. **N5** — `lib/reviews.mjs:298-307`, `reviewablePieces`: entries enter
+- [x] 11. **N5** — `lib/reviews.mjs:298-307`, `reviewablePieces`: entries enter
       the set whether or not they have a prose body. **Order is part of the
       join** (`reviews.mjs:270-297`): a record is claimed by the first piece
       that names it, so the body-less entries must not be inserted anywhere that
@@ -194,7 +204,7 @@ that no test attempts is a refusal that has never run.
       the same reason: inserting the body-less entries anywhere earlier would
       move which piece claims an ambiguously-named record for content nobody
       touched.
-- [ ] 12. **N6** — `scripts/verify-launch.mjs:473-478`, the `pieces` list the
+- [x] 12. **N6** — `scripts/verify-launch.mjs:473-478`, the `pieces` list the
       check requires a record for, keeps `hasProseBody` and does not change.
       `entryReviewGate` (`reviews.mjs:555-562`) keeps its `hasBody` skip, so no
       body-less entry's indexability changes. The only thing that changes is the
@@ -203,7 +213,7 @@ that no test attempts is a refusal that has never run.
 
 ## The tests that make each sentence a mechanism
 
-- [ ] 13. **N1–N3**, `loop/tests/review.test.mjs` and
+- [x] 13. **N1–N3**, `loop/tests/review.test.mjs` and
       `loop/tests/review-blog-bar.test.mjs`, one refusal per test, each asserting
       the refusal **code** and that the message names the offending record or
       field: post `approve` with neither field; **a `repair` job whose
@@ -226,7 +236,7 @@ that no test attempts is a refusal that has never run.
       and the launch check agreeing post by post is the property the change
       exists for, and a per-record resolver passes the first half of this
       fixture while failing the second.
-- [ ] 14. The controls, without which task 13 proves nothing: a post `approve`
+- [x] 14. The controls, without which task 13 proves nothing: a post `approve`
       with a normal non-empty `reads-human` and no carry-forward merges exactly
       as today; a valid carry-forward on a `repair` that touches a post merges;
       **a `repair` whose `subjects` contain no `content/blog/` path is asked for
@@ -243,7 +253,7 @@ that no test attempts is a refusal that has never run.
       the same trivial fix to two posts; and — the control that pins the parser — every record in
       `data/reviews/` parses to the same verdict, reasons, `would-cite` and
       `reads-human` values before and after task 1, compared field by field.
-- [ ] 15. **N4 and N7**, `scripts/verify-launch-voice-carry.test.mjs` (new): a
+- [x] 15. **N4 and N7**, `scripts/verify-launch-voice-carry.test.mjs` (new): a
       post whose current record carries only a valid carry-forward passes the
       voice check; one whose anchor is not an answering record — it does not
       exist, does not approve this piece, or carries only a `reads-human-from`
@@ -264,13 +274,13 @@ that no test attempts is a refusal that has never run.
       failure `lib/surfaces.test.mjs:320` avoids by loading the corpus and
       asserting invariants over it. That record is named in the proposal as the
       instance behind N7, which is where a date-stamped measurement belongs.
-- [ ] 16. **N5–N6**, `lib/reviews.test.mjs`: a fixture corpus with a body-less
+- [x] 16. **N5–N6**, `lib/reviews.test.mjs`: a fixture corpus with a body-less
       entry that carries a bound record and has since had a fact value changed
       reports **mismatched**, and `mismatchProblems` names it. A body-less entry
       with no record reports **missing** and produces no problem string. The
       counts move by exactly the number of body-less entries added, so the
       report's `total` is asserted, not just its `mismatched` list.
-- [ ] 17. **N6's boundary, on the real corpus and not a fixture**: assert that
+- [x] 17. **N6's boundary, on the real corpus and not a fixture**: assert that
       the entries in `verify-launch`'s required-record piece list are exactly
       `corpus.entry.filter(hasProseBody)` — computed in the same test from the
       same loaded corpus, with the `hasProseBody` that file already exports
@@ -291,21 +301,35 @@ that no test attempts is a refusal that has never run.
       and which the repository's own real-corpus tests avoid
       (`lib/surfaces.test.mjs:320, :409` load the corpus and assert invariants,
       never a count).
-- [ ] 18. Mutation proof, each mutation applied alone and restored afterwards
+- [x] 18. Mutation proof, each mutation applied alone and restored afterwards
       with the file's hash compared before and after:
-      **(a)** revert task 3's subjects-keyed branch — task 13's
-      **repair-on-post neither-field** refusal must fail, and it must be the
-      only failure: task 13's **post**-type neither-field test still passes
-      (the surviving `reads-human-empty` branch catches that one), and task 14's
-      controls still pass (nothing gates a repair once the branch is gone). That
-      asymmetry is the whole evidence for keying the obligation on the merged
-      subjects — a gate keyed on the job type would leave every other test
-      green while the
-      bead's own instance walked through, so this single test is the only
-      witness that the obligation follows the subjects.
+      **(a)** revert task 3's subjects-keyed branch — the asymmetry is the
+      evidence, not a single isolated failure: the three tests asserting N1's
+      per-post refusal (`review-blog-bar.test.mjs:698, :850, :981`) fail,
+      while the post-**type** neither-field test (`:129`) and every task 14
+      control stay green (nothing gates a repair once the branch is gone). A
+      gate keyed on the job type would leave every one of those green while
+      the bead's own instance walked through, so that asymmetry — three N1
+      tests down, the type-keyed test and the controls up — is the whole
+      witness that the obligation follows the merged subjects.
+      **Correction (review round, 2026-09-07): this entry originally said "it
+      must be the only failure," which is false as measured** — three tests
+      fail, not one — and left standing in a durable artifact past its own
+      implementer's disclosure. The corrected claim is the asymmetry above.
       **(b)** revert task 4's anchor check — only the anchor tests fail;
       **(c)** revert task 5's duplicate sweep — only the duplicate test fails;
-      **(d)** revert task 9 — only the launch carry-forward test fails;
+      **(d)** revert task 9 — as written, this bites nothing: every valid
+      carry-forward is also reachable by N7's reach-back, so the launch
+      carry-forward test still passes once the branch is gone. It bites only
+      against the `misdirected` fixture case (task 15/`verify-launch-voice-
+      carry.test.mjs`), whose entry names a record that never answered for
+      that post at all, so only the reach-back — not the carry-forward — could
+      have found one; that test alone fails.
+      **Correction (review round, 2026-09-07): this entry originally said
+      "only the launch carry-forward test fails," which is false as measured
+      against the mutation** — nothing failed until the `misdirected` fixture
+      existed to make it bite, and that fixture is not one task 15 names. The
+      corrected claim is above.
       **(e)** make the reach-back an **unconditional pass** — a post whose
       current record carries neither field passes the voice check whether or not
       any earlier record answered — and only task 15's "ONLY approving record
@@ -322,10 +346,10 @@ that no test attempts is a refusal that has never run.
 
 ## Gates
 
-- [ ] 19. `openspec validate say-what-a-review-record-covers --type change
+- [x] 19. `openspec validate say-what-a-review-record-covers --type change
       --strict --no-interactive`, and `node scripts/check-spec-deltas.mjs
       --strict`. Run at drafting time.
-- [ ] 20. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [x] 20. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics`.
 
 ## Not tasks of this change, recorded so they are not read as omissions
