@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getSite } from '../lib/site.mjs';
 import { absoluteUrl } from '../lib/site-config.mjs';
-import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, postChangedOn as resolvePostChangedOn, newest } from '../lib/sitemap-dates.mjs';
+import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, postChangedOn as resolvePostChangedOn, indexRouteDates } from '../lib/sitemap-dates.mjs';
 
 /**
  * The sitemap (task 4.9, specs/site).
@@ -151,35 +151,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const contentChangedOn = (doc: any) => resolveContentChangedOn(doc, site.reviews.byFile, changedOn);
   const postChangedOn = (doc: any) => resolvePostChangedOn(doc, site.reviews.byFile, changedOn);
 
-  // Each index route's `lastModified` is the newest date already true of its
-  // own members — see the header ("THE TWELVE INDEX ROUTES") for what each
-  // set is and why `/` , `/catalog/changed` and `/colophon` are not members.
-  const wikiChangedOn = newest(site.browsable.map((doc: any) => contentChangedOn(doc)));
-  const learnChangedOn = newest(site.corpus.learn.map((doc: any) => contentChangedOn(doc)));
-  const toolsChangedOn = newest(site.tools.map(({ doc }: any) => doc.data.last_verified));
-  const tutorialsChangedOn = newest(
-    site.tutorials.filter(({ state }: any) => state.indexed).map(({ doc }: any) => doc.data.verified_on),
-  );
-  const blogChangedOn = newest(site.posts.map((doc: any) => postChangedOn(doc)));
-  const deltasChangedOn = newest(site.deltas.map((view: any) => contentChangedOn(view.doc)));
-  const catalogChangedOn = newest(
-    site.catalog.map((row: any) => (row.entry ? changedOn.get(row.entry.id) : undefined)),
-  );
-  const deprecationsChangedOn = newest(
-    site.deprecations.map((row: any) => (row.entry ? changedOn.get(row.entry.id) : undefined)),
-  );
-  // `site.changes` is the changed feed itself (addictedtoai-8ho); its newest
-  // line is the one answer `/` and `/catalog/changed` share, deliberately.
-  const feedChangedOn = newest(site.changes.map((line: any) => line.date));
-  const dataChangedOn = newest([
-    wikiChangedOn,
-    catalogChangedOn,
-    deprecationsChangedOn,
-    deltasChangedOn,
-    feedChangedOn,
-    blogChangedOn,
-    tutorialsChangedOn,
-  ]);
+  const {
+    wiki: wikiChangedOn,
+    learn: learnChangedOn,
+    tools: toolsChangedOn,
+    tutorials: tutorialsChangedOn,
+    blog: blogChangedOn,
+    deltas: deltasChangedOn,
+    catalog: catalogChangedOn,
+    deprecations: deprecationsChangedOn,
+    feed: feedChangedOn,
+    data: dataChangedOn,
+  } = indexRouteDates(site, contentChangedOn, postChangedOn, changedOn);
 
   add('/', feedChangedOn);
   add('/wiki', wikiChangedOn);
