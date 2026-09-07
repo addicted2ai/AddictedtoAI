@@ -37,11 +37,11 @@ mentions:
 
 The `ibm-granite/granite-4.1-8b` row left the OpenRouter catalog in the
 2026-09-05 snapshot, one day after it was last listed — active, with no expiry
-date and no warning in the row itself. A live fetch of the catalog the same day,
-as observed on 5 September 2026
+date and no warning in the row itself. A live fetch of the catalog, as observed
+on 5 September 2026
 ([`https://openrouter.ai/api/v1/models`](https://openrouter.ai/api/v1/models),
-431 rows), confirms the withdrawal: no `granite-4.1` row of any kind survives,
-while `ibm-granite/granite-4.0-h-micro` and `ibm-granite/granite-4.2-8b` are
+431 rows), confirmed the withdrawal: no `granite-4.1` row of any kind survived,
+while `ibm-granite/granite-4.0-h-micro` and `ibm-granite/granite-4.2-8b` were
 both still listed. The bound facts below render their last-known values as of
 2026-09-04.
 
