@@ -35,7 +35,7 @@ The Life Sciences Verification Program has people in it: "In partnership with th
 
 So on 7 September, six days after launch, a cyberdefender admitted to the CVP gets Opus- and Sonnet-class models with reduced safeguards. Not Mythos 5.1. The page's own call to action matches: "To register interest in access to Claude Mythos 5.1 for cyberdefense through the CVP, head here." Register interest. That is a waiting list, not a door.
 
-OpenAI is in the same position by its own wording. The release page promises the less restrictive safeguards "in the coming weeks"; the 1 September page it follows says that "Access to Astra for advanced cybersecurity workflows will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use." A small group, then a bigger one, at some point.
+OpenAI is in the same position by its own wording. The 3 September release page promises the less restrictive safeguards "in the coming weeks", and the 1 September Path to Astra page it follows says that "Access to Astra for advanced cybersecurity workflows will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use." A small group, then a bigger one, at some point.
 
 Google is the exception. Fairwind is described in the present tense — "Through our new Fairwind Program, we're providing trusted government authorities, as well as critical infrastructure operators and software maintainers with prioritized access to Gemini 3.8 Flash Cyber" — and the page ends with a live "Apply for access" link. Whether anyone has been let through, the page does not say.
 
@@ -55,7 +55,7 @@ Anthropic's page puts the US government in twice. The biology programme was "dev
 
 Google's Fairwind names "trusted government authorities" first among its three eligible categories, ahead of critical infrastructure operators and software maintainers.
 
-The Anthropic case has a precedent with a date on it, on Anthropic's own Mythos product page. Under the heading "Claude Mythos 5 export controls have been lifted", dated 1 July 2026: "We have restored access to Mythos 5 for a set of US organizations, following the US government's approval." Three weeks earlier the same page carries "Claude Mythos 5 is currently unavailable", dated 12 June 2026. What the approval covered, and what it was approval of, that page does not say.
+The Anthropic case has a precedent with a date on it, on Anthropic's own Mythos product page. Under the heading "Claude Mythos 5 export controls have been lifted", dated 1 July 2026: "We have restored access to Mythos 5 for a set of US organizations, following the US government's approval." Three weeks earlier the same page carries "Claude Mythos 5 is currently unavailable", dated 12 June 2026. What that approval covered, the page does not say.
 
 ## What the vendors publish is the gate, not the roll
 
