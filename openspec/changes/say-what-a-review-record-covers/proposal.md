@@ -226,9 +226,16 @@ which fails the launch check by the rule already written.
   `kwaipilot-kat-coder-air-v2-5`, and five `mistralai-*-batch` entries) and
   three `unbound` (`model/deepseek-deepseek-v4-flash-0731`,
   `org/moonshot-ai`, `org/perplexity`). Those 12 pages pick up a
-  `lastModified`/`dateModified` they do not carry today. This is accepted as
-  the correct behaviour of the mechanism already in place, not a new one N5
-  adds: `contentChangedOn`/`postChangedOn` already read `reviewedOn`
+  `lastModified` in `sitemap.xml` they do not carry today. The JSON-LD half
+  moves nothing on this corpus and is named because the mechanism reaches it,
+  not because any entry in this set does: `app/wiki/[kind]/[slug]/page.tsx:63`
+  builds its graph through `definedTermGraph`, which returns `undefined` for
+  every kind but `concept` and `technique` (`lib/jsonld.mjs:101,236`), and all
+  13 of these entries are `model` (11) or `org` (2) — measured 2026-09-06,
+  `definedTermGraph` emits for 0 of the 13; the one body-less entry of a term
+  kind, `content/wiki/technique/mixture-of-experts.md`, joins no record. This
+  is accepted as the correct behaviour of the mechanism already in place, not
+  a new one N5 adds: `contentChangedOn`/`postChangedOn` already read `reviewedOn`
   unconditionally for every piece `site.reviews.byFile` joins, exactly as they
   do today for the 95 bodied entries and for `corpus.claim`; N5 only grows
   which pieces that join reaches, and the date it contributes is the same
