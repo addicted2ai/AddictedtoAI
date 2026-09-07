@@ -66,9 +66,13 @@
  *   - `publish: false` — the whole build phase, and any time the maintainer
  *     wants local-only mode. Phase 2 prints **one** line and does nothing else.
  *   - `publish: true` — push `main`, then poll the live `/status.json` build
- *     stamp for up to 10 minutes. A stamp that does not advance is a deploy
- *     failure, not a shrug: `HOLD.md` is written naming it (breaker 2 in
+ *     stamp for up to 10 minutes and, if that elapses, for a confirmation
+ *     window three times as long. A stamp that never comes to carry the pushed
+ *     commit — or a commit containing it — is a deploy failure, not a shrug:
+ *     `HOLD.md` is written naming which of three failures it is (breaker 2 in
  *     specs/loop) and no further publish is attempted until the hold clears.
+ *     Every later invocation that finds that hold standing re-reads the live
+ *     stamp once and appends one dated observation. It clears nothing.
  *
  * Detection is a plain HTTPS fetch of the live page. No hosting-provider API,
  * no GitHub API (design D4).
@@ -127,13 +131,20 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { paths, readJson, today } from './core.mjs';
 import { submitIndexNow } from './indexnow.mjs';
 
 const DEFAULT_SITE = 'https://www.addictedtoai.net';
 const POLL_BUDGET_MS = 10 * 60 * 1000;
 const POLL_INTERVAL_MS = 20000;
+/**
+ * The confirmation window is at least three times the first budget
+ * (specs/pulse). "Not live after ten minutes" and "never deployed" were the
+ * same fact until this existed, and they have different recoveries:
+ * `addictedtoai-k2y0` cost three hours of Desk idle time to that conflation.
+ */
+const CONFIRM_WINDOW_MULTIPLE = 3;
 
 /** The three directories a publish has ever staged from. */
 export const STAGE_DIRS = ['data', 'content', 'public'];
@@ -348,53 +359,232 @@ function stampId(stamp) {
   return stamp.commit ?? stamp.sha ?? stamp.build ?? stamp.built_at ?? JSON.stringify(stamp);
 }
 
+/** Run git without throwing. `ok` is the exit status; `out` is trimmed stdout. */
+function gitTry(root, args) {
+  try {
+    return {
+      ok: true,
+      out: execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(),
+    };
+  } catch {
+    return { ok: false, out: '' };
+  }
+}
+
 /**
- * Does a live build stamp identify the commit this run pushed?
+ * Are the bytes this run pushed being served, according to a live build stamp?
  *
  * The stamp carries `git rev-parse --short=12 HEAD` from the *host's* checkout
- * (`lib/stamp.mjs`), so it is an abbreviation of the SHA read here in full. It
- * is compared as a hex prefix of that exact SHA rather than by string equality
- * on two abbreviations, so a host that abbreviated to a different length still
- * matches the commit it actually built, and nothing else does.
+ * (`lib/stamp.mjs`), so it is an abbreviation of a SHA. The question this asks
+ * is the requirement's own purpose sentence — *is the live site serving what
+ * this run pushed* — and the answer is yes for the pushed commit itself and for
+ * any commit that CONTAINS it.
  *
- * Everything that is not a hex abbreviation of that one commit fails: another
- * commit, `unknown` from a builder with no git, a bare timestamp, a serialised
- * blob. There is no "the stamp changed, so something must have deployed"
- * branch — a fallback that passes on any change is what let a wrong `expected`
- * value go unnoticed for the life of the mechanism.
+ * ## Why containment rather than equality (design D1, `addictedtoai-k2y0`)
+ *
+ * Two publishers share this step: the Pulse and the Desk (`loop/run.mjs`
+ * publishes through it after a merge). A merge that pushes on top of a Pulse
+ * commit while the Pulse is still polling makes the Pulse's equality check fail
+ * on a deploy that is serving the Pulse's own bytes — a false halt available on
+ * ordinary concurrency, with no vendor fault required.
+ *
+ * The rule equality was protecting is untouched: *"a stamp that merely changed
+ * SHALL NOT satisfy the check"*. A commit that does not contain the pushed one
+ * still fails, and the previous run's commit is an ANCESTOR of the pushed one
+ * rather than a descendant, so it fails in the correct direction — which is the
+ * whole of `addictedtoai-1ml`.
+ *
+ * ## Fail closed, in three places
+ *
+ *   - the stamp must parse as a hex abbreviation of at least seven characters
+ *     (git's own floor; below it a "prefix" is not evidence of identity), so
+ *     `unknown` from a builder with no git, a bare timestamp and a serialised
+ *     blob are all refused before any git runs;
+ *   - it must resolve, through the local repository, to exactly one commit
+ *     object — an ambiguous abbreviation makes `rev-parse --verify` exit
+ *     non-zero and is therefore refused too;
+ *   - the ancestry question is answered by `git merge-base --is-ancestor`, never
+ *     inferred. "Newer" is a clock and a clock cannot tell a descendant from a
+ *     fork.
+ *
+ * The live commit may have been pushed by another actor and be absent locally,
+ * so an unresolvable stamp triggers ONE read-only `git fetch origin main` (the
+ * git remote this step has just pushed to — not a hosting-provider call and not
+ * a GitHub API call) and one retry. `state.fetched` is what makes it once per
+ * run rather than once per poll. A stamp still unresolvable after that is not
+ * landed.
  *
  * The `+dirty` suffix never reaches here: `stampId` reads the `commit` field,
  * not the rendered `stamp` string. That matters, because the host's build IS
  * dirty — prebuild regenerates date-dependent derived data — and that flag is
  * telling the truth and is not suppressed.
+ *
+ * @param {object} [opts]
+ * @param {(root: string, args: string[]) => {ok: boolean, out: string}} [opts.runGit]
+ *   injectable only so a test can fail one git invocation and watch the check
+ *   fail closed; no caller passes it.
+ * @param {{fetched: boolean}} [opts.state] the once-per-run fetch latch.
  */
-export function stampMatchesCommit(id, sha) {
+export function stampMatchesCommit(root, id, sha, { runGit = gitTry, state = { fetched: false } } = {}) {
   if (typeof sha !== 'string' || !/^[0-9a-f]{40}$/.test(sha)) return false;
   if (typeof id !== 'string') return false;
   const seen = id.trim().toLowerCase();
-  // Seven is git's own floor for an abbreviated hash; below it a "prefix" is
-  // not evidence of identity.
   if (!/^[0-9a-f]{7,40}$/.test(seen)) return false;
-  return sha.startsWith(seen);
+  // The pushed commit itself. Answered without git, and it is the common case.
+  if (sha.startsWith(seen)) return true;
+  const resolve = () => {
+    const r = runGit(root, ['rev-parse', '--verify', '--quiet', `${seen}^{commit}`]);
+    return r.ok && /^[0-9a-f]{40}$/.test(r.out) ? r.out : null;
+  };
+  let live = resolve();
+  if (live === null && !state.fetched) {
+    state.fetched = true;
+    runGit(root, ['fetch', 'origin', 'main']);
+    live = resolve();
+  }
+  if (live === null) return false;
+  return runGit(root, ['merge-base', '--is-ancestor', sha, live]).ok;
 }
 
-function writeHold(root, reason) {
+/** One containment test bound to a repository, sharing a single fetch latch. */
+export function stampChecker(root, opts = {}) {
+  const state = { fetched: false };
+  return (id, sha) => stampMatchesCommit(root, id, sha, { ...opts, state });
+}
+
+/**
+ * The closed, exhaustive set of deploy-failure classifications (specs/pulse).
+ *
+ * Closed, because an open string is what the old free-text clause effectively
+ * was and nothing could assert on it. Exhaustive, because two of the three are
+ * positive tests and the third is their complement.
+ */
+export const DEPLOY_CLASSIFICATIONS = Object.freeze({
+  UNREADABLE: 'unreadable',
+  NEVER_ADVANCED: 'never-advanced',
+  ADVANCED_ELSEWHERE: 'advanced-elsewhere',
+});
+
+const CLASSIFICATION_MEANS = Object.freeze({
+  [DEPLOY_CLASSIFICATIONS.UNREADABLE]:
+    'no read of the live build stamp succeeded after the push, so this run observed nothing about its own deploy',
+  [DEPLOY_CLASSIFICATIONS.NEVER_ADVANCED]:
+    'every read that succeeded after the push returned the stamp that was live before it',
+  [DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE]:
+    'the stamp was neither unchanged nor a commit containing the one this run pushed',
+});
+
+/**
+ * Which of the three failures this was, computed from what the loop read.
+ *
+ * A *reading* is a poll taken AFTER the push. The pre-push baseline is not one:
+ * it is the value the readings are compared against. That definition is what
+ * removes the misleading sentence the old text could write — `lastSeen` was
+ * initialised to the baseline and advanced only on a successful poll, so a run
+ * whose baseline read succeeded and whose every post-push poll failed used to
+ * assert "unchanged since before the push" about a run that read nothing after
+ * the push at all.
+ */
+export function classifyDeployFailure({ readings, everyReadingWasBaseline }) {
+  if (readings === 0) return DEPLOY_CLASSIFICATIONS.UNREADABLE;
+  if (everyReadingWasBaseline) return DEPLOY_CLASSIFICATIONS.NEVER_ADVANCED;
+  return DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE;
+}
+
+/**
+ * The exact prefix of the line that makes a deploy hold machine-identifiable.
+ *
+ * `HOLD.md` has five writers: this step, and the Desk's four breakers
+ * (`loop/lib/breakers.mjs` — consecutive-failure, red-build, review-bypass,
+ * reserved-path). NOT ONE OF THE FOUR NAMES A COMMIT, so "is the commit this
+ * hold names now served" has no referent on four fifths of the holds that can
+ * be standing. Keying the re-test on this line rather than on the file's
+ * existence is the mechanism, not a convenience — and it also leaves a
+ * `HOLD.md` a human wrote by hand untouched, which is correct.
+ */
+export const DEPLOY_HOLD_MARKER = 'deploy-hold:';
+
+/** A window duration as a value a reader and a test can both hold on to. */
+function durationText(ms) {
+  return ms >= 60000 ? `${ms} ms (${Math.round(ms / 60000)} minutes)` : `${ms} ms`;
+}
+
+function writeHold(root, { expected, lastSeen, classification, firstWindowMs, confirmWindowMs }) {
   const file = paths(root).hold;
   const text = [
     '# HOLD',
     '',
+    // FIRST BODY LINE, exact prefix, one line: everything below is prose and
+    // this is not.
+    `${DEPLOY_HOLD_MARKER} ${expected} ${classification}`,
+    '',
     `Written by the publish step on ${today()}.`,
     '',
-    reason,
+    `The push succeeded but ${statusUrl()} is not serving the commit this run`,
+    `pushed (${expected.slice(0, 12)}) — through a first polling window and a`,
+    'longer confirmation window, so this is a missed deploy and not a slow one.',
+    '',
+    `- pushed commit: ${expected}`,
+    `- last live build stamp read: ${lastSeen ?? 'none — no reading succeeded after the push'}`,
+    `- first window: ${durationText(firstWindowMs)}`,
+    `- confirmation window: ${durationText(confirmWindowMs)}`,
+    `- classification: ${classification} — ${CLASSIFICATION_MEANS[classification]}`,
     '',
     'Breaker 2 (specs/loop): the published site failed to build or deploy.',
     'The Desk is stopped and no further publish is attempted until this file',
     'is removed by the maintainer. The Pulse keeps running; only its deploy',
     'step is suspended.',
     '',
+    'Each later invocation of the publish step appends one dated observation',
+    'below, recording whether the commit named above is being served yet. The',
+    'observations clear nothing: this file stays until the maintainer, or an',
+    'orchestrator between runs, removes it on the record it now carries.',
+    '',
   ].join('\n');
   writeFileSync(file, text, 'utf8');
   return file;
+}
+
+/**
+ * The `deploy-hold:` marker in a standing hold, or `null` for every other hold.
+ *
+ * Forty hex characters, not an abbreviation: this step writes the full SHA, and
+ * the containment test needs the full SHA to answer anything. A truncated or
+ * hand-edited marker therefore reads as "no marker", which is the fail-closed
+ * direction — the hold is left entirely alone.
+ */
+export function readDeployMarker(file) {
+  let text;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return null;
+  }
+  for (const line of text.split('\n')) {
+    const m = /^deploy-hold:[ \t]+([0-9a-f]{40})[ \t]+(\S+)$/.exec(line.trim());
+    if (m) return { sha: m[1], classification: m[2] };
+  }
+  return null;
+}
+
+/**
+ * One dated observation about the commit a standing deploy hold names.
+ *
+ * It fires on bad news and on an unreadable site as well as on good news: an
+ * observation that only ever records success is a log line, not a record, and
+ * the point of appending rather than rewriting is that the file shows how long
+ * the condition persisted.
+ */
+export function observeHeldCommit(root, marker, seen, check = stampChecker(root)) {
+  const day = today();
+  const held = marker.sha.slice(0, 12);
+  if (!seen.ok) {
+    return `observation ${day}: the live build stamp could not be read (${seen.detail}) — whether ${held} is served is still unknown.`;
+  }
+  const id = stampId(seen.stamp);
+  return check(id, marker.sha)
+    ? `observation ${day}: the live build stamp ${id} carries ${held} — the commit this hold names is now served.`
+    : `observation ${day}: the live build stamp ${id} does not carry ${held} — the commit this hold names is still not served.`;
 }
 
 /**
@@ -459,6 +649,8 @@ function commitOwned(root, ownedPaths, message, say) {
  *   not. `null` — the default — means the caller declared nothing and gets the
  *   old wholesale behaviour, announced on every run, on publishing runs only.
  * @param {number}  opts.pollBudgetMs    how long to wait for the deploy (tests only)
+ * @param {number}  opts.confirmBudgetMs the confirmation window (tests only). Floored
+ *   at three times `pollBudgetMs`, which is the spec's minimum ratio.
  * @param {number}  opts.pollIntervalMs  how often to re-fetch (tests only)
  */
 export async function publishStep(
@@ -472,6 +664,11 @@ export async function publishStep(
     // so a test can exercise the deploy-did-not-land path in milliseconds
     // instead of ten minutes; no caller in `pulse/` or `loop/` passes either.
     pollBudgetMs = POLL_BUDGET_MS,
+    // Deliberately not `POLL_BUDGET_MS * CONFIRM_WINDOW_MULTIPLE`: the default
+    // has to follow the budget this call was GIVEN, or a test that shortens the
+    // first window to milliseconds still waits thirty real minutes for the
+    // second. Measured 2026-09-07 — every hold-writing test timed out.
+    confirmBudgetMs = null,
     pollIntervalMs = POLL_INTERVAL_MS,
   } = {},
 ) {
@@ -567,7 +764,41 @@ export async function publishStep(
 
   if (held) {
     say('publish', `HOLD.md present at ${p.hold} — publish suspended until the hold clears`);
-    return { published: false, reason: 'hold', commit };
+    // ---- THE READ-ONLY RE-TEST OF A STANDING DEPLOY HOLD -------------------
+    //
+    // `addictedtoai-k2y0`: the halt outlived its cause by three hours because
+    // the brake suspends the very publishing whose success would have shown the
+    // cause had passed. This branch returned before ANY live read, so nothing in
+    // the system could discover it.
+    //
+    // It reads, and does nothing else. No push, no remote write, no second
+    // reading, no rewrite of an earlier observation, and — deliberately — no
+    // clearing of the hold: a run that clears its own halt is precisely the
+    // conflict of interest the brake exists for (design D2). The evidence here
+    // is the same single reading whose absence wrote the hold; one reading was
+    // not enough to conclude failure without a confirmation window, and it is
+    // not enough to conclude success either. What changes is that the diagnosis
+    // is already in the file when the maintainer gets there.
+    //
+    // A hold with no marker belongs to another brake and names no commit, so it
+    // is passed over untouched — reading the live site to decide whether a
+    // reserved-path halt has cleared is asking a question with no answer.
+    const marker = readDeployMarker(p.hold);
+    if (!marker) return { published: false, reason: 'hold', commit };
+
+    const seen = await fetchLiveStamp();
+    const observation = observeHeldCommit(root, marker, seen);
+    if (dryRun) {
+      // The hold branch is reached BEFORE the dry-run branch, so without this
+      // the naive implementation would have `--dry-run` append to a guardrail
+      // file three lines above its own "nothing was committed and nothing was
+      // pushed".
+      say('publish', `DRY RUN — would append to ${p.hold}: ${observation}`);
+    } else {
+      appendFileSync(p.hold, `${observation}\n`, 'utf8');
+      say('publish', observation);
+    }
+    return { published: false, reason: 'hold', commit, retest: { ...marker, observation } };
   }
 
   if (commitBlocked) {
@@ -600,6 +831,10 @@ export async function publishStep(
     say('publish', `DRY RUN — publish would run (config publish: ${config.publish}${assumePublish ? ', overridden to true for this dry run' : ''})`);
     for (const c of commands) process.stdout.write(`pulse: publish   would run: ${c}\n`);
     process.stdout.write(`pulse: publish   would poll: ${statusUrl()} every ${POLL_INTERVAL_MS / 1000}s for up to ${POLL_BUDGET_MS / 60000} minutes\n`);
+    process.stdout.write(
+      `pulse: publish   would then poll a confirmation window of ${(POLL_BUDGET_MS * CONFIRM_WINDOW_MULTIPLE) / 60000} ` +
+        'minutes before treating the deploy as missed rather than slow\n',
+    );
     // Deliberately not a value: the commit a real run waits for is the one the
     // commit below would create, and its SHA does not exist until it does. The
     // line used to print the local build's stamp, which is the pre-commit HEAD
@@ -662,54 +897,102 @@ export async function publishStep(
   git(root, ['push', 'origin', 'main']);
   say('publish', `pushed origin main at ${expected.slice(0, 12)}; polling the live build stamp for that commit`);
 
-  const deadline = Date.now() + pollBudgetMs;
-  let lastSeen = baseline;
-  while (Date.now() < deadline) {
-    const live = await fetchLiveStamp();
-    if (live.ok) {
-      const id = stampId(live.stamp);
-      lastSeen = id;
-      if (stampMatchesCommit(id, expected)) {
-        say('publish', `live build stamp carries ${id} — the commit this run pushed`);
-        // ---- PHASE 3 — tell the search engines (beads addictedtoai-k1j) ----
-        //
-        // HERE, and nowhere earlier, because this is the first moment the new
-        // bytes are known to be served. Pinging a URL before its deploy lands
-        // is worse than not pinging it: the crawler arrives promptly and
-        // re-reads the page that was already there. This line is also why the
-        // Desk gets it for free — `loop/run.mjs` publishes through this same
-        // step after a merge, so reviewed prose is announced the moment it is
-        // live rather than waiting for the next Pulse.
-        //
-        // `submitIndexNow` re-checks every one of its own guards (it is not
-        // trusted to be reachable only from here) and cannot throw: a search
-        // engine's outage is not this deploy's problem, and nothing it does
-        // touches the result below.
-        const indexnow = await submitIndexNow({
-          root,
-          day: today(),
-          siteUrl: siteUrl(),
-          config,
-          dryRun,
-          log,
-        });
-        // `commit` here is the SHA the site is serving, which is what every
-        // caller of this result has always read. Phase 1's own report rides
-        // alongside it under `committed`.
-        return { published: true, stamp: id, commit: expected, committed: commit, indexnow };
+  // One checker for the whole run, so the read-only `git fetch` that resolves a
+  // stamp another actor pushed happens at most once rather than once per poll.
+  const carries = stampChecker(root);
+  // A READING is a poll taken after the push, and nothing else. `lastSeen` used
+  // to start at the baseline and advance only on a successful poll, which made
+  // "no poll succeeded" and "every poll returned the baseline" the same state.
+  const readings = { count: 0, everyOneWasBaseline: true, last: null };
+
+  const pollWindow = async (budgetMs) => {
+    const deadline = Date.now() + budgetMs;
+    while (Date.now() < deadline) {
+      const live = await fetchLiveStamp();
+      if (live.ok) {
+        const id = stampId(live.stamp);
+        readings.count++;
+        readings.last = id;
+        // A null baseline never equals a stamp, so a run whose pre-push read
+        // failed and whose later reads succeeded lands in `advanced-elsewhere`.
+        if (id !== baseline) readings.everyOneWasBaseline = false;
+        if (carries(id, expected)) return id;
       }
+      await new Promise((r) => setTimeout(r, pollIntervalMs));
     }
-    await new Promise((r) => setTimeout(r, pollIntervalMs));
+    return null;
+  };
+
+  // The floor is the spec's — *at least three times the first* — so a caller
+  // may lengthen the confirmation window but cannot shorten it below the ratio.
+  const confirmMs = Math.max(Number(confirmBudgetMs) || 0, pollBudgetMs * CONFIRM_WINDOW_MULTIPLE);
+
+  let window = 'first';
+  let id = await pollWindow(pollBudgetMs);
+  if (id === null) {
+    window = 'confirmation';
+    say(
+      'publish',
+      `the first window (${durationText(pollBudgetMs)}) elapsed with no stamp carrying ${expected.slice(0, 12)} — ` +
+        `polling a confirmation window of ${durationText(confirmMs)} before treating the deploy as failed`,
+    );
+    id = await pollWindow(confirmMs);
   }
 
-  const file = writeHold(
-    root,
-    `The push succeeded but ${statusUrl()} is not serving the commit this run pushed ` +
-      `(${expected.slice(0, 12)}) within ${Math.round(pollBudgetMs / 60000)} minutes. ` +
-      `The live build stamp last read ${lastSeen ?? 'unreadable'}` +
-      (baseline && lastSeen === baseline ? ' — unchanged since before the push' : '') +
-      '.',
-  );
-  say('publish', `deploy did not land — wrote ${file}`);
-  return { published: false, reason: 'stamp-did-not-advance', hold: file, expected, last_seen: lastSeen ?? null, commit };
+  if (id !== null) {
+    say(
+      'publish',
+      `live build stamp carries ${id} — the commit this run pushed, or a commit containing it ` +
+        `(landed in the ${window} window)`,
+    );
+    // ---- PHASE 3 — tell the search engines (beads addictedtoai-k1j) ----
+    //
+    // HERE, and nowhere earlier, because this is the first moment the new
+    // bytes are known to be served. Pinging a URL before its deploy lands
+    // is worse than not pinging it: the crawler arrives promptly and
+    // re-reads the page that was already there. This line is also why the
+    // Desk gets it for free — `loop/run.mjs` publishes through this same
+    // step after a merge, so reviewed prose is announced the moment it is
+    // live rather than waiting for the next Pulse.
+    //
+    // `submitIndexNow` re-checks every one of its own guards (it is not
+    // trusted to be reachable only from here) and cannot throw: a search
+    // engine's outage is not this deploy's problem, and nothing it does
+    // touches the result below.
+    const indexnow = await submitIndexNow({
+      root,
+      day: today(),
+      siteUrl: siteUrl(),
+      config,
+      dryRun,
+      log,
+    });
+    // `commit` here is the SHA the site is serving, which is what every
+    // caller of this result has always read. Phase 1's own report rides
+    // alongside it under `committed`.
+    return { published: true, stamp: id, window, commit: expected, committed: commit, indexnow };
+  }
+
+  const classification = classifyDeployFailure({
+    readings: readings.count,
+    everyReadingWasBaseline: readings.everyOneWasBaseline,
+  });
+  const file = writeHold(root, {
+    expected,
+    lastSeen: readings.last,
+    classification,
+    firstWindowMs: pollBudgetMs,
+    confirmWindowMs: confirmMs,
+  });
+  say('publish', `deploy did not land (${classification}) — wrote ${file}`);
+  return {
+    published: false,
+    reason: 'stamp-did-not-advance',
+    hold: file,
+    expected,
+    classification,
+    last_seen: readings.last,
+    windows: { first_ms: pollBudgetMs, confirmation_ms: confirmMs },
+    commit,
+  };
 }

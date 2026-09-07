@@ -67,14 +67,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { publishStep } from '../lib/publish.mjs';
+import { DEPLOY_CLASSIFICATIONS, publishStep, stampMatchesCommit } from '../lib/publish.mjs';
 
 // Milliseconds. Small enough that the deploy-never-lands path finishes in well
 // under a second, which is the only reason the poll window is injectable.
-const FAST = { pollBudgetMs: 400, pollIntervalMs: 25 };
+// A run that never lands now costs FOUR times this, because the confirmation
+// window is three times the first and both are polled before the hold.
+const FAST = { pollBudgetMs: 150, pollIntervalMs: 20 };
+/** For the slow-deploy test, whose whole subject is the boundary between the two windows. */
+const SLOW = { pollBudgetMs: 500, pollIntervalMs: 25 };
 
 function git(cwd, args) {
   return execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -144,12 +148,25 @@ function writeLocalBuildStamp(root, commit) {
   writeFileSync(join(root, 'out', 'status.json'), stamp(commit, { dirty: true }), 'utf8');
 }
 
-/** A loopback `/status.json` whose body each test moves when it chooses. */
-async function serveStatus(initialBody) {
+/**
+ * A loopback `/status.json` whose body each test moves when it chooses.
+ *
+ * `deadUntil` and `aliveUntil` are counted in REQUESTS, not milliseconds, which
+ * is what makes the classification tests deterministic rather than racy: the
+ * publish step's pre-push baseline read is always request 1, so `aliveUntil: 1`
+ * is exactly "the baseline was readable and every reading after the push
+ * failed" — the case the replaced free-text clause got wrong.
+ */
+async function serveStatus(initialBody, { deadUntil = 0, aliveUntil = Infinity } = {}) {
   let body = initialBody;
   let hits = 0;
   const server = createServer((req, res) => {
     hits++;
+    if (hits <= deadUntil || hits > aliveUntil) {
+      res.writeHead(503);
+      res.end('');
+      return;
+    }
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(body);
   });
@@ -168,10 +185,10 @@ async function serveStatus(initialBody) {
 }
 
 /** Give a test a repo, a live server and a restored `SITE_URL`. */
-async function withFixture(t) {
+async function withFixture(t, serverOpts = {}) {
   const { root, remote } = makeRepo();
   const previousCommit = short(root);
-  const live = await serveStatus(stamp(previousCommit, { dirty: true }));
+  const live = await serveStatus(stamp(previousCommit, { dirty: true }), serverOpts);
   const prior = process.env.SITE_URL;
   process.env.SITE_URL = live.url;
   t.after(async () => {
@@ -428,4 +445,309 @@ test('declared: the commit that reaches the remote holds only what the run decla
     /unattributable\.json/,
     'the foreign file is still dirty in the working tree — untouched, not published',
   );
+});
+
+// ---------------------------------------------------------------------------
+// addictedtoai-k2y0 — containment, the confirmation window, and the classified
+// hold. A missed deploy and a slow one were the same fact until this block.
+// ---------------------------------------------------------------------------
+
+/**
+ * Wait until the step's push has reached the fixture remote.
+ *
+ * The only sync point that is guaranteed to be AFTER the step read `expected`
+ * with `git rev-parse HEAD`. Watching the local HEAD instead — which the older
+ * tests do, correctly, for their purpose — races: a test that commits on top
+ * the moment HEAD moves can land its commit BEFORE the step reads `expected`,
+ * and then the step pushes and waits for that commit, which is equality again
+ * and tests nothing.
+ */
+function afterPush(remote, before) {
+  return new Promise((resolve) => {
+    const timer = setInterval(() => {
+      let tip;
+      try {
+        tip = git(remote, ['rev-parse', 'main']);
+      } catch {
+        return;
+      }
+      if (tip !== before) {
+        clearInterval(timer);
+        resolve(tip);
+      }
+    }, 10);
+  });
+}
+
+/** Commit a new file on the current branch and return its short id. */
+function commitOnTop(root, name, text) {
+  writeFileSync(join(root, 'content', name), text, 'utf8');
+  git(root, ['add', '-A']);
+  git(root, ['commit', '-m', `fixture: ${name}`]);
+  return short(root);
+}
+
+const holdText = (root) => readFileSync(join(root, 'HOLD.md'), 'utf8');
+
+/**
+ * Every fact specs/pulse requires a deploy hold to carry.
+ *
+ * `first`/`confirm` are asserted as WRITTEN VALUES, not as a duration-shaped
+ * field: a hold that names one window and shapes the other is exactly the hold
+ * whose reader has to re-measure what the run already knew.
+ */
+function assertDeployHold(root, { pushed, classification, lastSeen, first, confirm }) {
+  const text = holdText(root);
+  assert.match(
+    text,
+    new RegExp(`^deploy-hold: ${pushed} ${classification}$`, 'm'),
+    `the machine-readable marker line is missing or wrong:\n${text}`,
+  );
+  assert.match(text, new RegExp(`^- classification: ${classification} `, 'm'), text);
+  assert.match(text, new RegExp(`^- last live build stamp read: ${lastSeen}`, 'm'), text);
+  assert.match(text, new RegExp(`^- first window: ${first} ms`, 'm'), text);
+  assert.match(text, new RegExp(`^- confirmation window: ${confirm} ms`, 'm'), text);
+  return text;
+}
+
+test('declared: a stamp naming a DESCENDANT of the pushed commit is a landed deploy', async (t) => {
+  // The false halt available today on ordinary concurrency, with no vendor
+  // fault required: two publishers share this step, so a merge that pushes on
+  // top of a Pulse commit while the Pulse is still polling makes the Pulse's
+  // equality check fail on a deploy that is serving the Pulse's own bytes.
+  const { root, remote, live } = await withFixture(t);
+  const beforeTip = git(remote, ['rev-parse', 'main']);
+  stageableChange(root, 'descendant\n');
+
+  const step = publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  const pushed = await afterPush(remote, beforeTip);
+  const descendant = commitOnTop(root, 'later.md', 'another publisher got there first\n');
+  live.set(stamp(descendant, { dirty: true }));
+
+  const res = await step;
+  assert.notEqual(descendant, pushed.slice(0, 12), 'the live stamp is a different commit from the pushed one');
+  assert.equal(res.published, true, `a commit containing the pushed one serves its bytes:\n${JSON.stringify(res)}`);
+  assert.equal(res.stamp, descendant);
+  assert.equal(existsSync(join(root, 'HOLD.md')), false, 'a landed deploy writes no hold');
+});
+
+test('declared: CONTROL — a stamp naming a SIBLING commit is not a landed deploy', async (t) => {
+  // Without this the test above proves nothing: "resolves to some commit" would
+  // pass it. A sibling shares the pushed commit's parent and contains none of
+  // its bytes, and ancestry is the only test that can tell the two apart —
+  // "newer" is a clock, and a clock cannot tell a descendant from a fork.
+  const { root, remote, live } = await withFixture(t);
+  const beforeTip = git(remote, ['rev-parse', 'main']);
+  stageableChange(root, 'sibling\n');
+
+  const step = publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  const pushed = await afterPush(remote, beforeTip);
+  git(root, ['checkout', '-q', '-b', 'fork', `${pushed}^`]);
+  const sibling = commitOnTop(root, 'fork.md', 'a fork of the same parent\n');
+  live.set(stamp(sibling, { dirty: true }));
+
+  const res = await step;
+  assert.equal(res.published, false, 'a commit that does not contain the pushed one is not this deploy');
+  assert.equal(res.reason, 'stamp-did-not-advance');
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE);
+  assert.equal(existsSync(join(root, 'HOLD.md')), true);
+});
+
+test('the containment check fails closed on everything it cannot answer', async (t) => {
+  const { root } = await withFixture(t);
+  const pushedSha = git(root, ['rev-parse', 'HEAD']);
+  const descendant = commitOnTop(root, 'later.md', 'on top\n');
+
+  // The positive control lives in the same test, so "everything fails" cannot
+  // pass it.
+  assert.equal(stampMatchesCommit(root, descendant, pushedSha), true, 'a descendant resolves and contains it');
+
+  assert.equal(stampMatchesCommit(root, 'unknown', pushedSha), false, 'a builder with no git');
+  assert.equal(stampMatchesCommit(root, '2026-08-29T00:00:00Z', pushedSha), false, 'a bare timestamp');
+  assert.equal(stampMatchesCommit(root, 'deadbeefdead', pushedSha), false, 'well-formed, and no such commit here');
+
+  // A git invocation that errors is "not landed", never "landed". Injected at
+  // the ancestry call specifically: resolution has already succeeded, so this
+  // is the branch that would otherwise be tempted to assume.
+  const calls = [];
+  const runGit = (r, args) => {
+    calls.push(args[0]);
+    if (args[0] === 'merge-base') return { ok: false, out: '' };
+    try {
+      return { ok: true, out: execFileSync('git', ['-C', r, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() };
+    } catch {
+      return { ok: false, out: '' };
+    }
+  };
+  assert.equal(stampMatchesCommit(root, descendant, pushedSha, { runGit }), false, 'a failed ancestry test is not a pass');
+  assert.ok(calls.includes('merge-base'), `the ancestry call was never reached: ${calls.join(', ')}`);
+});
+
+test('declared: a stamp that arrives only after the first budget is a SLOW deploy, not a missed one', async (t) => {
+  const { root, remote, live } = await withFixture(t);
+  const beforeTip = git(remote, ['rev-parse', 'main']);
+  stageableChange(root, 'slow\n');
+
+  let pushed;
+  let announcedConfirmationWindow = false;
+  const step = publishStep(root, {
+    ...DECLARED,
+    ...SLOW,
+    log: {
+      step: (n, d) => {
+        // Flip the stamp from the step's own confirmation-window announcement
+        // rather than from the clock: `pollWindow` always runs at least one
+        // iteration before its deadline check, so this guarantees the flip is
+        // observed once the confirmation window is polling, instead of racing
+        // a fixed-delay timer against however long a poll iteration happens to
+        // take on this machine right now. The flag records that the flip fired
+        // FROM that announcement — the deterministic proof that the first
+        // window was already exhausted, in place of a wall-clock comparison
+        // between two loosely-synchronised timers (the test's `Date.now()` and
+        // `publishStep`'s own), which is exactly the kind of race this whole
+        // fix removes.
+        if (pushed && /polling a confirmation window/.test(d)) {
+          announcedConfirmationWindow = true;
+          live.set(stamp(pushed.slice(0, 12), { dirty: true }));
+        }
+      },
+    },
+  });
+  pushed = await afterPush(remote, beforeTip);
+
+  const res = await step;
+  assert.equal(res.published, true, 'a commit that is not live at ten minutes and is live at thirty is a slow deploy');
+  assert.ok(announcedConfirmationWindow, 'the flip happened only after the step itself announced the first window had elapsed');
+  assert.equal(res.window, 'confirmation', 'the run records WHICH window it landed in — the two are not the same fact');
+  assert.equal(existsSync(join(root, 'HOLD.md')), false, 'a slow deploy is not a halt');
+});
+
+test('declared: CONTROL — a stamp that never carries it is polled through BOTH windows and then halts', async (t) => {
+  const { root } = await withFixture(t);
+  stageableChange(root, 'never\n');
+
+  const started = Date.now();
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  const elapsed = Date.now() - started;
+
+  assert.equal(res.published, false);
+  assert.equal(res.reason, 'stamp-did-not-advance');
+  assert.equal(existsSync(join(root, 'HOLD.md')), true, 'a missed deploy is still a halt');
+  // A floor, and honestly only a floor: MEASURED 2026-09-07 by deleting the
+  // second window, this assertion still passed, because a poll that spawns git
+  // twice per reading takes long enough at a 150 ms budget to reach 600 ms on
+  // its own. The test that actually detects a deleted confirmation window is
+  // the SLOW one above, which fails on that mutation. Kept because it is the
+  // cheap direct check that both windows are at least budgeted for.
+  assert.ok(
+    elapsed >= FAST.pollBudgetMs * 4,
+    `both windows must elapse before the halt; only ${elapsed} ms passed`,
+  );
+  assert.deepEqual(res.windows, { first_ms: FAST.pollBudgetMs, confirmation_ms: FAST.pollBudgetMs * 3 });
+});
+
+// --- the six holds: one per classification, plus the residual and boundary
+// --- cases the first draft of the set did not cover.
+
+test('hold: never-advanced — every reading returned the stamp that was live before the push', async (t) => {
+  const { root, previousCommit } = await withFixture(t);
+  stageableChange(root, 'never-advanced\n');
+
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.NEVER_ADVANCED);
+  assertDeployHold(root, {
+    pushed: git(root, ['rev-parse', 'HEAD']),
+    classification: 'never-advanced',
+    lastSeen: previousCommit,
+    first: FAST.pollBudgetMs,
+    confirm: FAST.pollBudgetMs * 3,
+  });
+});
+
+test('hold: advanced-elsewhere — the stamp moved to a commit that is not this one', async (t) => {
+  const { root, live } = await withFixture(t);
+  stageableChange(root, 'elsewhere\n');
+  setTimeout(() => live.set(stamp('ffffffffffff', { dirty: true })), 40);
+
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE);
+  assertDeployHold(root, {
+    pushed: git(root, ['rev-parse', 'HEAD']),
+    classification: 'advanced-elsewhere',
+    lastSeen: 'ffffffffffff',
+    first: FAST.pollBudgetMs,
+    confirm: FAST.pollBudgetMs * 3,
+  });
+});
+
+test('hold: unreadable — the live site could not be read at all', async (t) => {
+  const { root } = await withFixture(t, { aliveUntil: 0 });
+  stageableChange(root, 'unreadable\n');
+
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.UNREADABLE);
+  assertDeployHold(root, {
+    pushed: git(root, ['rev-parse', 'HEAD']),
+    classification: 'unreadable',
+    lastSeen: 'none — no reading succeeded after the push',
+    first: FAST.pollBudgetMs,
+    confirm: FAST.pollBudgetMs * 3,
+  });
+});
+
+test('hold: a baseline that could not be read while later readings could is advanced-elsewhere', async (t) => {
+  // The residual case. `never-advanced` is a positive test — at least one
+  // reading succeeded and every one equalled the baseline — and a null baseline
+  // equals nothing, so this falls to the complement rather than into a gap.
+  const { root, previousCommit } = await withFixture(t, { deadUntil: 1 });
+  stageableChange(root, 'no-baseline\n');
+
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE);
+  assertDeployHold(root, {
+    pushed: git(root, ['rev-parse', 'HEAD']),
+    classification: 'advanced-elsewhere',
+    lastSeen: previousCommit,
+    first: FAST.pollBudgetMs,
+    confirm: FAST.pollBudgetMs * 3,
+  });
+});
+
+test('hold: a reading that is not a commit at all is advanced-elsewhere', async (t) => {
+  const { root, live } = await withFixture(t);
+  stageableChange(root, 'unknown-stamp\n');
+  setTimeout(() => live.set(stamp('unknown', { dirty: true })), 40);
+
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE);
+  assertDeployHold(root, {
+    pushed: git(root, ['rev-parse', 'HEAD']),
+    classification: 'advanced-elsewhere',
+    lastSeen: 'unknown',
+    first: FAST.pollBudgetMs,
+    confirm: FAST.pollBudgetMs * 3,
+  });
+});
+
+test('hold: a readable baseline followed by nothing readable is unreadable, and says nothing about the stamp', async (t) => {
+  // THE DEFECT THIS REPLACES, measured rather than assumed. The old clause was
+  // `(baseline && lastSeen === baseline ? ' — unchanged since before the push' : '')`,
+  // and `lastSeen` started at the baseline and advanced only on a successful
+  // poll. So a run whose baseline read succeeded and whose every post-push poll
+  // failed reached the hold with a truthy baseline and `lastSeen === baseline`,
+  // and the hold asserted "unchanged since before the push" about a run that had
+  // read nothing after the push at all.
+  const { root } = await withFixture(t, { aliveUntil: 1 });
+  stageableChange(root, 'baseline-then-dark\n');
+
+  const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
+  assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.UNREADABLE);
+  const text = assertDeployHold(root, {
+    pushed: git(root, ['rev-parse', 'HEAD']),
+    classification: 'unreadable',
+    lastSeen: 'none — no reading succeeded after the push',
+    first: FAST.pollBudgetMs,
+    confirm: FAST.pollBudgetMs * 3,
+  });
+  assert.doesNotMatch(text, /unchanged since before the push/, text);
 });

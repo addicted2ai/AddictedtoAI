@@ -342,11 +342,13 @@ test('the publish step calls the submitter only from inside its deploy-confirmed
   // Structural, like zero-model.test.mjs's own guard test and for the same
   // reason: the behavioural version of this claim would have to publish to
   // check it. What matters is that the one call site sits after
-  // `stampMatchesCommit` has already returned true.
+  // the containment check has already returned true. The check moved inside the
+  // polling helper when the confirmation window landed, so the anchor is that
+  // helper's landed branch rather than the old single-window `if`.
   const src = readFileSync(join(PULSE, 'lib', 'publish.mjs'), 'utf8');
   const calls = [...src.matchAll(/submitIndexNow\(/g)];
   assert.equal(calls.length, 1, 'exactly one call site');
-  const guard = src.indexOf('if (stampMatchesCommit(id, expected)) {');
+  const guard = src.indexOf('if (carries(id, expected)) return id;');
   assert.ok(guard > 0 && calls[0].index > guard, 'the call must follow the deploy-landed check');
   // And nothing may reach it on the dry-run path, which returns earlier.
   const dryReturn = src.indexOf("return { published: false, reason: 'dry-run'");
