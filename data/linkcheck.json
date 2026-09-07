@@ -4754,6 +4754,17 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/openai/gpt-6-astra/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/openai/gpt-6-astra/endpoints",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/models/qwen/qwen3.8-max-20260803/endpoints": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4772,6 +4783,72 @@
       "final_url": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-max/endpoints",
       "last_checked": "2026-09-05",
       "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/z-ai/glm-5.2/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/z-ai/glm-5.2/endpoints",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/z-ai/glm-5.2:free/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/z-ai/glm-5.2:free/endpoints",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/providers": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/providers",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/bytedance-seed/seed-1.6": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/bytedance-seed/seed-1.6",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/bytedance-seed/seed-2-1-turbo": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/bytedance-seed/seed-2-1-turbo",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/bytedance/ui-tars-1.5-7b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/bytedance/ui-tars-1.5-7b",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4816,6 +4893,17 @@
       "final_url": "https://openrouter.ai/docs/guides/features/service-tiers",
       "last_checked": "2026-09-02",
       "last_ok": "2026-09-02",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/docs/guides/routing/model-variants/free": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/docs/guides/routing/model-variants/free",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4930,6 +5018,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/minimax/minimax-m2-her": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/minimax/minimax-m2-her",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/minimax/minimax-m3": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/minimax/minimax-m3",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/mistralai/mistral-large-2512": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4959,6 +5069,50 @@
       "final_url": "https://openrouter.ai/moonshotai/kimi-k3",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nousresearch": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nousresearch",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nousresearch/hermes-3-llama-3.1-405b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nousresearch/hermes-3-llama-3.1-405b",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nousresearch/hermes-3-llama-3.1-70b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nousresearch/hermes-3-llama-3.1-70b",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nousresearch/hermes-4-405b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nousresearch/hermes-4-405b",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5025,6 +5179,17 @@
       "final_url": "https://openrouter.ai/perplexity/sonar-reasoning-pro",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/provider/amazon-bedrock": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/provider/amazon-bedrock",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5234,6 +5399,116 @@
       "final_url": "https://polyformproject.org/licenses/strict/1.0.0",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/": {
+      "bytes": 289962,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/fern-labs-acquisition": {
+      "bytes": 182678,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/fern-labs-acquisition",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/introducing-laguna-s-2-1": {
+      "bytes": 465772,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/introducing-laguna-s-2-1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/introducing-laguna-xs-2-1": {
+      "bytes": 306368,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/introducing-laguna-xs-2-1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/introducing-laguna-xs2-m1": {
+      "bytes": 388176,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/introducing-laguna-xs2-m1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/introducing-the-poolside-platform": {
+      "bytes": 237190,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/introducing-the-poolside-platform",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/partnering-with-redpanda": {
+      "bytes": 176181,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/partnering-with-redpanda",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/poolside-on-dell": {
+      "bytes": 201378,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/poolside-on-dell",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://poolside.ai/blog/unveiling-our-partnership-with-aws": {
+      "bytes": 225564,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://poolside.ai/blog/unveiling-our-partnership-with-aws",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://portal.nousresearch.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://portal.nousresearch.com/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
