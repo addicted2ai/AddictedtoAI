@@ -187,8 +187,13 @@ that no test attempts is a refusal that has never run.
       directory listing. The requirement says "every wiki entry", not "every content file
       a record can be joined to", precisely because `joinableSubjects`
       (`review.mjs:840-851`) admits every `content/**.md` and the two sets are
-      not the same set. The filter changes from `d.hasBody` to nothing, on
-      `corpus.entry` alone.
+      not the same set. `corpus.entry.filter((d) => d.hasBody)` **stays exactly
+      where it is** — first in the list, unmoved — and
+      `...corpus.entry.filter((d) => !d.hasBody)` is **appended after
+      `corpus.claim`**, the same position `corpus.claim` itself occupies and for
+      the same reason: inserting the body-less entries anywhere earlier would
+      move which piece claims an ambiguously-named record for content nobody
+      touched.
 - [ ] 12. **N6** — `scripts/verify-launch.mjs:473-478`, the `pieces` list the
       check requires a record for, keeps `hasProseBody` and does not change.
       `entryReviewGate` (`reviews.mjs:555-562`) keeps its `hasBody` skip, so no
@@ -327,6 +332,8 @@ that no test attempts is a refusal that has never run.
 
 - The **git-history sweep** for edits that landed on `main` before any record
   existed stays `data/proposals/un-gated-main-edits-bind-wholesale.md`.
-- **Backfilling records for the 458 body-less entries** is not proposed and not
-  implied. Task 12 exists to keep it from happening by accident.
+- **Backfilling records for the 445 body-less entries that report `missing`
+  today** (of 458 total; 13 already join a record — 9 `recorded`, 4 `unbound`
+  — and `mismatched` stays exactly 6 under the extension) is not proposed and
+  not implied. Task 12 exists to keep it from happening by accident.
 - **Binding `would-cite` to bytes** is a separate question and is not touched.

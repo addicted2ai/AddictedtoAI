@@ -49,15 +49,29 @@ claim in it now false.**
   no indexability, so it appears here only for the hash binding."* A body-less
   piece in the reviewable set, bound by hash and touching no page's
   indexability, is a shape this file already carries.
-- **And the write half already exists.** `loop/lib/review.mjs:840-851`,
-  `joinableSubjects`, admits any `content/**.md` that is not a deletion — a
-  body-less entry included — so the merge would write a `reviewed:` hash for one
-  it merged. Measured across all **357** records in `data/reviews/`: **0**
-  carry a `reviewed:` hash for a path outside the reviewable set, and **no
-  record names a `content/wiki/tool/` file as a subject at all**. Nothing has
-  ever exercised the write half, because no job has ever merged one of these
-  files — `addictedtoai-4nq` edited `content/wiki/tool/vllm.md` direct to
-  `main` in `ba1a577`, which is the bead's own point.
+- **And the write half already exists, and has already been exercised.**
+  `loop/lib/review.mjs:840-851`, `joinableSubjects`, admits any `content/**.md`
+  that is not a deletion — a body-less entry included — so the merge would
+  write a `reviewed:` hash for one it merged. Re-measured 2026-09-06 with the
+  repository's own loaders (`readReviewRecords` + `reviewedOf`, not a regex,
+  against the corpus `reviewablePieces` actually returns today): **13**
+  `reviewed:` entries across **12** records bind a path outside today's
+  reviewable set — 11 are body-less `model` entries (`j-20260830-01`,
+  `j-20260901-01`, `-02`, `-03`, `-04`, `-06`, `-10`, `-11`, `j-20260901-05.pass2`,
+  and `j-20260906-16` twice, written **today**), plus two on
+  `content/wiki/README.md` (`j-20260905-25`, `j-20260906-11`). **No record
+  names a `content/wiki/tool/` file as a subject at all** — the bead's `tool`
+  claim still holds exactly. But the broader claim that nothing has ever
+  exercised the write half does not: simulating `reviewJoin` with the
+  reviewable set extended to every entry (this change's own N5) shows nine of
+  those eleven body-less entries resolve to state `recorded` — their hash
+  matches — the moment the set is extended, which means the write half has
+  already been exercised nine times over. That strengthens rather than
+  weakens this change's design (the binding a fact-only edit needs is already
+  being written; nothing currently reads it), but it is the opposite of what
+  this proposal asserted before re-measurement. `addictedtoai-4nq` edited
+  `content/wiki/tool/vllm.md` direct to `main` in `ba1a577`, which is still the
+  bead's own point about `tool` entries specifically.
 - `lib/review-hash.mjs:118-127`, `reviewedSurface`, takes raw file text and
   hashes canonical front matter plus body. A body-less file produces a
   well-defined surface — its front matter — with no special case needed.
@@ -75,9 +89,9 @@ on.
 **One number in this proposal was wrong and is corrected here.** `data/reviews/`
 holds **357** review records, not 358: 358 `.md` files, of which `README.md` is
 documentation and is skipped by both loaders (`lib/reviews.mjs:143`,
-`loop/lib/review.mjs:579`). Re-counted 2026-09-06. The finding it carries is
-unchanged — 0 of the 357 bind a path outside the reviewable set, and none names
-a `content/wiki/tool/` file — but the count itself now matches what the code
+`loop/lib/review.mjs:579`). Re-counted 2026-09-06. As corrected above, 13
+`reviewed:` entries across 12 of the 357 bind a path outside today's reviewable
+set, and none names a `content/wiki/tool/` file — but the count itself now matches what the code
 loads, since the parser control in `tasks.md` task 14 compares against exactly
 that set.
 
@@ -171,10 +185,16 @@ reviewable set becomes every content file a record can join. That is one line's
 worth of behaviour and it is the line `corpus.claim` already occupies. The
 obligation to *have* a record is untouched: `verify-launch`'s required-record
 list keeps its own prose bar, and a body-less piece reporting `missing` fails
-nothing — which matters, because on today's corpus it would report 458 of them
-at once. What changes is that a fact-only edit to a stub that *does* carry a
-record becomes `mismatched`, which fails the launch check by the rule already
-written.
+nothing — which matters, because on today's corpus this is not a clean slate.
+Simulated by running `lib/reviews.mjs`'s own `reviewJoin` over the extended
+set: **recorded 58, mismatched 6, unbound 129, missing 445 — total 638.**
+Thirteen body-less entries already join a record rather than reporting
+`missing` (nine of them `recorded`, four `unbound`), and `mismatched` stays
+exactly **6**, unchanged by the extension — the landing-safety measurement
+this change owes before extending a set that feeds a failing check, and which
+it did not make before re-measurement. What changes going forward is that a
+fact-only edit to a stub that *does* carry a record becomes `mismatched`,
+which fails the launch check by the rule already written.
 
 ## What is out of scope
 
