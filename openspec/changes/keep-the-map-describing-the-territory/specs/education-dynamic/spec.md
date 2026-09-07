@@ -44,7 +44,11 @@ archive.
   executed in this environment without a paid account or special hardware, or
   the entry names in advance exactly which steps will go unexecuted and why.
   Verification on this surface means the steps were actually run, so an entry
-  that fails this test enumerates work that can only ever end blocked.
+  that fails this test enumerates work that can only ever end blocked. Review of
+  a diff that adds an entry to the map SHALL reject it as `spec-violation`
+  naming the admission test, where the entry neither can be executed here
+  without a paid account or special hardware nor names in advance which steps
+  will go unexecuted and why.
 - A tutorial SHALL NOT publish unless the map enumerates it. A tutorial worth
   writing that the map lacks SHALL be added to the map — with its subjects,
   outcome, bounds and interval — in the same change that adds the tutorial.
@@ -87,8 +91,8 @@ archive.
 
 - **WHEN** a proposed entry's steps require a paid account and the entry does not
   say which steps will go unexecuted and why
-- **THEN** the entry is not added to the map, and the reason recorded is the
-  admission test rather than the topic's merit
+- **THEN** review rejects the amendment as `spec-violation` naming the admission
+  test, and the rejection does not depend on the topic's merit
 
 #### Scenario: A tutorial that departs from its entry amends it
 

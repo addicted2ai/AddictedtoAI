@@ -46,6 +46,26 @@ diligence … but the step where somebody holding the curriculum pen acts on wha
 they reported"* — is right, and the measurement locates the missing step
 precisely: nobody was ever told they held the pen.
 
+**A second route into a learn page, measured 2026-09-06 when this change was
+reviewed, and it moved a task rather than a requirement.** The comparison this
+change asks a reviewer to run would have been keyed on the job's **type**:
+`CHECKLIST_FOR_TYPE` (`loop/lib/review.mjs:180-191`) selects the checklist, and
+`CHECKLISTS.education` is three lines while `CHECKLISTS.tutorial` is four, with
+no curriculum named in either. But a learn page is not edited only by
+`education` jobs. Every carried finding becomes
+`item('repair', 'carried-finding', …)` (`pulse/lib/queue.mjs:467` and `:471`),
+and `repair` maps to the `directory` checklist, whose entire content is one line
+— *"Spot-check the changed rows against their sources"* (`review.mjs:172`,
+`:187`). So the route by which a reviewer's finding about a published learn page
+becomes an edit to that page, and the route by which a finding whose subject is
+the curriculum of record is drained, would both have been reviewed without the
+comparison — the second being this change's own retirement path. The requirement
+is written over **diffs touching a learn page**, not over job types, so the
+mechanism is keyed the same way: `assembleReviewBrief` (the function's real
+name, and it already receives `diffText`) appends the comparison block whenever
+the diff touches either content surface or either map. No requirement moved; a
+task did.
+
 **`addictedtoai-kat1` — still true, and the surrounding numbers are unchanged.**
 `QUEUE_PRODUCIBLE_TYPES` (`pulse/lib/queue.mjs:88-95`) holds six types and
 `tutorial` is not among them; its exclusion comment (lines 67-71) cites this
@@ -113,8 +133,11 @@ checklist carries the check.
 record at `openspec/curriculum/tutorials.md`, enumerating each intended
 walkthrough with its subjects, outcome, coverage bounds and re-verification
 interval, under an admission test that refuses to enumerate a tutorial whose
-steps cannot be executed here. The same publish gate the learn surface has, the
-same build error, and the same departure discipline.
+steps cannot be executed here. That test names its actor and its outcome —
+review rejects a diff adding an entry that fails it as `spec-violation` naming
+the test — because a rule written only into the map it governs has nobody asked
+to apply it. The same publish gate the learn surface has, the same build error,
+and the same departure discipline.
 
 **`specs/pulse`, modified — two requirements.** *"A surface's unmet declared
 coverage is queue input"* proposes the job type that writes the surface rather
