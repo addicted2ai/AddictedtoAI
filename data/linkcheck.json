@@ -2626,6 +2626,17 @@
       "ok": true,
       "status": 200
     },
+    "https://deploymentsafety.openai.com/gpt-6-astra/aggregate-monitorability-findings": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deploymentsafety.openai.com/gpt-6-astra/aggregate-monitorability-findings",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://developers.googleblog.com/en/new-features-for-the-gemini-api-and-google-ai-studio/": {
       "consecutive_failures": 0,
       "error": null,
@@ -3830,6 +3841,39 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/api/models?author=inclusionAI&limit=100&sort=likes&direction=-1": {
+      "bytes": 42057,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models?author=inclusionAI&limit=100&sort=likes&direction=-1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models?author=microsoft&search=wizard": {
+      "bytes": 2,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models?author=microsoft&search=wizard",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models?search=Sante&author=inclusionAI": {
+      "bytes": 2,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models?search=Sante&author=inclusionAI",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/blog/agent-intrusion-technical-timeline": {
       "bytes": 675220,
       "consecutive_failures": 0,
@@ -3903,6 +3947,28 @@
       "final_url": "https://huggingface.co/meta-models/Muse-Glimmer-30B",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/microsoft/WizardLM-2-8x22B": {
+      "bytes": 52295,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/microsoft/WizardLM-2-8x22B",
+      "last_checked": "2026-09-07",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 401
+    },
+    "https://huggingface.co/microsoft/phi-4/raw/main/README.md": {
+      "bytes": 13763,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/microsoft/phi-4/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4072,6 +4138,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/zai-org/GLM-5.2": {
+      "bytes": 370395,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/zai-org/GLM-5.2",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/zai-org/GLM-5.3": {
       "bytes": 437409,
       "consecutive_failures": 0,
@@ -4193,6 +4270,17 @@
       "ok": true,
       "status": 200
     },
+    "https://llm-releases.com/models/ling-3-0-flash": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/ling-3-0-flash",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://llm-releases.com/models/mercury-2-5-preview": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4270,6 +4358,28 @@
       "ok": true,
       "status": 200
     },
+    "https://microsoft.ai/models/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://microsoft.ai/models/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://microsoft.ai/news/building-a-hillclimbing-machine-launching-seven-new-mai-models/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://microsoft.ai/news/building-a-hillclimbing-machine-launching-seven-new-mai-models/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://modelcontextprotocol.io/specification/2025-03-26/changelog": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4321,6 +4431,39 @@
       "final_url": "https://news.cornell.edu/stories/2015/06/tweet-upload-your-bird-photos-and-merlin-ids-species",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://nousresearch.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://nousresearch.com/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://nousresearch.com/introducing-hermes-4-3": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://nousresearch.com/introducing-hermes-4-3",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://nousresearch.com/nous-psyche": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://nousresearch.com/nous-psyche",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4380,6 +4523,17 @@
       "ok": true,
       "status": 200
     },
+    "https://openai.com/index/an-alien-mind/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/index/an-alien-mind/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openai.com/index/daybreak-for-frontline-defenders/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4424,6 +4578,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openai.com/news/rss.xml": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/news/rss.xml",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openmdw.ai/": {
+      "bytes": 18740,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openmdw.ai/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4431,6 +4607,83 @@
       "final_url": "https://openrouter.ai/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/aion-labs/aion-3.0": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/aion-labs/aion-3.0",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/aion-labs/aion-rp-llama-3.1-8b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/aion-labs/aion-rp-llama-3.1-8b",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/amazon/nova-2-lite-v1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/amazon/nova-2-lite-v1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/amazon/nova-lite-v1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/amazon/nova-lite-v1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/amazon/nova-micro-v1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/amazon/nova-micro-v1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/amazon/nova-premier-v1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/amazon/nova-premier-v1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/amazon/nova-pro-v1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/amazon/nova-pro-v1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4475,6 +4728,28 @@
       "final_url": "https://openrouter.ai/api/v1/models/ibm-granite/granite-4.1-8b/endpoints",
       "last_checked": "2026-09-05",
       "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/microsoft/phi-4/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/microsoft/phi-4/endpoints",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/microsoft/wizardlm-2-8x22b/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/microsoft/wizardlm-2-8x22b/endpoints",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
