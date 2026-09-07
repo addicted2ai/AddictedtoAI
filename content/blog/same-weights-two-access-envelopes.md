@@ -1,5 +1,5 @@
 ---
-title: "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense."
+title: "Anthropic and Google each shipped one model in two safeguard tiers in three days, and OpenAI promised the second tier without shipping it. Two of the three describe the permissive cyber tier in the future tense."
 date: "2026-09-07"
 mentions:
   - org/anthropic
@@ -13,7 +13,7 @@ frontier: true
 frontier_reason: "F5"
 ---
 
-Between 1 and 3 September 2026 three labs released a new frontier model, and all three shipped it under two safeguard settings rather than one. Anthropic gave the looser setting its own name. So did Google. OpenAI did not, and said the loosening is coming. In all three, reaching the looser setting means being admitted to a programme the vendor runs.
+Between 1 and 3 September 2026 three labs released a new frontier model, and each of them described two safeguard settings for it rather than one. Anthropic gave the looser setting its own name and its own release. So did Google. OpenAI did not, and said the loosening is coming. In all three, reaching the looser setting means being admitted to a programme the vendor runs.
 
 The thing being rationed is not the model. It is the permission to use it, and the gate is a programme the vendor admits you to.
 
@@ -61,7 +61,7 @@ The Anthropic case has a precedent with a date on it, on Anthropic's own Mythos 
 
 No count of the organisations actually inside the CVP, the LSVP or Fairwind appears on any of the five vendor pages, and there is no way to get one from outside. Anthropic says "a set of US organizations" and "our first participants". Google says "trusted defenders". OpenAI said "a small group of alpha testers" on 1 September and has not published a number since. Every one of those is a quantity written as a word.
 
-There is one thing the outside can see. The gateway model list this site tracks holds 186 recorded changes, 95 of which are catalog rows for an individual model id. Zero of those 95 ids contain "mythos" or "cyber". The generally available twin of each release turned up on schedule: `anthropic/claude-fable-5.1` on 2 September, `google/gemini-3.8-flash` on 3 September, `openai/gpt-6-astra` on 5 September.
+There is one thing the outside can see. The change feed behind this site holds 186 recorded changes, of which 95 are gateway catalog rows, each keyed to an individual model id. Not one of those 95 ids contains "mythos" or "cyber". The feed does carry both gated models — as release announcements, on 3 and 4 September — but a release announcement is the vendor talking, not a row you can buy from. The generally available twin of each release turned up in the gateway on schedule: `anthropic/claude-fable-5.1` on 2 September, `google/gemini-3.8-flash` on 3 September, `openai/gpt-6-astra` on 5 September.
 
 That absence proves nothing by itself. A model you have to apply for has nothing for a router to route, so its absence from a routing catalog is the gate working as designed rather than evidence of it. What it shows is the consequence. Every ordinary way of reaching a new frontier model, a gateway or a model card or a price per million tokens, is built around models you can simply buy. For the permissive half of these three releases none of that machinery has anything to point at, and it is not going to.
 
