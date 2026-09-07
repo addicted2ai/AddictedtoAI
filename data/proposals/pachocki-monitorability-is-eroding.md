@@ -73,6 +73,8 @@ evidence: >
   `content/blog/openai-gpt-6-astra-system-card.md` — already quotes "GPT-6
   Astra's monitorability has decreased relative to GPT-5.6 Sol."
 expires: 2026-09-12
+proposed_by_job: j-20260907-05
+proposed_by_type: scout
 ---
 
 # The chief scientist says monitorability is eroding; the system card measured it

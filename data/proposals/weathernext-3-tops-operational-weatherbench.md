@@ -86,6 +86,8 @@ evidence: >
   it wrote, because a live leaderboard can change between this docket and the
   post.
 expires: 2026-09-13
+proposed_by_job: j-20260907-05
+proposed_by_type: scout
 ---
 
 # WeatherNext 3 leads an independent live leaderboard over IFS and GFS

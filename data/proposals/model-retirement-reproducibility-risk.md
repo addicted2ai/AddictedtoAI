@@ -52,6 +52,8 @@ evidence: >
   https://openrouter.ai/api/v1/models. This half is inward by design — it is
   the counterweight, not the story.
 expires: 2026-09-14
+proposed_by_job: j-20260907-05
+proposed_by_type: scout
 ---
 
 # A paper put a number on model deprecation, and this site is already counting
