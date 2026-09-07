@@ -121,7 +121,7 @@ and opening it is an OpenSpec change. Three answers, in the order they apply:
    warranted. That is the whole mechanism, and it needs no new file.
 3. **The practice is what deserves an entry, and its kind is `technique`.**
    Merging and community fine-tuning of open-weight base models is a technique
-   this corpus does not cover: `content/wiki/technique/` carries
+   this corpus does not cover: `content/wiki/technique/` carries entries such as
    `low-rank-adaptation.md`, `quantization.md` and `pruning.md`, and nothing on
    merging — while the feed labels two of these very rows `#merge` in its own
    description text. One entry about the practice can name the people who do it
@@ -152,13 +152,13 @@ section above repeats that half in passing — its *"an org entry with a feeds
 map"* is `addictedtoai-2ok0`'s wording, quoted, and it is not the answer.
 
 **The join is the alias join.** `matchProviders`
-(`lib/render/frontier.mjs:50-61`) builds its provider set from
+(`lib/render/frontier.mjs:93-104`) builds its provider set from
 `org.data.display_name` and `org.data.aliases[].name`, normalises them, and
 takes a catalog row whose `provider` value contains one of those names or is
 contained by it. `feeds` is not read on that path — the word occurs in that
 file only in the board's table caption and in comments. Board membership is
 editorial and never feed-gated: every org entry is a row whether or not any
-catalog row matches it (K21, `lib/render/frontier.mjs:535-549`).
+catalog row matches it (K21, `lib/render/frontier.mjs:484-498`).
 
 **A `feeds` map on an org entry would be a wrong join, not a missing one.**
 `feeds` binds an entry to a **source row id** — `specs/wiki`: *"using that
