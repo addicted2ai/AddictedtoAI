@@ -70,24 +70,37 @@ whole of the diagnosis the maintainer had to perform by hand on 2026-09-01.
 string is what the current text effectively has — a conditional clause appended
 to prose — and nothing can assert on it. Three, because those are the three
 outcomes the polling loop can actually distinguish from what it read. **And
-exhaustive, which the first draft of this set was not.** Two of the three are
-positive tests — `unreadable` when no reading succeeded, `never-advanced` when
-every reading succeeded and every one equalled the pre-push baseline — and
-`advanced-elsewhere` is deliberately the **residual**: at least one reading
-succeeded and they were not all the baseline. Defining it instead as "the stamp
-moved to a commit that neither is nor contains the pushed commit" leaves two
-holes a real run can fall into — a baseline that was itself unreadable while
-later readings succeeded, and a reading that is not a commit at all (`unknown`,
-a bare timestamp) — and a run that matches none of three classifications has to
-either invent a fourth or write a hold that names none. Computed rather than
-judged: each test is a comparison between values the loop already holds, so no
-model is involved and the Pulse's zero-model property is untouched.
+exhaustive, which the first draft of this set was not.** The exhaustiveness turns
+on one definition: a *reading* is a poll taken **after the push**, during the two
+windows. The pre-push baseline is not a reading — it is the value the readings
+are compared against — so a run that read the baseline and then read nothing has
+no readings and is `unreadable`. Two of the three are then positive tests —
+`unreadable` when no reading succeeded, `never-advanced` when at least one
+reading succeeded and every one that succeeded equalled the baseline — and
+`advanced-elsewhere` is the **complement**: every other outcome. Defining the
+third instead as "the stamp moved to a commit that neither is nor contains the
+pushed commit" leaves holes a real run can fall into — a baseline that was itself
+unreadable while later readings succeeded, a reading that is not a commit at all
+(`unknown`, a bare timestamp), readings that disagreed with each other — and a
+run that matches none of three classifications has to either invent a fourth or
+write a hold that names none. Computed rather than judged: each test is a
+comparison between values the loop already holds, so no model is involved and the
+Pulse's zero-model property is untouched.
 
-The third is not decoration. `unreadable` is exactly the case the existing
-conditional clause silently drops — when the baseline itself could not be read,
-`lastSeen === baseline` compares `null` to `null` and the "unchanged since before
-the push" clause fires on a run that saw nothing at all, which is the most
-misleading sentence the file can carry.
+**What today's code actually gets wrong, measured rather than assumed.** The
+clause at `publish.mjs:710` reads
+`(baseline && lastSeen === baseline ? ' — unchanged since before the push' : '')`.
+The `baseline &&` guard means the clause does **not** fire when the pre-push read
+failed: with a null baseline it silently disappears, and the hold says only
+`last read unreadable`. The case it gets wrong is the opposite one. `lastSeen`
+starts at `baseline` (`:666`) and advances only inside `if (live.ok)`
+(`:669–671`), so a run whose baseline read **succeeded** and whose every
+post-push poll **failed** ends with `lastSeen === baseline` and a truthy
+baseline — and the clause fires, asserting "unchanged since before the push"
+about a run that read nothing after the push at all. That is the misleading
+sentence, and the reading-based definition above is what removes it: no reading
+succeeded, so the classification is `unreadable` and the claim about the stamp
+being unchanged is never made.
 
 ## D4. Why the hold carries a marker line, and why the re-test keys on it
 

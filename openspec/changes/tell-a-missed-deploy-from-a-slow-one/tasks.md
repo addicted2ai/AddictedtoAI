@@ -1,9 +1,9 @@
 # Tasks
 
-Seven normative bullets are added or changed in `specs/pulse`, "The Pulse
-publishes what it builds" (13 SHALL/MUST clauses when counted clause by clause,
-since several bullets state a rule and its fail-closed case together). Each has
-an implementing task and a testing task below, and every testing task names the
+Six of the seven bullets in `specs/pulse`, "The Pulse publishes what it builds",
+are added or changed (16 SHALL/MUST clauses when counted clause by clause, since
+several bullets state a rule and its fail-closed case together). Each has an
+implementing task and a testing task below, and every testing task names the
 mutation that proves it measures something.
 
 All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
@@ -60,11 +60,17 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 
 - [ ] 7. `pulse/lib/publish.mjs`: compute a classification from the readings the
       loop already holds, as a frozen closed set in one place, decided in this
-      order so the set is exhaustive — `unreadable` when no reading succeeded;
-      `never-advanced` when every reading succeeded and every one equalled the
-      pre-push baseline; `advanced-elsewhere` for everything else, including a
-      baseline that could not be read while later readings could, and a reading
-      that is not a commit at all. `writeHold(root, reason)` gains the pushed
+      order so the set is exhaustive. A *reading* is a poll of the live stamp
+      after the push (the `before`/`baseline` read at `:637–638` is not one), so
+      the loop needs a success counter it does not have today — `lastSeen` starts
+      at `baseline` (`:666`) and only advances on `live.ok` (`:669–671`), so it
+      cannot distinguish "no poll succeeded" from "every poll returned the
+      baseline". Then: `unreadable` when no reading succeeded; `never-advanced`
+      when at least one reading succeeded and every reading that succeeded
+      equalled the pre-push baseline; `advanced-elsewhere` for every other
+      outcome, including a baseline that could not be read while later readings
+      could, readings that disagreed with each other, and a reading that is not a
+      commit at all. `writeHold(root, reason)` gains the pushed
       commit, the last stamp read, both window durations and the classification,
       states them outright, and writes as its **first body line** the
       machine-readable marker `deploy-hold: <pushed sha> <classification>` — one
@@ -78,19 +84,26 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       and SHALL carry the pushed commit, the last stamp read, both window
       durations, and the classification* and *a deploy hold SHALL be
       machine-identifiable as one*.
-- [ ] 8. `pulse/tests/publish-verify.test.mjs`: five holds, each asserting the
+- [ ] 8. `pulse/tests/publish-verify.test.mjs`: six holds, each asserting the
       written file carries the `deploy-hold:` marker line with the pushed commit,
       the classification's name, the last stamp read and **both window durations
       as written values, not merely a duration-shaped field** — one per
-      classification, plus the two residual edge cases: a baseline that was
-      unreadable while later readings succeeded, and a reading that is not a
-      commit at all (`unknown`), both of which classify `advanced-elsewhere`. The
-      `unreadable` case is the one the clause being replaced got wrong
-      (`lastSeen === baseline` is `null === null`, so it claimed "unchanged since
-      before the push" on a run that saw nothing). Mutations: collapse
-      `unreadable` into `never-advanced` and confirm only that test fails; drop
-      the confirmation-window duration from the hold text and confirm only the
-      duration assertions fail. Tests task 7.
+      classification, plus the three residual and boundary cases: a baseline that
+      was unreadable while later readings succeeded and a reading that is not a
+      commit at all (`unknown`), both classifying `advanced-elsewhere`; and the
+      case the replaced clause actually gets wrong — **a baseline that was read
+      successfully and every post-push poll failing**, which classifies
+      `unreadable` and whose hold text must not say the stamp was unchanged since
+      before the push. That case is today's defect measured rather than assumed:
+      the clause at `publish.mjs:710` is guarded by `baseline &&`, so an
+      unreadable baseline makes it disappear silently, while a **readable**
+      baseline followed by nothing readable leaves `lastSeen === baseline` (it
+      only advances on `live.ok`, `:669–671`) and the clause fires — asserting
+      "unchanged since before the push" on a run that read nothing after the
+      push. Mutations: collapse `unreadable` into `never-advanced` and confirm
+      only the two `unreadable` tests fail; drop the confirmation-window duration
+      from the hold text and confirm only the duration assertions fail. Tests
+      task 7.
 
 ## The read-only re-test of a standing hold
 
@@ -102,10 +115,16 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       and append one dated observation saying whether the commit **the marker
       names** is now served, under the same containment test as task 1. No push,
       no remote write, no second reading, and no rewrite of an earlier
-      observation. Implements: *a standing deploy hold SHALL be re-tested, and
-      the re-test SHALL take no outward action … at most one observation per
-      invocation* and *a standing hold carrying no such marker SHALL NOT be
-      re-tested*.
+      observation. **A dry run reads and prints the observation and appends
+      nothing**: the standing-hold branch is reached *before* the dry-run branch
+      (`:568–571` returns; the dry-run branch is `:599–624`), so the naive
+      implementation would make `--dry-run` append to a guardrail file — which
+      contradicts the line that branch already prints, `DRY RUN — nothing was
+      committed and nothing was pushed`. `dryRun` is in scope at the hold branch
+      already. Implements: *a standing deploy hold SHALL be re-tested, and the
+      re-test SHALL take no outward action … at most one observation per
+      invocation*, *a standing hold carrying no such marker SHALL NOT be
+      re-tested*, and *a dry run SHALL append nothing*.
 - [ ] 10. `pulse/lib/publish.mjs`: the re-test returns the same
       `{ published: false, reason: 'hold' }` it returns today. It removes
       nothing, rewrites nothing, and does not reach the push. Implements: *the
@@ -138,13 +157,22 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       whether a reserved-path halt has cleared is asking a question that has no
       answer. Mutation: key the re-test on the file's existence rather than on
       the marker and confirm only this case fails. Tests task 9.
+- [ ] 13. `pulse/tests/publish.test.mjs`: the dry run. With a marked hold
+      standing, an invocation in dry-run mode prints the observation, the
+      live-stamp fetch spy records **one** call, and `HOLD.md` is byte-identical
+      afterwards — compared by hash against a copy taken before the call, not by
+      line count, because an appended line is what this asserts against.
+      Mutation: drop the dry-run guard so the re-test appends unconditionally and
+      confirm only the byte-identical assertion fails, while the printed
+      observation still appears — the print and the non-append are independent.
+      Tests task 9's dry-run half.
 
 ## Gates
 
-- [ ] 13. `openspec validate tell-a-missed-deploy-from-a-slow-one --type change
+- [ ] 14. `openspec validate tell-a-missed-deploy-from-a-slow-one --type change
       --strict --no-interactive`, and `node scripts/check-spec-deltas.mjs
       --strict`. Run at drafting time.
-- [ ] 14. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [ ] 15. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics` on merged `main`. The
       orchestrator's, not a job's.
 

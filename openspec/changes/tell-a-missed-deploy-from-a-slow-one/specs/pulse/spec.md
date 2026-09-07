@@ -54,24 +54,26 @@ controlled by the `publish` flag in `data/config.json`:
   recorded as the same fact. Only when the confirmation window also elapses is
   the deploy a failure: the Pulse SHALL then write
   `HOLD.md` naming the failure (breaker 2 in `loop`) and suspend further publish
-  attempts until the hold clears. Observation of the deploy is by fetching the
-  live page only — no hosting-provider API, no GitHub API; the read-only
-  `git fetch` above resolves a stamp against the git remote and is not an
-  observation of the deploy.
+  attempts until the hold clears. Detection is by fetching the live page only —
+  no hosting-provider API, no GitHub API; the read-only `git fetch` above
+  resolves a stamp against the git remote and is not part of that detection.
 - **The hold SHALL name which failure it is**, from a closed and exhaustive set
-  computed from the stamps the run actually read: `unreadable` — no reading
-  succeeded at all; `never-advanced` — every reading succeeded and every one
-  returned the stamp that was live before the push; and `advanced-elsewhere` —
-  the residual, meaning at least one reading succeeded and the readings were not
-  all the pre-push baseline, whether or not the value they carry names a commit
-  at all. The residual is written as a residual on purpose: a stamp that was
-  unreadable before the push and readable after, or one that moved to `unknown`
-  or a bare timestamp, is neither of the first two, and a classification with a
-  gap in it hands its reader a hold that says nothing. The hold SHALL carry the
-  pushed commit, the last stamp read, both window durations, and the
-  classification. The three have different causes and different recoveries, and
-  a hold that does not say which one it is makes its reader re-measure what the
-  run already knew.
+  computed from the stamps the run actually read. A **reading** is one read of
+  the live build stamp taken during the two polling windows — that is, after the
+  push. The pre-push baseline is not a reading: it is the value the readings are
+  compared against, and a run that read the baseline and then read nothing
+  afterwards observed nothing at all about its own deploy. The classifications
+  are decided in this order: `unreadable` — no reading succeeded; `never-advanced`
+  — at least one reading succeeded and every reading that succeeded returned the
+  stamp that was live before the push; and `advanced-elsewhere` — every other
+  outcome. The third is written as the complement on purpose: a stamp that was
+  unreadable before the push and readable after, one that moved to `unknown` or
+  a bare timestamp, and a run whose readings disagreed with each other are each
+  neither of the first two, and a classification with a gap in it hands its
+  reader a hold that says nothing. The hold SHALL carry the pushed commit, the
+  last stamp read, both window durations, and the classification. The three have
+  different causes and different recoveries, and a hold that does not say which
+  one it is makes its reader re-measure what the run already knew.
 - **A deploy hold SHALL be machine-identifiable as one.** The publish step SHALL
   write into `HOLD.md`, on its own line, a marker naming the commit the hold is
   about and the classification. `HOLD.md` has other writers — the Desk's
@@ -89,7 +91,13 @@ controlled by the `publish` flag in `data/config.json`:
   observation per invocation and SHALL NOT rewrite an earlier one, so the file
   records how long the condition persisted. A standing hold carrying no such
   marker SHALL NOT be re-tested and SHALL NOT be appended to: it was written by
-  another brake, about something else.
+  another brake, about something else. **A dry run SHALL append nothing.** Where
+  the publish step is invoked in dry-run mode and a marked hold stands, it SHALL
+  read the live build stamp and print the observation it would otherwise append,
+  and SHALL leave `HOLD.md` byte-identical — a dry run that mutates a guardrail
+  file has contradicted the only thing it promises, and the hold branch is
+  reached before the dry-run branch, so the exemption has to be stated where the
+  re-test is.
 - **The re-test SHALL NOT clear, weaken or rewrite the hold**, and SHALL NOT
   resume publishing. Breaker 2 keys on the file's existence and this appends to
   it; a brake that releases itself is not a brake, and clearing a diagnosed halt
@@ -152,6 +160,13 @@ changing is not a success when publishing is enabled.
   commit and the last stamp read — distinguishably from a hold whose stamp moved
   to some other commit
 
+#### Scenario: A run that read nothing after the push says so
+
+- **WHEN** the stamp live before the push was read, and every reading taken
+  during both polling windows failed
+- **THEN** the hold records the classification `unreadable`, and does not report
+  the stamp as unchanged since before the push
+
 #### Scenario: A standing hold records that its cause has passed
 
 - **WHEN** a deploy hold stands, a later push by another actor has deployed, and
@@ -166,6 +181,13 @@ changing is not a success when publishing is enabled.
   carries no deploy marker, and the publish step is invoked
 - **THEN** no live stamp is read for it, nothing is appended, and the file is
   byte-identical afterwards
+
+#### Scenario: A dry run observes a standing hold without touching it
+
+- **WHEN** the publish step is invoked in dry-run mode while a marked deploy
+  hold stands
+- **THEN** the observation is printed, `HOLD.md` is byte-identical afterwards,
+  and nothing is pushed
 
 #### Scenario: The re-test does not resume publishing
 

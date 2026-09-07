@@ -37,6 +37,26 @@ silently disappears) as well as the two the issue names. The delta therefore
 asks for a closed set of three named classifications rather than for "a
 distinction", which is what the bead's option (d) would have produced.
 
+**A third correction, re-measured on 2026-09-06 against the file rather than
+against the story about it.** The clause at `:710` is
+`(baseline && lastSeen === baseline ? ' — unchanged since before the push' : '')`.
+The `baseline &&` guard short-circuits, so with an unreadable baseline the clause
+does not fire at all — it disappears, as above. The case the code actually gets
+**wrong** is the mirror image: `lastSeen` is initialised to `baseline` (`:666`)
+and reassigned only inside `if (live.ok)` (`:669–671`), so a run whose pre-push
+read succeeded and whose every post-push poll failed reaches the hold with a
+truthy `baseline` and `lastSeen === baseline`, and the hold asserts "unchanged
+since before the push" about a run that read nothing after the push. That is why
+the delta defines a *reading* as a post-push poll and puts this case in
+`unreadable`, and why task 8 tests it by name.
+
+**Also re-measured, because the delta now depends on it.** The standing-hold
+branch (`:568–571`) returns *before* the dry-run branch (`:599–624`), so a
+re-test written at the hold branch would run on `--dry-run` too and append to
+`HOLD.md` — a dry run mutating a guardrail file, three lines above its own
+`DRY RUN — nothing was committed and nothing was pushed`. The delta states the
+dry-run behaviour rather than leaving it to the implementer.
+
 **A second correction, and it is the one that reframes the whole change.**
 The issue's own sequence rules out every explanation except the deploy never
 being attempted, and records that the *next* push was live in under two minutes.
@@ -102,9 +122,9 @@ Four changes to one requirement, in the order they take effect.
    commit, the last stamp, and both durations.
 4. **A read-only re-test of a standing hold.** Every invocation that finds a
    deploy hold reads the live stamp once, appends one dated observation, and
-   changes nothing else. It takes no outward action, so it is not "a second
-   outward action to diagnose the first" — the risk the issue's option (b)
-   correctly refuses.
+   changes nothing else. A dry run prints the observation and appends nothing.
+   It takes no outward action, so it is not "a second outward action to diagnose
+   the first" — the risk the issue's option (b) correctly refuses.
 
 **What is deliberately not done: the hold does not clear itself.** The issue's
 option (c) — leave the halt as it is — is accepted for the halt itself. This
