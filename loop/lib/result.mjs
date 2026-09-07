@@ -184,6 +184,10 @@ export function classifyRun(run, fileResult, runner) {
   const startupFailure = startLine
     ? { pattern: startPattern, line: startLine }
     : null;
+  // A startup-failure pattern is evidence a runner never STARTED, so it may
+  // only speak where there is no positive evidence that it ran. See
+  // `reviewProducedNothing` below for the measurement that forced this.
+  const startupFailureMeansNothingRan = Boolean(startupFailure) && !fileResult.present && silent;
 
   return {
     status: 'interrupted',
@@ -198,7 +202,7 @@ export function classifyRun(run, fileResult, runner) {
         : producedNothing
           ? ', having written no RESULT.md and printed nothing on stdout — it produced nothing at all'
           : ''),
-    producedNothing: producedNothing || Boolean(startupFailure),
+    producedNothing: producedNothing || startupFailureMeansNothingRan,
     startupFailure,
   };
 }
@@ -242,5 +246,28 @@ export function reviewProducedNothing(run, recordWritten, runner) {
   const producedNothing = !recordWritten && !run.killed && silent;
   const startPattern = runner?.startup_failure_stderr_pattern;
   const startLine = startPattern ? matchingLine(run.stderr, startPattern) : null;
-  return producedNothing || Boolean(startLine);
+  // THE PATTERN MAY ONLY SPEAK WHERE THERE IS NO POSITIVE EVIDENCE, and this
+  // clause is the whole reason the function takes `recordWritten` rather than
+  // trusting stderr. A startup-failure pattern describes a runner that never
+  // started — a dead credential, an uninstalled harness. It is matched against
+  // the ENTIRE stderr stream, and a harness that narrates its work there (the
+  // common case: a run's whole transcript arrives on stderr while stdout stays
+  // empty) quotes file contents, commit ids, hash keys and test line numbers
+  // back into that stream. Any of those can contain the digits a login-failure
+  // pattern looks for.
+  //
+  // MEASURED, 2026-09-07, on the two review passes of job j-20260907-16: both
+  // wrote full verdict records that the merge gate then read and acted on —
+  // one `revise` carrying five findings, one `approve` carrying a would-cite —
+  // and both were nevertheless recorded `no-output`, because the transcript on
+  // stderr contained a commit id (`ca7401e5`), a hash key and test line numbers
+  // (`diff.test.mjs:403`) matching that runner's declared pattern. Two false
+  // signals in one job, against a streak limit of three, is a runner disabled
+  // for both roles within two jobs on nothing but its own correct output.
+  //
+  // So the same rule the doc comment above states for a MALFORMED record — a
+  // file was written, therefore the runner ran — is applied to the pattern:
+  // it can only mean "nothing ran" when nothing else says otherwise.
+  const startupFailureMeansNothingRan = Boolean(startLine) && !recordWritten && silent;
+  return producedNothing || startupFailureMeansNothingRan;
 }
