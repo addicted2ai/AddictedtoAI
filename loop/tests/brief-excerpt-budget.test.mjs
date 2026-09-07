@@ -45,7 +45,7 @@ function assembled(ctx, type) {
 
 /* ---------------------------------------------------------------------------
  * A deterministic, self-contained fixture — independent of whatever
- * openspec/changes/ happens to hold on any given day. Two capabilities
+ * the in-flight change directory happens to hold on any given day. Two capabilities
  * (`editorial`, `review` — the pair `SPECS_FOR_TYPE.prune` names), each with
  * ONE requirement of 7,500 characters and nothing else to donate spare
  * budget to it. At the OLD 14,000-char default that is a 7,000-char share

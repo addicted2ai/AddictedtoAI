@@ -268,7 +268,7 @@ test('breaker 4 — the reserved paths are exactly the named five', () => {
     { status: 'M', path: 'runners.yml' },
     { status: 'A', path: 'STOP' },
     { status: 'D', path: 'HOLD.md' },
-    { status: 'M', path: 'openspec/changes/build-initial-site/tasks.md' },
+    { status: 'M', path: 'openspec/changes/archive/2026-08-30-build-initial-site/tasks.md' },
     { status: 'M', path: 'loop/run.mjs' },
     { status: 'M', path: 'data/ledger.jsonl' },
     { status: 'M', path: 'HOLD.md' },

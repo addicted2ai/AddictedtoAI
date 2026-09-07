@@ -23,7 +23,7 @@
  * never mentioned a scout — `grep -c "The scout looks outward"` over the whole
  * brief returned 0. It was repaired on 2026-08-30 to quote the constitution
  * PLUS every in-flight change's delta for that capability, labelled as a
- * pending amendment and discovered by listing `openspec/changes/`. The excerpt
+ * pending amendment and discovered by listing the in-flight change directory. The excerpt
  * section is richer now and these tests are unaffected by that, on purpose.
  */
 

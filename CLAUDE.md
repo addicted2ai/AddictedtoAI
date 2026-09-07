@@ -322,7 +322,7 @@ Node ≥ 20.11. Run everything from the repository root by absolute path;
 | `node scripts/verify-launch.mjs` | the launch minimums — entry, prose-body, themed-body, learn, tutorial, post, delta and tool floors, catalog rows, the seeded changed feed, the search index, and every seed review record. `--no-build` skips its build and says so loudly. |
 | `node scripts/verify-analytics.mjs [base-url]` | Playwright: exactly one GA4 `page_view` per direct load plus one per client-side navigation, asserted on captured `/g/collect` requests, never on markup. |
 | `node scripts/verify-design.mjs` / `verify-surfaces.mjs` / `measure-payload.mjs` | the specs/site bar: WCAG AA contrast, keyboard traversal, no horizontal scroll at 320px, the DOM checks on each surface, and the first-load JS budget recorded in `data/launch.json`. |
-| `openspec validate --change build-initial-site --strict` | the spec artifacts. |
+| `openspec validate build-initial-site --type change --strict --no-interactive` | the spec artifacts. |
 
 **Never edit `package.json`.** Every dependency and script the build needs is
 already there. A new prebuild step goes in the `STEPS` array in
