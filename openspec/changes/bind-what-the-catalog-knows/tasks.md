@@ -347,8 +347,10 @@ tested.
       appears (its `event` text and named source present, no date shown), it
       sorts as the last item among entries carrying real dates, and
       `data/vanished/` carries the record for that (source, row) with
-      `has_last_known: false` — the same single `vanished-feed-row` queue item
-      the ordinary vanished case already asserts, not a second one. Second, the
+      `last_seen: null`, and its pinned-values block reads _No last-known
+      values were available when this was recorded._ — the same single
+      `vanished-feed-row` queue item the ordinary vanished case already
+      asserts, not a second one. Second, the
       same fixture resolved with `emptyDataLayer()` in place of a built layer
       (the before-first-Pulse state): assert the same no-throw, still-present,
       no-date, sorts-last rendering, and that the recomputed queue holds **no**
