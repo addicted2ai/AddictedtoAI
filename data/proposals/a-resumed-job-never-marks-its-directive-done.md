@@ -33,6 +33,8 @@ evidence: >
   correct and idempotent (`loop/lib/directives.mjs:107-119`) and is covered by
   `loop/tests/resume-directives.test.mjs` — which tests the function, and a
   resumed job's SELECTION, but never a resumed job's MERGE.
+proposed_by_job: j-20260906-18
+proposed_by_type: verify
 ---
 
 # A directive is marked done by the merge, and a resumed job's merge cannot reach it
