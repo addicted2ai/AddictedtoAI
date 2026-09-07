@@ -201,9 +201,9 @@ runners:
     roles: [author, reviewer]
     model: opencode-go/deepseek-v4-flash
     harness: opencode
-    command: 'opencode run --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
+    command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
-    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found)'
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
     conformance: unverified
     note: >-
       The advertised swap: a different model, a different provider, a
@@ -237,15 +237,22 @@ runners:
       records four PASSes in data/conformance.json. The selector refuses any
       runner carrying a recorded FAIL.
 
+      ATTACHED SINCE 2026-09-07 (the maintainer's instruction): `--attach
+      http://127.0.0.1:4096` makes every run a session on one headless
+      server instead of a private in-process one. The server, how to start
+      it, and what happens when it is down are documented once, on the
+      opencode-muse-spark entry below. The conformance record dated
+      2026-08-28 was made WITHOUT the flag; re-run before relying on it.
+
   - id: opencode-muse-spark
     provider: opencode-go
     tier: cheap
     roles: [author, reviewer]
     model: opencode-go/muse-spark-1.3-contributor
     harness: opencode
-    command: 'opencode run --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
+    command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
-    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found)'
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
     conformance: unverified
     note: >-
       Added 2026-09-07 on the maintainer's instruction ("I want to try a new
@@ -267,6 +274,36 @@ runners:
 
       The template is otherwise the deepseek one verbatim, including the
       load-bearing argument order (message first, `--file` last).
+
+      THE SERVER, and why `--attach` (the maintainer's instruction,
+      2026-09-07). Measured that morning: without `--attach`, each
+      `opencode run` is a private in-process session — it listens on no
+      port and holds no connection to any local server, only HTTPS to
+      opencode.ai — and a child of it can still hold the worktree for a
+      second after it returns (loop/conformance.mjs now retries removal).
+      With `--attach http://127.0.0.1:4096` every run is a session on one
+      headless server, visible in the TUI and shareable across runs. Start
+      it (it does not survive a reboot; nothing under scripts/ may name a
+      harness, so the command lives here):
+
+        opencode serve --port 4096 --hostname 127.0.0.1
+
+      started detached, stdout/stderr to D:/addictedtoai-worktrees/
+      opencode-serve-4096.log and .err.log, loopback only. If it is down,
+      `opencode run --attach` fails at once with a refused connection —
+      which is why ECONNREFUSED / "connection refused" / "fetch failed"
+      are in the startup-failure pattern: the ledger line then names the
+      cause and the runner-health refusal counts it, instead of three
+      silent `interrupted` runs.
+
+      PORT HYGIENE, also measured 2026-09-07: until the maintainer disabled
+      the `opencode` MCP bridge for this project (and two others) in
+      Claude Code's settings that morning, every Desk `claude --print`
+      started the session's MCP servers (addictedtoai-h7zt), and that
+      bridge spawned its own `opencode serve --port=4096` for the life of
+      the job phase — pids 26964 (07:51, the author) and 19208 (08:16, the
+      reviewer) — so 4096 was taken and released with every phase. With
+      the bridge disabled nothing but this server binds 4096.
 
       UNVERIFIED until `node loop/conformance.mjs --runner opencode-muse-spark`
       records four PASSes in data/conformance.json. The selector refuses any
