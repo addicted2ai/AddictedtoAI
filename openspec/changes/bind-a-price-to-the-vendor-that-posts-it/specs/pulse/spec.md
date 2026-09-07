@@ -57,14 +57,7 @@ moves, and a movement in it is a routing artifact rather than a repricing.
   is declared rather than assumed equal.** An author segment whose declared
   provider slug the map does not give SHALL resolve absent, on the same terms as
   every other absence in this requirement, and SHALL NOT be matched by raw string
-  equality as a fallback. Comparing the two raw strings looks like an identity
-  test and is a coincidence test: measured on the committed models snapshot on
-  2026-09-06, author `google` covers 43 of 431 rows and posts its own rates under
-  the provider slug `google-ai-studio` — the very listing whose tiers this
-  requirement's tier rule is drawn from — and `mistralai` (20 rows), `x-ai` (7)
-  and `amazon` (5) are the same shape. Raw equality would attribute nothing on
-  those rows while returning a value on `openai` and `anthropic`, which is a
-  coverage gap that reads as a working feature. A declared map makes the identity
+  equality as a fallback. A declared map makes the identity
   reviewable, and an undeclared author a dated absence somebody can see.
 - A price event SHALL NOT be derived from the top-provider headline, at any
   threshold. **No percentage threshold SHALL be used to decide whether a price

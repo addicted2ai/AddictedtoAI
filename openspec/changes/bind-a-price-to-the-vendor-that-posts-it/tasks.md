@@ -60,7 +60,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       recorded with its date, and the run continues. A refusal is recorded as a
       refusal under the existing rule. Implements: *a companion fetch's failures
       SHALL be per row and SHALL NOT fail the run*.
-- [ ] 5. `pulse/tests/registry.test.mjs`: twelve cases over one companion
+- [ ] 5. `pulse/tests/registry.test.mjs`: thirteen cases over one companion
       declaration. It validates when every required field is present,
       `robots.checked_on` is on or after `declared_on`, and
       `robots.requests_per_day` is at least the distinct-key count. It is
@@ -72,13 +72,19 @@ fetch is switched on; the tasks below build the shape and the bar.
       loop asserted once; the robots record is dated before `declared_on`;
       `robots.requests_per_day` is absent; `robots.requests_per_day` is one less
       than the number of distinct keys the coverage rule yields from the fixture
-      snapshot; and the block expresses its coverage as a list of row ids rather
-      than a rule. Mutations: drop the date comparison and confirm only that
+      snapshot; the block expresses its coverage as a list of row ids rather
+      than a rule; and — the thirteenth — a `provider_identities` entry whose
+      **value is a display name rather than a slug** (`OpenAI`, carrying a
+      capital and a space), refused naming the source **and that entry**, which
+      is the only test of *both sides of every map entry SHALL be machine keys*
+      and the reason a rename or a lookalike cannot forge an attribution.
+      Mutations: drop the date comparison and confirm only that
       refusal stops refusing; drop the count comparison and confirm only that one
       does; shorten the required-field list to `canonical_tier` alone and confirm
       exactly the other six omission cases fail — which is the assertion that the
-      seven are independent rather than one condition described seven times.
-      Tests tasks 1 and 2.
+      seven are independent rather than one condition described seven times; drop
+      the slug-shape check on map values and confirm only the display-name case
+      stops refusing. Tests tasks 1 and 2.
 - [ ] 6. `pulse/tests/sources.test.mjs`: a fixture whose snapshot holds four
       priced rows over three canonical slugs issues **three** companion fetches,
       not four; one of the three errors and only the rows it covers report an
