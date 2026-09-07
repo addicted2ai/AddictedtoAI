@@ -269,6 +269,37 @@ ${RESULT_PROTOCOL_INSTRUCTION}
  *
  * @returns {Promise<{runner: string, pass: boolean, checks: Array}>}
  */
+/**
+ * Remove a throwaway check directory, retrying, and never throwing.
+ *
+ * Measured 2026-09-07 08:05 on the first real run of `opencode-muse-spark`:
+ * the trivial-edit check PASSED (the edit was made, RESULT.md said `done`)
+ * and then a single `rmSync` of its worktree threw EPERM, because a child of
+ * `opencode run` was still holding the directory in the second after the
+ * harness returned. The script died on line 329 with the verdict already in
+ * hand and NOTHING recorded — four checks' worth of evidence lost to a
+ * cleanup step. The same directory removed cleanly by hand a minute later.
+ *
+ * A leftover directory is a nuisance; a lost record is the failure. So this
+ * retries for a while and, if the directory still will not go, says so and
+ * returns `false` — the caller decides whether that matters (at teardown it
+ * does not; at setup it does, because the next `worktree add` needs the path).
+ */
+export function removeThrowawayDir(dir, { rm = rmSync, log = () => {}, attempts = 10, delayMs = 1000 } = {}) {
+  let last;
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      rm(dir, { recursive: true, force: true });
+      return true;
+    } catch (e) {
+      last = e;
+      if (i + 1 < attempts) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
+    }
+  }
+  log(`could not remove ${dir} after ${attempts} attempts (${last && last.code ? last.code : last}) — something still holds it; remove it by hand`);
+  return false;
+}
+
 export async function runConformance(ctx, { runner, timeoutMinutes = 15, dryRun = false }) {
   const results = [];
   for (const check of CHECKS) {
@@ -281,7 +312,9 @@ export async function runConformance(ctx, { runner, timeoutMinutes = 15, dryRun 
       continue;
     }
 
-    rmSync(dir, { recursive: true, force: true });
+    if (!removeThrowawayDir(dir, { log: ctx.log })) {
+      throw new Error(`conformance: a previous check's directory ${dir} cannot be removed, so its worktree cannot be recreated`);
+    }
     mkdirSync(ctx.worktreeRoot, { recursive: true });
     gitTry(ctx.repoRoot, ['branch', '-D', branch]);
     addWorktree(ctx.repoRoot, dir, branch, { create: true, base: 'HEAD' });
@@ -325,8 +358,10 @@ export async function runConformance(ctx, { runner, timeoutMinutes = 15, dryRun 
     // Teardown touches the isolated worktree and its throwaway branch only.
     // Nothing here resets, cleans or checks out anything in the main working
     // tree: the maintainer (or another agent) may be mid-edit there.
+    // The verdict is already in `results`; a directory that will not go is
+    // reported, not fatal.
     removeWorktree(ctx.repoRoot, dir);
-    rmSync(dir, { recursive: true, force: true });
+    removeThrowawayDir(dir, { log: ctx.log });
     gitTry(ctx.repoRoot, ['branch', '-D', branch]);
   }
 

@@ -14,7 +14,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { runConformance, recordConformance } from '../conformance.mjs';
+import { runConformance, recordConformance, removeThrowawayDir } from '../conformance.mjs';
 import { conformanceGate } from '../lib/runners.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { runLoop } from '../run.mjs';
@@ -111,4 +111,33 @@ test('a check completed without a well-formed RESULT.md FAILs regardless of the 
   assert.equal(check.result, 'FAIL');
   assert.match(check.evidence, /^protocol:/);
   ctx.cleanup();
+});
+
+test('a check directory a harness child still holds is retried, and a verdict is never lost to it', () => {
+  // Measured 2026-09-07 08:05 on the first real run of a new OpenCode runner:
+  // the first check PASSED and a single rmSync of its worktree threw EPERM
+  // (a child of `opencode run` still held the directory), which killed the
+  // whole run with nothing recorded. The same directory removed cleanly a
+  // minute later. So the removal retries, and at teardown a directory that
+  // still will not go is reported rather than fatal.
+  const eperm = () => Object.assign(new Error('EPERM, Permission denied'), { code: 'EPERM' });
+
+  // Holds for two attempts, then lets go — the measured shape.
+  let calls = 0;
+  const transient = (p) => { calls += 1; if (calls <= 2) throw eperm(); };
+  const logged = [];
+  assert.equal(removeThrowawayDir('D:/nowhere/held', { rm: transient, log: (s) => logged.push(s), attempts: 5, delayMs: 1 }), true);
+  assert.equal(calls, 3, 'two refusals, then the removal that succeeded');
+  assert.deepEqual(logged, [], 'a removal that eventually succeeds says nothing');
+
+  // Never lets go — reported, returns false, and above all does NOT throw.
+  let stuck = 0;
+  const forever = () => { stuck += 1; throw eperm(); };
+  const said = [];
+  const out = removeThrowawayDir('D:/nowhere/stuck', { rm: forever, log: (s) => said.push(s), attempts: 3, delayMs: 1 });
+  assert.equal(out, false);
+  assert.equal(stuck, 3, 'every attempt was made before giving up');
+  assert.equal(said.length, 1);
+  assert.match(said[0], /could not remove D:\/nowhere\/stuck after 3 attempts \(EPERM\)/);
+  assert.match(said[0], /remove it by hand/);
 });
