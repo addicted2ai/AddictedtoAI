@@ -312,6 +312,13 @@ export async function runConformance(ctx, { runner, timeoutMinutes = 15, dryRun 
       continue;
     }
 
+    // A previous run killed mid-check leaves this check's worktree REGISTERED
+    // with its branch checked out there. Measured 2026-09-07 08:24: with the
+    // registration still standing, `branch -D` refuses ("checked out at …"),
+    // the prune inside addWorktree then clears the registration, and
+    // `worktree add -b` dies on "a branch named … already exists". So the
+    // registration goes first, then the directory, then the branch.
+    removeWorktree(ctx.repoRoot, dir);
     if (!removeThrowawayDir(dir, { log: ctx.log })) {
       throw new Error(`conformance: a previous check's directory ${dir} cannot be removed, so its worktree cannot be recreated`);
     }

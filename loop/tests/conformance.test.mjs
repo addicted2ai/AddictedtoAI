@@ -12,9 +12,11 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { runConformance, recordConformance, removeThrowawayDir } from '../conformance.mjs';
+import { gitTry } from '../lib/git.mjs';
 import { conformanceGate } from '../lib/runners.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { runLoop } from '../run.mjs';
@@ -140,4 +142,26 @@ test('a check directory a harness child still holds is retried, and a verdict is
   assert.equal(said.length, 1);
   assert.match(said[0], /could not remove D:\/nowhere\/stuck after 3 attempts \(EPERM\)/);
   assert.match(said[0], /remove it by hand/);
+});
+
+test('a run killed mid-check leaves its worktree registered with the branch checked out, and the next run recreates both', async () => {
+  // Measured 2026-09-07 08:24 on the real registry: a stopped run left
+  // `conformance/<runner>-trivial-edit` checked out in its registered worktree;
+  // the next run's `branch -D` refused ("checked out at …"), the prune inside
+  // addWorktree then cleared the registration, and `worktree add -b` died on
+  // "a branch named … already exists" before any check ran. The registration
+  // has to be removed before the branch is.
+  const ctx = repoFor('conform-good');
+  const runner = pickRunner(loadRunners(ctx), { id: 'mock-frontier' });
+  const branch = `conformance/${runner.id}-trivial-edit`;
+  const dir = join(ctx.worktreeRoot, `conformance-${runner.id}-trivial-edit`);
+  mkdirSync(ctx.worktreeRoot, { recursive: true });
+  const left = gitTry(ctx.repoRoot, ['worktree', 'add', '-b', branch, dir, 'HEAD']);
+  assert.ok(left.ok, left.stderr);
+  writeFileSync(join(dir, 'left-behind.txt'), 'a killed run wrote this\n', 'utf8');
+
+  const rec = await runConformance(ctx, { runner, timeoutMinutes: 1 });
+  assert.equal(rec.pass, true, JSON.stringify(rec.checks, null, 2));
+  assert.equal(rec.checks[0].result, 'PASS');
+  ctx.cleanup();
 });
