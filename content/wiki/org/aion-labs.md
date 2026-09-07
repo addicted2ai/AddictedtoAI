@@ -62,6 +62,12 @@ facts:
     source_url: "https://huggingface.co/aion-labs/Aion-RP-Llama-3.1-8B/raw/main/README.md"
     accessed: "2026-09-06"
     volatility: static
+  - field: vendor_rp_context
+    source: cited
+    value: "the vendor's own docs table lists the aion-labs/aion-rp-llama-3.1-8b row at Context 32K"
+    source_url: "https://www.aionlabs.ai/docs/models/"
+    accessed: "2026-09-07"
+    volatility: slow
   - field: router_benchmark_claim
     source: cited
     value: "'Aion-RP-Llama-3.1-8B ranks the highest in the character evaluation portion of the RPBench-Auto benchmark, a roleplaying-specific variant of Arena-Hard-Auto, where LLMs evaluate each other’s responses. It is a fine-tuned base model rather than an instruct model, designed to produce more natural and varied writing.'"
@@ -178,8 +184,10 @@ is {{fact:org/aion-labs#rpbench_leaderboard_page}}. AionLabs' own catalogue does
 not repeat the ranking: its entry for the same model reads, in full,
 {{fact:org/aion-labs#vendor_rp_description}}. The weights' model card is out of
 step too, in the other direction — it promises
-{{fact:org/aion-labs#rp_model_card}}, while the vendor's own table and the
-router's endpoint both serve a window four times smaller.
+{{fact:org/aion-labs#rp_model_card}}, where the router's row for that model
+serves {{fact:model/aion-labs-aion-rp-llama-3-1-8b#context_window}} and
+{{fact:org/aion-labs#vendor_rp_context}}. Here the card is the outlier and the
+router matches the vendor.
 
 The newer rows drift the other way, and this one lands on the choice a reader
 is actually making. The vendor describes Aion-3.0 as
@@ -198,5 +206,5 @@ not a linkable alias here for a related reason: an unrelated
 selling itself on "the future of pharma" and "drug discovery and development".
 The second is that models are at most half the business. The front page gives
 equal billing to {{fact:org/aion-labs#second_product}} — a product line with no
-row in any catalog, sold by the company whose four rows in the catalog snapshot,
-as observed on 5 September 2026, are all any board can see of it.
+row in any catalog, so the model rows are all any board can ever show of the
+company that sells it.
