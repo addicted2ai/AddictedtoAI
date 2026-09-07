@@ -1,6 +1,6 @@
 # Design
 
-Four choices here are not derivable from the requirement text, and two of them
+Five choices here are not derivable from the requirement text, and two of them
 are refusals of the obvious option. They are recorded so the next reader does not
 take the obvious option by default.
 

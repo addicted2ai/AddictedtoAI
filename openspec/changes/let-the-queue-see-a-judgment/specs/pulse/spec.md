@@ -44,10 +44,14 @@ the review gate, and it fails the launch minimums.
   than an authoring pass; typing it as `entry` would put it in the authoring
   budget category and shed it with authoring, on a condition that blocks every
   publish.
-- The item SHALL rank above the corroboration disagreement and below every
-  finding that reports a dead or unreachable resource. Published editorial that
-  is outside the review gate is worse than a citation pointing at the wrong page
-  and less urgent than a resource that is gone.
+- The item SHALL rank above the corroboration disagreement, below every finding
+  that reports a page already rendering something wrong — a demoted tutorial, a
+  drifted reference — and below every finding that reports a dead or unreachable
+  resource. The band is stated at both ends because it is not empty between them,
+  and a rank chosen anywhere inside it would silently invert an ordering the rank
+  table already declares. A lapsed approval is worse than two sources disagreeing
+  about a number and less urgent than a page whose reader can see the defect or a
+  resource that is gone.
 - The item SHALL retire by recomputation alone: a newer record whose recorded
   hash equals the file's current reviewed hash removes it at the next run, with
   no close or archive action by anyone and no durable record of its own. This is
@@ -71,8 +75,8 @@ the review gate, and it fails the launch minimums.
 - **WHEN** a piece carrying a bound review record is edited so its reviewed
   surface hashes differently, and the Pulse recomputes the queue
 - **THEN** the queue holds one `verify` item naming the piece and the record,
-  ranked above the corroboration disagreement and below the dead-resource
-  findings
+  ranked above the corroboration disagreement and below both the
+  already-visibly-wrong findings and the dead-resource findings
 
 #### Scenario: A fresh approval retires it
 

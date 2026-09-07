@@ -107,9 +107,16 @@ their reasons; the fourth is settled here.
   says what was approved — a check against a record, not an authoring pass. It is
   already a producible type. `entry` would land it in the authoring budget
   category and shed it with authoring, on a condition that blocks every publish.
-- **Rank: above the corroboration disagreement, below every dead-resource
-  finding.** Published editorial outside the review gate is worse than a citation
-  pointing at the wrong page and less urgent than a resource that is gone.
+- **Rank: 69 — above the corroboration disagreement (68), below the two findings
+  about a page that is already visibly wrong (`tutorial-demoted` 70,
+  `reference-drift` 72), and below every dead-resource finding
+  (`listing-could-not-verify` 75 and up).** Re-measured in `pulse/lib/queue.mjs`
+  on 2026-09-06: those four constants are 68, 70, 72 and 75, so the band between
+  "above corroboration" and "below dead resources" is **not** empty and naming
+  only its two outer edges would let an implementer pick 73 and invert an
+  ordering the table already declares. A lapsed approval is worse than two
+  sources disagreeing about a number and less urgent than a page whose reader can
+  see the defect or a resource that is gone.
 - **`unbound` produces nothing, and the `no` is written into the spec**, which is
   what the bead asked for. 135 bound pairs today against a corpus of hundreds of
   records: minting an item per unbound record would consume the whole 50-item cap

@@ -52,7 +52,8 @@ testing task names the mutation that proves it measures something.
       that it "sits under" them for exactly that reason, so a free choice of 73
       would silently invert an ordering the table declares. Carry that reason
       into the comment in the table's own idiom. Implements: *the item SHALL
-      rank above the corroboration disagreement and below every finding that
+      rank above the corroboration disagreement, below every finding that reports
+      a page already rendering something wrong … and below every finding that
       reports a dead or unreachable resource*.
 - [ ] 5. `pulse/lib/review-state.mjs`: return **only** `mismatched`. `unbound`,
       `missing` and `recorded` are dropped at the source, not filtered
@@ -108,8 +109,10 @@ testing task names the mutation that proves it measures something.
       field names, the local date, the resolution text, and both pinned values.
       Malformed or unreadable records are skipped rather than treated as
       suppressions, on the same terms as every other reader of a record
-      directory here. Implements: *an adjudication … SHALL live under the data
-      root, one file per adjudicated pair, and SHALL carry …*.
+      directory here. Implements: *it SHALL live at `data/adjudications/`, one
+      file per adjudicated pair, named `<entry id>--<first field>--<second
+      field>.md` … and it SHALL carry: the entry, both field names, the local
+      date, the resolution … and both resolved values as they stood*.
 - [ ] 12. `pulse/lib/corroboration.mjs`: mark a finding `adjudicated` exactly
       when a record names the pair **and** both of today's resolved values equal
       the pinned ones — equality with the pins and nothing else: not the
