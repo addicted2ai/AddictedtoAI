@@ -52,13 +52,35 @@ construction.** `lib/snapshot-census.mjs` blanks every `{{…}}` marker before
 matching, and `CENSUS_RE` needs a number before `rows`/`listings`, so a
 transcluded count cannot match. Read in the file, not assumed.
 
-**Part of the census is already computed.** `data/derived/catalog.json` carries
-`row_count: 431` and one row per catalog row with `provider`,
-`expiration_date` and `status`. `hugging_face_id` and
-`top_provider.is_moderated` live only in the raw snapshot, which the build's
-data layer also reads. Measured today from the snapshot: 431 rows, 179 with a
-`hugging_face_id`, 125 moderated, 19 ending `:free`, 69 ending `:batch`, 9 with
-an expiration date, 58 providers, 8 of them with more than ten rows.
+**Part of the census is already computed, and the rest has no reader at all.**
+`data/derived/catalog.json` carries `row_count: 431` and one row per catalog row
+with `provider`, `expiration_date` and `status`. `hugging_face_id` and
+`top_provider.is_moderated` live only in the raw snapshot,
+`data/sources/openrouter-models/latest.json` — and **nothing under `lib/` reads
+that file.** Grepped on 2026-09-06: thirteen occurrences of the string
+`data/sources` across `lib/`, twelve of them in comments and the thirteenth
+`lib/declined-fields.mjs`'s `REGISTRY_PATH`, which is the registry, not a
+snapshot. `lib/build-content.mjs:215-223` says so in prose, deliberately: the
+census gate binds to the data layer's snapshot date *rather than* re-reading
+`data/sources/*/latest.json`. Measured today from the snapshot: 431 rows, 179
+with a `hugging_face_id`, 125 moderated, 19 ending `:free`, 69 ending `:batch`,
+9 with an expiration date, 58 providers, 8 of them with more than ten rows.
+
+**The data layer cannot enumerate rows, and that is the seam this change has to
+cut.** `makeDataLayer` (`lib/data-layer.mjs:70-78`) returns exactly three
+members — `present`, `source(id)` and `row(id, rowId)`. There is no row
+enumeration anywhere in it. Its only row store, `data/derived/feed-rows.json`,
+is written from `feedBindings(corpus)` (`pulse/lib/derive.mjs:116-145`):
+**declared row ids only, with `$vanished` rows retained.** Measured today: 437
+keys, 6 of them `$vanished`, against 431 rows in the snapshot, of which 0 are
+undeclared. So a count taken over `feed-rows.json` is "every row some entry
+declares", which equals the snapshot only for as long as every row mints — and a
+row held out by a `slug-collision` would be undercounted with no error anywhere.
+A census counts the **snapshot**, so this change adds the accessor and the
+derived file that make the snapshot's own rows readable from the build. That is
+one derive write, not a `specs/pulse` delta: `data/derived/` is a pure function
+of state, and adding a file the Pulse recomputes every run is a code change with
+a test.
 
 **The timeline half.** `addictedtoai-l8x` was triaged at
 `lib/schema.mjs:201-207`; the block is now at **`lib/schema.mjs:206-212`** and
@@ -73,7 +95,12 @@ snapshot and **35 carry exactly that row's own `created`**, converted in UTC —
 35 hand-transcriptions of a field the snapshot already carries, revalidated by
 nothing. A further **16 cite `https://openrouter.ai/api/v1/models`**, the API
 endpoint, which is evidence that the feed exists and states no date for any
-particular row. 437 entries declare `feeds['openrouter-models']` and 431 of
+particular row. That 16 is the complement of the 42 and not a direct count; a
+direct count of events whose `source_url` is exactly that endpoint returns
+**21** across 17 files, re-measured with the repository's own YAML parser on
+2026-09-06. The two numbers count different sets and neither changes the design
+— the endpoint dates nothing either way — but the direct count is the one a
+later reader can reproduce. 437 entries declare `feeds['openrouter-models']` and 431 of
 those resolve to a row with a numeric `created`, so the population that could
 carry a bound listing date is 431 entries; exactly 4 record the listing as a
 timeline event today, and all 4 agree with the feed.

@@ -20,12 +20,38 @@ tested.
       `top_provider.is_moderated` is true, rows carrying an `expiration_date`,
       rows whose id ends `:free`, rows whose id ends `:batch`, and providers
       with at least N rows.
-- [ ] 2. `lib/census.mjs`: `countCensus(id, scope, dataLayer)` — resolves a
-      census id against the registry, applies its predicate over the named
-      source's current rows, and returns the count, the snapshot date it was
-      counted in, and which of the four outcomes it is: counted, zero, no data
-      layer, or scope-matches-nothing. One function, so the fact renderer and
-      any later consumer cannot disagree about what a census means.
+- [ ] 2. **The rows a census counts have no reader today, and this task builds
+      one.** The requirement says *every row in the source's current snapshot*,
+      and the build cannot read that: `makeDataLayer`
+      (`lib/data-layer.mjs:70-78`) exposes `present`, `source(id)` and
+      `row(id, rowId)` and **no enumeration at all**, and its only row store,
+      `data/derived/feed-rows.json`, is written from `feedBindings(corpus)`
+      (`pulse/lib/derive.mjs:116-145`) — declared row ids only, `$vanished` rows
+      retained (437 keys, 6 vanished, against 431 snapshot rows on 2026-09-06).
+      Counting that file answers "every row some entry declares", which equals
+      the snapshot only while every row mints, and would undercount **silently**
+      the first time a row is held out by a `slug-collision`. Two edits:
+      - `pulse/lib/derive.mjs`: write the source's full current rows to
+        `data/derived/` beside `feed-rows.json`, from
+        `loadSnapshot(root, source.id, 'latest')` — the call the file already
+        makes at line 119 — on every run, for every registered source, so the
+        file stays a pure function of state and a re-run with no world change is
+        byte-identical. **A derive write, not a `specs/pulse` delta**, under the
+        `data/derived/` rule; extend `data/derived/README.md` with the new file.
+      - `lib/data-layer.mjs`: a `rows(sourceId)` accessor on `makeDataLayer`
+        returning every row of that source's **current** snapshot — never a
+        `$vanished` row, never only the declared bindings — reading the new
+        derived file, absent before the first Pulse run exactly as the other
+        members are. Update the module header, which is the read contract.
+- [ ] 2a. `lib/census.mjs`: `countCensus(id, scope, dataLayer)` — resolves a
+      census id against the registry, applies its predicate over the rows
+      `dataLayer.rows(<the census's source>)` returns, and returns the count,
+      the snapshot date it was counted in, and which of the four outcomes it is:
+      counted, zero, no data layer, or scope-matches-nothing. It reads rows
+      **only** through that accessor — never `feed-rows.json`, never a snapshot
+      file — so the fact renderer and any later consumer cannot disagree about
+      what a census means, and the function stays unit-testable against a fake
+      layer with no Pulse run.
 
 ## The census fact
 
@@ -64,7 +90,9 @@ tested.
       the Pulse's**, recomputed from state every run; `lib/facts.mjs` is the
       build and cannot put an item in it, so the producer lives here and the
       renderer's only job is to render absent. Type `repair` — already in
-      `QUEUE_PRODUCIBLE_TYPES`, so **no `pulse` delta is needed** — reason
+      `QUEUE_PRODUCIBLE_TYPES`, so this change carries **no `specs/pulse`
+      delta: one derive write (task 2) and one computed queue item, both
+      code** — reason
       `census-scope-unmatched`, with its own `RANKS` entry at **81**, between
       `slug-collision` (82) and `suspect-source` (80): it is the same thing both
       of those are, a corpus/world mismatch measured today, and a page rendering
@@ -90,6 +118,14 @@ tested.
       or `mistralai` on `org/mistral-ai`, both real today — so that a later
       implementation that quietly infers the prefix from the entry fails here
       rather than on the corpus.
+      **Plus the two cases that prove the census counts the snapshot and not the
+      bindings**, which is the whole of the requirement's "every row in the
+      source's current snapshot" and is invisible on the live corpus because 0
+      rows are currently undeclared: a fixture whose `feed-rows.json` declares
+      **fewer** rows than its snapshot holds, asserting the count is the
+      snapshot's; and a fixture carrying a `$vanished` row, asserting that row is
+      **not** counted. Both fail against an implementation that reads
+      `feed-rows.json`, and only those two do.
 - [ ] 8. Tests beside `lib/schema.mjs`, one per refusal, each asserting the
       field named in the error: a census fact carrying `value`; one carrying
       `accessed`; one carrying `volatility: fast`; one naming an unregistered
@@ -103,7 +139,13 @@ tested.
       the rendered markup rather than on the resolver's return: counted (value
       plus source plus snapshot date), zero (`0`, not absent), no data layer
       (absent, not `0`), scope-matches-nothing (absent). The zero-versus-absent
-      pair is the point of the test and must be two separate assertions. The
+      pair is the point of the test and must be two separate assertions.
+      **Plus the absence half of the render requirement, which no assertion
+      covers otherwise**: in the counted case and again in the zero case, assert
+      as two separate assertions that the rendered markup carries **no**
+      `fact-overdue` element and **no** `fact-as-of` element. "Renders with no
+      overdue marker and no as-of hedge" is a claim about what is not there, and
+      a value-and-source assertion passes just as well when both are. The
       queue item is **not** asserted here: this test sits beside `lib/facts.mjs`,
       which cannot observe the derived queue — task 10 is where that is measured.
 - [ ] 10. A test in `pulse/tests/queue.test.mjs` for `censusScopeItems`, over a
@@ -193,6 +235,19 @@ tested.
       entry's own `feeds` declaration already produces through
       `data/vanished/`; this change files no second item for it, and the test
       asserts no new queue item.
+      **Plus the two consumers task 16 only reads**, so that all four the
+      requirement names are measured and not merely inspected. On the resolved
+      fixture corpus, with a stub entry carrying two facts and one feed-bound
+      event and no other timeline row: `indexability(doc).reasons` contains
+      `facts-and-timeline` (`lib/indexability.mjs:54`, which needs
+      `(entry.timeline ?? []).length >= 1` and would count an unresolved event
+      just the same, so the assertion is that resolution has not dropped it);
+      and `dormantAsOf(entry)` (`lib/facts.mjs:297-304`, which maps
+      `timeline[].date` and filters falsy) returns **the resolved UTC date**
+      when that is the latest date on the entry — against an unresolved event it
+      filters to `undefined` and the stamp silently falls back to an `accessed`
+      date or to `null`, which is the defect and is invisible without this
+      assertion.
 - [ ] 20. Mutation proof, two mutations run separately: resolve the instant in
       local time instead of UTC and confirm only the zone test fails; drop the
       event from the timeline when its row has vanished and confirm only the

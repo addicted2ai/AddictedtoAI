@@ -293,11 +293,13 @@ literal text.
 
 **A count of rows in a bound source's snapshot is a volatile fact of exactly
 this kind**, and it SHALL travel the same way. It changes whenever the snapshot
-advances, which for a daily-fetched source is most days, so prose states such a
-count only by transcluding a census fact. A date written beside a typed count
-does not exempt it: dating a count makes it honest about the day it describes,
-it does not make it current, and the page's own transclusions go on rendering
-from a newer snapshot than the date names.
+advances, which for a daily-fetched source is most days. Where a registered
+census carries the predicate, prose states such a count only by transcluding it;
+a count no registered census carries stays under the snapshot-census check and
+its hedge. A date written beside a typed count does not exempt it from either:
+dating a count makes it honest about the day it describes, it does not make it
+current, and the page's own transclusions go on rendering from a newer snapshot
+than the date names.
 
 A transclusion whose target entry or field does not exist SHALL fail the
 build. Enforcement of the no-hard-coding rule is the reviewer's named

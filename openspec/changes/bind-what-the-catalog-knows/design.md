@@ -84,6 +84,42 @@ change with a test, and a new predicate **kind** is a specification change. The
 five kinds were taken from the claims the corpus already makes, not designed in
 the abstract.
 
+**Where the rows a census counts come from, because today there is nowhere.**
+The requirement says a census counts *every row in the source's current
+snapshot*, and the build cannot currently read that. `makeDataLayer`
+(`lib/data-layer.mjs:70-78`) exposes `present`, `source(id)` and
+`row(id, rowId)` and nothing else — no enumeration. Its only row store,
+`data/derived/feed-rows.json`, is written from `feedBindings(corpus)`
+(`pulse/lib/derive.mjs:116-145`) and therefore holds **declared row ids only,
+`$vanished` rows included**: 437 keys against a 431-row snapshot on 2026-09-06,
+6 of them vanished. Three routes were possible:
+
+- **Count `feed-rows.json`.** Rejected, and it is the tempting one because it
+  needs no new code at all. It answers a different question — "every row some
+  entry declares" — which equals the snapshot only while every row mints. It is
+  equal today (0 undeclared rows) and would stop being equal the first time a
+  row is held out by a `slug-collision`, undercounting **silently**, with no
+  error and no date to notice. It also carries `$vanished` rows, so a census of
+  the current snapshot would count rows the catalog no longer has.
+- **Read `data/sources/<id>/latest.json` from `lib/`.** Rejected: nothing under
+  `lib/` reads a snapshot file today, deliberately (`lib/build-content.mjs:215-223`
+  states the reason for the census gate), and a second reader of the raw
+  snapshot beside the data layer is a second place for the build's idea of
+  "current" to diverge from the Pulse's.
+- **Give the data layer a `rows(sourceId)` accessor over a derived file the
+  Pulse writes from the snapshot — chosen.** `pulse/lib/derive.mjs` already
+  holds `loadSnapshot(root, id, 'latest')` at line 119; writing the source's
+  full current rows to `data/derived/` beside `feed-rows.json` is one more write
+  from state the Pulse has already loaded. `countCensus` reads through the
+  accessor and never touches a file, so it stays unit-testable against a fake
+  layer exactly as the fact renderer is. This is a **derive write, not a
+  `specs/pulse` delta**: `data/derived/` is a pure function of state, recomputed
+  every run and byte-identical when the world has not moved, so a new file in it
+  is a code change with a test.
+
+The accessor's contract is the requirement's own words: the source's **current**
+snapshot, so never a `$vanished` row and never only the declared bindings.
+
 ## 5. A feed instant is read as a UTC calendar date
 
 Every date in this repository is the local date of the machine that wrote it.
@@ -141,6 +177,14 @@ The feed form's reachable source is the **named source's registry `url`**, so
 `lib/dataset.mjs:95`'s `source_url` column is filled for both forms and the
 published dataset gains no column: a cited event keeps the URL its author read,
 a bound event carries the endpoint the instant came from.
+
+One consequence of that, recorded so it is not rediscovered as a defect: after
+in-place resolution a feed-bound event's `source_url` is a registry URL, and
+`lib/vendor-domain.mjs:288`'s `recordedDomains` reads `timeline[].source_url`.
+It is harmless as the code stands — that function's name-token filter admits
+`openrouter` only for an entry whose own name token is `openrouter` — but it is
+a reader of the field this change starts writing, and the implementer should
+confirm it stays harmless rather than assume it.
 
 **The schema hazard, named because it will bite the implementer.** The fact
 union is a `discriminatedUnion` on `source`, which works because every fact
