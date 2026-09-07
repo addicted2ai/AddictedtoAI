@@ -226,6 +226,64 @@ test('a marked failure whose retry ALSO fails still ends `failed`, and the note 
   ctx.cleanup();
 });
 
+test('the unqualified note `gates failed` is never what the ledger records', async () => {
+  // THE EXACT REGRESSION THE BEADS WERE FILED ABOUT (addictedtoai-icpb,
+  // addictedtoai-juig). Three jobs were recorded `gates failed` with no
+  // qualification on 2026-09-02, the breaker counted all three, and the record
+  // still reads as though the code were at fault.
+  //
+  // The two note assertions above are exact-equality on one sentence each, so
+  // they measure the note's CURRENT wording; this measures the property that
+  // must survive any rewording — a note that names nothing is not a note. Both
+  // classifications are run through it, because "gates failed" is what a
+  // regression would produce for either.
+  for (const marked of [true, false]) {
+    const ctx = repo();
+    const failing = FAILING(
+      gateOutput(marked ? realTransportFailureText() : 'not ok 1 - lib/schema.test.mjs\n  expected 3, got 4'),
+    );
+    const gates = stub(failing, failing);
+    const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+    assert.equal(res.outcome, 'failed', ctx.output());
+
+    const note = readLedger(ctx).at(-1).note;
+    assert.notEqual(note, 'gates failed', `the flat note is back, and it answers nothing (marked: ${marked})`);
+    assert.ok(note.startsWith('gates failed: '), note);
+    // Which gate, with its status — the reader's reproduction command.
+    assert.match(note, /npm run test \(exit 1\)/, note);
+    // And what the captured output said, either way.
+    assert.match(note, marked ? /transport-marked/ : /no transport marker in the captured output/, note);
+    ctx.cleanup();
+  }
+});
+
+test('the gates are never run a THIRD time, even when a third run would have passed', async () => {
+  // THE OTHER HALF OF "ONCE", and the half no test asserted until this one.
+  // Every retry test above measures that a failure IS retried; none of them
+  // could tell "retried once" from "retried until green", because each answers
+  // the same failure to every call — under a policy that retried twice they
+  // would still fail on the count, but for a reason that never names the third
+  // run. Here the THIRD answer passes, so a loop that ran the gates once more
+  // would end this job `done` and the outcome itself would say so.
+  //
+  // "Retrying until green" is the shape this repository's own rule about
+  // guardrails refuses: a run blocked by a guardrail reports it and stops.
+  //
+  // MARKED deliberately, so this stays green under a retry made conditional on
+  // the marker — the mutation task 2's test exists to catch. One mutation, one
+  // failing sentence.
+  const ctx = repo();
+  const marked = FAILING(gateOutput(realTransportFailureText()));
+  const gates = stub(marked, marked, PASSING);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  assert.equal(gates.branchCalls(ctx).length, 2, 'exactly two runs: the first, and the one retry');
+  assert.equal(res.outcome, 'failed', `a third gate run would have passed and must never have happened\n${ctx.output()}`);
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.outcome, 'failed');
+  ctx.cleanup();
+});
+
 test('gateFailureNote names a gate that could not run at all', () => {
   const note = gateFailureNote({
     ok: false,
@@ -273,27 +331,90 @@ test('an HTTP status from that site carries NO marker — the retry is not widen
   assert.equal(isTransportFailure(gateOutput(emitted)), false);
 });
 
+/**
+ * THE SHAPE, DERIVED FROM THE ONE DECLARATION RATHER THAN TYPED OUT.
+ *
+ * It used to be a regex literal spelling the sentence's tail out, which was
+ * exact and, once the scan below was extended to `loop/`, self-defeating: this file
+ * lives under `loop/`, so a scan for a hard-coded copy of the sentence would
+ * have found the scan's own pattern and reported the guard as the offender.
+ * Slicing the tail off `TRANSPORT_FAILURE_MARKER` produces the identical
+ * string — measured, not assumed, by the assertion in the `loop/` test — and
+ * leaves no copy of it anywhere but the declaration.
+ */
+const SENTENCE_SHAPE = TRANSPORT_FAILURE_MARKER.slice(TRANSPORT_FAILURE_MARKER.indexOf('failure, not'));
+
+/** Every `.mjs` under a directory, recursively. Counted, never truncated. */
+function mjsFilesUnder(dir) {
+  const out = [];
+  const walk = (d) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (e.name.endsWith('.mjs')) out.push(p);
+    }
+  };
+  walk(dir);
+  return out;
+}
+
+function occurrences(text, needle) {
+  let n = 0;
+  let i = text.indexOf(needle);
+  while (i !== -1) {
+    n += 1;
+    i = text.indexOf(needle, i + needle.length);
+  }
+  return n;
+}
+
 test('`pulse/` carries no hard-coded wording of the machine-failure sentence', () => {
   // THE MECHANISM, not the instruction. A shared constant only helps while
   // everyone imports it; nothing stops the next fixture from typing its own
   // sentence, which is precisely what happened. This scans every `.mjs` under
   // `pulse/` for the shape of the sentence written as a literal and fails on
   // one, so a re-invention is a red test rather than a silently unretried gate.
-  const shape = /failure, not a logic failure/;
-  const offenders = [];
-  const walk = (dir) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (e.name.endsWith('.mjs') && shape.test(readFileSync(p, 'utf8'))) offenders.push(p);
-    }
-  };
-  walk(join(REPO_ROOT, 'pulse'));
+  const offenders = mjsFilesUnder(join(REPO_ROOT, 'pulse')).filter((p) =>
+    readFileSync(p, 'utf8').includes(SENTENCE_SHAPE),
+  );
   assert.deepEqual(
     offenders,
     [],
     'these files write the machine-failure sentence themselves instead of importing ' +
       '`TRANSPORT_FAILURE_MARKER` from `loop/lib/gates.mjs`, so the Desk cannot key on what they say',
+  );
+});
+
+test('`loop/` carries no SECOND copy of the sentence either — only the one declaration', () => {
+  // THE ASYMMETRY THIS CLOSES. The scan above was written after the first
+  // re-invention and watches only the directory that re-invention happened in.
+  // A literal copy inside `loop/` — in the matcher, in a log line, in a
+  // fixture — is invisible to every other test here: a byte-identical copy
+  // satisfies the marker-presence assertions above, and the day it drifts from
+  // the declaration by one word, half the mechanism goes quiet with nothing
+  // red. "Exactly one declared wording, in exactly one place in the source
+  // tree" is a claim about the tree, so it is measured over the tree.
+  //
+  // The declaration itself is the one permitted occurrence, and it is
+  // permitted BY NAME rather than by count alone, so a second copy in the
+  // declaring file is caught too.
+  const declaration = join(REPO_ROOT, 'loop', 'lib', 'gates.mjs');
+  // The derived needle is the declaration's own tail with its leading word
+  // dropped, which is what makes it catch a re-invention that says CONNECTION
+  // where the declaration says TRANSPORT. Asserted rather than written out:
+  // spelling it here would BE the second copy this test forbids.
+  assert.ok(TRANSPORT_FAILURE_MARKER.endsWith(SENTENCE_SHAPE), SENTENCE_SHAPE);
+  assert.equal(SENTENCE_SHAPE.includes('TRANSPORT'), false, 'the needle must not carry the leading word');
+  assert.ok(SENTENCE_SHAPE.length > 20, SENTENCE_SHAPE);
+  const counted = mjsFilesUnder(join(REPO_ROOT, 'loop'))
+    .map((p) => [p, occurrences(readFileSync(p, 'utf8'), SENTENCE_SHAPE)])
+    .filter(([, n]) => n > 0);
+  assert.deepEqual(
+    counted,
+    [[declaration, 1]],
+    'the machine-failure sentence must exist exactly once in `loop/` — the ' +
+      '`TRANSPORT_FAILURE_MARKER` declaration in `loop/lib/gates.mjs`. Any other copy is a ' +
+      'second wording waiting to happen: it matches today, drifts tomorrow, and nothing goes red.',
   );
 });
 
@@ -381,11 +502,27 @@ test('an explicitly unflagged failure is retried too, and a flag of `false` is n
     transport: false,
     output: gateOutput('not ok 1 - lib/schema.test.mjs\n  expected 3, got 4'),
   };
+  // THE PRECONDITION THE RETRY MUST NOT HAVE, measured on the CALL COUNT
+  // rather than on the outcome. Both readings of the classification say "no"
+  // about this result — the flag is `false` and the output carries nothing —
+  // so if either were consulted before retrying, the second run would not
+  // happen. The outcome alone cannot say that: an unretried failure and a
+  // twice-failed one both end `failed`, and only the count tells them apart.
+  //
+  // This is the sentence addictedtoai-xzdd had to restore once already, and
+  // the "optimisation" that would undo it is retrying only marked failures.
+  assert.equal(isTransportFailure(plain.output), false, 'the fixture must carry no marker, or it measures nothing');
+  assert.equal(gatesHitTransportFailure(plain), false, 'and the flag the loop reads says so too');
   const gates = stub(plain, plain);
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
 
-  assert.equal(gates.branchCalls(ctx).length, 2, 'a real defect fails twice — and that is what records it');
+  assert.equal(
+    gates.branchCalls(ctx).length,
+    2,
+    `a failure classified as neither machine nor marked is still retried exactly once\n${ctx.output()}`,
+  );
   assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /unmarked failure, retrying once/);
   ctx.cleanup();
 });
 

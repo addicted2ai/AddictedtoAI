@@ -10,10 +10,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { runLoop, attemptMergeWithoutReview } from '../run.mjs';
 import { readLedger } from '../lib/ledger.mjs';
+import { consecutiveFailures } from '../lib/budget.mjs';
+import { TRANSPORT_FAILURE_MARKER } from '../lib/gates.mjs';
 import {
   BREAKERS,
   brakeScan,
@@ -27,6 +30,7 @@ import {
 import { makeRepo, writeLedger, ledgerLine, writeQueue, mockCommand, runnersYaml, daysAgo } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 test('breaker 1 — three consecutive same-type failures write HOLD.md; two failed and a blocked do not', () => {
   const ctx = makeRepo({ now: () => NOW });
@@ -49,6 +53,189 @@ test('breaker 1 — three consecutive same-type failures write HOLD.md; two fail
   assert.match(hold, /blocked, interrupted, capacity and abandoned outcomes are not failures/);
   assert.match(hold, /This file is the maintainer's to remove/);
   ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// THE REFUSAL (beads addictedtoai-icpb, addictedtoai-juig).
+//
+// Both beads ask whether a gate failure the machine can prove environmental
+// should be kept off breaker 1's count. The answer is NO, and specs/loop now
+// says so: "the classification SHALL NOT remove a failure from any count, any
+// breaker or any budget." The reason is the hazard the beads name themselves —
+// a classifier that lets failures off the count is a classifier that can be
+// wrong in the direction of never halting — and the safety property the Desk
+// actually needs, a real defect still fails twice, comes from the unconditional
+// retry, which trusts nothing.
+//
+// THIS PASSES TODAY BY CONSTRUCTION, because no exemption exists. That is the
+// whole point: the tests below are what make REMOVING that construction a red
+// build instead of a silent policy change. Every existing breaker test stays
+// green under an exemption keyed on the note — measured, not assumed — so
+// without these, the instruction "do not exempt marked failures" is enforced by
+// nothing at all.
+// ---------------------------------------------------------------------------
+
+/** Gate output in `runGates`' shape, carrying the marker the emitting code writes. */
+function markedGateFailure() {
+  // Interpolated from the declaration, never re-typed: `loop/` carries exactly
+  // one copy of that sentence and `gate-transport-retry.test.mjs` scans for a
+  // second. That the real emitters produce this marker is measured there too;
+  // what is measured HERE is what the breaker does with a failure carrying it.
+  const output =
+    `--- npm run test (FAIL, exit 1)\nnot ok 402 - a pulse fixture ingested\n  ${TRANSPORT_FAILURE_MARKER}\n`;
+  return { ok: false, results: [{ script: 'test', ok: false, status: 1, output }], transport: true, output };
+}
+
+function unmarkedGateFailure() {
+  const output = '--- npm run test (FAIL, exit 1)\nnot ok 1 - lib/schema.test.mjs\n  expected 3, got 4\n';
+  return { ok: false, results: [{ script: 'test', ok: false, status: 1, output }], transport: false, output };
+}
+
+/**
+ * A repository with one repair job queued, an author that edits and a reviewer
+ * that approves.
+ *
+ * The author sleeps a KNOWN interval, because model-minutes are measured by the
+ * loop's own clock and a mock that returns in a fraction of a second records
+ * `0.00` — against which "the spend was not waived" is unmeasurable, since a
+ * waived zero and a recorded zero are the same number.
+ */
+function repairRepo() {
+  const ctx = makeRepo({
+    runners: runnersYaml({
+      command: mockCommand('done-edit', ' --sleep-ms 6000'),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+  });
+  writeQueue(ctx, [{ type: 'repair', title: 'fix the fixture link', detail: 'a small repair' }]);
+  return ctx;
+}
+
+/** Run one job whose gates fail TWICE, and return its real ledger line. */
+async function twiceFailedJob(result) {
+  const ctx = repairRepo();
+  const calls = [];
+  const gates = (c, dir) => {
+    calls.push(dir);
+    return result();
+  };
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.equal(calls.filter((d) => d !== ctx.repoRoot).length, 2, 'the gates ran twice: the run and its one retry');
+  assert.equal(existsSync(ctx.holdPath), false, 'one failure is not a breaker');
+  const line = readLedger(ctx).at(-1);
+  ctx.cleanup();
+  return line;
+}
+
+test('breaker 1 — three MARKED twice-failed gate runs still trip the breaker and write HOLD.md', async () => {
+  // Three repositories rather than three runs in one, for the reason the
+  // sibling control in `gate-transport-retry.test.mjs` states: the mock author
+  // writes the same file every time. The LINES are real — each was written by a
+  // real run whose gates really failed twice with the marker present in both
+  // runs — and they are handed to the real `checkConsecutiveFailures`, which is
+  // the function breaker 1 actually asks.
+  const lines = [];
+  for (let i = 0; i < 3; i += 1) lines.push(await twiceFailedJob(markedGateFailure));
+
+  for (const l of lines) {
+    assert.equal(l.outcome, 'failed', JSON.stringify(l));
+    assert.equal(l.type, 'repair');
+    assert.match(l.note, /transport-marked, retried once and failed again/, l.note);
+  }
+  assert.equal(consecutiveFailures(lines, 'repair'), 3, 'a marked failure counts exactly as any other `failed`');
+
+  const ctx = makeRepo({ now: () => NOW });
+  const tripped = checkConsecutiveFailures(ctx, lines, 'repair');
+  assert.equal(tripped.tripped, true, 'three of them halt the Desk, marker or no marker');
+  assert.equal(tripped.count, 3);
+  assert.equal(tripped.breaker, BREAKERS.CONSECUTIVE_FAILURES);
+  const hold = readFileSync(ctx.holdPath, 'utf8');
+  assert.match(hold, /three consecutive repair jobs ended failed or discarded/);
+  ctx.cleanup();
+});
+
+test('breaker 1 — a marked twice-failed job records the same spend an unmarked one does', async () => {
+  // THE BUDGET LEG of the same sentence, and the one a breaker-only test cannot
+  // reach: "any count, any breaker or any budget" is three claims, and nothing
+  // looked at the budget at all. A waiver would be invisible to every breaker
+  // test here — the outcome would still be `failed` and the count would still
+  // advance — while the ledger quietly under-recorded what the run cost, which
+  // is the file every share, ceiling and floor is computed from.
+  //
+  // Compared field for field against an unmarked job of the same shape, rather
+  // than asserted to be positive: `mm > 0` is satisfied by a number that has
+  // been halved.
+  const marked = await twiceFailedJob(markedGateFailure);
+  const unmarked = await twiceFailedJob(unmarkedGateFailure);
+
+  assert.deepEqual(Object.keys(marked).sort(), Object.keys(unmarked).sort(), 'the same line shape either way');
+  // Every field but the three that cannot be equal: when the run happened, what
+  // it was called, and the note — which is the ONE thing the classification is
+  // allowed to change.
+  const varies = new Set(['ts', 'id', 'note', 'mm', 'phases']);
+  for (const k of Object.keys(marked)) {
+    if (!varies.has(k)) assert.deepEqual(marked[k], unmarked[k], `field \`${k}\` differs with the classification`);
+  }
+  assert.match(marked.note, /transport-marked/);
+  assert.match(unmarked.note, /no transport marker in the captured output/);
+
+  // `mm` is the job's total across its invocations, and a gate run is not one.
+  // So the honest statement of "not waived" is that the total still equals the
+  // invocations' own recorded minutes — the identical computation applied to
+  // both lines, with nothing subtracted for the marker.
+  //
+  // `mm > 0` alone is satisfied by a number that has been halved (or waived by
+  // any other proportion) — the author's own `--sleep-ms 6000` is a REAL wall-
+  // clock floor no waiver can be under and still look plausible: the recorded
+  // spend can never be less than the time the mock genuinely slept, so a floor
+  // set at that sleep (in minutes) catches a proportional waiver a bare
+  // positivity check cannot.
+  const SLEPT_MM = 6000 / 60000;
+  for (const [label, line] of [['marked', marked], ['unmarked', unmarked]]) {
+    const summed = Math.round(line.phases.reduce((s, p) => s + p.mm, 0) * 100) / 100;
+    assert.equal(line.mm, summed, `${label}: the ledger total is not the spend its phases record`);
+    assert.ok(
+      line.mm >= SLEPT_MM,
+      `${label}: recorded ${line.mm} mm, below the ${SLEPT_MM} mm the author's own sleep guarantees — the spend was waived`,
+    );
+  }
+  // And the phase entries themselves match field for field but for the minutes
+  // and the `gates` record — which is where the classification is SUPPOSED to
+  // show up, and the only place it may.
+  assert.deepEqual(
+    marked.phases.map((p) => ({ ...p, mm: null, gates: null })),
+    unmarked.phases.map((p) => ({ ...p, mm: null, gates: null })),
+  );
+  const gatesOf = (l) => l.phases.find((p) => p.role === 'author').gates;
+  assert.deepEqual({ ...gatesOf(marked), transport: null }, { ...gatesOf(unmarked), transport: null });
+  assert.equal(gatesOf(marked).transport, true);
+  assert.equal(gatesOf(unmarked).transport, false);
+});
+
+test('neither the breaker nor the budget reads the gate classification at all', async () => {
+  // THE SOURCE GUARD BESIDE THE TEST. The control above proves the exemption is
+  // absent TODAY; this proves the mechanism cannot be reintroduced quietly, in
+  // either of the two files specs/loop names — and the budget is the half no
+  // test looks at, which is exactly where an unwatched exemption would live.
+  //
+  // A guardrail is a mechanism, not an instruction. This one starts green and
+  // its whole value is the day someone makes it red.
+  const forbidden = ['TRANSPORT_FAILURE_MARKER', 'isTransportFailure', 'gatesHitTransportFailure', 'transport'];
+  for (const file of ['lib/breakers.mjs', 'lib/budget.mjs']) {
+    const text = readFileSync(join(REPO_ROOT, 'loop', file), 'utf8').toLowerCase();
+    const hits = forbidden.filter((needle) => text.includes(needle.toLowerCase()));
+    assert.deepEqual(
+      hits,
+      [],
+      `${file} reads the gate failure classification (${hits.join(', ')}). specs/loop: "the ` +
+        'classification SHALL NOT remove a failure from any count, any breaker or any budget" — ' +
+        'a twice-failed gate run is `failed` whether its output carried the marker or not, it ' +
+        'advances breaker 1\'s count exactly as any other `failed` outcome does, and its spend is ' +
+        'recorded exactly as any other. A classifier that lets failures off the count is a ' +
+        'classifier that can be wrong in the direction of never halting.',
+    );
+  }
 });
 
 test('breaker 2 — a red build after a merge writes HOLD.md', () => {
