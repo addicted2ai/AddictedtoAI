@@ -1996,7 +1996,44 @@ wrong as a specification, and each of the three was caught by someone
 measuring rather than reading. The reviewer also faulted the
 brief, the third reviewer of the day to find a coordinator defect and the most
 substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
-> 0` to `s.score === 0`) reddened three arms. Timings labelled by condition
+> 0` to `s.score === 0`) reddened three arms.
+
+**The red cleared by a real review, the six green, and the first push of the
+redesign (2026-09-08, 16:00 to 16:45 local).** Orch ran one Desk job on its
+`yjb5` directive, `j-20260908-15`: author codex-gpt-luna at max, 18.67
+model-minutes; branch gates PASS — the first job to run under packet A's
+`gates.mjs`, floors on every gate; review pass 1 approve by claude-code-opus
+(2.59 mm); merged locally at `94ef7b9`, records at `b98b823`; 21.26 mm in all.
+`data/reviews/j-20260908-15.md` names both subjects, the ChatGPT launch entry
+that lacked a record and the learn page that had to change to reach it, so
+one honest review covers both and no document was written to clear a gate.
+verify-launch run directly: 186 of 186 seed prose pieces reviewed, exit 0. The
+source-verification experiment came out well within a stated limit: the entry
+now cites an archived first-party page (`web.archive.org`, 2022-11-30) in
+place of three Wikipedia links, and the learn page names ChatGPT once where it
+named it nowhere — but the directive NAMED the archive and the precedent, so
+this shows the runner following an explicit instrument instruction, not that
+it would try the archive unprompted, which was Luna-Boss-2's actual concern
+and needs a content job whose brief does not name the workaround. One carried
+finding transcribed rather than lost (`data/carried/j-20260908-15-carry-1.md`,
+"name PPO as the RL algorithm"). Then the six gates on `b8fa5c1` (which also
+carries a Pulse run), pinned and verified: test 0 (293 s, 124 files, 1,730
+passed), build 0 (37 s), launch 0 (34 s, spawned — the merge and the Pulse had
+both written inputs newer than `out/`, the guard declining correctly, the
+third distinct innocent explanation for a spawn and the first that was neither
+Orch's harness nor a misreading), design 0 (34 s), surfaces 0 (4 s),
+analytics 0 (20 s). Orch first declined to push until Stage 0's last packet,
+naming the cost (81 commits and today's visitor-facing repairs invisible, the
+mission's complaint made literal); the architect recommended pushing the
+verified sha with publishing left off, the two being separate switches — the
+maintainer's preference was about the Desk and unattended publishing during
+the fix, not about withholding a gated, reviewed tree — and Orch pushed
+`b8fa5c1:main` (`fa55c74..b8fa5c1`, origin verified afterwards) after three
+recorded checks: fast-forward, HEAD still the gated sha, and a revert guard
+over 79 paths finding 79 forward edits and no restoration of a superseded
+state (`addictedtoai-lvba`'s hazard). Pushing the verified sha rather than the
+tip is the train's own rule and is what made it safe. Publishing stays false
+and returns when Stage 0's last packet is green, on the same bar. Timings labelled by condition
 rather than pooled: npm test 314.8 s on a quiet machine (122 files, 1,726
 tests) against 393.0 s with one codex worker at medium running (124 files,
 1,730 tests) — so the 78.7 s test floor, 25.0% of the calibration run, is
