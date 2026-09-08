@@ -1476,3 +1476,65 @@ pass the same trap. Commit `7790215`, and the round-9 recording rule was fixed
 other direction: even when a re-run **agrees** with the first, an overwriting
 record shows one FAIL where two occurred, and the count is the thing a reader
 needs.
+
+## Revision record — round 12
+
+**The maintainer answered all seven open questions on 2026-09-08**: *"I agree with
+all your recommendations."* The proposal's section becomes **Answered 2026-09-08**
+and the one-page summary's decision line says decided rather than pending. One
+answer carried a question of its own and it is the substantive item of this round.
+
+**Question 4 — raise the machinery ceiling, and what happens after.** He asked:
+*"Is this until the new back desk is built? We wouldn't want a limit after it is
+built right?"* The answer written into the artifacts is that **a limit stays, on a
+different quantity**. Today's 10% caps the Desk's share of its own ledger, and a
+cap on one engine's share does not reduce machinery work while a lane exists the
+ledger cannot see — it relocates it, which is exactly what the five largest
+machinery changes did. Once both desks exist the ledger sees both, so the bound
+becomes **the back desk's share of total effort**, its starting value taken from
+the drain that Stage 3 measures, with the filing rule bounding what enters the
+backlog. A back desk with no limit is the predecessor's failure mode restated:
+process expanding to fill the capacity available to it, the 3:1 ratio this
+history records, and a pre-relaunch audit branch literally named
+`loop/audit/machinery-crowds-out-visitor-value`.
+
+**The mechanism, in two places.** A MODIFIED on the live budget requirement raises
+the machinery ceiling to **30% for the drain**, stated as a deliberate loosening
+under his decision rather than a re-derivation; the upkeep floor stays 40% and the
+new-writing ceiling 45%. And a Stage-3 clause restates the bound as the per-desk
+share once both desks exist, with task 79 building it and task 91 measuring the
+value it starts from. The heading was collision-checked against the three
+unarchived changes before being touched — none names it — and
+`data/config.json`'s `machinery_ceiling_pct` moved to 30 at `bd84b4b` under the
+orchestrator's standing authority.
+
+**The arithmetic, which A2AI-Orch caught and which the artifacts now state rather
+than leave to be discovered.** The three bounds share one denominator, and a
+category at or over its own ceiling is refused. Machinery at 30 plus an upkeep
+floor of 40 leaves **at most 30 points for new writing** against a ceiling of 45 —
+so the raise can take up to **twenty points from site work**, which is the thing
+complaint 1 was about. During the drain the new-writing ceiling is therefore a
+ceiling the other two bounds make unreachable in the worst case, effective headroom
+30, and that is accepted for the drain period only. It is written in the
+requirement and here because `data/config.json` is JSON, carries no comments, and a
+number found there has nothing beside it to say what it is worth.
+
+**The loosening has an owner and a trigger, filed as `addictedtoai-mnzf`** (P2).
+The ceiling stands at 30 while any of `bind-what-the-catalog-knows`,
+`let-the-queue-see-a-judgment` or `keep-the-map-describing-the-territory` remains
+unarchived — his own answer 5 scoped the back desk to exactly those three — and
+returns to 10 the day the last is archived, unless the per-desk share has replaced
+it by then. The condition is three named changes being archived or not, checkable
+by looking; it is the orchestrator's between runs and **cannot** be a code check,
+because nothing under `lib/`, `loop/` or `scripts/` may reference a change
+directory. Its acceptance clause is carried into the requirement: whichever way it
+resolves, the commit that moves the dial states the arithmetic, and a supersession
+by the per-desk share is recorded as one — so a later reader can tell a loosening
+that was **reverted** from one that was **abandoned**.
+
+**Question 6 is done rather than held.** Task 18 is unheld and complete at
+`bd84b4b`: `CLAUDE.md` and `AGENTS.md` carry the narrowed filing rule in his words
+with the measured cause. The other five answers confirm what the proposal
+recommended — the front/back reading, the bounds as configuration dials, the fleet
+retiring at Stage 3, the three open changes as the back desk's first scope, and the
+reading of "reviewed before going live".

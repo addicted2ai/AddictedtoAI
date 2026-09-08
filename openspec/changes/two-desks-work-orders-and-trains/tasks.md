@@ -124,15 +124,18 @@ the orchestrator's work between runs.
       assertion fails. **Mutation B**: have the script spawn the tracker instead of
       reading the file, and confirm a source check that no module outside
       `loop/lib/beads.mjs` spawns it goes red. Tests task 16.
-- [ ] 18. **HELD, pending the maintainer's answer to open question 6.**
+- [x] 18. **Done at `bd84b4b`** — he answered question 6 on 2026-09-08 and
+      narrowed the rule as proposed.
       `CLAUDE.md` and `AGENTS.md`: state the bounded filing rule — a deferral
       becomes its own issue only when it names a subject path or a specification
       requirement and cannot be fixed in the same job; otherwise a note on the
       parent issue; a machinery issue that would spawn more than one follow-up is
-      stopped and reconsidered. **[orchestrator]** — and held because the rule
-      being amended is the maintainer's own, in his words: *"Any time something
-      like this pops up, file a beads issue or it will get lost!"* Do not do this
-      task until he answers.
+      stopped and reconsidered. **[orchestrator]** The rule amended is the
+      maintainer's own, in his words — *"Any time something like this pops up, file
+      a beads issue or it will get lost!"* — which is why it waited for him; both
+      files now carry the narrowed rule with the measured cause. `bd84b4b` also
+      moves `data/config.json`'s `machinery_ceiling_pct` to 30 under his answer to
+      question 4.
 
 ### The runner policy and the record
 
@@ -639,8 +642,14 @@ the orchestrator's work between runs.
       types on the front desk against the floor and new-writing ceiling, machinery
       and tracker work on the back desk against the machinery ceiling, machinery
       reachable directly in its own band, and an idle front desk running the scout
-      or nothing. Implements: *The front desk and the back desk share an intake and
-      never share a lane*.
+      or nothing. **Restate the machinery bound as the back desk's share of total
+      effort** — a declared `data/config.json` key read against the effort both desks
+      recorded, its starting value taken from the drain task 91 measures, replacing
+      the raised per-engine ceiling rather than letting it lapse; close
+      `addictedtoai-mnzf` as superseded, naming this bound as what replaced it.
+      Implements: *The front desk and the back desk share an intake and never share
+      a lane*, including its share-of-total-effort bullet. **[orchestrator]** for
+      the config key.
 - [ ] 80. `loop/tests/desks.test.mjs`: an idle front desk with machinery candidates
       ready selects the scout or nothing; a routed machinery bead is offered with no
       proposal file present. **Mutation**: let the front desk fall through to
@@ -762,7 +771,10 @@ the orchestrator's work between runs.
       the train review. No new fleet wave starts after this task, and not before it:
       until Stage 3 the fleet is this change's own implementation engine.
       **[orchestrator]**
-- [ ] 91. **Stage-3 measurement.** Record filed versus closed per local day, the
+- [ ] 91. **Stage-3 measurement, and it sets a bound.** Record **the back desk's
+      measured share of total effort over the drain** — that figure is what sets the
+      starting value of task 79's share bound, so the bound comes from what the
+      drain cost rather than from a choice. Also record filed versus closed per local day, the
       machinery share of inflow, and jobs per train-hour, each against the
       pre-change figures in `proposal.md`. **[orchestrator]**
 - [ ] 92. `loop/intake.mjs`, `loop/lib/brief.mjs`, `loop/lib/result.mjs` and
@@ -804,10 +816,10 @@ the orchestrator's work between runs.
 
 | Capability | ADDED | MODIFIED | REMOVED |
 |---|---|---|---|
-| `loop` | 11 | 11 | 2 |
+| `loop` | 11 | 12 | 2 |
 | `review` | 2 | 2 | 0 |
 | `pulse` | 1 | 1 | 0 |
-| **Total** | **14** | **14** | **2** |
+| **Total** | **14** | **15** | **2** |
 
 Ninety-five numbered tasks, 1–95 with no gaps, of which **29 name a proof by
 mutation and 49 distinct mutations are named** (several tasks name an A, a B and a
@@ -838,6 +850,7 @@ Machine-readable, covering ADDED, MODIFIED **and REMOVED**. Each row is
 | loop | MODIFIED | A job's ledger line is written before anything recomputes the queue from it | 49 |
 | loop | MODIFIED | The ledger line carries the join, as a list, additively | 25, 26, 66 |
 | loop | MODIFIED | A swap has a stated procedure and a conformance check | 21 |
+| loop | MODIFIED | Spending is budgeted in model-minutes with floors and ceilings | 18, 79, 91 |
 | loop | MODIFIED | The machine's work is joinable to the issue tracker | 68, 69, 70, 71 |
 | loop | MODIFIED | Routine work never touches OpenSpec; beads holds judgment work | 87, 88 |
 | loop | MODIFIED | A proposal a merged job consumed is retired | 65, 76 |
@@ -853,7 +866,7 @@ Machine-readable, covering ADDED, MODIFIED **and REMOVED**. Each row is
 | pulse | ADDED | The derived queue is mirrored into the tracker outside the derive step | 85, 86 |
 | pulse | MODIFIED | The Pulse publishes what it builds | 44, 45, 46, 47 |
 
-Thirty rows: 14 ADDED + 14 MODIFIED + 2 REMOVED. Every row names at least
+Thirty-one rows: 14 ADDED + 15 MODIFIED + 2 REMOVED. Every row names at least
 one task, and the REMOVED rows name the tasks that build the requirements their
 bodies were carried into.
 

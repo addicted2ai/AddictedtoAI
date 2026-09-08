@@ -24,10 +24,11 @@ the gate reuse, the runner ladder, the ledger fields. **The train waits for a la
 session because it rewrites the publish path** — where a mistake is public rather
 than local — and it had two defects in it an hour ago. Sequencing, not scope.
 
-**What you decide** (details at the end): 1 front/back reading right? 2 bounds
-yours or the orchestrator's? 3 fleet retires at Stage 3 — overrule? 4 raise the
-10% machinery ceiling? 5 finish the three open changes first? 6 may we bound your
-file-a-bead rule? 7 confirm the reading of "reviewed before going live".
+**Decided 2026-09-08** — you agreed with all seven (answers at the end): the
+front/back reading; bounds as config dials; the fleet retiring at Stage 3; the
+machinery ceiling raised to 30 **for the drain**, with a limit after it on the back
+desk's share instead; the three open changes first; the filing rule narrowed; and
+the reading of "reviewed before going live".
 
 **Evidence.** `evidence/` — reports, scripts, three sealed reviews.
 
@@ -396,45 +397,49 @@ is stated in `tasks.md` before the work rather than after it.
   estimate. It also established that the filing rule is the maintainer's own, in
   his words, which is why amending it is a question for him and not a task here.
 
-## Open questions for the maintainer
+## Answered by the maintainer, 2026-09-08
 
-1. Is the front/back split read correctly from your `h0z0` comment — front desk =
-   content jobs, back desk = machinery, spec changes and beads? It rests on one
-   comment, and this change implements it as routing and accounting.
-2. The work-order bounds start at `N_max` 4, `S_max` 4, `B_total` 60,000,
-   `B_per_subject` 30,000, plus `B_train` 150,000 and `S_train` 12. Drafted as
-   `data/config.json` keys the orchestrator may tune from the ledger between runs,
-   **not** as budget bounds needing an OpenSpec change each time. Correct? Two of
-   them are conservative starting values rather than derived ones, and
-   `design.md`'s bounds table says which.
-3. **Answered by the change, and you may overrule.** The fleet retires at Stage 3,
-   because the front-desk workers that replace it do not exist until then and
-   retiring it earlier would remove the only channel by which the largest machinery
-   work has ever been done. The machine is Luna-first from Stage 0, per your
-   2026-09-08 instruction. Does any job type still default to a Claude runner?
-4. **Recommendation, not a sum for you to redo.** The Desk's 10% machinery ceiling
-   does not reduce machinery work; it *relocates* it to orchestrator and fleet
-   sessions at frontier prices. Landed on `main` since 2026-09-04 by no Desk job
-   while the ceiling held: `Merge fl/ml25`, `Merge fl/q6xp`, *"loop: a post-merge
-   build that never ran is neither red nor green"*, *"loop: record the retry before
-   the environmental return, not after"*, the revert guard and the memory-integrity
-   guards. The ledger cannot see this, because it records Desk jobs only. The
-   recommendation: **raise the Desk's machinery ceiling while the machinery cohort
-   drains, on Luna runners, and bound total machinery work by the inflow budget
-   rather than by the Desk's share.** The decision is yours.
-5. Should the back desk be limited to **finishing the three open changes** before
-   any new machinery change other than this one? `bind-what-the-catalog-knows` is
-   the structural fix for the canonical held-train red, and until it lands the
-   train's most frequent hold is the one this change had to decide the semantics of
-   without it. `let-the-queue-see-a-judgment` fixes the queue starvation.
-6. **The filing rule is yours, in your words:** *"Any time something like this pops
-   up, file a beads issue or it will get lost!"* This change would bound it — a
-   deferral becomes its own issue only when it names a subject path or a
-   specification requirement and cannot be fixed in the same job; otherwise it is a
-   note on the parent issue. That is an amendment to your rule, so the task that
-   edits `CLAUDE.md` and `AGENTS.md` is **held** until you answer.
-7. **The reading of your reserved sentence.** This change applies "nothing
-   publishes that a real reviewer has not actually read" to model-written bytes and
-   reviewed machinery, treating deterministic derived data and the review's own
-   records as exempt — which is what `openspec/specs/review/spec.md:26-30` already
-   exempts. Confirm that reading, or widen it and the train's ordering will follow.
+He read the seven and replied: *"I agree with all your recommendations."* One
+carried a question of its own, and its answer is below with the reasoning, because
+the answer is a decision about what happens after the drain rather than during it.
+
+1. **The front/back reading is confirmed.** Front desk = content jobs; back desk =
+   machinery, spec changes and beads. The split is built as routing and accounting.
+2. **The work-order and train bounds are configuration dials**, tuned by the
+   orchestrator between runs from the ledger — not budget bounds needing an
+   OpenSpec change each time. `data/config.json` stays reserved; no job may edit
+   them.
+3. **The fleet retires at Stage 3**, when the front-desk workers that replace it
+   exist. The machine is Luna-first from Stage 0.
+4. **Raise the machinery ceiling now, while the cohort drains.** His question was
+   the right one — *"Is this until the new back desk is built? We wouldn't want a
+   limit after it is built right?"* — and the answer is that **a limit stays, on a
+   different quantity.** Today's 10% caps the Desk's *share of its own ledger*, and
+   that does not reduce machinery work: it relocates it into sessions the ledger
+   cannot see. Once the back desk exists the ledger sees both desks, so the bound
+   becomes **the back desk's share of total effort**, set from the measured drain,
+   with the filing rule bounding what enters the backlog. A back desk with no limit
+   is the predecessor's failure mode exactly — process expanding to fill the
+   capacity available to it, the 3:1 process-to-content ratio this repository's own
+   history records, and a pre-relaunch audit branch named
+   `loop/audit/machinery-crowds-out-visitor-value`.
+   **The cost of the raise, stated plainly:** the three bounds share one
+   denominator, so machinery at 30 plus the upkeep floor at 40 leaves **at most 30
+   points for new writing** against a ceiling of 45. The raise can take up to
+   twenty points from site work — the thing complaint 1 was about — and that is
+   accepted **for the drain period only**. It carries a revert condition anyone can
+   check: the ceiling is 30 while any of `bind-what-the-catalog-knows`,
+   `let-the-queue-see-a-judgment` or `keep-the-map-describing-the-territory`
+   remains unarchived, and returns to 10 the day the last is archived unless the
+   per-desk share has replaced it by then. That is the orchestrator's between runs;
+   it cannot be a code check, because nothing under `lib/`, `loop/` or `scripts/`
+   may reference a change directory.
+5. **The back desk finishes the three open changes first.** They are its scope
+   until they are done.
+6. **The filing rule is narrowed as proposed.** Task 18 is **unheld** and done at
+   `bd84b4b`: `CLAUDE.md` and `AGENTS.md` carry the narrowed rule in his words with
+   the measured cause.
+7. **The reading of "reviewed before going live" is confirmed** — model-written
+   bytes and reviewed machinery, with deterministic derived data and the review's
+   own records exempt, as `openspec/specs/review/spec.md:26-30` already exempts
+   them.

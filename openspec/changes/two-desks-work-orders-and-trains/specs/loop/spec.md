@@ -926,6 +926,16 @@ budget bounds.
 - Both desks SHALL be gated by the same rules: the ceilings, the floor, the shed
   levels, the runner clearance and the review gate apply identically. A lane
   decides which work is reached; it never decides what may be afforded.
+- **Once both desks exist, the bound on the machine's work on itself SHALL be
+  restated as the back desk's share of total effort**, a declared configuration
+  bound whose starting value is taken from the measured drain, rather than as a
+  ceiling on one engine's share of its own ledger. The two are different
+  quantities and only the second is the one anybody cares about: a ceiling on the
+  Desk's share does not reduce machinery work while a lane exists that the ledger
+  cannot see, and with two desks the ledger sees both. The bound SHALL NOT lapse
+  when it is restated — a back desk with no limit is process expanding to fill the
+  capacity available to it, which is the failure this repository was rebuilt to
+  escape.
 
 #### Scenario: An idle front desk does not become a machinery desk
 
@@ -933,6 +943,14 @@ budget bounds.
   are ready
 - **THEN** the front desk runs the daily sweep if it is due and otherwise records
   "nothing qualified"; the machinery candidates stay on the back desk
+
+#### Scenario: The bound follows the work when the desks exist
+
+- **WHEN** both desks are running and the back desk's share of total effort reaches
+  its configured bound
+- **THEN** no further back-desk work is selectable until the window rolls, and the
+  bound is read against the effort both desks recorded rather than against the
+  back desk's own ledger alone
 
 #### Scenario: A machinery bead does not have to become a proposal first
 
@@ -2205,6 +2223,177 @@ id on that job.
 
 - **WHEN** a runner has no conformance record at all
 - **THEN** the loop warns and does not refuse it, exactly as before
+
+### Requirement: Spending is budgeted in model-minutes with floors and ceilings
+
+The loop's cost unit is the **model-minute (MM)**: one minute of wall-clock
+time during which a configured model was actively working, measured by the
+loop itself from invocation to return, recorded per tier (`frontier` /
+`cheap`) and never summed across tiers. Rationale: tokens are unobservable
+across consumer subscriptions, and "rounds" ranged 200K–9M tokens on the
+previous site; wall-clock per tier is measurable by the orchestrator alone,
+comparable across providers, and readable by a non-programmer. Every job
+records its MM actuals in a run ledger.
+
+Shares SHALL be computed **within each tier separately**: a category's
+share is its MM divided by that tier's total MM over the rolling 30 days,
+and the bounds below SHALL hold in each tier independently (frontier shares
+of the frontier total; cheap shares of the cheap total):
+
+| Category | Bound |
+|---|---|
+| Upkeep (`interpret`, `verify`, `repair`, `prune`) | floor: ≥ 40% |
+| New writing (`entry`, `tutorial`, `post`, `education`, `scout`) | ceiling: ≤ 45% |
+| `machinery` | ceiling: ≤ 30% |
+
+`scout` spends from the new-writing share deliberately: discovery is the
+first stage of writing, and when writing is over its ceiling, finding more
+to write is the first thing to stop. Review MM counts toward the job it
+reviews. Each bound has its own
+enforcement point: when a ceiling is reached, jobs of that category are not
+selectable until the window rolls; when the upkeep share in a tier is below
+its floor and any upkeep job is available in that tier, only upkeep jobs
+are selectable in that tier until the floor is met — the floor binds on its
+own, not merely as the arithmetic residue of the ceilings. The bounds, the
+per-type wall-clock caps, and the degradation thresholds all live in
+**`data/config.json`** — the one normative home for loop configuration;
+changing the bounds requires an OpenSpec change. The
+machinery ceiling exists because the previous site spent roughly seven lines
+of process per line of site — the loop improving its own tooling is capped,
+permanently, and the cap is enforced by the selector, not by good
+intentions.
+
+**The machinery ceiling stands at 30% for the duration of the machinery drain,
+and that is a deliberate loosening decided by the maintainer rather than a
+re-derivation.** The measured reason: a ceiling on the Desk's *share* does not
+reduce machinery work, it relocates it. While the ceiling stood at 10% the largest
+machinery changes were made in orchestrator and fleet sessions that carry no
+ledger line, no budget and no breaker, so the ceiling bought a smaller number in
+one record and a larger amount of unmeasured work outside it. Raising it moves that
+work back where it is counted. **The upkeep floor stays at 40% and the new-writing
+ceiling at 45%**: the loosening is to one bound, not to the shape.
+
+**The three bounds share one denominator, so raising one takes from another, and
+the arithmetic SHALL be stated rather than discovered.** A category's share is
+measured against the tier's rolling total, and a category at or over its own
+ceiling is refused. Machinery at 30 plus an upkeep floor of 40 leaves **at most 30
+points for new writing** — so the raise can take up to twenty points from site
+work, which is the thing the complaint that motivated all of this was about. The
+new-writing ceiling of 45 therefore becomes, during the drain, **a ceiling the
+other two bounds make unreachable in the worst case**, with effective headroom of
+30. That is accepted **for the drain period only**, and it is written here because
+`data/config.json` is JSON and carries no comments, so a number a later reader
+finds there has nothing beside it to say what it is worth.
+
+**The raise SHALL carry a revert condition, and the condition SHALL be checkable
+from the tree.** The ceiling stands at 30 while any of the three changes that were
+unarchived when it was raised remains unarchived; when all three are archived it
+returns to 10 the same day, unless the two-desk share bound above has already
+replaced it. The condition is three named changes being archived or not, which
+anyone can check by looking; it is the **orchestrator's between runs, never a
+job's**, and it cannot be a code check because nothing under the source tree may
+reference a change directory. Whichever way it resolves, **the commit that moves
+the dial SHALL state the arithmetic**, and where the two-desk share bound
+supersedes it that SHALL be recorded as a supersession naming what replaced it —
+so that a later reader can tell a loosening that was *reverted* from one that was
+merely *abandoned*. The failure this guards against has a name in this
+repository's own history: a pre-relaunch audit branch was called, in as many
+words, "machinery crowds out visitor value".
+
+**A ceiling on the Desk's share is the wrong quantity once there are two desks,
+and it SHALL be restated rather than removed.** When the front and back desks
+exist, the ledger sees both, and the bound becomes the **back desk's share of
+total effort** — a declared configuration bound whose starting value is taken from
+the measured drain, with the filing rule bounding what enters the backlog. A back
+desk with no limit at all is the predecessor's failure mode restated: process
+expands to fill the capacity available to it, and this repository's own history
+records the ratio it reached. The limit changes what it measures; it does not
+lapse.
+
+A percentage of a very small total is not a bound, it is a rounding artifact:
+on the first day of a window, one job of any kind is 100% of everything, and a
+ceiling read against the observed total alone would refuse every category
+before the loop had done enough work for a share to mean anything. The
+denominator therefore has a floor of its own.
+
+- A **ceiling** SHALL be measured against the larger of the tier's observed
+  rolling total and a **warm-up window**, so that a ceiling binds on a
+  meaningful denominator from the first run rather than on whatever happens to
+  have run first. Implemented by `warmUpMm()` in `loop/lib/budget.mjs`;
+  measured by `loop/tests/budget.test.mjs`.
+- The **upkeep floor** SHALL always read the tier's observed rolling total, and
+  SHALL NOT be measured against the warm-up window. The floor and the ceilings
+  fail in opposite directions: a ceiling read against a tiny denominator
+  refuses everything, while a floor read against an inflated one would compel
+  upkeep the loop has no evidence it needs. Implemented in
+  `loop/lib/budget.mjs`'s floor path; measured by `loop/tests/budget.test.mjs`.
+- The warm-up window SHALL be **derived** — (100 ÷ the tightest configured
+  ceiling percentage) × the largest per-type wall-clock cap in
+  `data/config.json` — and SHALL NOT be a configuration key of its own. A key
+  would be a second place to state a bound that is already stated, and the two
+  would drift. Implemented by `warmUpMm()` and `largestCapMinutes()` in
+  `loop/lib/budget.mjs`; measured by `loop/tests/budget.test.mjs`.
+- The unit of "the largest per-type wall-clock cap" in that formula SHALL be
+  one **invocation's** cap, NOT one whole job's bounded total under `A job's
+  total spend is measured, and the cap is named for what it is` — a job's total
+  may reach a multiple of an invocation's cap, so reading the formula the other
+  way would silently widen the window without any number changing. Implemented
+  in `loop/lib/budget.mjs`; measured by the `dyw the warm-up denominator
+  measures one invocation` test in `loop/tests/budget.test.mjs`.
+
+#### Scenario: Writing cannot crowd out upkeep
+
+- **WHEN** new-writing MM reaches 45% of the rolling window
+- **THEN** the selector refuses new-writing jobs and only upkeep, repair,
+  prune, and (under its own cap) machinery jobs are selectable
+
+#### Scenario: Machinery work hits its ceiling
+
+- **WHEN** `machinery` MM reaches 10% of the rolling window
+- **THEN** no further machinery job is selectable until the window rolls,
+  regardless of how appealing the improvement looks
+
+#### Scenario: The upkeep floor binds on its own
+
+- **WHEN** upkeep MM in a tier is below 40% of that tier's rolling total
+  and an upkeep job is available
+- **THEN** the selector offers only upkeep jobs in that tier until the
+  floor is met
+
+#### Scenario: A ceiling does not bind on a nearly empty window
+
+- **WHEN** a tier's observed rolling total is far below the warm-up window and
+  a single job would exceed a ceiling as a share of that observed total
+- **THEN** the ceiling is measured against the warm-up window instead, the job
+  is not refused on that arithmetic, and the substitution is stated in the
+  refusal record whenever a refusal is printed
+
+#### Scenario: The floor is not warmed up
+
+- **WHEN** a tier's observed rolling total is far below the warm-up window and
+  upkeep's observed share is below its floor
+- **THEN** the floor binds on the observed total, unaffected by the warm-up
+  window that the ceilings use
+
+#### Scenario: The raised ceiling still binds
+
+- **WHEN** machinery model-minutes reach the configured machinery ceiling in a
+  tier
+- **THEN** no further machinery job is selectable in that tier until the window
+  rolls, exactly as before — the value moved and the mechanism did not
+
+#### Scenario: The loosening does not reach the other two bounds
+
+- **WHEN** the machinery ceiling is raised for the drain
+- **THEN** the upkeep floor still binds at 40% and the new-writing ceiling at
+  45%, and a new-writing job over its ceiling is refused exactly as it was
+
+#### Scenario: The raise is visible in what new writing can reach
+
+- **WHEN** machinery spends its full raised ceiling and upkeep sits at its floor
+- **THEN** new writing can reach at most the remainder of the tier's total, which
+  is below its own ceiling, and the refusal states the arithmetic it refused on
+  exactly as any other budget refusal does
 
 ## REMOVED Requirements
 
