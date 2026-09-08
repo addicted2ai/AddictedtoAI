@@ -1862,3 +1862,47 @@ the second round running. Packet A in total: six rounds, five worker commits
 after the first, six sealed max reviews, about 4.5 hours of wall clock;
 production correct since round 4, rounds 5 and 6 evidence. Whether that was
 worth it is the question B1's mutation table exists to answer.
+
+**Merged at `b700d36`; the six gates on `a2eec9f` (Orch, 15:28 to 15:37
+local): RED on one line, and the packet is clean.** Exit codes captured
+separately: test 0 (393 s, 124 files, 1,730 passed against a floor of 1,700),
+build 0 (69 s), launch 1 (53 s), design 0 (39 s), surfaces 0 (6 s), analytics
+0 (26 s). The failure is verify-launch's seed-prose review coverage, 185 of
+186: `content/wiki/event/chatgpt-launch.md` has no `data/reviews/` record —
+the fleet branch `4i2` merged at `f26a4e1` in the same batch. A fleet's sealed
+review is not a review record, and the check counts records piece by piece on
+purpose. Two errors put it there and both are owned: Orch withdrew its
+objection to batching content with the packet on a correct argument about ONE
+gate property (content only makes gates slower) without asking whether a new
+seed piece satisfies the launch coverage minimum, having written "content
+failures name the piece" as a reason the risk was cheap rather than as a
+reason to check whether it would fire; and the architect had told it "only
+posts need a reads-human record and four of the eleven sibling events carry
+none", a claim from `READS_HUMAN_TYPES` and a grep for the path in
+`data/reviews/`, an instrument narrower than the check that fired (statement 2's
+shape: the two things compared did not measure the same property). The fix
+needs no new artefact and no hand-written record (statement 47): the `yjb5`
+directive Orch committed at `6e570f4` targets this entry's two real defects,
+and the Desk job on it produces the record as a by-product; no revert, no
+push, publishing stays false until that record exists and the six run green
+again. Gate runs are gated on what the log captured, not what the operator
+announced: this run's log opened "gating HEAD a2eec9f", one commit past the
+sha Orch had announced, and the difference to the tip `001b5dd` was verified as
+files no gate reads (check-spec-deltas discovers only `changes/*/specs/`, its
+stale-id haystack excludes openspec/, the curriculum file untouched).
+
+**Packet A's thesis, confirmed on the live tree at the third attempt.**
+verify-launch reused the existing build in **0.365 s** against 46 to 52 s when
+it spawned one. The first two attempts spawned, both for defects in Orch's
+harness and not the packet: run 1 invoked `npm run build` directly, bypassing
+both callers of the record writer, so no record existed and rebuilding was
+correct; run 2 invoked verify-design directly, which wrote `data/launch.json`,
+an input newer than `out/` — exactly the write `gates.mjs:538` suppresses. Had
+the report followed run 1, a six-round packet would have been recorded as not
+firing; Luna-Boss-2's pre-registered discriminator is what made a third run
+happen, and the true cause was on neither list. Timings labelled by condition
+rather than pooled: npm test 314.8 s on a quiet machine (122 files, 1,726
+tests) against 393.0 s with one codex worker at medium running (124 files,
+1,730 tests) — so the 78.7 s test floor, 25.0% of the calibration run, is
+20.0% of this one, five points of detection power lost to load in one packet
+(Orch's bead `addictedtoai-kb9e`).
