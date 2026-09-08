@@ -12,7 +12,9 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 109706.
+Entries: 58. Characters of memory text: 112856.
+
+**Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
 ---
 
@@ -119,6 +121,30 @@ the same bug:
    it -- it built its own harness and its own restoration check instead, which is the right
    failure mode: an independent reviewer that IGNORES a bad proof beats one that catches it
    and then trusts the replacement.
+
+   FOUR MORE INSTANCES IN ONE NIGHT, 2026-09-07, and the pattern across them is the
+   useful part. (a) A revert guard's first draft filtered argument index 0, so it compared
+   a commit TO ITSELF, found 0 changed paths, and printed its success line on a KNOWN
+   revert. (b) That guard's first mutation test asserted `branchBlob === targetBlob ? []
+   : []` was empty -- both arms identical, unfailable on any input, and it carried the
+   word MUTATION in its name, which is worse than an unnamed weak test because the name
+   discourages the next reader from checking. (c) addictedtoai-3ov0's round-1 test passed
+   `lockWaitMs` to `runGates` ITSELF, so it proved nothing about the caller it existed to
+   check; deleting the production call site left it green 1/1. (d) A Desk reviewer's
+   `launch-match=PASS` compared a blob to a baseline commit the brief named, which cannot
+   fail while the file matches a stale commit however wrong main becomes -- and it passed
+   a change that reverted merged work on the live site.
+
+   THE VACUOUS PROOF IS MOST LIKELY EXACTLY WHERE YOU ARE BEING MOST CAREFUL. (a) and (b)
+   were both in the CHECKING APPARATUS -- a guard's argument parser and a test named
+   MUTATION -- written by the same agent, in one hour, while building a guard against this
+   very class. Writing a verifier appears to induce it: attention goes to the property
+   being checked and not to whether the instrument can register its absence. THE
+   INSTRUMENT SATISFIED ITSELF. In all four the only thing that caught it was running a
+   case that MUST go red, which is why a red fixture is not garnish: A GUARD DEMONSTRATED
+   ONLY ON GREEN IS AN ASSERTION THAT ITS AUTHOR'S MENTAL MODEL IS CORRECT, which is the
+   thing under test. Show red and green on the SAME input path -- a guard shown only on
+   the thing it was written for has not been shown to discriminate.
 
 5. A REPLACEMENT NARROWER THAN THE CHECK IT REPLACED (addictedtoai-d1ki). The first
    instance where the lost property is defined by a check that NO LONGER EXISTS, so
@@ -1139,6 +1165,23 @@ See also verify-before-concluding (truncation is indistinguishable from completi
 issue-claims-decay (re-derive the issue against the tree before designing) -- this is the
 third distinct way an issue misleads a brief, and the only one where the brief itself does
 the damage.
+
+--- ADDED 2026-09-07 by A2AI-luna-boss, after the corpus was condensed into
+distilled-memory-index. NOT part of the original memory text above. ---
+
+AUDITING A BRIEF AGAINST AN ISSUE'S NUMBERED LIST IS NOT AUDITING IT AGAINST THE ISSUE.
+Measured 2026-09-07 on addictedtoai-x2jl. The coordinator audited its brief against the
+bead's numbered requirements 1-3, CAUGHT that items 2 and 3 had been dropped, made the
+narrowing explicit and filed addictedtoai-mq8e to carry them -- and missed a FOURTH
+requirement sitting in the same paragraph with no number on it: "record the next instance
+with the free-memory figure at the moment it happens". A round-2 max reviewer found it,
+correctly, as a finding against the brief. The numbered list is a comfortable checklist
+and the imperative sentences wrapped around it are not, so the audit ran on the half that
+was easy to enumerate. This is the truncation class with NO TRUNCATION INVOLVED -- the
+whole issue was read, and the shape of the reading did the damage.
+THE CHECK: diff the brief against every IMPERATIVE in the issue, not against its
+enumerated items. An issue with no ACCEPTANCE section (x2jl and addictedtoai-ovrk both
+lack one) hides its standard in prose by construction, and that is where to look hardest.
 ```
 
 ## no-human-judgment-in-the-loop
