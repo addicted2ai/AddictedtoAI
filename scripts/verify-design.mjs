@@ -93,6 +93,25 @@ const RECORD = process.env.ATAI_VERIFY_DESIGN_NO_RECORD !== '1';
  * The three pages specs/site names for the **payload** bound. This list is not
  * a route sample — it is the specified set, and adding a fourth page to it
  * would invent a budget nobody wrote down.
+ *
+ * `/wiki` AND `/data` DO NOT BELONG HERE, asked and answered for
+ * addictedtoai-84s8 rather than left for the next reader to re-derive. Since
+ * addictedtoai-nq36 both carry an inline JSON-LD graph with a `dateModified`,
+ * which put the question "are they measured by anything?" on the table. They
+ * are, but not by this list, and the distinction is the point:
+ *
+ *   - THE PAYLOAD BOUND is a budget specs/site states for three named pages.
+ *     Its list is normative, not a sample, so adding a page does not widen
+ *     coverage — it asserts a budget for that page that nobody specified.
+ *   - THEIR GRAPHS are verify-surfaces.mjs's concern, and it already walks
+ *     EVERY exported route rather than a sample, so the two new graphs are
+ *     covered the day they exist.
+ *
+ * So the honest answer is that they are outside this list ON PURPOSE and inside
+ * the check that actually bears on them. What 84s8 correctly identified is a
+ * weakness in THAT check — verify-surfaces enters its comparison behind
+ * `if (graph.dateModified)`, so an absent field is not a failure — and the
+ * repair belongs there, not in this budget.
  */
 const SAMPLES = [
   { route: '/', label: 'home' },
