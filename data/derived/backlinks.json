@@ -1540,6 +1540,14 @@
         "file": "content/wiki/org/minimax.md"
       }
     ],
+    "model/minimax-minimax-m2-7-free": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
     "model/minimax-minimax-m2-her": [
       {
         "url": "/wiki/org/minimax",

@@ -3109,6 +3109,16 @@
       ]
     },
     {
+      "name": "MiniMax: MiniMax M2.7 (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2-7-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "MiniMax: MiniMax M3",
       "linkable": false,
       "claimed_by": [
