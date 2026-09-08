@@ -208,6 +208,21 @@ test('THE PRODUCTION SHAPE — an INTERRUPTED job records itself even when the w
   assert.match(git(ctx.repoRoot, ['branch', '--list', `job/${res.jobId}`]), /job\//, 'the branch survives');
 });
 
+test('STARTUP REFUSES CLEANLY WHEN THE STALE WORKTREE CANNOT BE REMOVED', async (t) => {
+  const ctx = fixture();
+  ctx.worktreeStartup = REFUSES_TO_DELETE;
+  t.after(() => ctx.cleanup());
+
+  const res = await go(ctx);
+  const worktree = join(ctx.worktreeRoot, res.jobId);
+
+  assert.equal(res.refused, 'could not clear stale worktree before startup (path=' + worktree + '; errno=-4048)');
+  assert.equal(existsSync(worktree), false, 'the refused startup must not create a worktree');
+  assert.ok(ctx.output().includes(`path=${worktree}`));
+  assert.match(ctx.output(), /errno=-4048/);
+  assert.doesNotMatch(ctx.output(), /loop error:/, 'the refusal is not an uncaught exception');
+});
+
 test('POSITIVE CONTROL — with no seam the worktree is really removed and nothing is logged', async (t) => {
   // Without this, a `removeJobWorktree` that swallowed everything and deleted
   // nothing would pass every test above.
