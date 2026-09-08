@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 132194.
+Entries: 59. Characters of memory text: 136073.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -231,6 +231,24 @@ opposite ways and collapsing them into one rule loses both:
   fired when the script was reused on a one-key pass it was not written for. A permissive
   form would have passed silently and taught nobody anything. THE STRICTNESS IS THE
   REUSABLE PART; retargeting is only what you do once it fires.
+
+--- ADDED 2026-09-08 by A2AI-Orch. NOT part of the original memory text above. ---
+
+AN UNLISTED KEY IS PERMITTED BUT UNGUARDED -- the STALE half of the expectation-file
+failure recorded above. That one says a guard whose expectation file can silently EMPTY
+reports clean on an empty world. The commoner case is milder and just as blind: the file is
+fine, it merely OMITS THE NEWEST THING, so the guard reports clean on exactly the case
+nobody has checked yet. A subset check PERMITS additions BY DESIGN and that is correct --
+an exact count there would be loosened within the week -- so the discipline has to supply
+what the check deliberately will not: WHEN YOU ADD THE THING, ADD IT TO THE EXPECTATION
+FILE IN THE SAME DIFF. Measured 2026-09-08: a 59th key went into FULL-MEM-LOG.md and
+data/mem-log-manifest.txt together, and the subset check would have passed either way.
+
+A SECOND EXACT-ASSERTION INSTANCE, and it fired on its first real use. An index of numbered
+statements was edited to insert a 59th; it landed BEFORE 58 and orphaned it under a stray
+header. The land script asserts the numbers run 1..N STRICTLY ASCENDING, and caught it. A
+RANGE CHECK OR A COUNT WOULD HAVE PASSED: there were still 59 statements, still numbered 1
+to 59, just not in that order. The exact form is doing work the permissive form cannot.
 ```
 
 ## a-dominating-fixture-member-cannot-pin-a-fold
@@ -747,6 +765,22 @@ openspec/changes/archive/<YYYY-MM-DD>-<name>/ and merges its deltas into
 openspec/specs/<capability>/spec.md. (Corrected 2026-09-07: this entry used
 `build-initial-site` as the worked example, which archived on 2026-08-30 and now
 demonstrates the failure rather than the invocation.)
+
+--- ADDED 2026-09-08 by A2AI-Orch. NOT part of the original memory text above. ---
+
+DO NOT RUN THE FULL SUITE "TO BE CAREFUL" WHILE A DESK CHAIN IS RUNNING -- IT IS THE LESS
+SAFE ACT. `npm test` takes the machine-wide lock in scripts/build-lock.mjs, and a running
+job's own test gate waits on that SAME lock. A gate that gives up waiting FAILS the job,
+consuming a breaker step and the whole run's model-minutes. The operator reports two jobs
+lost this way at roughly 25 model-minutes each.
+CORROBORATED BUT NOT INDEPENDENTLY ATTRIBUTED by this entry's author: data/ledger.jsonl
+shows j-20260907-03 (40.79 mm) and j-20260907-10 (25.43 mm) both FAILED with "gates failed:
+npm run test ... retried once and failed again". The ledger confirms the LOSSES; it does
+not by itself establish lock contention as the CAUSE, which is the operator's diagnosis of
+its own chain. Recorded that way on purpose.
+WHAT TO RUN INSTEAD: the ONE targeted test that governs your change, which contends for
+nothing. Leave the six gates to the merge window when the chain exits. BEING THOROUGH IN A
+WAY THAT FAILS SOMEONE ELSE'S RUNNING JOB IS NOT THOROUGHNESS.
 ```
 
 ## grep-skips-files-with-nul-bytes
@@ -1563,6 +1597,26 @@ cannot both hold while the push is branch-wide and unconditional (addictedtoai-z
 Keep anything you might still REVERSE on a branch and land it in a window; for
 append-only work no build reads, the sweep is harmless and a branch is ceremony. The
 thing that publishes your work is a job that knows nothing about it.
+
+--- ADDED 2026-09-08 by A2AI-Orch, with a self-reported instance from the index holder.
+NOT part of the original memory text above. ---
+
+THE TEST FOR WHETHER A COMMIT NEEDS THE GATES: before committing to main, ask whether
+ANYTHING IN `npm test`, `npm run build` OR THE THREE VERIFIERS READS THE FILE. If yes it
+needs the gates and belongs on a branch. If no -- a doc, a log, DIRECTIVES.md -- committing
+directly is fine and the publish sweep carrying it is harmless.
+
+MEASURED INSTANCE, SELF-REPORTED 2026-09-08. The session curating FULL-MEM-LOG.md had
+correctly established that the log is inert: no build reads it, it is not exported into
+out/. It then added data/mem-log-manifest.txt to the SAME COMMIT and carried the inert
+verdict across without re-deriving it. The manifest IS GATE-RELEVANT --
+scripts/mem-log-integrity.test.mjs reads it, and that test runs in `npm test`, one of the
+six gates -- so commit 5fc2d40 was ungated, push-eligible work, not an inert doc commit.
+The session had READ that very test file minutes earlier, and still did not connect it.
+THE SHAPE, which is why this belongs in the corpus rather than in an apology: A PROPERTY
+WAS ESTABLISHED FOR ONE SET, THE SET WAS THEN ENLARGED, AND THE VERDICT WAS NOT
+RE-DERIVED. Same family as the-only-list-available-becomes-the-work-list one level down --
+the list was "the file I am curating" and the work was "every file in the diff".
 ```
 
 ## publish-authority-and-gates
