@@ -130,7 +130,7 @@ the orchestrator's work between runs.
 
 ### The runner policy and the record
 
-- [ ] 19. **Build the effort ladder in the registry.** `runners.yml`: add
+- [x] 19. **Build the effort ladder in the registry.** (Done 2026-09-08: rungs at 10be428, xhigh FAIL 2 of 2 at 7790215, medium narrowed at a68ddc1.) `runners.yml`: add
       `codex-gpt-luna-high` and `codex-gpt-luna-xhigh` entries — same model, same
       lane, same cheap tier, differing only in `model_reasoning_effort`
       (`high` / `xhigh`; both accepted by `codex`, verified by running it, as
@@ -159,7 +159,7 @@ the orchestrator's work between runs.
       declared policy, and escalation is part of it*, the ladder and starting-rung
       bullets. The registry is the only file that may name a model or an effort.
       **[orchestrator]**
-- [ ] 20. `CLAUDE.md` and `runners.yml`: correct the conformance paragraph and every
+- [x] 20. (Done 2026-09-08: CLAUDE.md at 301f537; runners.yml conformance fields at 10be428 and 7790215.) `CLAUDE.md` and `runners.yml`: correct the conformance paragraph and every
       `conformance:` field from `data/conformance.json` as read 2026-09-08 — seven
       runners recorded, six pass all four checks (`claude-code-sonnet`,
       `claude-code-opus`, `opencode-deepseek`, `opencode-muse-spark`,
