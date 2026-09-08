@@ -58,7 +58,7 @@ the sentence that uses it.
 
 ### The gate floor and the launch build
 
-- [ ] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived
+- [x] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived
       from a recorded calibration of that gate on this repository and set by a
       stated margin **below the fastest legitimate run observed** (warm caches
       included — a warm `next build` is far faster than the 29.2 s cold one) and
@@ -97,7 +97,7 @@ the sentence that uses it.
       npm scripts through `cmd.exe /c`, never `shell: true`. Implements: *A
       job's gates are a tripwire; the full set runs once, on the train*, the
       floor bullets.
-- [ ] 2. `loop/tests/gates.test.mjs`: a fake gate returning exit 0, no output, in
+- [x] 2. `loop/tests/gates.test.mjs`: a fake gate returning exit 0, no output, in
       2 ms fails the stage naming the floor; a fake **test** gate returning exit 0
       in 400 ms fails under the repository floors and passes only under an
       explicit fixture floor set; an override below the tripwire is refused; a
@@ -119,7 +119,7 @@ the sentence that uses it.
       **Mutation**: delete the floor comparison and confirm the 2 ms case passes
       while the real case still passes — if both stay green the test measures
       nothing. Restore and verify byte-identical by hash. Tests task 1.
-- [ ] 3. `scripts/verify-launch.mjs`: reuse an existing build of the tree under
+- [x] 3. `scripts/verify-launch.mjs`: reuse an existing build of the tree under
       check instead of spawning its own when one is present, current **and
       recorded as having succeeded**; keep spawning one when it is not. The
       success record has **exactly one writer function**, exported by
@@ -167,7 +167,7 @@ the sentence that uses it.
       the coarse whole-tree input set stands and a Pulse run forces a rebuild,
       as it should. The timer at `:832` and the report at `:847` then report the
       reuse. Implements the same requirement's reuse bullet.
-- [ ] 4. `scripts/tests/verify-launch.test.mjs`: with a present, recorded build the
+- [x] 4. `scripts/tests/verify-launch.test.mjs`: with a present, recorded build the
       run **spawns no build process** — asserted on the spawn, not only on the
       branch — and reports reuse; with none it builds; with an export newer than
       every source but **no success record, or a record naming another commit,**
