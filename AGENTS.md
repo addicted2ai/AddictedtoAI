@@ -217,11 +217,29 @@ Two different brakes. Neither is the loop's to release.
   an attempt to edit a reserved path. The Desk refuses to start while it
   exists.
 
-**Removing `HOLD.md` is itself a reserved-path violation.** A halted Desk is
-waiting for a person; clearing the file is not the repair.
+**No JOB may remove `HOLD.md`, and that has not changed.** A job clearing the
+halt that stopped it is the exact conflict of interest the brake exists for, and
+no grant to a different actor transfers it. If you are a job, clearing the file
+is not the repair.
+
+**The ORCHESTRATOR, between runs, may remove a halt it has diagnosed and
+repaired.** The maintainer's ruling, 2026-09-07: *"The orchestrator can remove
+HOLD.md, not STOP — that is mine unless I say otherwise."* This is the same
+actor distinction already drawn for `data/config.json` below: a run may not
+rewrite its own brakes mid-flight; an orchestrator acting between runs is a
+different actor in a different position.
+
+The word *diagnosed* is the whole grant and the order never varies: read
+`HOLD.md` and find what actually tripped, fix the CAUSE (not the symptom, and
+never the detector), record what tripped and what changed, and only then remove
+the file. **A halt you cannot diagnose is a halt you leave standing and
+report.** Clearing a halt to get past a guardrail is the precise thing this
+repository forbids everywhere else.
 
 Reserved paths, which no job may edit: `openspec/specs/`, `data/config.json`,
-`runners.yml`, `STOP`, and the removal of `HOLD.md`.
+`runners.yml`, `STOP`, and the removal of `HOLD.md`. `STOP` is the maintainer's
+alone — created and removed only by him — and that is the one line here with no
+exception.
 
 ### Publishing
 
