@@ -5,15 +5,17 @@ type: machinery
 summary: >
   Link `node_modules` into a job worktree when the worktree is created, not
   only inside `runGates`. Today `linkNodeModules` is called from exactly one
-  place — `loop/lib/gates.mjs:177`, inside the gate run that happens AFTER the
+  place — `loop/lib/gates.mjs:300`, inside the gate run that happens AFTER the
   authoring invocation — so an authoring job that runs `npm test` or
   `npm run build`, which its own acceptance checks require it to do, gets a
-  catastrophic false red instead of a result. The proposed job would move the
-  link to worktree creation (`unlinkNodeModules` already runs on every teardown
-  path in `loop/run.mjs`, so the symmetry is already there), and would make
-  `unlinkNodeModules` distinguish a junction it created from a real directory a
-  job installed, rather than calling `unlinkSync` on a directory and swallowing
-  the throw.
+  catastrophic false red instead of a result. The proposed job would call
+  `linkNodeModules(worktree, ctx.repoRoot)` immediately before the author and
+  revision executors are invoked. The helper is already idempotent (`already
+  present` is a return value), so the gate-time call needs no change.
+  `unlinkNodeModules` already runs on every teardown path in `loop/run.mjs`, so
+  the symmetry is already there; it must also distinguish a junction it
+  created from a real directory a job installed, rather than calling
+  `unlinkSync` on a directory and swallowing the throw.
 evidence: >
   Measured in this job's own worktree on 2026-09-04. `npm --prefix
   D:/addictedtoai-worktrees/j-20260904-56 test` reported "91 test file(s)" and
@@ -22,7 +24,7 @@ evidence: >
   `node_modules` at all. After `npm ci` in the worktree the same command
   returned 1227 pass / 0 fail and `npm run build` completed. `grep -n
   'linkNodeModules|unlinkNodeModules' loop/` returns one definition and one
-  caller for the link (`loop/lib/gates.mjs:177`) against three callers for the
+  caller for the link (`loop/lib/gates.mjs:300`) against three callers for the
   unlink (`loop/run.mjs:275`, `:562`, `:980`) — the asymmetry is the bug.
   Related but not the same case: `data/proposals/review-worktrees-carry-no-node-modules.md`
   (2026-09-01) covers the REVIEW worktree, whose remedy would not reach the
@@ -45,7 +47,10 @@ The fix is small because the machinery is already almost right.
 uses a Windows junction so it needs no elevated rights, and is paired with an
 `unlinkNodeModules` that `loop/run.mjs` already calls on all three teardown
 paths. Only the call site is late: it sits inside `runGates`, so the link
-appears after the authoring invocation has already exited.
+appears after the authoring invocation has already exited. The new calls
+belong immediately before each executor invocation (author and revision),
+and the existing helper's idempotent `already present` result means the
+gate-time call does not need to change.
 
 The second half is the hazard the workaround creates. A job that notices the
 missing tree and runs `npm ci` — the obvious move, and the one this job made —
