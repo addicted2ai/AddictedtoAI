@@ -31,7 +31,8 @@ evidence: >
   for other surface variables, 25 km for atmospheric variables such as wind
   speed; "roughly five times sharper than our previous model, WeatherNext 2";
   "Continuous Ranked Probability Score (CRPS) improvement of up to 60% against
-  IMERG, 30% for MRMS, and 10% against rain gauge measurements"; "up to 50%
+  IMERG, 30% for MRMS, and 10% against rain gauge measurements for early lead
+  times"; "up to 50%
   more accurate precipitation forecasts" for day-ahead-and-beyond planning;
   "generate a new forecast every hour"; ingests "a mosaic of live, global
   geostationary satellite data" and trains on "sparse weather station
@@ -160,7 +161,8 @@ does.
   arXiv:2609.03582v1 and pinning the version, because the claim is tied to a
   date.
 - Every accuracy figure is attributed to whoever measured it and against what:
-  the CRPS improvements (60% vs IMERG, 30% vs MRMS, 10% vs rain gauges) and the
+  the CRPS improvements (60% vs IMERG, 30% vs MRMS, 10% vs rain gauges for early
+  lead times) and the
   "up to 50%" precipitation figure are Google's own, measured against Google's
   chosen baselines, and the post labels them as such rather than blending them
   with the independent board's verdict.
