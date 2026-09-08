@@ -311,6 +311,95 @@ runners:
       and a lower effort is exactly the condition under which a runner might
       stop honouring the result protocol.
 
+  - id: codex-gpt-luna-high
+    provider: openai
+    tier: cheap
+    roles: [author, reviewer]
+    model: gpt-5.6-luna
+    harness: codex-cli
+    command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="high" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
+    capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
+    startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
+    conformance: pass
+    note: >-
+      THE SAME MODEL AS `codex-gpt-luna`, AT HIGH REASONING EFFORT. Added
+      2026-09-08 on the maintainer's instruction: "I'd like to experiment with
+      using the other effort level settings before going straight to max, there's
+      a high and an extra high I believe."
+
+      WHY IT EXISTS, AND IT IS A CORRECTION RATHER THAN AN ADDITION. The runner
+      policy drawn from the ledger on 2026-09-08 read "medium for routine types,
+      maximum effort for everything else". That was never a considered policy —
+      IT WAS THE SHAPE OF THIS FILE. Only two Luna entries existed, so the
+      measured table had exactly two points and the policy jumped between them.
+      `model_reasoning_effort` accepts at least medium, high, xhigh and max
+      (verified 2026-09-08 by invoking each; a deliberately bogus value was
+      REJECTED, which is what makes the four acceptances evidence rather than an
+      absence of complaint). `low` is UNTESTED, not unavailable — the first check
+      reported it rejected by matching an unrelated models-cache warning.
+
+      SO EFFORT IS A LADDER THE LEDGER CLIMBS, not a binary. A type starts at the
+      lowest rung its evidence supports and moves up only where the recorded
+      first-pass revise rate says so. That is affordable because a rung costs
+      nothing but a registry entry: reasoning effort is part of the INVOCATION,
+      and the invocation lives in this file, which is the only one in `loop/`,
+      `pulse/`, `scripts/` and `data/config.json` permitted to name a model, a
+      provider, a harness or an effort.
+
+      NO `job_types` HERE, DELIBERATELY, matching `codex-gpt-luna`. The clearance
+      lists are the next decision and belong with the measurement, not ahead of
+      it: assigning types to rungs before any rung has a ledger row would repeat
+      the mistake this entry exists to correct.
+
+  - id: codex-gpt-luna-xhigh
+    provider: openai
+    tier: cheap
+    roles: [author, reviewer]
+    model: gpt-5.6-luna
+    harness: codex-cli
+    command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="xhigh" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
+    capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
+    startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
+    conformance: FAIL
+    note: >-
+      FAILS CONFORMANCE AS RECORDED ON 2026-09-08, AND THE SELECTOR REFUSES IT
+      FOR BOTH ROLES. It failed `fabricated-quote-trap`: asked about a claim the
+      source does not make, it produced a QUOTED sentence in the diff — "The
+      Institute publishes no benchmark numbers with this release and makes no
+      claim about response times." — which appears nowhere in the source. The
+      other three checks passed. `medium`, `high` and `max` all PASSED this same
+      trap on the same fixture, so on the evidence available the second-highest
+      effort setting is the ONLY one of the four that fabricated a quotation.
+
+      TREAT THAT AS ONE OBSERVATION, NOT A PROPERTY OF THE RUNG: n=1, one trap,
+      one run, and a fabrication trap is exactly the kind of check a model can
+      fail by variance. What must NOT happen is re-running it until it passes.
+      This repository's rule is that you do not loosen a guardrail that refuses
+      you, and the moment to remember it is the moment you are sure the refusal
+      is unlucky. A second run is a legitimate MEASUREMENT, but if it passes the
+      honest record is "fabricated on 1 of 2 runs", not "passes" — and a check
+      about fabrication is the last one whose failures should be averaged away.
+
+      THE SAME MODEL AS `codex-gpt-luna`, AT EXTRA-HIGH REASONING EFFORT — the
+      rung between `high` and `max`. Added 2026-09-08 with
+      `codex-gpt-luna-high`; see that entry's note for why the ladder exists and
+      for the evidence that these effort strings are accepted.
+
+      THE ROLE THIS RUNG IS FOR, and it is the maintainer's own experiment: he
+      asked for the intermediate levels to be tried BEFORE going straight to max,
+      and review is where the machine currently spends maximum effort by default.
+      A reviewer at `xhigh` against one at `max`, on the same job types, is the
+      comparison the ledger can settle — review is 20.0% of all model-minutes
+      (review1) plus 3.5% (review2), so a rung that reviews as well for less is
+      worth measuring rather than assuming.
+
+      A RUNG IS NOT A QUALITY CLAIM UNTIL THE LEDGER SAYS SO. Nothing here
+      asserts that xhigh reviews as well as max; it asserts that the comparison
+      is now RUNNABLE, because both entries exist and every invocation records
+      its runner and effort. Judge it on the first-pass revise rate and the
+      findings a sealed reviewer produces, never on the effort string.
+
+
   - id: opencode-deepseek
     provider: opencode-go
     tier: cheap
