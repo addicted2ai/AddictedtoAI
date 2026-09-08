@@ -1891,16 +1891,36 @@ sha Orch had announced, and the difference to the tip `001b5dd` was verified as
 files no gate reads (check-spec-deltas discovers only `changes/*/specs/`, its
 stale-id haystack excludes openspec/, the curriculum file untouched).
 
-**Packet A's thesis, confirmed on the live tree at the third attempt.**
-verify-launch reused the existing build in **0.365 s** against 46 to 52 s when
-it spawned one. The first two attempts spawned, both for defects in Orch's
-harness and not the packet: run 1 invoked `npm run build` directly, bypassing
-both callers of the record writer, so no record existed and rebuilding was
-correct; run 2 invoked verify-design directly, which wrote `data/launch.json`,
-an input newer than `out/` — exactly the write `gates.mjs:538` suppresses. Had
-the report followed run 1, a six-round packet would have been recorded as not
-firing; Luna-Boss-2's pre-registered discriminator is what made a third run
-happen, and the true cause was on neither list. Timings labelled by condition
+**Packet A's thesis, confirmed on the live tree at the third attempt — and
+then measured as rarely available.** verify-launch reused the existing build in
+**0.365 s** against 46 to 52 s when it spawned one (the 0.365 s figure was
+reported by A2AI-Orch from terminal output and is not a captured artefact; the
+spawned runs are captured). The first two attempts spawned, both for defects in
+Orch's harness and not the packet: run 1 invoked `npm run build` directly,
+bypassing both callers of the record writer, so no record existed and
+rebuilding was correct; run 2 invoked verify-design directly, which wrote
+`data/launch.json`, an input newer than `out/` — exactly the write
+`gates.mjs:538` suppresses. Had the report followed run 1, a six-round packet
+would have been recorded as not firing; Luna-Boss-2's pre-registered
+discriminator is what made a third run happen, and the true cause was on
+neither list. A FOURTH run, captured to a file, REBUILT (49 s), and Orch walked
+the input set between the two timestamps rather than guess: eight inputs
+written in three minutes. One was the architect's edit to this design.md at
+15:44:36, a correct rebuild, `openspec/` being a build input. The other seven
+were under `.beads/` — the tracker's embedded Dolt database, its backup set
+and its journal, written autonomously by `bd` whenever any session files or
+comments on an issue — and NO build step reads them (`git grep -l "\.beads"`
+over lib/, scripts/, app/ returns nothing). So every `bd` operation on this
+machine defeats the reuse, and with four sessions filing constantly the saving
+is available only in the gaps, one of which was measured closing in under
+three minutes. The packet is correct throughout; what was unmeasured was
+availability. The writer-based exclusion rule adopted at `f7e475b` cannot see
+this category — `.beads/` is neither a build input nor a build output but
+unrelated state that lives in the repository — and the sharper test is about
+READERS: a path belongs in the input set only if some build step reads it.
+Task 3b excludes `.beads/` with that reason and records both tests, the reader
+form for membership and the writer form for outputs such as `public/`; task
+31 measures availability, not only firing. Timings labelled by condition
 rather than pooled: npm test 314.8 s on a quiet machine (122 files, 1,726
 tests) against 393.0 s with one codex worker at medium running (124 files,
 1,730 tests) — so the 78.7 s test floor, 25.0% of the calibration run, is

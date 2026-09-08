@@ -248,6 +248,22 @@ the sentence that uses it.
       `enforceGateFloor` answers "cannot evaluate" in opposite directions (an
       unknown gate name fails closed, a non-finite duration passes unchecked)
       and is now exported, so its inputs are no longer two visible call sites.
+- [ ] 3b. `scripts/verify-launch.mjs` (`hasCurrentBuild`'s input walk) and its
+      test: **the input set is defined by READERS, not writers** — a path
+      belongs in it only if some build step reads it — and `.beads/` at the
+      repository root is excluded explicitly, with the reason recorded in the
+      code: the issue tracker's embedded Dolt database, backup set and journal
+      are written autonomously by `bd` on every issue operation from any
+      session, and no build step reads them (found by A2AI-Orch on 2026-09-08
+      after a captured fourth run rebuilt 49 s three minutes after a 0.365 s
+      reuse; seven of the eight inputs written in between were under
+      `.beads/`). The writer-based rule stays for OUTPUTS the build writes into
+      its own input set (`public/`); the reader-based rule decides membership.
+      Test: with a current export and record, a write under `.beads/` does not
+      defeat reuse (no spawn), and a write to a read input still does.
+      **Mutation**: remove the `.beads/` exclusion and confirm the first arm
+      fails while the second still passes. Small; rides with packet E. Serves
+      task 31's availability measurement.
 
 ### The brief diet
 
@@ -554,7 +570,12 @@ the sentence that uses it.
       definition, and with the diet touching prompt size rather than wall-clock,
       Stage 0 has no mechanism that moves it; the 1.5-minute target belongs to
       Stage 1's gate, where the train is what would move it. Stage 0's own claim is
-      `brief_chars` and one build.
+      `brief_chars` and one build. **The build claim is measured as AVAILABILITY,
+      not only firing:** for each real flow (a job's fresh worktree; the
+      orchestrator's serial six) record whether verify-launch reused or spawned
+      and, when it spawned, the newest input that defeated it. Known on
+      2026-09-08 before task 3b: the reuse fires (0.365 s against 46–52 s) and
+      the dominant defeater is not a source edit but `.beads/` writing itself.
 
 ## Stage 1 — the train alone, at one worker
 
