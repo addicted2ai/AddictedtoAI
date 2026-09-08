@@ -1,0 +1,33 @@
+beads total: 312   open: 101
+
+day          filed  closed   net   cumulative open
+2026-08-28     11       3  +8              8
+2026-08-29     90      57  +33            41
+2026-08-30     15       9  +6             47
+2026-08-31     83      51  +32            79
+2026-09-01     11       5  +6             85
+2026-09-02     13      20  -7             78
+2026-09-03     10       2  +8             86
+2026-09-04     14       7  +7             93
+2026-09-05     12       2  +10           103
+2026-09-06     15      16  -1            102
+2026-09-07     21      32  -11            91
+2026-09-08     17       7  +10           101
+
+TOTAL filed 312, closed 211, net +101
+
+LAST 7 DAYS: filed 102, closed 86, ratio filed/closed = 1.19
+A ratio near or above 1.0 is the maintainer’s claim, measured.
+
+OPEN ISSUES BY THE DAY THEY WERE FILED (is the backlog old, or self-generated?):
+  2026-08-29    3
+  2026-08-30    5
+  2026-08-31   37
+  2026-09-01    3
+  2026-09-02    6
+  2026-09-03    1
+  2026-09-04    4
+  2026-09-05    4
+  2026-09-06    9
+  2026-09-07   15
+  2026-09-08   14

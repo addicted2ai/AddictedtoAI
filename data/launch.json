@@ -8,9 +8,9 @@
       "/": {
         "label": "home",
         "chunks_kb_gzipped": 104.4,
-        "inline_kb_gzipped": 6.5,
-        "total_kb_gzipped": 110.6,
-        "html_kb_gzipped": 10.5
+        "inline_kb_gzipped": 6.7,
+        "total_kb_gzipped": 110.9,
+        "html_kb_gzipped": 10.8
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
@@ -22,9 +22,9 @@
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.8,
-        "inline_kb_gzipped": 18.9,
-        "total_kb_gzipped": 123.8,
-        "html_kb_gzipped": 35.9
+        "inline_kb_gzipped": 18.8,
+        "total_kb_gzipped": 123.6,
+        "html_kb_gzipped": 35.7
       }
     }
   },
@@ -127,5 +127,39 @@
     "observed_by": "maintainer",
     "method": "GA4 property -> Reports -> Realtime, per specs/analytics: visit the live site and click through to a second page, then see at least one active user and both page_views within five minutes. This is the one check no agent can perform — it requires a signed-in browser on the GA property — so it is recorded as the maintainer's own observation, not as a measurement taken here.",
     "corroborated_by": "scripts/verify-analytics.mjs against https://www.addictedtoai.net: 20 assertions, 0 failures, asserted on captured /g/collect POSTs returning HTTP 204 rather than on markup. Independent of the Realtime view and agreeing with it."
+  },
+  "desk_baseline": {
+    "measured_on": "2026-09-08",
+    "method": "openspec/changes/two-desks-work-orders-and-trains/evidence/scripts/stage0-baseline.mjs (archived with the change): for each done job in data/ledger.jsonl, anchor on the ledger ts, take the parent of the nearest `job <id>: records (done)` commit as the merge commit, walk its second parent to the `job <id>: brief` commit; n=206 of 208 done jobs (j-20260831-07 and -12 excluded: replayed single-parent history). brief_chars is the byte size of .job/brief.md at the brief commit.",
+    "definition": "brief_commit_to_merge is the measure the stage gates use; brief_commit_to_records is the older definition kept for comparison and is unmeasurable for the 41 done jobs whose records commit never happened (addictedtoai-l7cx).",
+    "brief_commit_to_merge_minutes": {
+      "median_all": 22.81,
+      "median_since_2026_09_01": 23.35
+    },
+    "non_model_overhead_minutes_brief_to_merge": {
+      "median_all": 3.85,
+      "median_since_2026_09_01": 3.9
+    },
+    "non_model_overhead_minutes_brief_to_records": {
+      "median_all": 5.497,
+      "median_since_2026_09_01": 5.52,
+      "note": "reproduces evidence/desk-mech-report.md section A"
+    },
+    "brief_chars": {
+      "median_all": 37183.5,
+      "p90_all": 102000,
+      "recent_window_note": "the stage gate baseline is the window since 2026-09-06 (about 70,000 to 104,000 bytes per brief), because the all-time median predates the four excerpt-budget raises",
+      "series_spot": {
+        "2026-08-28": 16181,
+        "2026-09-02": 33491,
+        "2026-09-06": 70349,
+        "2026-09-08": 103881
+      }
+    },
+    "gate_seconds": {
+      "note": "no per-gate field exists on the ledger yet (Stage 0 task 23 adds it); the only measurement is the single push-bar run on 78c6361 by A2AI-Orch: test 314.8, verify-launch 39.6 (own build 39), verify-design 35.7, build 29.2, verify-analytics 19.5 (server already up), verify-surfaces 3.7, total 442.5",
+      "measured_on": "2026-09-08",
+      "commit": "78c6361"
+    }
   }
 }

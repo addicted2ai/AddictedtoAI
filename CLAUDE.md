@@ -218,16 +218,18 @@ below.
   `loop/lib/brief.mjs` does this mechanically for Desk jobs (`GROUND_RULES`);
   anything you spawn by hand is yours to repeat them in.
 - **`conformance: unverified` in `runners.yml` is documentation only.** The
-  selector reads `data/conformance.json`, which records **four** runners, four
-  checks each, as re-read from the JSON on 2026-08-30: `claude-code-sonnet`
-  **pass**, `opencode-deepseek` **pass**, `codex-gpt-luna` **fail** (an expired
-  login, not a portability defect — it needs `codex login`, which is the
-  maintainer's), and **`claude-code-opus` pass, recorded 2026-08-30**. The
-  default runner had never been tested until that night, which the Desk warns
-  about on every run it starts; an absent record warns rather than refuses, so
-  runs had been starting on an untested default. Keep the `runners.yml` field
-  and this file in step with the JSON by re-reading the JSON — it is the
-  authority, and this passage has now been wrong twice.
+  selector reads `data/conformance.json`, which records **seven** runners, four
+  checks each, as re-read from the JSON on 2026-09-08: `claude-code-sonnet`
+  **pass** (08-28), `opencode-deepseek` **pass** (08-28), `claude-code-opus`
+  **pass** (08-31), `opencode-muse-spark` **pass** (09-07), `codex-gpt-luna`
+  **pass** (09-07 15:46Z — the 08-30 FAIL was an expired `codex login`, since
+  redone), `codex-gpt-luna-medium` **pass** (09-07 22:10Z), and
+  `opencode-openrouter-muse-spark` **fail** on all four (no `RESULT.md`). An
+  absent record warns rather than refuses, so a run can start on an untested
+  runner; keep the `runners.yml` field and this file in step with the JSON by
+  re-reading the JSON — it is the authority, and this passage has now been
+  wrong three times (the third: it carried the Luna FAIL for a day after the
+  JSON recorded the pass).
 - **Beads, not TodoWrite.** Task tracking is `bd` and persistent memory is
   `bd remember`. Both survive a harness switch, which is the entire reason for
   the rule.

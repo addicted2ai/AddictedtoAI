@@ -1,0 +1,435 @@
+# Two desks, work orders, and a release train
+
+## In one page
+
+**The ceiling, and nobody chose it.** The Desk cannot exceed about two jobs an
+hour. `npm test` holds a machine-wide lock, so a second worker waits for the first
+whatever capacity is spare. Batching K jobs behind one gate pass while running W
+workers multiplies. The one-session rule was a person standing in for a lock.
+
+**Six structural changes.** **Two desks** — content and machinery stop competing
+for one queue. **Work orders** — a job carries several coherent items. **The
+train** — the full gate set runs once per batch. **Parallel workers** — W ordinary
+Desk runs, each with a ledger line. **Intake** — routing and fact-checking become
+a mechanism, not an orchestrator's reading. **`DIRECTIVES.md` retires into
+beads** — one backlog, not two files saying the same thing.
+
+**What was measured.** Jobs too small to batch: **confirmed** — median job, 1 file
+and 4 lines against 5.5 minutes of fixed overhead. Backlog files as fast as it
+closes: **confirmed over the span, refuted in shape**. Extraordinary tokens:
+**refuted** — 96% of codex input is cached.
+
+**What ships first, and why in that order.** Stage 0 this session: the brief diet,
+the gate reuse, the runner ladder, the ledger fields. **The train waits for a later
+session because it rewrites the publish path** — where a mistake is public rather
+than local — and it had two defects in it an hour ago. Sequencing, not scope.
+
+**What you decide** (details at the end): 1 front/back reading right? 2 bounds
+yours or the orchestrator's? 3 fleet retires at Stage 3 — overrule? 4 raise the
+10% machinery ceiling? 5 finish the three open changes first? 6 may we bound your
+file-a-bead rule? 7 confirm the reading of "reviewed before going live".
+
+**Evidence.** `evidence/` — reports, scripts, three sealed reviews.
+
+---
+
+Serves `addictedtoai-douz` (P1, the maintainer's 2026-09-08 charter). He wrote
+*"verify this!"* and *"come to your own conclusions"*, so each complaint below
+carries a verdict, not a confirmation.
+
+**The acceptance object, named.** `douz` requires the front-desk/back-desk item to
+be *"either implemented by this change or closed with a stated reason."* No
+dedicated bead exists for it — searched across all 312 issues for `front-desk`,
+`back-desk` and `two-desk` (`evidence/beads-report.md` §F). It exists as one
+comment on epic **`addictedtoai-h0z0`**, 2026-09-07: *"the back-desk idea the
+maintainer is musing on (front-desk = content jobs; back-desk = machinery, spec
+changes, beads)."* **This change implements it**, as routing and accounting —
+every candidate and every ledger line carries a desk, the idle rule holds, inflow
+is reported per desk — and not as two machines. Open question 1 asks him to
+confirm the reading, because it rests on one comment.
+
+**Provenance.** Every number below cites `evidence/<file>` or
+`evidence/scripts/<script>` in this change directory, or a bead id. The evidence
+was copied out of session-scoped temporary directories so it outlives the sessions
+that produced it; `evidence/README.md` lists each file, who produced it, and how
+each script is invoked. At review time the local-day, gate and token figures were
+not reachable from the reports as cited, which a sealed reviewer correctly called
+unreproducible; that gap is what the directory closes.
+
+## The one property that is reserved, and the reading used
+
+The maintainer, 2026-09-08, on `addictedtoai-vqbo`: *"as long as work is getting
+reviewed before going live, I am good."* Restated: **nothing publishes that a
+real reviewer has not actually read.**
+
+**The reading this change applies, stated rather than assumed:** the sentence
+governs **model-written bytes and reviewed machinery**. Two things are exempt, and
+both are exempt in the live specification already — deterministic outputs of
+already-reviewed machinery (`openspec/specs/review/spec.md:26-30`, which names the
+Pulse's feed refreshes, derived tables and the derived queue), and the review's
+own records, since a review cannot read the record of itself. Everything else the
+train publishes is moved *before* the train review rather than after it. **Open
+question 7 asks the maintainer to confirm or widen that reading**, because it is
+his sentence and this change should not narrow it silently.
+
+Four mechanisms deliver the property today and all four are kept: the review gate
+(the reviewer's tree is discarded; the merge refuses without an `approve`), review
+records bound to bytes, the brakes (`STOP`, `HOLD.md`, reserved paths; a job never
+clears its own halt or edits its own budget), and fail-the-build-don't-warn.
+
+**One place the change strengthens it, and the strengthening is the strongest
+single argument here.** `scripts/verify-launch.mjs:611` and `:769` carry the
+review-state binding check that distinguishes an unreviewed piece (`missing`) from
+a reviewed-then-changed one (`mismatched`). **That check has never run inside the
+Desk on any job**: `loop/lib/gates.mjs:346` is
+`['test','build','verify-surfaces','verify-design']`, and `loop/run.mjs` has
+exactly two gate call sites, `:404` (that set) and `:1661` (`build` alone). Putting
+`verify-launch` on the train puts the reserved property's own detector into the
+automated path for the first time.
+
+## Complaint 1 — "jobs are very small and could be batched". **CONFIRMED**, and it survives scrutiny best of the three.
+
+The median merged job changes **1 content file and 4 content lines**, costs
+**$3.20**, and takes **24.3 minutes** of wall-clock for **18.4 model-minutes**;
+52.9% (110/208) of merged jobs touch exactly one content file
+(`evidence/ledger-report.md` §B, §C, §F). Against that, the fixed cost per job is
+**5.5 minutes median non-model overhead, 25.9% of wall-clock since 2026-09-01**
+(`evidence/desk-mech-report.md` §A), and review runs **2.6–3.2× implementation** on
+19- and 98-line changes (`addictedtoai-f4vy`). Orch's ledger-gap ratio of **1.45×**
+bounds the same quantity from above and is **a ceiling, not a measurement**, on
+Orch's own statement (`evidence/rerun-efficiency.txt`,
+`evidence/scripts/orch-efficiency.mjs`).
+
+**The gate arithmetic, corrected.** A job today runs **four** gates and pays for
+**two** builds, not six and three: `DEFAULT_GATES` is
+`['test','build','verify-surfaces','verify-design']` and the second build is the
+post-merge one at `run.mjs:1661`. The **442.5s six-gate total** measured on `main`
+at `78c6361` with publishing off — `npm test` 314.8s, `verify-launch` 39.6s (of
+which its own build is 39s: `verify-launch.mjs:832` starts the timer before the
+build spawn and `:847` reports that span), `verify-design` 35.7s, `npm run build`
+29.2s, `verify-analytics` 19.5s excluding server start, `verify-surfaces` 3.7s
+(`evidence/gate-timings.txt`) — is the **push-bar** cost, not the job cost, and is
+labelled so. Per job today: 314.8 + 29.2 + 3.7 + 35.7 + 29.2 ≈ **412.6s**. Per job
+after: ≈ **32.9s**. Per train: ≈ **403s** with the launch-build reuse. At five
+merges, **2,063s → 568s**. Reusing `verify-launch`'s build saves ~39s per *train*
+and per hand-run push gate — real, and a tenth of what an earlier draft claimed
+per job.
+
+**The suite is already parallel, and its cost is the Desk's own.** Parsed:
+**1,709 tests, 1,709 pass, 0 fail, 298,091 ms, 122 files**
+(`evidence/gate-timings-npm.txt`). Summed per-test time is 1,380s against 298s
+wall — a factor of ~4.6 — so wall time is bounded by the longest chain of files;
+median test 4.4 ms; the top 25 tests carry 31% of summed time. The **twelve
+slowest** (49.5s down to 13.5s) are all Desk-machinery integration tests standing
+up real builds, real git and bare origins in temp directories. So the gate being
+moved is dominated by tests **of the machinery being redesigned**, and **the suite
+may get slower before it gets faster** while they are rewritten. One test states
+the shape: the slowest, 49.5s — *"CONTROL: a GREEN post-merge build DOES reach the
+remote"*, the control arm for `addictedtoai-ml25` — was added on 2026-09-08
+without its cost being measured.
+
+**The redirect.** `batch-carried-findings-by-subject` (2026-09-03) cut **27 jobs to
+16 for the same backlog** and was scoped to one Pulse producer, never to the
+selector (`evidence/hist-report.md` §A.1, §G2). Generalising it to the selector is
+the change.
+
+## Complaint 2 — "the backlog has not moved because it files as fast as it closes". **CONFIRMED over the span, PARTLY REFUTED in shape.**
+
+By local day (`evidence/scripts/orch-beads-flow-local.mjs`, which supersedes every
+UTC-bucketed table sent earlier — including `evidence/beads-report.md`'s and
+`evidence/rerun-beads-utc-superseded.txt`): **313 filed / 212 closed, net +101** as
+at 2026-09-08; the last seven local days **99 filed against 69 closed, ratio
+1.43**. So it did not stand still — it rose. But the series is **not monotonic**:
+09-01 was net −11 and 09-06 net −13, both real drain days. And **47 of the 101 open
+issues come from the opening stretch 08-29..08-31**, every one of which has now
+been checked line by line against the tree: of the 48-bead opening cohort, **41
+still valid, 5 partial, 1 already fixed** (`evidence/stale-report.md` for 08-31,
+`evidence/stale2-report.md` for 08-29 and 08-30). So the standing number is an
+**undigested opening cohort plus a drip that exceeds the drain** — and there is no
+triage dividend waiting in it. Ten of those beads already carry same-day
+directives in `DIRECTIVES.md:116-141`, none run: the same work stated twice in two
+files, which is its own argument for the migration.
+
+Two caveats travel with every total. Closures are dated by `updated_at` because
+the dump has no reliable `closed_at`, so the **trend is more trustworthy than any
+single cell**. And the backlog moved while it was being measured: open read **100
+at 13:56 UTC and 101 ninety minutes later**, which is why each point-in-time total
+carries the moment it was taken.
+
+**What the open set actually is**
+(`evidence/scripts/orch-backlog-classify.mjs`, 2026-09-08, 101 open): **52 name a
+code path only, 18 a content path only, 15 both, 16 neither.** The floor of work
+that must pass the review gate is **33**; machinery is about **52**. An earlier
+draft quoted "81 of 100 machinery" and "~81 edit-shaped" as though they were
+different facts; they shared 63 issues and neither is the number. The script's own
+header says what it does not do: it reports the overlap between two keyword
+classifications honestly rather than inventing a better classifier, so the
+argument rests on a number that is defined.
+
+The drip is measurable: churn runs **0.3–0.6 new beads per bead closed**
+(`evidence/beads-report.md` §D), and **~68%** of issues cite a review finding, a
+Desk job or the file-the-deferral rule as their occasion (§B). Inside the Desk,
+carried findings were **37 filed against 35 retired in three days, 76% onto a file
+already carried**, with 23 jobs on 2026-09-02 publishing nothing
+(`select.mjs:30-44`).
+
+## Complaint 3 — "extraordinary time and tokens for very little change". **CONFIRMED in wall-clock and model-minutes; PARTLY REFUTED on tokens.**
+
+Interactive orchestrator sessions are **85.6% ($6,325)** of $7,385.50 of workspace
+spend as at 2026-09-08 ~08:00 local; Desk jobs are **14.3% ($1,057)**, and that is
+a **floor** — 40 of 240 job ids named in commits were never priced, and the sweep
+figure is *consistent with* rather than *independent of* the ledger join
+(`evidence/spend-report.md` §C, §D). Over 15 days **`content/` is 4.15% of all
+changed lines**; `data/` 34.8%; "other" **44.8%**, dominated by `.job/brief.md`
+and `.job/source.json` — **187,820 lines written to job branches and stripped
+again**. Last 7 days: Desk $934 for 42 new content files, **$22.23 per file**.
+
+Tokens are the half that does not hold as stated. The codex lane read **182.4M
+input tokens against 685K output on 2026-09-08 — a real 266:1 ratio** — but **96%
+of that input is cached**: marginal uncached input was ~6.1M across 48 sessions,
+about **127K per cold start** (`evidence/scripts/codex-spend.mjs`, method also on
+`addictedtoai-f4vy`). The dose is far smaller than the headline, so **token count
+is the wrong thing to batch for.** The win is wall-clock, gate passes and reviewer
+orientation — which argues for the train and for coherence-batched review, not for
+token-motivated batching — **plus the brief diet, which is the one place tokens
+really are the cost**: the author brief grew **16,181 → 103,881 characters in
+eleven days**, ~85% spec excerpt, re-sent whole on every revision (38 jobs),
+because `BRIEF_EXCERPT_MAX_CHARS` was raised four times as unarchived changes
+split the per-source budget (`addictedtoai-2sx8`) and `excerptsFor`'s pass 2b
+saturates whatever is left (`evidence/desk-mech-report.md` §B, §F).
+
+## Why this is not the fourth unstarted change
+
+Twenty-four changes were archived in eleven days while the three open ones carry
+**78 tasks with zero started as at 2026-09-08** (`evidence/hist-report.md` §A.2,
+§G9; a task can be done in the tree without its box ticked, which that count did
+not verify), and process code plus specs outweigh site content **≈3:1** in
+insertions with machinery LOC up **3.49× in eleven days** — the predecessor site's
+recorded cause of death. **Stage 0 is therefore the whole of what ships first**,
+and it contains no new module, no new branch, nothing on the merge or publish
+path, and every item is a local edit to an existing file with a test and a named
+mutation. The train — the largest new mechanism in the change — is Stage 1 and
+ships separately. An earlier draft called that combination "four items, no new
+module"; it was not, and the staging below is the correction.
+
+## What changes
+
+- **Work orders.** A job carries 1..N items sharing a **coherence key**, bounded
+  by `N_max`, `S_max`, `B_total` and `B_per_subject`. The subject list is
+  **structured, loop-authored and committed** in `.job/source.json` at selection.
+  The merge's subject set is constituted from that declaration and **checked**
+  against the diff in both directions — no diff path outside it, and no item
+  retired without a measured diff on its own subjects.
+- **A release train.** Per job: build the **merged tip** plus `verify-surfaces`.
+  Merges land `--no-ff` on `train`, subject-disjoint; `main` advances only by
+  fast-forward after the full gate set, one rederive, and a sealed train review
+  over the whole diff including that rederived data. Publishing is per train and
+  pushes a **verified SHA**, not a branch.
+- **A ratification channel, named as the deliberate loosening it is.** A work
+  order may end `reviewed:` — the declared pages were read, judged sound and
+  correctly left unchanged — which is what makes `addictedtoai-vqbo` terminable.
+  Its precondition is that each declared page **already reads mismatched at the
+  merge base**, which means a non-Desk actor changed a published page. That
+  removes, in bounded form, the practical constraint that only the Desk may edit a
+  published page. Its two bounds: the per-subject byte bound applied to the
+  reviewed surfaces, and a `would-cite` entry per piece. The reviewer is handed
+  each page's bytes with no diff fence and a gates section that disclaims evidence
+  about the pages, so a real reviewer really does read them.
+- **One intake, two desks.** Beads is the one backlog. A model-free **router**
+  classifies each candidate **on its declared metadata, never on its title**; a
+  model-free **verifier** checks every checkable claim against the tree; a
+  **bundler** emits work orders. An idle front desk runs the scout or nothing.
+- **A declared runner policy, as an effort ladder.** `codex` accepts four
+  reasoning efforts — `medium`, `high`, `xhigh`, `max` — and the registry has
+  carried only the two ends, so every choice was a jump between them. Effort
+  becomes a **rung declared in `runners.yml`**: routine upkeep starts at `medium`,
+  authoring and machinery and spec-touching work start at `high`, all review and
+  every revision start at `xhigh`, and a rung is raised only when the ledger's
+  first-pass revise rate for that type and rung says the one below is not holding.
+  Starting everything non-routine at `max` spends the ceiling before anything has
+  measured the rung beneath it. Escalation moves into the repository and keys on
+  the **top-ranked** candidate. `runners.yml` stays the only file naming a model or
+  an effort.
+- **A diet and an inflow bound.** Pass 2b of `excerptsFor` goes, the excerpt
+  ceiling comes down to a measured value, a revision brief carries the excerpts for
+  the headings the verdict **structurally cited**, carried findings must name a
+  subject and are counted on the ledger, and a deferral becomes its own bead only
+  when it names a subject path or a spec requirement.
+- **Retirements.** `DIRECTIVES.md` after migration; the never-fired proposal
+  expiry sweep and duplicate-slug discard; the hand-driven fleet; the second
+  per-job build.
+
+## What does not change
+
+The review gate, bytes-bound review records, the four breakers, reserved paths,
+`STOP`/`HOLD.md` semantics, fail-the-build-don't-warn, the executor contract,
+`runners.yml` as the single swap point, the Pulse's derive step (model-free,
+byte-identical on unchanged state), and the ledger-before-rederive ordering. No
+budget bound moves: upkeep floor 40%, new-writing ceiling 45%, machinery ceiling
+10%.
+
+**The train's publish guarantee is enforced for the machine and procedural for a
+human.** After this change the only in-repository push is the train's, scoped to a
+verified SHA. It does not and cannot prevent the maintainer from running
+`git push` himself — that is his own publishing act under his existing grant,
+after the gates — nor an old script outside the repository from doing so. An old
+script is retired by deleting it, and the fleet's launcher is kept in
+`evidence/scripts/fleet-worker-retired.ps1` as the record of what was retired.
+Stating the limit is the point: a guarantee that quietly covered a path it cannot
+reach would be the kind of claim this repository's review exists to catch.
+
+**The serial rule is lifted, and by whom.** The maintainer, 2026-09-08, via
+A2AI-Orch: *"It really was meant to prevent collisions and machinery lock issues,
+you can disregard it moving forward."* Its purpose — two runs colliding on the
+shared build surface — is now served by `scripts/build-lock.mjs`, the test lock,
+and their measured refusal path: since 2026-09-08 contention books `interrupted`
+rather than `failed` (`gates.mjs:92`'s `TEST_LOCK_REFUSAL`), which is resumable
+and consumes no breaker step. A discipline held by a person, replaced by a
+mechanism, and the person freed from remembering it — which is the change's thesis
+in miniature.
+
+**"Disregard it" is not "no control", so here is what bounds concurrency now, and
+which of it was checked rather than assumed.** Four controls, **one re-derived and
+three checked**. The **build and test locks** hold the shared build surface. The
+**train's merge lock** stops two workers landing on the integration branch at
+once. **Worktrees** isolate the filesystem, with the junction hazard recorded.
+The **selection and ledger locks** stop two workers minting one job id or
+interleaving appends to one ledger file.
+
+Two of those were not enough, and A2AI-Luna-Boss-2 found both by re-deriving them
+rather than trusting them. **Breaker 1 was broken under concurrency** —
+`budget.mjs:673-683` walks the ledger backwards and stops at the first `done`, so
+it is a function of append order: four `repair` workers where the first, second
+and fourth fail and the third finishes in between read `fail, fail, done, fail`
+and count **one**. Three of four failed and nothing halts, and it degrades in the
+wrong direction, becoming less likely to trip as more concurrent work fails. It is
+replaced by a count over the last N completed jobs of that type. And **nothing at
+all covered two workers spending the same budget**: ceilings are read at selection
+from the ledger, and a ledger line is written when a job *ends*, so W workers
+selecting in one window each see the same headroom and each spend it. A selected
+job now writes a **reservation** the budget gate reads alongside the ledger. Shed
+levels and wall-clock caps were checked and stand unchanged.
+
+**One exclusion is reversed, and named.** The founding change excluded parallelism
+from the operating phase — *"the build itself may use any harness features
+available now … the product must not inherit those dependencies."* A front-desk
+worker is an ordinary `node loop/run.mjs` invocation in its own git worktree, so
+no harness dependency is inherited; what is reversed is the exclusion. The choice
+is not between parallel and serial. The fleet **already** runs parallel worktrees
+outside the Desk with no model-minute cap, no consecutive-failure breaker, no
+capacity shed, no ledger line and no review record — and the five largest
+machinery lines went that way because the 10% machinery ceiling refused all five
+(`addictedtoai-h0z0`). Of 225 branches at 2026-09-08 (204 local, 21 remote),
+`job/*` is 38 and the fleet family is 32; the largest category is `loop/*` at 121.
+The evidence that this is fragile rather than merely undocumented: **the fleet ran
+all day 2026-09-08 from a shell script inside the temporary directory of a session
+(`A2AI-luna-boss`) that had already ended at 06:36 that morning.** The choice is
+between parallel with a ledger and parallel without one.
+
+## Staging
+
+**The baseline is taken, and taking it moved the definition.** Measured over 206
+of the 208 merged jobs (`evidence/stage0-baseline.md`,
+`evidence/scripts/stage0-baseline.mjs`): brief-commit → merge wall-clock median
+**22.81 min**, of which **3.85 min** is non-model overhead. The old
+brief-commit → **records-commit** definition gives **5.497 min**, reproducing
+`evidence/desk-mech-report.md`'s 5.5 almost exactly — which validates the method,
+and also disqualifies that definition going forward, since the records commit
+moves to the train. One empirical reason it was the wrong anchor all along:
+**41 of those 206 jobs have no records commit anywhere in history**, their records
+apparently riding the next Pulse commit, filed as `addictedtoai-l7cx`.
+
+- **Stage 0 — no new module, nothing on the merge or publish path.**
+  `verify-launch` build reuse; the gate floor check; the brief diet including
+  lowering the excerpt ceiling; the conformance correction; the runner policy and
+  its escalation; the ledger fields (`brief_chars`, `gate_seconds`, runner and
+  effort per phase, carried-entry counts); the filing lint as a standalone script;
+  measuring `bd` before anything mocks it. **This stage takes the before/after
+  baseline** — while brief-commit → records-commit still means what it meant when
+  the 5.5-minute figure was measured, which is what keeps the comparison honest
+  once the records commit moves to the train.
+- **Stage 1 — the train alone, at one worker.** Integration branch, merged-tip
+  tripwire, red path, train review, scoped publish, breaker rewiring. One worker is
+  the whole mechanism minus the concurrency, and it is the honest place to discover
+  what a red train costs.
+- **Stage 2 — work orders**, with the `reviewed:` outcome and per-subject
+  `would-cite`.
+- **Stage 3 — intake, the two desks, more than one worker**, the retirements, and
+  the selection and ledger locks parallelism requires.
+
+Each stage's measurement, and the rule that decides whether the next one starts,
+is stated in `tasks.md` before the work rather than after it.
+
+## Positions of the three peer sessions — dissents and concessions
+
+- **A2AI-Orch** measured the gate table, the parsed suite, the local-day beads
+  flow, the runner-quality table and the backlog classification. Its dissents: **its
+  own 1.45× is a ceiling, not a measurement**, and it said so before anyone quoted
+  it; **the economics of intake were backwards** — intake is expensive precisely
+  because it is judgment, so mechanise the routing and keep the work-order *author*
+  human-grade; a byte total says nothing about distribution, hence `B_per_subject`;
+  `would-cite` per subject; a red train needs a classification step before any
+  revert; and escalation must key on the top-ranked candidate or it silently skips
+  the work it was meant to reach.
+- **A2AI-Luna-Boss-2** measured review at 2.6–3.2× implementation, the codex
+  token figures, the portability test's token scan, and traced the subject-set
+  defect to its root. Its dissents: **leave-one-out, not "drop the newest merge"**
+  — `addictedtoai-84s8` shows the defect can sit in an earlier merge; **bytes *and*
+  distinct subjects**; and a train review needs bounds of its own or it becomes the
+  unbounded reader the per-job bounds exist to prevent. Its **concession against
+  its own role**: a mechanised verifier would do the checkable-claim half of intake
+  *better* than a human-grade coordinator, and the evidence is its own miss,
+  `addictedtoai-4i2`. Its earlier claim that all 19 mixed-path beads were machinery
+  beads rested on a title regex and is **withdrawn**; routing now keys on declared
+  metadata, and the 15 beads naming both a code and a content path are triaged once
+  at migration by a person.
+- **A2AI-mem-cond** maintains the memory corpus quoted throughout. Its positions:
+  **the deferral rule makes inflow a function of throughput**, so any throughput
+  gain multiplies filing unless the rule is bounded; **do not cut a review round**;
+  the two Desk dollar figures are **consistent, not independent**; and the
+  calibration ratios are what make the transcript sweep a floor rather than an
+  estimate. It also established that the filing rule is the maintainer's own, in
+  his words, which is why amending it is a question for him and not a task here.
+
+## Open questions for the maintainer
+
+1. Is the front/back split read correctly from your `h0z0` comment — front desk =
+   content jobs, back desk = machinery, spec changes and beads? It rests on one
+   comment, and this change implements it as routing and accounting.
+2. The work-order bounds start at `N_max` 4, `S_max` 4, `B_total` 60,000,
+   `B_per_subject` 30,000, plus `B_train` 150,000 and `S_train` 12. Drafted as
+   `data/config.json` keys the orchestrator may tune from the ledger between runs,
+   **not** as budget bounds needing an OpenSpec change each time. Correct? Two of
+   them are conservative starting values rather than derived ones, and
+   `design.md`'s bounds table says which.
+3. **Answered by the change, and you may overrule.** The fleet retires at Stage 3,
+   because the front-desk workers that replace it do not exist until then and
+   retiring it earlier would remove the only channel by which the largest machinery
+   work has ever been done. The machine is Luna-first from Stage 0, per your
+   2026-09-08 instruction. Does any job type still default to a Claude runner?
+4. **Recommendation, not a sum for you to redo.** The Desk's 10% machinery ceiling
+   does not reduce machinery work; it *relocates* it to orchestrator and fleet
+   sessions at frontier prices. Landed on `main` since 2026-09-04 by no Desk job
+   while the ceiling held: `Merge fl/ml25`, `Merge fl/q6xp`, *"loop: a post-merge
+   build that never ran is neither red nor green"*, *"loop: record the retry before
+   the environmental return, not after"*, the revert guard and the memory-integrity
+   guards. The ledger cannot see this, because it records Desk jobs only. The
+   recommendation: **raise the Desk's machinery ceiling while the machinery cohort
+   drains, on Luna runners, and bound total machinery work by the inflow budget
+   rather than by the Desk's share.** The decision is yours.
+5. Should the back desk be limited to **finishing the three open changes** before
+   any new machinery change other than this one? `bind-what-the-catalog-knows` is
+   the structural fix for the canonical held-train red, and until it lands the
+   train's most frequent hold is the one this change had to decide the semantics of
+   without it. `let-the-queue-see-a-judgment` fixes the queue starvation.
+6. **The filing rule is yours, in your words:** *"Any time something like this pops
+   up, file a beads issue or it will get lost!"* This change would bound it — a
+   deferral becomes its own issue only when it names a subject path or a
+   specification requirement and cannot be fixed in the same job; otherwise it is a
+   note on the parent issue. That is an amendment to your rule, so the task that
+   edits `CLAUDE.md` and `AGENTS.md` is **held** until you answer.
+7. **The reading of your reserved sentence.** This change applies "nothing
+   publishes that a real reviewer has not actually read" to model-written bytes and
+   reviewed machinery, treating deterministic derived data and the review's own
+   records as exempt — which is what `openspec/specs/review/spec.md:26-30` already
+   exempts. Confirm that reading, or widen it and the train's ordering will follow.

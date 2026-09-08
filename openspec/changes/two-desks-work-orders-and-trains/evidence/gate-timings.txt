@@ -1,0 +1,20 @@
+
+GATE TIMINGS, serial, on main, publishing off
+gate                exit      secs    share
+npm test           null       0.0     0.0%
+npm run build      null       0.0     0.0%
+verify-launch         0      39.6    40.2%
+verify-design         0      35.7    36.3%
+verify-surfaces       0       3.7     3.7%
+verify-analytics      0      19.5    19.8%
+TOTAL                        98.5
+
+verify-launch's own build, self-reported: 39s
+static server: port 3000 was ALREADY SERVED before this run (a serve-static.mjs from 2026-08-29 is still alive). No server-start cost was incurred here, so the analytics figure below EXCLUDES it.
+all green: NO — see tails below
+
+--- npm test (exit null) last 25 lines ---
+
+
+--- npm run build (exit null) last 25 lines ---
+
