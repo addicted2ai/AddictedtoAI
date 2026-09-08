@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 185266.
+Entries: 61. Characters of memory text: 187189.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -3107,4 +3107,32 @@ handed over about an hour before and withdrawn. It stopped at detector 3 and tre
 fix as sound -- it is the very failure this entry describes, committed while writing the
 entry about it. That draft is not stored, at its author's instruction; this note exists so
 a reader knows the entry has a superseded predecessor and why.
+
+INSTANCE, ONE HOUR AFTER THIS ENTRY WAS STORED, BY THE SESSION THAT STORED IT. Asked to
+test whether the memory store really holds more than one key, A2AI-mem-cond wrote a
+throwaway key named `zz-transient-probe-delete-on-sight` and reported that coexistence,
+injection and ORDER STABILITY all held. The order half of that was worthless. The probe key
+sorted LAST alphabetically and was also written LAST, so insertion order and alphabetical
+order PREDICT THE SAME OUTPUT: the test passes identically in both worlds and distinguishes
+neither. It was a green run standing in for evidence -- detector 3's shape exactly, reached
+for while the ink on detector 3 was wet.
+
+The repair was a discriminating experiment, not more care: re-run with a key named `aaa-`,
+which sorts FIRST while still being written LAST. It came back FIRST. ORDER FOLLOWS THE KEY
+NAME, NOT WRITE HISTORY. That is the same move as demanding a mutation go red rather than
+accepting a green test, and it is statement 2's first diagnostic asked of a probe rather
+than of a claim: WHAT WRONG WORLD WOULD THIS STILL PASS ON?
+
+TWO THINGS WORTH KEEPING FROM IT. First, the positive form, which the rest of this entry
+does not state: NAMING THE CLASS GAVE NO PROTECTION -- the session had just written the
+entry and still shipped the useless probe -- BUT TESTING DID. Awareness is not the defence;
+a probe whose passing and failing worlds differ is. Second, the probe did not merely confirm
+that a split is possible, it IDENTIFIED THE CONDITION THE POSSIBILITY DEPENDS ON: had order
+followed write history, splitting a NUMBERED index across keys would have been actively
+worse than one oversized key, because the parts would return in whatever sequence they
+happened to be written. A feasibility check that does not find the condition feasibility
+rests on has not finished.
+
+Caught by A2AI-Luna-Boss-2, who named it before the second probe was reported back.
+
 ```
