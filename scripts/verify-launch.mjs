@@ -69,7 +69,7 @@
  * Exits 0 only when every check passed.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -166,6 +166,63 @@ function record(r) {
 function skipped(id, label, why) {
   results.push({ id, ok: true, skipped: true, label, actual: 'SKIPPED' });
   out(`  SKIP  ${label.padEnd(34)} not measured this run\n        ${why}\n`);
+}
+
+const BUILD_OUTPUT_DIR = 'out';
+const BUILD_INPUT_EXCLUSIONS = new Set(['.git', '.next', 'node_modules', BUILD_OUTPUT_DIR]);
+
+function newestFileMtime(root, { exclude = new Set() } = {}) {
+  let newest = 0;
+  let files = 0;
+
+  function walk(dir, isRoot) {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (isRoot && exclude.has(entry.name)) continue;
+      const file = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(file, false);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      try {
+        newest = Math.max(newest, statSync(file).mtimeMs);
+        files += 1;
+      } catch {
+        /* A disappearing file makes the current-build check conservative. */
+      }
+    }
+  }
+
+  walk(root, true);
+  return { newest, files };
+}
+
+/**
+ * An export is reusable only when it has files and was written after every
+ * build input in this tree. The repository has no build-produced tree stamp,
+ * so the filesystem timestamp comparison is deliberately conservative: a
+ * source newer than `out/` forces a build instead of trusting a stale export.
+ */
+export function hasCurrentBuild(root = ROOT) {
+  const output = join(root, BUILD_OUTPUT_DIR);
+  if (!existsSync(output)) return false;
+  const built = newestFileMtime(output);
+  if (built.files === 0) return false;
+  const inputs = newestFileMtime(root, { exclude: BUILD_INPUT_EXCLUSIONS });
+  return built.newest >= inputs.newest;
+}
+
+function buildInvocation() {
+  if (process.platform === 'win32') {
+    return { command: 'cmd.exe', args: ['/d', '/s', '/c', 'npm run build'] };
+  }
+  return { command: 'npm', args: ['run', 'build'] };
 }
 
 // ---------------------------------------------------------------------------
@@ -817,30 +874,51 @@ function checkReviews(corpus, dataDir) {
   return problems;
 }
 
-function checkBuild(runBuild) {
-  section('BUILD');
+export function checkBuild(runBuild, {
+  root = ROOT,
+  spawn = spawnSync,
+  now = Date.now,
+  isCurrent = hasCurrentBuild,
+  write = out,
+  report = record,
+} = {}) {
+  write(`\nBUILD\n${'-'.repeat(5)}\n`);
   if (!runBuild) {
-    skipped(
-      'build',
-      'npm run build',
-      '--no-build was passed. THE BUILD WAS NOT VERIFIED BY THIS RUN. A launch decision ' +
-        'needs it; run without the flag.',
-    );
-    return;
+    const skippedResult = { id: 'build', ok: true, skipped: true, label: 'npm run build', actual: 'SKIPPED' };
+    write('  SKIP  npm run build                    not measured this run\n' +
+      '        --no-build was passed. THE BUILD WAS NOT VERIFIED BY THIS RUN. A launch decision ' +
+      'needs it; run without the flag.\n');
+    if (report === record) results.push(skippedResult);
+    else report(skippedResult);
+    return skippedResult;
   }
-  out('  running `npm run build` ...\n');
-  const started = Date.now();
-  const res = spawnSync('npm', ['run', 'build'], {
-    cwd: ROOT,
-    shell: true,
+  const started = now();
+  if (isCurrent(root)) {
+    const secs = ((now() - started) / 1000).toFixed(3);
+    write('  reusing the existing current build; no build process was spawned\n');
+    return report({
+      id: 'build',
+      ok: true,
+      reused: true,
+      label: 'npm run build',
+      actual: `reused existing build in ${secs}s`,
+      floor: 'existing current build reused',
+      notes: [`checked ${join(root, BUILD_OUTPUT_DIR)} against the current tree`],
+    });
+  }
+
+  write('  running `npm run build` ...\n');
+  const invocation = buildInvocation();
+  const res = spawn(invocation.command, invocation.args, {
+    cwd: root,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
-  const secs = ((Date.now() - started) / 1000).toFixed(0);
+  const secs = ((now() - started) / 1000).toFixed(0);
   const ok = res.status === 0;
   const text = `${res.stdout ?? ''}\n${res.stderr ?? ''}`;
   const tail = text.trim().split('\n').slice(-14).join('\n          ');
-  record({
+  return report({
     id: 'build',
     ok,
     label: 'npm run build',
@@ -939,7 +1017,12 @@ export async function verifyLaunch(opts = {}) {
   checkToolLinks(corpus);
   checkDerived(corpus, dataDir);
   checkReviews(corpus, dataDir);
-  checkBuild(opts.build !== false);
+  checkBuild(opts.build !== false, {
+    root: opts.root ?? ROOT,
+    spawn: opts.spawn ?? spawnSync,
+    now: opts.now ?? Date.now,
+    isCurrent: opts.isBuildCurrent ?? hasCurrentBuild,
+  });
 
   const failed = results.filter((r) => !r.ok);
   const skips = results.filter((r) => r.skipped);

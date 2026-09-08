@@ -12,7 +12,63 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, symlinkSync, unlinkSync, readFileSync } from 'node:fs';
 import { freemem } from 'node:os';
+import { performance } from 'node:perf_hooks';
 import { join } from 'node:path';
+
+/*
+ * These are recorded calibrations, not guessed timeouts. The measurements were
+ * taken on 2026-09-08 and are preserved in gate-timings.txt and
+ * gate-timings-npm.txt. The first file records npm test and npm run build as
+ * exit null in 0.0s: they did not execute. The npm values below therefore use
+ * the corrected cmd.exe /c rerun in gate-timings-npm.txt (314.8s and 29.2s).
+ * The verify-analytics calibration is deliberately the 19.5s gate-only run:
+ * its source says port 3000 was already served, so no server-start cost was
+ * measured and none is charged to this floor.
+ *
+ * One rule supplies the margin for every gate: the floor is 0.1% of the
+ * recorded runtime, leaving a 99.9% lower-bound margin. This is a tripwire for
+ * the roughly 1ms no-op that can return success without starting a shim, not a
+ * performance budget. A real child still has to clear process-start overhead.
+ */
+const FLOOR_FRACTION = 0.001;
+const CALIBRATION_DATE = '2026-09-08';
+
+function calibratedFloor(calibrationSeconds, source, note) {
+  return Object.freeze({
+    calibrationSeconds,
+    floorMs: calibrationSeconds * 1000 * FLOOR_FRACTION,
+    marginFraction: FLOOR_FRACTION,
+    calibratedOn: CALIBRATION_DATE,
+    source,
+    ...(note ? { note } : {}),
+  });
+}
+
+export const GATE_FLOORS = Object.freeze({
+  test: calibratedFloor(314.8, 'gate-timings-npm.txt'),
+  build: calibratedFloor(29.2, 'gate-timings-npm.txt'),
+  'verify-surfaces': calibratedFloor(3.7, 'gate-timings.txt'),
+  'verify-design': calibratedFloor(35.7, 'gate-timings.txt'),
+  'verify-launch': calibratedFloor(39.6, 'gate-timings.txt', 'includes its recorded 39s build'),
+  'verify-analytics': calibratedFloor(
+    19.5,
+    'gate-timings.txt',
+    'calibration excludes server startup; port 3000 was already served',
+  ),
+});
+
+const defaultClock = () => performance.now();
+
+function formatDuration(durationMs) {
+  return `${Number(durationMs).toFixed(1)}ms`;
+}
+
+function npmInvocation(script) {
+  if (process.platform === 'win32') {
+    return { command: 'cmd.exe', args: ['/d', '/s', '/c', `npm run ${script}`] };
+  }
+  return { command: 'npm', args: ['run', script] };
+}
 
 /**
  * THE MARKER A GATE FAILURE CARRIES WHEN THE MACHINE, NOT THE DIFF, FAILED.
@@ -185,13 +241,42 @@ export function gateCommandForName(name) {
   return node ? `node ${node.file}` : `npm run ${name}`;
 }
 
+function enforceGateFloor(result) {
+  const floor = GATE_FLOORS[result.script];
+  if (!Number.isFinite(result.durationMs)) return result;
+
+  if (!floor) {
+    return {
+      ...result,
+      ok: false,
+      floorFailure: true,
+      output: `gate ${result.script} has no declared calibration floor, so it cannot pass.\n` +
+        (result.output ?? ''),
+    };
+  }
+
+  const withFloor = { ...result, floorMs: floor.floorMs };
+  if (!result.ok || result.durationMs >= floor.floorMs) return withFloor;
+
+  return {
+    ...withFloor,
+    ok: false,
+    floorFailure: true,
+    output: `gate ${result.script} returned below its declared floor: observed ` +
+      `${formatDuration(result.durationMs)}, floor ${formatDuration(floor.floorMs)}.\n` +
+      (result.output ?? ''),
+  };
+}
+
 export function gateFailureNote(result = {}, { retried = false } = {}) {
   const failed = (result.results ?? []).filter((r) => !r.ok);
   const which = failed.length
     ? failed
         .map((r) => {
           const timedOut = r.errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(r.error ?? '');
-          const ending = r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
+          const ending = r.floorFailure
+            ? `below floor: observed ${formatDuration(r.durationMs)} < ${formatDuration(r.floorMs)}`
+            : r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
           return `${gateCommand(r)} (${ending})`;
         })
         .join(', ')
@@ -259,13 +344,14 @@ function hasScript(worktree, name) {
   }
 }
 
-function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync) {
-  const r = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
+function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync, now = defaultClock) {
+  const invocation = npmInvocation(script);
+  const started = now();
+  const r = spawn(invocation.command, invocation.args, {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
-    shell: process.platform === 'win32',
     env: { ...process.env, ...env },
   });
   return {
@@ -277,6 +363,8 @@ function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync) {
     errorCode: r.error?.code,
     freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
     spawned: true,
+    durationMs: Math.max(0, now() - started),
+    floorMs: GATE_FLOORS[script]?.floorMs,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -327,10 +415,12 @@ export const NODE_GATES = Object.freeze({
   'verify-surfaces': Object.freeze({
     file: 'scripts/verify-surfaces.mjs',
     args: () => ['out'],
+    floor: GATE_FLOORS['verify-surfaces'],
   }),
   'verify-design': Object.freeze({
     file: 'scripts/verify-design.mjs',
     args: () => ['out', process.env.LOOP_VERIFY_DESIGN_PORT ?? '3211'],
+    floor: GATE_FLOORS['verify-design'],
     // A GATE IS A CHECK, NOT A MEASUREMENT OF RECORD. `verify-design` writes
     // its numbers into `data/launch.json`, which is the repository's dated
     // measurement file. Left to write it here, every job's gate would leave the
@@ -345,8 +435,9 @@ export const NODE_GATES = Object.freeze({
 /** The per-job merge gate, in order: the export must exist before it is checked. */
 export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
 
-function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync) {
+function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync, now = defaultClock) {
   const args = [spec.file, ...spec.args()];
+  const started = now();
   const r = spawn(process.execPath, args, {
     cwd: worktree,
     encoding: 'utf8',
@@ -363,6 +454,8 @@ function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync) {
     errorCode: r.error?.code,
     freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
     spawned: true,
+    durationMs: Math.max(0, now() - started),
+    floorMs: GATE_FLOORS[name]?.floorMs,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -381,6 +474,7 @@ export function runGates(ctx, worktree, {
   timeoutMs = 20 * 60 * 1000,
   lockWaitMs = lockWaitBudget(timeoutMs),
   spawn = spawnSync,
+  now = defaultClock,
 } = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
   const gateEnv = {
@@ -405,7 +499,7 @@ export function runGates(ctx, worktree, {
         });
         continue;
       }
-      const r = nodeRun(worktree, s, node, timeoutMs, gateEnv, spawn);
+      const r = enforceGateFloor(nodeRun(worktree, s, node, timeoutMs, gateEnv, spawn, now));
       results.push(r);
       if (!r.ok) break;
       continue;
@@ -421,7 +515,7 @@ export function runGates(ctx, worktree, {
       });
       continue;
     }
-    const r = npmRun(worktree, s, timeoutMs, gateEnv, spawn);
+    const r = enforceGateFloor(npmRun(worktree, s, timeoutMs, gateEnv, spawn, now));
     results.push(r);
     if (!r.ok) break;
   }
