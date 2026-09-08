@@ -568,7 +568,7 @@ export function buildJsPayloadRecord(measurements, previousRecord = {}, measured
       `gzip measurement moves by more than ${RECORDED_NOISE_FLOOR_BYTES} bytes; the floor is the ` +
       'conservative maximum of every page and field in a controlled build-ID simulation ' +
       '(n=16 same-length build-ID variants over one exported tree, observed maximum spread 10 gzip bytes, ' +
-      'measured 2026-09-06; 10 + 51.2-byte half-step = 61.2, rounded up to the 62-byte floor), ' +
+      'measured 2026-09-07; 10 + 51.2-byte half-step = 61.2, rounded up to the 62-byte floor), ' +
       'not repeated builds of unchanged content',
     method:
       'gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every ' +

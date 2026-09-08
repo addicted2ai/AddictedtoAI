@@ -38,7 +38,7 @@ export const BUDGET_BYTES = 150 * 1024;
  * The 62-byte floor is the conservative maximum across every page and field
  * in a controlled build-ID simulation: n=16 same-length build-ID variants
  * over one exported tree produced an observed maximum spread of 10 gzip bytes on
- * 2026-09-06. It is not repeated measurement of unchanged content or a set of
+ * 2026-09-07. It is not repeated measurement of unchanged content or a set of
  * independent builds; the 51.2-byte half-step of 0.1 KB precision is added so
  * that this controlled spread cannot cross a display boundary.
  */

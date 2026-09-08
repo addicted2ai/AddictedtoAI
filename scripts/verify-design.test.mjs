@@ -58,9 +58,17 @@ function measuredPage(route, label, offset = 0) {
   };
 }
 
-test('payload record reads all four prior fields, keeps them byte-identical across an advanced clock, and dates value movement', () => {
+test('payload record reads all four prior fields, keeps bytes identical across an advanced clock, and dates value movement', () => {
   const measurements = [measuredPage('/', 'home'), measuredPage('/catalog', 'table', 1)];
   const first = buildJsPayloadRecord(measurements, {}, '2026-09-06');
+
+  const sameMeasurementsNextDay = buildJsPayloadRecord(measurements, first, '2026-09-07');
+  assert.equal(
+    JSON.stringify(sameMeasurementsNextDay),
+    JSON.stringify(first),
+    'identical measurements must preserve serialized bytes when only the date advances',
+  );
+
   const withinNoise = [measuredPage('/', 'home', 55), measuredPage('/catalog', 'table', 56)];
   const retained = buildJsPayloadRecord(withinNoise, first, '2026-09-07');
   assert.deepEqual(retained, first, 'unchanged values must retain the complete prior record');
