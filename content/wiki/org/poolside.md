@@ -88,7 +88,7 @@ facts:
     volatility: static
   - field: weight_class_claim
     source: cited
-    value: "\"the most capable agentic coding model in its weight class by a wide margin\", the vendor's own bolded comparison"
+    value: "\"Laguna S 2.1 is, as far as we can measure, the most capable agentic coding model in its weight class by a wide margin\", the vendor's own bolded comparison"
     source_url: "https://poolside.ai/blog/introducing-laguna-s-2-1"
     accessed: "2026-09-06"
     volatility: dated
@@ -216,9 +216,9 @@ The interesting part is what happened to the licence in the twelve weeks
 after. The first two public models were the most permissive thing on offer:
 Laguna XS.2's repository went up on 23 April 2026 as
 {{fact:org/poolside#laguna_xs_2_license}}, Laguna M.1's on 15 June as
-{{fact:org/poolside#laguna_m_1_license}}. The next two did not. Laguna XS 2.1
-(20 June) is {{fact:org/poolside#laguna_xs_2_1_license}} and Laguna S 2.1
-(13 July) is {{fact:org/poolside#laguna_s_2_1_license}} — the
+{{fact:org/poolside#laguna_m_1_license}}. The next two did not. Laguna XS 2.1's
+repository (20 June) is {{fact:org/poolside#laguna_xs_2_1_license}} and Laguna S 2.1's
+repository (13 July) is {{fact:org/poolside#laguna_s_2_1_license}} — the
 [Linux Foundation's model-specific licence](https://openmdw.ai/) rather than
 the one every developer already knows. Poolside filed the switch under a
 heading reading "A more open license":
@@ -235,8 +235,8 @@ line; neither Apache release ever got a row here.
 
 The headline claim is bounded more tightly than it first reads. Poolside calls
 Laguna S 2.1 {{fact:org/poolside#weight_class_claim}}, and "in its weight
-class" is carrying the sentence. Not one of the eight rivals in its own
-comparison table is in that class:
+class" is carrying the sentence. Not one of the five rivals that publishes a
+size is in that class, and three publish none:
 {{fact:org/poolside#comparison_table_sizes}} — against
 {{fact:org/poolside#laguna_s_2_1_size}}. On Terminal-Bench 2.1, the first
 benchmark in that table, most of it beats Poolside —
