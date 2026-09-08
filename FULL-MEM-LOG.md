@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 118158.
+Entries: 58. Characters of memory text: 119067.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -1987,6 +1987,20 @@ first written up as "a repair job restored a file to a stale baseline" -- which 
 the MECHANISM accurately and hides the CONSEQUENCE, that a revert of merged work reached
 the LIVE SITE past green gates and an approving reviewer. A record that cannot alarm its
 reader has failed at the only job a record has. State what it COST, not only what it DID.
+
+--- ADDED 2026-09-08 by addictedtoai-73, after the corpus was condensed. NOT part of
+the original memory text above. ---
+
+KNOWING WHICH CLAIMS YOUR WORK RESTS ON IS THE WHOLE SKILL; CHECKING EVERYTHING
+INDISCRIMINATELY IS JUST A DIFFERENT WAY OF NOT PRIORITISING. Verification effort is
+finite, so spend it where a wrong claim would change what you write or do.
+WORKED EXAMPLE, 2026-09-07/08, two opposite calls both correct. A session writing a
+GENERAL principle into this corpus took a peer's description of its own guard code on
+trust, because nothing it was writing depended on that code being as described. The same
+session verified addictedtoai-lvba against `bd show` before citing it, because there the
+citation WAS the claim -- and the bead turned out to be stronger than the summary given.
+THE TEST is not "how confident am I?" but "DOES ANYTHING I AM ABOUT TO WRITE OR DO REST
+ON THIS BEING TRUE?"
 ```
 
 ## verify-from-raw-not-from-reports
