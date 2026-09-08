@@ -9,8 +9,8 @@ aliases:
     class: exclusive
   - name: ByteDance Seed Team
     class: exclusive
-  - name: Seed
-    class: manual
+publishes_from:
+  - byteplus.com
 facts:
   - field: founded
     source: cited

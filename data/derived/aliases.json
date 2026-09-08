@@ -6039,16 +6039,6 @@
       ]
     },
     {
-      "name": "Seed",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "org/bytedance-seed",
-          "class": "manual"
-        }
-      ]
-    },
-    {
       "name": "Soft prompts",
       "linkable": false,
       "claimed_by": [
