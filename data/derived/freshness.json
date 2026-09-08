@@ -47,18 +47,42 @@
       "state": "failing-once",
       "status": 404,
       "url": "https://ourworldindata.org/grapher/data-centers-share-electricity-demand"
+    },
+    {
+      "cited_by": [
+        "content/blog/nobody-had-to-report-the-wiki-incident.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-07",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://thenextweb.com/news/openai-agents-german-wiki-breakout"
+    },
+    {
+      "cited_by": [
+        "content/blog/pachocki-an-alien-mind-monitorability.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-07",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://thenextweb.com/news/openai-slowdown-pachocki-alien-mind-research-intern-compute"
     }
   ],
   "date": "2026-09-07",
   "link_check": {
-    "checked": 0,
+    "checked": 25,
     "confirm_after_failures": 2,
     "declined": 9,
     "drifted": 0,
     "due": 43,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 18,
+    "redirected": 19,
     "total": 694
   },
   "listings": [
@@ -686,6 +710,18 @@
       "last_checked": "2026-08-31",
       "meta_refresh": null,
       "url": "https://safe.ai/work/statement-on-ai-risk",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/org/microsoft.md"
+      ],
+      "final_url": "https://azure.status.microsoft/en-us/status",
+      "kind": "cross-site-related",
+      "last_checked": "2026-09-07",
+      "meta_refresh": null,
+      "url": "https://status.azure.com/",
       "verdict_recorded": true
     },
     {

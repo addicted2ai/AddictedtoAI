@@ -2190,6 +2190,17 @@
       "ok": true,
       "status": 200
     },
+    "https://aws.amazon.com/nova/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/nova/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://aws.amazon.com/nova/models/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -5557,6 +5568,28 @@
       "ok": true,
       "status": 200
     },
+    "https://raw.githubusercontent.com/boson-ai/RPBench-Auto/main/README.md": {
+      "bytes": 801,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://raw.githubusercontent.com/boson-ai/RPBench-Auto/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://raw.githubusercontent.com/boson-ai/RPBench-Auto/main/results/leaderboard_for_display.csv": {
+      "bytes": 476,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://raw.githubusercontent.com/boson-ai/RPBench-Auto/main/results/leaderboard_for_display.csv",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://reason.com/2026/08/28/judge-says-trumps-clampdown-on-anthropic-violates-the-first-amendment/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -5678,6 +5711,50 @@
       "ok": true,
       "status": 200
     },
+    "https://seed.bytedance.com/en/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://seed.bytedance.com/en/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://seed.bytedance.com/en/blog": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://seed.bytedance.com/en/blog",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://seed.bytedance.com/en/blog/seed2-1-officially-released-advancing-ai-productivity": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://seed.bytedance.com/en/blog/seed2-1-officially-released-advancing-ai-productivity",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://seed.bytedance.com/en/seed2_1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://seed.bytedance.com/en/seed2_1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://siliconangle.com/2026/01/27/moonshot-ai-releases-open-source-kimi-k2-5-model-1t-parameters/": {
       "bytes": 176052,
       "consecutive_failures": 0,
@@ -5766,6 +5843,39 @@
       "ok": true,
       "status": 200
     },
+    "https://stats.ioinformatics.org/results/2025": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://stats.ioinformatics.org/results/2025",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://stats.ioinformatics.org/results/2026": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://stats.ioinformatics.org/results/2026",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://status.azure.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://azure.status.microsoft/en-us/status",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://storage.courtlistener.com/recap/gov.uscourts.cand.415175/gov.uscourts.cand.415175.598.0.pdf": {
       "bytes": 349841,
       "consecutive_failures": 0,
@@ -5806,6 +5916,28 @@
       "final_url": "https://suno.com/blog/v3",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://support.claude.com/en/articles/15425695-covered-models": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://support.claude.com/en/articles/15425695-covered-models",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://support.claude.com/en/articles/15425996-data-retention-practices-for-covered-models": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://support.claude.com/en/articles/15425996-data-retention-practices-for-covered-models",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5865,6 +5997,61 @@
       "ok": true,
       "status": 200
     },
+    "https://techcrunch.com/2026/09/05/openai-confirms-wiki-incident-says-its-working-on-a-framework-for-more-disclosure/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://techcrunch.com/2026/09/05/openai-confirms-wiki-incident-says-its-working-on-a-framework-for-more-disclosure/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://thehackernews.com/2026/09/malicious-git-configs-can-make-claude.html": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://thehackernews.com/2026/09/malicious-git-configs-can-make-claude.html",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://thehackernews.com/2026/09/thousands-of-openai-agents-quietly.html": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://thehackernews.com/2026/09/thousands-of-openai-agents-quietly.html",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://thenextweb.com/news/openai-agents-german-wiki-breakout": {
+      "bytes": null,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://thenextweb.com/news/openai-agents-german-wiki-breakout",
+      "last_checked": "2026-09-07",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
+    },
+    "https://thenextweb.com/news/openai-slowdown-pachocki-alien-mind-research-intern-compute": {
+      "bytes": null,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://thenextweb.com/news/openai-slowdown-pachocki-alien-mind-research-intern-compute",
+      "last_checked": "2026-09-07",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
+    },
     "https://theweekinchess.com/html/twic131.html": {
       "bytes": 13888,
       "consecutive_failures": 0,
@@ -5916,6 +6103,17 @@
       "final_url": "https://tokenstead.ai/guides/eu-ai-act-first-enforcement-security-rfis",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://trajectories.poolside.ai/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://trajectories.poolside.ai/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -6041,6 +6239,50 @@
       "ok": true,
       "status": 200
     },
+    "https://web.archive.org/web/20260906234809/https://openai.com/index/an-alien-mind/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://web.archive.org/web/20260906234809/https://openai.com/index/an-alien-mind/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://wikiservice.at/dse/wiki.cgi?StartSeite": {
+      "bytes": 5996,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://wikiservice.at/dse/wiki.cgi?StartSeite",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://winbuzzer.com/2026/09/05/openai-linked-agents-dsewiki-shared-task-data-xcxwbn/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://winbuzzer.com/2026/09/05/openai-linked-agents-dsewiki-shared-task-data-xcxwbn/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://wizardlm.github.io/WizardLM2/": {
+      "bytes": 4624,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://wizardlm.github.io/WizardLM2/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www-formal.stanford.edu/jmc/reviews/lighthill/lighthill.html": {
       "bytes": 8022,
       "consecutive_failures": 0,
@@ -6048,6 +6290,17 @@
       "final_url": "https://www-formal.stanford.edu/jmc/reviews/lighthill/lighthill.html",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.404media.co/microsoft-deleted-its-llm-because-it-didnt-get-a-safety-test-but-now-its-everywhere/": {
+      "bytes": 11999,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.404media.co/microsoft-deleted-its-llm-because-it-didnt-get-a-safety-test-but-now-its-everywhere/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -6092,6 +6345,28 @@
       "final_url": "https://www.aimadetools.com/blog/mercury-2-5-preview-explained/",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.aionlabs.ai/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aionlabs.ai/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.aionlabs.ai/docs/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aionlabs.ai/docs/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
