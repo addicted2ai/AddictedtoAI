@@ -662,6 +662,31 @@ the orchestrator's work between runs.
       one scope rule, keyed on the governing type, including intake's verification
       results where present. `acceptanceChecksFor` and `checklistFor` read the
       governing type. Implements the same requirement, brief side.
+      **NOTE (A2AI-Orch, 2026-09-08; the arithmetic assumes task 7 has landed
+      and is meaningless before it).** Two brief-size rules in this change look
+      like they conflict and today do not, because they govern DIFFERENT
+      ARTEFACTS: task 8's 30,000-character bound is on the ASSEMBLED Desk brief
+      (`brief-excerpt-budget.test.mjs` imports `assembleBrief` and
+      `excerptsFor`), while a fleet worker's `.agent-brief.md` is hand-authored
+      and that bound does not know it exists — so packet A's round 3 remedy,
+      quote the frozen task text VERBATIM into the brief with its sha rather
+      than paraphrasing it, cannot push anything toward a ceiling it is not
+      measured against. **Work orders are the commit that makes them one
+      artefact:** the moment fleet work routes through the Desk, the
+      hand-written brief becomes an assembled brief and both rules apply to
+      the same bytes. The room when that happens: task 7 lowers the excerpt
+      ceiling to 24,000 of the 30,000, so about 6,000 characters carry
+      everything that is not a spec excerpt — ground rules, job detail, and
+      any quoted authority. The asymmetry that decides the shape:
+      `excerptsFor` marks its own truncation with `[... CUT ...]`, and nothing
+      whatever marks a hand-written brief that quietly paraphrased; one failure
+      announces itself, the other is silent, and today only the announcing one
+      has a budget. So when the artefacts merge, the quoted authority is a
+      FIRST-CLASS SECTION of the brief with its own budget and its own cut
+      marker, not prose competing with the job detail. Both halves are measured
+      on this branch: a paraphrase that lost the single word "both" cost packet
+      A a full round, and the assembled brief's cut marker is the mechanism that
+      would have made the loss visible.
 - [ ] 60. `loop/lib/review.mjs` and `loop/lib/verdict.mjs`: `would-cite-for` as a
       list of entries sharing `reads-human-from`'s parser and entry shape; the
       duplicate check per entry across other records; two entries in one record may
