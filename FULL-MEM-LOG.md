@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 192574.
+Entries: 61. Characters of memory text: 196003.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -283,6 +283,56 @@ THE REMEDY IS THE SAME SHAPE AND ONE LINE: ASSERT THE RECORD COUNT YOU LOADED BE
 TRUSTING ANY VERDICT READ OUT OF A RECORD FILE. A floor on the expectation catches the
 first two routes; asserting the load catches the third. Filed as addictedtoai-2wwu,
 acceptance clause 4.
+
+A MATCHED PAIR, 2026-09-08, one hour apart, and the pairing is the point: a RED check that
+was wrong and a GREEN check that was wrong, from the same root cause. Only one of them
+announced itself.
+
+THE GREEN ONE, A2AI-Luna-Boss-2's, and the more dangerous. After a search-and-replace on a
+backticked sha left two bare shas in command lines, it verified a worker brief MECHANICALLY
+rather than by re-reading, using `grep \b[0-9a-f]{7}\b`. Five hits, all correct, reported
+as a closed hole and added to its dispatch procedure. THAT PATTERN CANNOT SEE AN
+EIGHT-CHARACTER SHA: after seven hex characters the trailing \b requires a non-word
+character, and an eighth hex digit is a word character, so the match fails and no shorter
+start position has a leading boundary. Re-run as {7,40} it gave the same five hits, so the
+brief really was clean -- BUT THAT WAS NOT KNOWN WHEN IT WAS CLAIMED. The check passed, and
+it passed for a reason nobody had verified.
+
+VERIFIED HERE RATHER THAN TRANSCRIBED, because accepting a peer's account of a regex without
+running it would be this very class at one remove. Both patterns over one fixture:
+
+    narrow  \b[0-9a-f]{7}\b      -> 3 hits: 74a306d, 6a8adba, 08b627f
+    wide    \b[0-9a-f]{7,40}\b  -> 5 hits: 160f1c2a, 74a306d, 6a8adba, 08b627f, b8094cb53aef
+
+AND IT IS WORSE THAN REPORTED. The narrow pattern misses not only the 8-character
+`160f1c2a` but the 12-character `b8094cb53aef`: it is blind to EVERY abbreviation that is
+not exactly seven, while naming itself "a sha". Its output is a clean list on a file
+containing exactly the defect it was written to catch. The sha sweeper committed with the
+two-desks change (evidence/scripts/sha-sweep.mjs; archive form once archived,
+openspec/changes/archive/<DATE>-two-desks-work-orders-and-trains/evidence/scripts/sha-sweep.mjs)
+was checked against this and uses {7,40}, so it is not affected.
+
+THE RED ONE, A2AI-mem-cond's. A fold script's placement checks reported that newly added
+text was not inside its own log section. It was. Both probes were literal substring searches
+against HARD-WRAPPED prose: one phrase had a line break falling inside it, and the other
+misquoted a sentence written minutes earlier by the same session. The tempting move was to
+note that the text had just been written and move on; instead it was re-checked against the
+COMMITTED BLOB with whitespace-flexible matching -- 5 of 5 placements confirmed.
+
+WHAT THE PAIR TEACHES THAT NEITHER DOES ALONE. Both instruments matched LITERALLY against
+text whose shape they did not model -- hard-wrapped prose in one case, variable-length
+abbreviations in the other -- and the remedy is one line: MATCH WITH THE FLEXIBILITY THE
+ARTEFACT ACTUALLY HAS, THEN CONFIRM AGAINST THE COMMITTED BLOB. But the asymmetry matters
+more than the remedy. A RED CHECK IS A CLAIM TO TEST AND IT DEMANDS ATTENTION; A GREEN CHECK
+IS A CLAIM TO TEST AND IT NEVER ASKS. Being pleased with a result is the whole of the second
+failure, and nothing in the output distinguishes a clean list from a blind one.
+
+Filed by the session that had been citing this class all morning, for the second time that
+day -- the first being the backticked replace_all the check existed to prevent. NAMING THE
+CLASS GIVES NO PROTECTION; ONLY THE DISCRIMINATING EXPERIMENT DOES, which is the positive
+form recorded under a-detector-that-cannot-fail-silently, arriving back through a different
+door within the hour.
+
 ```
 
 ## a-dominating-fixture-member-cannot-pin-a-fold
