@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 5,
+  "count": 4,
   "items": [
-    {
-      "detail": "`data/proposals/link-node-modules-before-the-author-runs.md` (added by this diff, 2026-09-07) proposes what `data/proposals/author-worktrees-carry-no-node-modules.md` (2026-09-04, still standing in the tree) already proposes: \"Link `node_modules` into a job worktree when the worktree is created, not only inside `runGates`.\" The slugs differ, so nothing auto-discards, and both are selectable. The new file is not redundant in every part — it adds that `linkNodeModules` is already idempotent, so the gate-time call needs no change, and it names the exact insertion point — while the older one carries a second half the new one drops: teaching `unlinkNodeModules` to tell a junction it created from a real directory a job installed, rather than calling `unlinkSync` on a directory and swallowing the throw. Whoever takes this should work from one file holding both halves and drop the other, rather than let two proposals for one fix compete for selection. (The older file's line citation has also drifted: it names `loop/lib/gates.mjs:177` for the sole `linkNodeModules` call, which is `:300` today.)\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-08 (`j-20260907-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260907-08-carry-1.md",
-      "target": "data/carried/j-20260907-08-carry-1.md",
-      "title": "Fold the new node_modules proposal into the standing one that already proposes it",
-      "type": "repair"
-    },
     {
       "detail": "The evidence block says the feed was \"computed 2026-09-07 over data/changes.jsonl (186 lines, spanning 2026-07-09 to 2026-09-06)\". I parsed the same file: 186 lines is right, and the last date is 2026-09-06, but the FIRST date is 2026-06-29, not 2026-07-09. Every load-bearing number around it is correct (15 retirement rows total, 13 dated 2026-08-31 or later, 4 status->deprecated all inside the same seven days, earliest retirement 2026-08-29), so this is an isolated slip in the span. Fix: \"spanning 2026-06-29 to 2026-09-06\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -48,5 +39,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 5
+  "total_before_cap": 4
 }
