@@ -16,25 +16,25 @@ facts:
   - field: released
     source: cited
     value: "November 30, 2022"
-    source_url: "https://en.wikipedia.org/wiki/ChatGPT"
+    source_url: "https://web.archive.org/web/20221130211011/https://openai.com/blog/chatgpt/"
     accessed: "2026-09-08"
     volatility: dated
   - field: product_type
     source: cited
-    value: "a generative AI chatbot developed by OpenAI"
-    source_url: "https://en.wikipedia.org/wiki/ChatGPT"
+    value: "a model developed by OpenAI that interacts in a conversational way, released as a free research preview"
+    source_url: "https://web.archive.org/web/20221130211011/https://openai.com/blog/chatgpt/"
     accessed: "2026-09-08"
     volatility: static
   - field: response_basis
     source: cited
-    value: "large language models, specifically generative pre-trained transformers, generate text, speech, and images in response to user prompts"
-    source_url: "https://en.wikipedia.org/wiki/ChatGPT"
+    value: "supervised fine-tuning followed by reinforcement learning from human feedback, starting from a GPT-3.5-series model"
+    source_url: "https://web.archive.org/web/20221130211011/https://openai.com/blog/chatgpt/"
     accessed: "2026-09-08"
     volatility: static
 timeline:
   - date: "2022-11-30"
     event: "OpenAI releases ChatGPT to the public"
-    source_url: "https://en.wikipedia.org/wiki/ChatGPT"
+    source_url: "https://web.archive.org/web/20221130211011/https://openai.com/blog/chatgpt/"
 mentions:
   - org/openai
   - event/gpt-2-staged-release
@@ -46,6 +46,13 @@ appearance of a large language model, and it was not even OpenAI's first
 widely discussed release strategy. GPT-2 had already made staged disclosure
 part of the field's vocabulary. ChatGPT changed the scale and texture of the
 encounter: anyone could open a browser and address a language model directly.
+
+The interface was the visible part of a specific training pipeline. OpenAI
+started with supervised fine-tuning on conversations in which human trainers
+played both sides. It then collected comparisons of two or more model
+responses, trained a reward model from those rankings, and used that model for
+reinforcement-learning fine-tuning. ChatGPT was fine-tuned from a GPT-3.5-series
+model whose training had finished in early 2022.
 
 That directness mattered. The interface made generation look conversational,
 which invited people to treat a system trained to continue patterns as a

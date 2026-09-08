@@ -129,9 +129,9 @@ anticipates a chatbot.
 
 That design is what nearly everything you use now is built from — at sizes its
 authors never tested. The public half came five years later: on 30 November
-2022 one of these systems was put behind a text box and opened to anyone, and a
-technology that had been arriving quietly since 2012 acquired a date. Nothing
-was solved that week. Something was shown.
+2022, ChatGPT was put behind a text box and opened to anyone, and a technology
+that had been arriving quietly since 2012 acquired a date. Nothing was solved
+that week. Something was shown.
 
 The field's own summary of all this has a name, [the bitter
 lesson](/wiki/concept/the-bitter-lesson): across seventy years the methods that
