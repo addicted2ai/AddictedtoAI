@@ -888,7 +888,16 @@ the sentence that uses it.
       the same bytes. The room when that happens: task 7 lowers the excerpt
       ceiling to 24,000 of the 30,000, so about 6,000 characters carry
       everything that is not a spec excerpt — ground rules, job detail, and
-      any quoted authority. The asymmetry that decides the shape:
+      any quoted authority. **That subtraction describes the FIXTURE, not the
+      tree** (Orch's own correction, the second time in a day an arithmetic was
+      correct about the object it named and misleading about the object the
+      reader had in mind): the 30,000 is asserted on a pinned corpus with
+      three unarchived changes, and the live tree's largest assembled brief
+      measured at B1 round 2 (`439d083`, 2026-09-08) was 41,043 after the
+      diet, down from 73,288 before it, so the real non-excerpt headroom on
+      the tree a worker reads is a different, unmeasured number, to be read
+      from `brief_chars` when work orders arrive rather than computed from
+      the bound. The asymmetry that decides the shape:
       `excerptsFor` marks its own truncation with `[... CUT ...]`, and nothing
       whatever marks a hand-written brief that quietly paraphrased; one failure
       announces itself, the other is silent, and today only the announcing one

@@ -1999,7 +1999,19 @@ measuring rather than reading.
 Branch at `439d083`; worker and sealed reviewer at max; verdict revise, four
 findings; the rewrite largely right: no per-source share survives, the
 mutation table exact on every row the coordinator re-ran, and the live
-tree's largest assembled brief fell from 73,288 to 41,043 characters. The
+tree's largest assembled brief fell from 73,288 to 41,043 characters. **Both
+numbers, in the same place, so the bound is not taken for the reality
+(Orch):** the bound task 8 ASSERTS is 30,000, on a pinned fixture with three
+unarchived changes, never on the live tree, because a live assertion goes red
+when an unrelated change archives; the brief a worker actually READS on the
+live tree measured 41,043 at `439d083` on 2026-09-08, 37% above that bound
+after the diet, which is not a defect — the fixture is a smaller world — but
+means the bound does not constrain production and the sentence "at most
+30,000 characters" must never travel without its fixture qualifier. Task 8
+already requires the live size measured, printed and recorded as
+`brief_chars`; the two numbers are to be stated side by side wherever either
+is quoted, and the task 8 sentence saying so is queued for after B1 round 3,
+its text being frozen for that run. The
 severe finding was a specification gap the architect's text left: the floor
 loop reserved space for every LATER floor before allocating an earlier one, so
 under a tight cap the priority order inverted exactly when priority matters
