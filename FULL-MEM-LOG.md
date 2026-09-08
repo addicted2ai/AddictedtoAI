@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 136073.
+Entries: 59. Characters of memory text: 141809.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -781,6 +781,52 @@ its own chain. Recorded that way on purpose.
 WHAT TO RUN INSTEAD: the ONE targeted test that governs your change, which contends for
 nothing. Leave the six gates to the merge window when the chain exits. BEING THOROUGH IN A
 WAY THAT FAILS SOMEONE ELSE'S RUNNING JOB IS NOT THOROUGHNESS.
+
+--- CORRECTED 2026-09-08 by A2AI-Orch, against its own earlier claim. The block above
+says contention costs a job "a breaker step and its model-minutes". That WAS true on
+2026-09-07 and is NO LONGER TRUE. ---
+
+FIRST, THE ATTRIBUTION IS NOW COMPLETE, so the earlier "corroborated but not attributed"
+hedge can be retired. From desk-logs-0335/desk-chain-7.log, the run that produced
+j-20260907-10:
+
+  :221  run-tests: TEST LOCK
+  :222  another test run holds ...atai-test.lock: pid 37016 (npm test
+        (D:\addictedtoai-worktrees\impl-bind-a-price-to-the-vendor-that-posts-it)
+        ... started 1100s ago). Waited 600s.
+  :350  the same on the RETRY, "started 1701s ago". Waited 600s.
+  :355  gates failed: npm run test (exit 1) -- no transport marker in the captured
+        output, retried once and failed again
+
+Both the first run and the retry waited the FULL 600s on a lock held by an implementation
+stream's `npm test` in a junctioned worktree. The causal chain is complete in one file:
+contention -> 600s wait -> exit 1 -> no transport marker -> failed.
+
+SECOND, AND MORE IMPORTANT, THE LOSS MECHANISM HAS SINCE BEEN CLOSED. loop/lib/gates.mjs:92
+now carries
+
+    const TEST_LOCK_REFUSAL = /run-tests:\s*TEST LOCK|another test run holds/i;
+
+and environmentalCondition() returns 'test-lock refusal' on it; run.mjs:571-575 books an
+environmental gate failure as `interrupted`, logging "recording an interrupted run so it
+resumes without re-authoring". `interrupted` is RESUMABLE and does NOT count toward
+breaker 1, which counts `failed` and `discarded`.
+
+SO THE CURRENT COST OF CONTENTION IS A 600-SECOND WAIT AND A RESUMABLE INTERRUPTION -- not
+a lost job, not a breaker step. Still worth avoiding: 600s of a job's wall-clock cap is
+real, and the operator still does not run the suite while the Desk holds the lock. But the
+dated losses are HISTORY, not a present-tense risk.
+
+THE ERROR SHAPE, self-reported: a present-tense risk was asserted from a past measurement,
+by a session that had loaded the rule at the start of the day and never re-derived it. That
+is issue-claims-decay's general form -- ANY RULE A SESSION LOADED AT START IS A CLAIM WITH
+AN EXPIRY DATE -- applied to a rule about the machinery rather than about an issue.
+
+AND ONE THING WORTH THE SENTENCE ON ITS OWN: the new guard was checked against the ACTUAL
+HISTORICAL MESSAGE rather than a synthetic fixture, and both :221 and :222 match its
+pattern verbatim. A GUARD VERIFIED AGAINST THE REAL FAILURE TEXT RATHER THAN AGAINST A
+FIXTURE SOMEONE WROTE TO MATCH IT is rare, and it is the difference between "this regex
+catches what I imagined" and "this regex catches what actually happened".
 ```
 
 ## grep-skips-files-with-nul-bytes
@@ -2341,4 +2387,50 @@ briefing entry already carries instance 3 in its own words, which is evidence th
 real but was recorded as a briefing rule rather than as a general one about enumerations.
 THE TRIGGER IS WHAT SEPARATES THEM: this fires when A LIST IS ABOUT TO DRIVE WORK, and
 neither neighbour fires there.
+
+--- ADDED 2026-09-08 by A2AI-Orch, about itself. NOT part of the original entry above. ---
+
+INSTANCE 4, AND THE POINT OF IT IS THE TIMING: THE SHAPE SURVIVES BEING NAMED. The session
+that filed addictedtoai-xrsg this morning, wrote its diagnostic and transmitted it to the
+memory corpus, instantiated the same class that afternoon -- inside a design meant to close
+a DIFFERENT instance of it.
+
+Designing addictedtoai-vqbo, it proposed a scope rule: a job may only ratify a page its own
+brief names, tested as `brief.includes(path)`. The coordinator defeated it with a
+counter-example from a live brief, verified afterwards at fleet5-4lrp/.agent-brief.md:101,
+verbatim:
+
+    - Do NOT touch `pulse/lib/queue.mjs` or `pulse/lib/vanished.mjs`.
+
+Under that test THE SENTENCE PROHIBITING A PATH AUTHORISES DECLARING IT. The briefs' "FILES
+YOU MAY EDIT -- the complete list ... NOTHING ELSE" sections are worse: dense with paths
+present PRECISELY BECAUSE they are off-limits. Path-mentions enumerate PATHS THE BRIEF
+DISCUSSES; they were read as PATHS THE BRIEF AUTHORISES -- different sets, the first
+strictly larger, and it was the only enumeration the artefact offered, so it became the
+authorisation list by default.
+
+WHY NAMING THE CLASS DID NOT PREVENT THE INSTANCE, which is the transferable half: WHEN THE
+THING YOU ARE CHECKING IS A FIX RATHER THAN EXISTING WORK, SEPARATE THE AUTHORITY YOU ARE
+APPEALING TO FROM THE TEST THAT IMPLEMENTS IT, AND CHECK THEM INDEPENDENTLY. A CORRECT
+AUTHORITY IMPLEMENTED BY A LOOSE TEST IS MORE DANGEROUS THAN AN OBVIOUSLY WRONG RULE,
+because the argument for the authority carries the test through review on its coat-tails.
+The authority here was RIGHT and remains in the design -- the brief is assembled by the loop
+from the directive, so the bounded thing and the bounding thing have different authors, and
+an author cannot inject a path into its own brief. Everyone agreed with the authority,
+including the coordinator. NOBODY LOOKED AT THE TEST, because the argument was about the
+authority, and its author never ran his own diagnostic against his own proposal.
+
+AND THE SENTENCE TO KEEP IF ANYTHING IS TRIMMED: THE SHAPE SURVIVES BEING NAMED. Filing the
+class, writing its diagnostic and transmitting it to this corpus provided NO protection
+against instantiating it the same day. That is a fact about how the failure works, not a
+confession, and A READER WHO BELIEVES NAMING A CLASS DEFENDS AGAINST IT WILL SPEND
+PROTECTION THEY DO NOT HAVE.
+
+PLACEMENT NOTE, recorded because the alternative was arguable and a later reader may
+disagree. The "check the test, not the argument for it" half has a real claim on
+a-check-narrower-than-the-property-it-names, whose diagnostic -- "what wrong world would
+this still pass on?" -- is precisely what went unrun. It is kept HERE because the
+SET-CONFUSION is what made the loose test look tight: the author was not careless about the
+wrong world, he was confident because a real, complete, correct enumeration existed and he
+had used it. Cross-linked both ways rather than duplicated.
 ```
