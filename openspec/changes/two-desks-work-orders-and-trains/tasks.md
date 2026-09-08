@@ -308,6 +308,15 @@ the orchestrator's work between runs.
 - [ ] 21. **The conformance record appends; the gate reads the history.**
       `loop/conformance.mjs` and `data/conformance.json`: each run is its own entry
       — date, per-check result, model-minutes — and never replaces an earlier one.
+      Each entry is written **from the checks' verdicts after they complete**,
+      never from an earlier signal such as the harness exiting 0: the general
+      rule, named by A2AI-Orch on 2026-09-08 after packet A's round 2 found the
+      build success record written before its floor ran, is that **a record
+      asserting a check passed is written from that check's verdict, never from
+      a signal that precedes it** — the same sentence governs task 3's build
+      record and this file, and `addictedtoai-2wwu` is the same defect one
+      layer down (a re-run overwriting a FAIL with a record byte-identical to
+      one that never failed).
       `conformanceGate` refuses a runner for a role while any recorded FAIL of a
       check stands unsuperseded, and a FAIL is superseded only by **three
       consecutive PASSes of that same check**. A runner with no record still warns
