@@ -1729,3 +1729,27 @@ controlling and said so in RESULT.md, which is the brief's own "if this brief
 contradicts the requirement, the brief is the defect" instruction working; it
 was one inference from building the superseded design, the wasted run the
 freeze exists to prevent.
+
+**Round 3 — authority: two-desks-work-orders-and-trains@`160f1c2`.** Sealed
+review (codex Luna max, 9.4 min; author 18.6 min; `317832b`; 1,725 tests pass):
+verdict revise, one finding, and the first of three reviewers to find the
+withheld finding. `gates.mjs` was fixed correctly and with the stronger
+condition (`:636-637` keys on `!ok`, so the no-declared-floor branch removes the
+record too), but `verify-launch.mjs:1025-1026` still wrote the same
+`out/.build-stamp.json` from exit status alone, because the round 3 brief
+paraphrased task 3 and dropped the word "both": the author implemented exactly
+the brief's scope and said so in RESULT.md. The reviewer enumerated every writer
+of the record (`gates.mjs:146` covered, `verify-launch.mjs:279` not, three
+fixture writes excluded) and swept six directories to prove there was no third
+— proving the set where the coordinator's finding had named the twin. One
+correction to the finding as stated: a null status is not `=== 0`, so the
+requirement's named shim mode never reached the record through verify-launch;
+an exit-0 build under the floor did. Disposition: the record gets exactly one
+writer function, exported by `gates.mjs` and taking the floor-checked result,
+which both spawners call (the argument that already makes `verify-launch`
+import `READS_HUMAN_TYPES` from the merge gate so the two cannot drift); task 4
+gains the mirror arm through the second spawner; the reuse bullet carries the
+general rule. Luna-Boss-2's own count: the third narrowing of its own in one
+day — a `replace_all` narrower than its property, a sha check narrower than
+its property, a paraphrase narrower than the task — each while citing the
+class; its five pre-registered hypotheses scored one, the one it ranked first.

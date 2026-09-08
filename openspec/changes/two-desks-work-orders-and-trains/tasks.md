@@ -77,9 +77,20 @@ the orchestrator's work between runs.
 - [ ] 3. `scripts/verify-launch.mjs`: reuse an existing build of the tree under
       check instead of spawning its own when one is present, current **and
       recorded as having succeeded**; keep spawning one when it is not. The
-      success record is written by the spawner: both `verify-launch`'s own build
-      and the build gate in `loop/lib/gates.mjs` remove any earlier record before
-      spawning and write `out/.build-stamp.json` — `ok: true`, the local time,
+      success record has **exactly one writer function**, exported by
+      `loop/lib/gates.mjs` and taking the floor-checked result; both spawners of
+      a build — the build gate in `gates.mjs` and `verify-launch`'s own build —
+      remove any earlier record before spawning and pass their spawn result
+      through that one function with the repository floors, and a sweep of
+      `loop`, `lib`, `pulse`, `scripts`, `app`, `tools` proves no other writer
+      (round 3's sealed reviewer's method; `verify-launch.mjs:88` and `:92`
+      already import from `loop/lib/` so the launch check and the merge gate
+      cannot drift, and this is the same argument). Round 3 fixed the gate and
+      left `verify-launch.mjs:1025-1026` writing from exit status alone because
+      its brief dropped the word "both"; a null status is not `=== 0`, so the
+      shim mode never reached the record that way, but an exit-0 build under
+      the floor did. The function writes `out/.build-stamp.json` — `ok: true`,
+      the local time,
       and the `out/status.json` stamp (`lib/stamp.mjs` `buildStamp`: commit and
       dirty flag, written by prebuild's `assets` step) exactly as the spawner saw
       it after the zero exit, rather than recomputing commit and dirty into a
@@ -133,8 +144,18 @@ the orchestrator's work between runs.
       clock used three constants and never the same value twice, so no fixture
       had equal mtimes and RESULT.md asserted "equal timestamps do not pass" as
       though tested while restoring `>=` left all eight tests green.
-      **Mutation D**: restore `>=` and confirm the equal-mtime case fails.
-      Tests task 3.
+      **Mutation D**: restore `>=` and confirm the equal-mtime case fails. And
+      `verify-launch`'s OWN build exiting 0 below the repository floor reports
+      a failed build and leaves no record — the mirror of task 2's gate case,
+      through the second spawner. The stale-export-with-valid-record fixture
+      that already exists at `:138` ("a stale export builds even when its
+      success record is otherwise valid": same commit as the current fixture,
+      dirty false, one source newer, exactly one spawn) is named here so a
+      tidy-up cannot delete it as a duplicate of the other-commit case: the
+      stamp is identity and the mtime walk is freshness, and on this
+      permanently dirty tree (13 porcelain entries, always) the stamp alone
+      collapses to the sha, so that fixture is what goes red if the freshness
+      comparison alone is deleted (**mutation E**). Tests task 3.
 
 ### The brief diet
 

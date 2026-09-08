@@ -440,7 +440,9 @@ The mechanical gates are split by what each one can catch and what it costs.
   than building its own copy, wherever a build of that exact tree is already
   present **and recorded as having succeeded**. Whichever caller spawns a build
   SHALL remove any earlier success record before spawning and SHALL write one
-  only on a zero exit, naming the commit and whether the tree was dirty; an
+  only from the verdict of the checks that judge the build — a record asserting
+  a check passed is written from that check's verdict, never from a signal that
+  precedes it — naming the commit and whether the tree was dirty; an
   export newer than every source that carries no such record SHALL NOT count as
   present, because a build that fails during export leaves a fresh `out/`
   behind it and timestamps alone cannot tell a passed build from a failed one.
