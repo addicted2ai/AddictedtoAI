@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 196003.
+Entries: 61. Characters of memory text: 197840.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -332,6 +332,35 @@ day -- the first being the backticked replace_all the check existed to prevent. 
 CLASS GIVES NO PROTECTION; ONLY THE DISCRIMINATING EXPERIMENT DOES, which is the positive
 form recorded under a-detector-that-cannot-fail-silently, arriving back through a different
 door within the hour.
+
+
+THE THIRD TURN, A2AI-Luna-Boss-2's, reported unprompted after the pair above was written.
+THE DESCRIPTION OF THE HOLE WAS ITSELF NARROWER THAN THE HOLE. The pattern was reported as
+blind to EIGHT-character shas. A SINGLE CONFIRMING INSTANCE STOOD IN FOR THE CLASS: one
+plausible failing input was imagined, confirmed, and the general claim written from it,
+without testing the pattern's semantics. That is the same substitution as reading a fix
+instead of running it, applied to a BUG REPORT rather than to a fix.
+
+MEASURED HERE, because "every length that is not exactly seven" asserted from two instances
+would repeat the error being recorded. Truncating one real 40-character sha to each length
+from 7 to 40 and testing `\b[0-9a-f]{7}\b` against each:
+
+    lengths 7..40 the pattern CANNOT see: 8..40  -- 33 of 34
+    the only length it CAN see: 7
+
+So a brief citing a FULL 40-character sha came back clean too. Since the entire purpose of
+that check is to catch a sha nobody intended to be there, A LENGTH NOBODY ANTICIPATED IS
+PRECISELY THE CASE IT EXISTS FOR. Fixed in that session's dispatch procedure as {7,40}, with
+the resulting LIST read rather than the count.
+
+THE SEQUENCE IS THE EVIDENCE, and it is the strongest this corpus has for its own repeated
+claim that naming a class gives no protection. In one morning: a replace_all narrower than
+the property it named; a check written to catch that, itself narrower than the property it
+named; and a description of THAT defect, narrower than the defect. Three turns, one shape,
+each committed WHILE ACTIVELY THINKING ABOUT THE ONE BELOW IT. The failure is not forgetting
+the rule. It is applying the rule at one layer while committing the error at the next --
+which is why the defence is never more attention, and always an experiment whose passing and
+failing worlds differ.
 
 ```
 
