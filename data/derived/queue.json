@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 6,
+  "count": 5,
   "items": [
-    {
-      "detail": "Commit 1bd42ab includes a data/launch.json js_payload rewrite (home, entry and catalog figures) that is not part of this job's outcome and was not in the diff the first review pass judged. The numbers are honest measurements and measured_on is correctly 2026-09-07, so nothing here is false — but a per-job gate run is a CHECK and launch.json is the repository's dated measurement RECORD, which is the distinction addictedtoai-one6 exists to hold. Fix: `git checkout 3ca0ad1 -- data/launch.json` on this branch (or drop the hunk at merge) and let the next deliberate recording run on main re-measure. data/derived/ backlinks.json and search-index.json in the same commit are the ordinary pure-function regeneration a new post requires and should stay.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-06 (`j-20260907-06.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260907-06-carry-1.md",
-      "target": "data/carried/j-20260907-06-carry-1.md",
-      "title": "Restore data/launch.json to its pre-branch state before this job merges",
-      "type": "repair"
-    },
     {
       "detail": "`data/proposals/link-node-modules-before-the-author-runs.md` (added by this diff, 2026-09-07) proposes what `data/proposals/author-worktrees-carry-no-node-modules.md` (2026-09-04, still standing in the tree) already proposes: \"Link `node_modules` into a job worktree when the worktree is created, not only inside `runGates`.\" The slugs differ, so nothing auto-discards, and both are selectable. The new file is not redundant in every part — it adds that `linkNodeModules` is already idempotent, so the gate-time call needs no change, and it names the exact insertion point — while the older one carries a second half the new one drops: teaching `unlinkNodeModules` to tell a junction it created from a real directory a job installed, rather than calling `unlinkSync` on a directory and swallowing the throw. Whoever takes this should work from one file holding both halves and drop the other, rather than let two proposals for one fix compete for selection. (The older file's line citation has also drifted: it names `loop/lib/gates.mjs:177` for the sole `linkNodeModules` call, which is `:300` today.)\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-08 (`j-20260907-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -57,5 +48,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 6
+  "total_before_cap": 5
 }
