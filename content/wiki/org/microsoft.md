@@ -44,7 +44,7 @@ facts:
     volatility: dated
   - field: mai_rows_on_this_router
     source: cited
-    value: "none. Across all 431 rows the OpenRouter models API returns, the only ids or names matching `mai`, `microsoft`, `phi`, `maia` or `wizard` are microsoft/phi-4, microsoft/wizardlm-2-8x22b and an unrelated Venice fine-tune; there is no `mai` or `microsoft-ai` namespace"
+    value: "The OpenRouter models API returns no `mai` or `microsoft-ai` namespace rows. Across all 431 rows the only ids or names matching `mai`, `microsoft`, `phi`, `maia` or `wizard` are microsoft/phi-4, microsoft/wizardlm-2-8x22b and an unrelated Venice fine-tune"
     source_url: "https://openrouter.ai/api/v1/models"
     accessed: "2026-09-06"
     volatility: dated
@@ -62,7 +62,7 @@ facts:
     volatility: dated
   - field: azure_serves_gpt_6_astra
     source: cited
-    value: "one endpoint named \"Azure | openai/gpt-6-astra\", tags `azure` and `azure/us` — the single-row spot check for the sweep above"
+    value: "two endpoints named \"Azure | openai/gpt-6-astra-20260903\": one tagged `azure` and the other tagged `azure/us` — the single-row spot check for the sweep above"
     source_url: "https://openrouter.ai/api/v1/models/openai/gpt-6-astra/endpoints"
     accessed: "2026-09-06"
     volatility: dated
@@ -80,7 +80,7 @@ facts:
     volatility: dated
   - field: wizardlm_router_description
     source: cited
-    value: "\"WizardLM-2 8x22B is Microsoft AI's most advanced Wizard model. It demonstrates highly competitive performance compared to leading proprietary models, and it consistently outperforms all existing state-of-the-art opensource models.\" — OpenRouter's own catalog copy, not Microsoft's"
+    value: "\"WizardLM-2 8x22B is Microsoft AI's most advanced Wizard model. It demonstrates highly competitive performance compared to leading proprietary models, and it consistently outperforms all existing state-of-the-art opensource models.\""
     source_url: "https://openrouter.ai/api/v1/models/microsoft/wizardlm-2-8x22b/endpoints"
     accessed: "2026-09-06"
     volatility: dated
@@ -92,7 +92,7 @@ facts:
     volatility: dated
   - field: only_dead_upstream_in_the_catalog
     source: cited
-    value: "the only one. 179 of the 431 rows this list returns declare a `hugging_face_id`; 178 of those ids answer HTTP 200 from https://huggingface.co/api/models/<id> and microsoft/WizardLM-2-8x22B alone does not — swept one id at a time on 2026-09-06"
+    value: "microsoft/WizardLM-2-8x22B is the only dead upstream. 179 of the 431 rows this list returns declare a `hugging_face_id`; 178 of those ids answer HTTP 200 from https://huggingface.co/api/models/<id> and microsoft/WizardLM-2-8x22B alone does not — swept one id at a time on 2026-09-06"
     source_url: "https://openrouter.ai/api/v1/models"
     accessed: "2026-09-06"
     volatility: dated
@@ -249,7 +249,7 @@ checksum of what Microsoft published before it decided it should not have.
 Twenty-eight months on, the announcement page carries no notice of any of it:
 {{fact:org/microsoft#wizardlm_announcement_still_standing}} — offering, in the
 present tense, a licence for two repositories that no longer answer. OpenRouter's
-catalog copy still tells buyers
+own catalog copy, not Microsoft's, still tells buyers
 {{fact:org/microsoft#wizardlm_router_description}}, which was arguable in April
 2024 and is now a sentence about a model its author has withdrawn.
 
