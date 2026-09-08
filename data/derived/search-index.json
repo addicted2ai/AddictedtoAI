@@ -3292,7 +3292,7 @@
       "s": "active",
       "i": "model/minimax-minimax-m2-7-free",
       "a": [],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/model/minimax-minimax-m2-her",
