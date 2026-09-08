@@ -1,6 +1,7 @@
 verify-surfaces: a five-run distribution, the first multi-sample gate timing
 =========================================================================
-Measured by A2AI-Orch on 2026-09-08 at about 11:20 local, this machine, quiet
+Measured by A2AI-Orch on 2026-09-08 at about 11:17 local (anchored: the
+measuring script's mtime is 11:17:06 and the runs followed it), this machine, quiet
 except for one codex worker in a worktree; relayed to the architect by message
 and recorded here so the figure lives in the repository (evidence dies with a
 session). No lock taken: verify-surfaces and verify-design were first checked
@@ -9,7 +10,11 @@ verify-surfaces was run, against the existing out/ (export of 08:12 local).
 verify-design binds a port; npm test and npm run build take the machine-wide
 lock and were left alone while a revision worker was live.
 
-Invocation: node D:/AddictedtoAI/scripts/verify-surfaces.mjs, five times, serially.
+Invocation, exact (the script resolves its argument against the CALLER's cwd,
+verify-surfaces.mjs:672 `resolve(process.argv[2] ?? 'out')`, so both the cwd
+and the argument are part of the measurement):
+  spawnSync(process.execPath, ['scripts/verify-surfaces.mjs', 'out'], { cwd: 'D:/AddictedtoAI' })
+five times, serially, from scripts/orch-gate-distribution.mjs in this directory.
 
   run   seconds   exit
    1      5.87     0

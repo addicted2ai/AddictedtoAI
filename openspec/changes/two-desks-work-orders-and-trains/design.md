@@ -591,8 +591,10 @@ missed** (`evidence/hist-report.md` §B.10).
 codex Luna sessions for token heavy tasks. Yes medium effort for basic work and
 max effort complex and review work. Luna on max effort lands somewhere between
 Sonnet and Opus in terms of capabilities, but is much cheaper."* Recorded in the
-memory store as statement 21 (`08b627f`; an earlier draft cited `b34f584`, the
-pre-amend object, which sits on no ref and is unreachable) and **relayed rather than witnessed** by
+memory store as statement 21 (`08b627f`; an earlier draft cited the pre-amend
+object `b34f58…`, byte-identical tree, which sits on no ref and carries the
+PREVIOUS batch's subject, so it is given here only in a form nothing resolves)
+and **relayed rather than witnessed** by
 this drafter. He had already ruled one type on 2026-09-07 — *"Scout should be max
 effort for luna"* — which `runners.yml` records, along with his rule that all Luna
 runners are cheap tier.
