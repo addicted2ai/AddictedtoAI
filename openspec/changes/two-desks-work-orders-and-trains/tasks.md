@@ -21,25 +21,35 @@ the orchestrator's work between runs.
 ### The gate floor and the launch build
 
 - [ ] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived
-      from a recorded calibration of the gate's **smallest legitimate invocation**
-      on this repository — the spawn cost of reaching the script at all — set
-      with a stated margin below that minimum and above the ~1 ms null-status
-      failure, and recorded with its date. NOT a fraction of the gate's full
-      runtime (corrected 2026-09-08 from packet A's first tip, found by A2AI-Orch):
-      that put verify-design's floor at 35.7 ms and test's at 314.8 ms, while a
-      bare `node` child measured min 61.6 ms / median 67.7 ms and
-      `cmd.exe /c npm run <script>` min 553.5 ms / median 588.1 ms here (7 runs
-      each) and a bare spawn on Linux is commonly 25–40 ms — so the fixture trees
-      in `loop/tests/job-gate-set.test.mjs`, whose gates are `node --version`,
-      would false-fail on faster hardware, and load makes children slower, so the
-      false failure arrives on the FAST machine. One flat number of the order of
-      10 ms satisfies this when every gate's declaration cites the calibration.
-      `runGates` fails the stage when a gate returns below its floor, naming the
-      gate and the observed duration. Invoke npm scripts through `cmd.exe /c`,
-      never `shell: true`. Implements: *A job's gates are a tripwire; the full
-      set runs once, on the train*, the floor bullets.
+      from a recorded calibration of that gate on this repository and set by a
+      stated margin **below the fastest legitimate run observed** (warm caches
+      included — a warm `next build` is far faster than the 29.2 s cold one) and
+      **above what a run that did none of the gate's work could take**, recorded
+      with its date. Packet A's first tip derived floors as 0.1% of runtime
+      (verify-design 35.7 ms, test 314.8 ms), and that basis was wrong in BOTH
+      directions at once (2026-09-08): too LOW for the gate that costs most — a
+      test gate returning in 400 ms clears a 314.8 ms floor while having run no
+      suite (A2AI-Luna-Boss-2's withheld finding) — and too HIGH for legitimate
+      trivial invocations — a bare `node` child measured min 61.6 / median
+      67.7 ms and `cmd.exe /c npm run <script>` min 553.5 / median 588.1 ms here,
+      7 runs each, and a Linux bare spawn is 25–40 ms, so the fixture trees in
+      `loop/tests/job-gate-set.test.mjs`, whose gates are `node --version`,
+      would false-fail on faster hardware, and load makes children slower so the
+      false failure arrives on the FAST machine (A2AI-Orch). The shape that
+      closes both: repository floors near the real minimum (of the order of a
+      tenth of the calibrated runtime, the fraction stated per gate), and
+      `runGates` accepting an explicit floor set for a tree that is not this
+      repository, which the fixture tests pass, with the ~1 ms tripwire as the
+      lowest any override may set. `runGates` fails the stage when a gate
+      returns below its floor, naming the gate and the observed duration. Invoke
+      npm scripts through `cmd.exe /c`, never `shell: true`. Implements: *A
+      job's gates are a tripwire; the full set runs once, on the train*, the
+      floor bullets.
 - [ ] 2. `loop/tests/gates.test.mjs`: a fake gate returning exit 0, no output, in
-      2 ms fails the stage naming the floor; a real gate above its floor passes.
+      2 ms fails the stage naming the floor; a fake **test** gate returning exit 0
+      in 400 ms fails under the repository floors and passes only under an
+      explicit fixture floor set; an override below the tripwire is refused; a
+      real gate above its floor passes.
       **Mutation**: delete the floor comparison and confirm the 2 ms case passes
       while the real case still passes — if both stay green the test measures
       nothing. Restore and verify byte-identical by hash. Tests task 1.
@@ -48,14 +58,34 @@ the orchestrator's work between runs.
       recorded as having succeeded**; keep spawning one when it is not. The
       success record is written by the spawner: both `verify-launch`'s own build
       and the build gate in `loop/lib/gates.mjs` remove any earlier record before
-      spawning and write `out/.build-stamp.json` (commit, dirty flag, local time,
-      `ok: true`) only on a zero exit, and `hasCurrentBuild` requires the record
-      as well as the timestamps — a failed export leaves `out/` newer than the
-      sources, so "newer than every source" reports BUILD PASS on a failed build
-      (found by A2AI-Orch on packet A's first tip, 2026-09-08). No `package.json`
-      edit and no prebuild step: prebuild runs before `next build` and cannot
-      know whether it succeeded. The timer at `:832` and the report at `:847`
-      then report the reuse. Implements the same requirement's reuse bullet.
+      spawning and write `out/.build-stamp.json` — `ok: true`, the local time,
+      and the `out/status.json` stamp (`lib/stamp.mjs` `buildStamp`: commit and
+      dirty flag, written by prebuild's `assets` step) exactly as the spawner saw
+      it after the zero exit, rather than recomputing commit and dirty into a
+      second stamp with a second meaning — only on a zero exit, and
+      `hasCurrentBuild` requires the record as well as the timestamps — a failed
+      export leaves `out/` newer than the sources, so "newer than every source"
+      reports BUILD PASS on a failed build (found by A2AI-Orch on packet A's
+      first tip, 2026-09-08). No `package.json` edit and no prebuild step:
+      prebuild runs before `next build` in the same npm script and cannot know
+      whether it succeeded. The input walk excludes a path **only if every
+      writer of it runs inside `npm run build` itself** — the rule, not a list:
+      `public/` qualifies (written solely by prebuild's `assets` step through
+      `lib/site-assets.mjs`, a build output copied into `out/`);
+      `data/derived/**` does NOT, because the Pulse rewrites it (`pulse/lib/
+      derive.mjs`, `rederive.mjs`, `freshness.mjs`, `frontier.mjs`, `mint.mjs`,
+      `queue.mjs`, `registry.mjs`, `vanished.mjs`, `run.mjs`) and 24 non-test
+      modules under `lib/` read it, so excluding it would let verify-launch reuse
+      an export that predates the day's Pulse and report BUILD PASS on a site
+      that does not contain the day's data — the finding this task fixes,
+      reintroduced by the fix (A2AI-Orch, who raised and then withdrew the
+      `data/derived` exclusion the same hour). The reason any exclusion exists:
+      a build that writes into its own input set is saved from defeating its own
+      reuse only by prebuild preceding `next build` today. `openspec/` IS an
+      input (prebuild's `spec-deltas` step and `lib/paths.mjs:35` read it), so
+      the coarse whole-tree input set stands and a Pulse run forces a rebuild,
+      as it should. The timer at `:832` and the report at `:847` then report the
+      reuse. Implements the same requirement's reuse bullet.
 - [ ] 4. `scripts/tests/verify-launch.test.mjs`: with a present, recorded build the
       run **spawns no build process** — asserted on the spawn, not only on the
       branch — and reports reuse; with none it builds; with an export newer than

@@ -452,14 +452,17 @@ The mechanical gates are split by what each one can catch and what it costs.
   and it is reachable on this platform: a `spawnSync` of a `.cmd` shim without a
   shell returns a null status, no output and no error in about a millisecond.
   Each gate SHALL declare a floor duration and the runner SHALL enforce it. Each
-  floor SHALL be **derived from a recorded calibration** — the measured cost of
-  the gate's smallest legitimate invocation on this repository, a spawn that
-  reaches the script at all, and not the gate's full runtime — set with a stated
-  margin below that minimum and above the millisecond failure, and SHALL be
-  recorded with the date it was taken, so that a floor is a measurement rather
-  than a guess, a machine that gets faster does not turn the check into a false
-  failure, and a fixture tree whose gates are trivial scripts passes the same
-  floors as the repository does.
+  floor SHALL be **derived from a recorded calibration** of that gate on this
+  repository — set by a stated margin **below the fastest legitimate run
+  observed**, warm caches included, and **above what a run that did none of the
+  gate's work could take** — and SHALL be recorded with the date it was taken,
+  so that a floor is a measurement rather than a guess and a machine that gets
+  faster does not turn the check into a false failure. A floor that only the
+  millisecond shim failure could fall under is vacuous for the gate that costs
+  most: a test gate that returns in half a second did not run the suite. The
+  runner SHALL accept an explicit floor set for a tree that is not this
+  repository, such as a test fixture whose gates are trivial scripts, and no
+  override may set a floor below the millisecond tripwire.
 - The loop SHALL record **each gate's wall-clock seconds** on the ledger line of
   the run that ran it — per job for the tripwire, per train for the full set — so
   that any claim about what the split saves is answerable from the repository

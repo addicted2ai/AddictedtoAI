@@ -1538,3 +1538,112 @@ with the measured cause. The other five answers confirm what the proposal
 recommended — the front/back reading, the bounds as configuration dials, the fleet
 retiring at Stage 3, the three open changes as the back desk's first scope, and the
 reading of "reviewed before going live".
+
+## Revision record — round 13
+
+**Source: unsealed peer reads during Stage 0 implementation, 2026-09-08 11:00 to
+11:30 local** — A2AI-Orch on packet A's first tip (`f9bf386`), A2AI-Luna-Boss-2
+re-deriving packet B against the tree before briefing it, A2AI-mem-cond
+reproducing the runner figures from the ledger. Applied to the loop delta and
+tasks.md at `74a306d` and `6a8adba` and the commit carrying this record.
+
+**Packet A: three findings from A2AI-Orch, each verified before adoption.**
+(1) `hasCurrentBuild` inferred build success from timestamps. `next build`
+writes `out/` near the end, so a failure during export leaves `out/` newer than
+every source and verify-launch reports BUILD PASS on a failed build; the common
+case was closed by luck, because the source that broke the build is also newer
+than `out/`. The reuse bullet now requires a success record written by the
+spawner — removed before spawning, written only on a zero exit. Orch's own
+proposed fix, a prebuild step, was wrong on a mechanical point both of us then
+stated: prebuild runs before `next build` inside the same npm script and cannot
+attest its exit code; only the spawner sees it, and both spawners are in packet
+A's files. The record carries the `out/status.json` stamp (`lib/stamp.mjs`,
+commit and dirty flag, written by prebuild's `assets` step) as the spawner saw
+it succeed, rather than a second stamp with near-identical fields and a
+different meaning. (2) Floors derived as a fraction of full runtime
+(verify-design 35.7 ms, verify-launch 39.6 ms, test 314.8 ms) sat within 1.6 to
+1.8x of this machine's spawn cost — bare `node` child min 61.6 / median 67.7 ms,
+`cmd.exe /c npm run <script>` min 553.5 / median 588.1 ms, seven runs each — and
+below a Linux bare spawn of 25 to 40 ms. The fixture trees in
+`loop/tests/job-gate-set.test.mjs`, whose gates are `node --version`, would
+false-fail on faster hardware; load makes children slower, so the false failure
+arrives on the fast machine. The first repair (at `74a306d`) derived floors
+from the smallest legitimate invocation — a flat number of the order of 10 ms —
+and A2AI-Luna-Boss-2 then showed that this closes Orch's direction by
+abandoning the opposite one, which was its own withheld finding on the same
+tip: the fraction basis was also too LOW, a test gate returning in 400 ms
+clearing a 314.8 ms floor while having run no suite, vacuous exactly where the
+gate costs most. The two findings share a root and are opposite failure modes,
+and are recorded as such, not as confirmation of each other. The floor bullet
+now sets each repository floor by a stated margin below the fastest legitimate
+run observed (warm caches included) and above what a run that did none of the
+gate's work could take, and requires the runner to accept an explicit floor set
+for a tree that is not this repository, which the fixture tests pass, with the
+millisecond tripwire as the lowest any override may set. Task 2 gains the
+400 ms arm. (3)
+`scripts/tests/verify-launch.test.mjs` shipped fresh-`out/` and no-`out/`
+fixtures only, so replacing `hasCurrentBuild`'s whole body with a presence check
+left every test green while the gate would reuse a stale export; task 4 gains
+stale and empty arms and a third mutation. Two of the three land on the task
+text as much as on the author: task 1 said "that gate's runtime" and task 4
+named exactly two arms. Withdrawn by Orch after measuring rather than
+reasoning: the walk's cost (84 ms over 1,438 files in `out/` plus 305 ms over
+6,284 input files, about 1% of the 39 s build it replaces) and its own claim
+that `openspec/` is not a build input (prebuild's `spec-deltas` step and
+`lib/paths.mjs:35` read it, so the coarse whole-tree input set stands).
+Measured once at 11:12 and not a rate: the reuse did not fire on main because
+this change's own tasks.md, edited minutes earlier, was newer than `out/`;
+whether it fires in the two real flows — a job's fresh worktree and the
+orchestrator's serial six — is task 31's to measure, with the defeating file
+named when it does not.
+
+**Packet B: four findings from A2AI-Luna-Boss-2, each verified against the
+tree.** `loop/tests/specs.test.mjs` and `loop/tests/brief.test.mjs` do not
+exist (48 files under `loop/tests/`; the task anchors were hypotheses). The
+only file binding the ceiling is `loop/tests/brief-excerpt-budget.test.mjs`:
+`:133` asserts equality with 88,000 under a header recording the four
+re-measurements, and `:143` measures the live tree for mid-sentence cuts across
+all ten job types; neither was in packet B's file list, so the packet forbade
+the edit its own green-suite acceptance required. The per-source division is
+`specs.mjs:281` (`share = Math.floor(maxChars / plan.length)`), not
+`config.mjs`, which holds only the constant. Tasks 6 to 8 corrected: the budget
+test file is B1's fourth permitted file and the one home of the ceiling's
+assertions (no new `specs.test.mjs`); task 7 moves the equality and appends a
+dated fifth header line, the reason being the removal of the mechanism that
+forced the other four; the live no-cut test becomes a pinned-fixture assertion
+per job type plus a printed live measurement per type; a live cut at the new
+settings is a finding with its numbers and never a raised ceiling, the
+disposition the architect's at handover. Luna-Boss-2 also showed that task 8's
+two mutations need OPPOSITE fixtures — A bites only with surplus
+keyword-matching sections and unspent budget, B only where 24,000 binds, and
+with pass 2b gone size follows the material — and that "while the excerpt-set
+assertion still passes" was a prediction nobody had run, since restored pass 2b
+lets the three-change corpus fill from delta sources the zero-change corpus
+lacks. Both are in the task now: two fixtures if one cannot make both go red,
+and report which assertion fails rather than weaken either.
+
+**The runner figures, reproduced independently by A2AI-mem-cond from
+`data/ledger.jsonl`.** Every numerator agreed to the decimal (luna-medium repair
+348.6 total, 177.5 author, 54.8 revision; opus 565.4 and 11.6). Three rounds
+went on denominators and labels: total minutes over all jobs against over
+merged jobs (18.3 against 23.2; 16.6 against 17.7); merged jobs against
+first-reviewed jobs for a revise rate (5/15 against 5/16, and 16 is the right
+population); and the report's `revision-share` column, which is revision plus
+second-review minutes over total cell minutes (24.0%, 3.6%, 11.4%) — the
+reviewer's three candidate definitions had all put second-review minutes on
+the wrong side of the ratio, as a cost of checking rather than of having been
+wrong. No artifact changed; `evidence/runner-workflow-cost.md` was right and
+says its method. The memory entry names the population beside every figure and
+carries the lesson in mem-cond's words: a figure is safe when it names its
+population, and the taxonomy is part of the population.
+
+**The coordination board, not a repository artifact.** Three of four sessions
+compacted within the hour and each asked for resends; the maintainer asked for
+"a simple but reliable way for the sessions to track the state concurrently".
+`D:/addictedtoai-coord/`, outside the repository and never committed: one file
+per session written only by its owner with Write/Edit, so no lock and no race;
+`holds:` as the claim line read before any merge, gate run, push, publish
+toggle or reserved-file edit; write the log line before the message; after
+compaction read rows before the tree; `board.mjs` prints ages and holds and
+flags a future-dated row as an error (the first trap, found by mem-cond on its
+own first row). Recorded here because every Stage 0 handover runs through it.
