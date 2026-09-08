@@ -290,7 +290,7 @@ test('declared: success is confirmed against the commit the push actually placed
 });
 
 test('declared: a live stamp that merely changes is not a confirmation — there is no any-change fallback', async (t) => {
-  const { root, live, previousCommit } = await withFixture(t);
+  const { root, live, previousCommit } = await withFixture(t, { changeAfterReads: 1 });
 
   stageableChange(root, 'fourth\n');
   // No local build stamp at all: under the old code this made `expected` null
