@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 145795.
+Entries: 59. Characters of memory text: 148409.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -793,6 +793,46 @@ AND NOTE WHAT THIS ENTRY DID WITH ITS OWN ERROR. The wrong block above was KEPT,
 with this refutation beneath it -- while the INDEX statement was corrected outright,
 because the index is what sessions load and is read in fragments. The rule applied to
 itself, in both directions, in one edit.
+
+--- NARROWED 2026-09-08 by the maintainer. His 2026-08-29 words above STAND UNCHANGED and
+are the rule this narrows, not replaces. His decision is RELAYED by A2AI-Fable-Arch, not
+witnessed by this entry's author; the commit is verified. ---
+
+HIS DECISION, relayed verbatim, answering the change's open question 6 ("may we bound your
+file-a-bead rule?"): "I agree with all your recommendations."
+
+THE NARROWING, as it now reads in CLAUDE.md and AGENTS.md at commit bd84b4b ("Maintainer
+decisions 2026-09-08: narrow the deferral-filing rule (task 18); machinery ceiling 10 to 30
+for the drain", Tue 8 Sep 2026 10:33 local, touching AGENTS.md, CLAUDE.md and
+data/config.json):
+  - A deferral becomes ITS OWN issue only when it names a SUBJECT PATH or a SPECIFICATION
+    REQUIREMENT **and** CANNOT BE FIXED IN THE SAME JOB.
+  - Otherwise it is a NOTE ON THE PARENT ISSUE.
+  - AND A PARENT ISSUE CARRYING UNRESOLVED NOTES MAY NOT BE CLOSED: closure is refused
+    until each note is resolved or promoted to its own issue.
+  - A machinery issue that would spawn more than one follow-up is stopped and reconsidered.
+
+THE CLOSE-REFUSAL IS THE HALF THAT KEEPS THIS ENTRY TRUE, and it is worth recording why it
+is there. The first draft of the narrowing had only the note-on-parent fallback, defended
+as "a note on an OPEN bead is not finished work". Reviewing that draft against THIS ENTRY
+showed the defence expires: the parent is open when the note is filed and closed later, and
+this entry's own enumeration ranks that case worst of the four -- "in the issue you are
+ABOUT to close it is worst of all, BECAUSE IT FEELS RECORDED". The close-refusal was added
+in response. So the shipped rule does not weaken the test above; it mechanises it for the
+new channel.
+
+THE MEASURED CAUSE, which is why a rule that had been absolute got bounded at all: inflow
+ran 0.3 to 0.6 new beads per bead closed, 64-81% of them machinery, and the backlog grew
+1.43x faster than it drained. The rule made INFLOW A FUNCTION OF THROUGHPUT -- every job
+doing careful work generated deferrals, every deferral became an issue, so closing faster
+made the queue grow faster. That feedback loop, not slowness, is what kept the backlog from
+moving.
+
+WHAT DID NOT CHANGE, and a later reader should not infer otherwise: the TEST is untouched.
+If a thought exists only inside something FINISHED -- a closed issue, a merged commit, a
+sent message -- it is already lost. A note on an open parent is not finished work ONLY
+because closure is now refused while it stands. Remove the close-refusal and this entry's
+original rule is the correct one again.
 ```
 
 ## gate-order-and-build-locking
