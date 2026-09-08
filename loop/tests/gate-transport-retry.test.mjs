@@ -103,6 +103,16 @@ test('a refused child process is environmental, while an ordinary failure remain
   const ordinary = { ok: false, results: [{ script: 'test', ok: false, status: 1, output: 'not ok 1' }] };
   assert.equal(gatesHitEnvironmentalFailure(ordinary), false);
   assert.match(gateFailureNote(ordinary), /no transport marker/);
+
+  const ordinaryHookError = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: 1, error: 'assertion failed', output: '' }],
+  };
+  assert.equal(
+    gatesHitEnvironmentalFailure(ordinaryHookError),
+    false,
+    'an ordinary hook error without a known spawn signature remains branch-owned',
+  );
 });
 
 test('runGates gives child gates a lock wait below the process cap', () => {
@@ -126,9 +136,9 @@ test('lockWaitBudget leaves a usable margin below the cap, including for small c
   assert.equal(lockWaitBudget(120000), 90000);
   assert.equal(lockWaitBudget(12000), 4000);
   assert.ok(12000 - lockWaitBudget(12000) >= 8000);
-  assert.equal(lockWaitBudget(4000), 1);
-  assert.ok(lockWaitBudget(4000) < 4000);
-  assert.ok(4000 - lockWaitBudget(4000) >= 3999);
+  assert.equal(lockWaitBudget(1), 0);
+  assert.ok(lockWaitBudget(1) < 1);
+  assert.ok(1 - lockWaitBudget(1) >= 1);
 });
 
 test('the loop lets runGates derive a lock grace period from its per-job cap', () => {
@@ -189,25 +199,6 @@ test('spawn-refusal notes capture free memory through the npm gate result path',
   assert.equal(result.results[0].errorCode, 'ENOMEM');
   assert.equal(result.results[0].spawned, true);
   assert.match(gateFailureNote(result), /environmental: child process did not start \(free memory: \d+ bytes\)/);
-});
-
-test('a post-merge environmental refusal is named without tripping the build-red breaker', async () => {
-  const ctx = repo();
-  const refused = {
-    ok: false,
-    results: [{ script: 'build', ok: false, status: 1, output: 'another build holds D:/tmp/build.lock: holder. Waited 5s.' }],
-    output: 'another build holds D:/tmp/build.lock: holder. Waited 5s.',
-  };
-  const gates = stub(PASSING, refused);
-  const registry = loadRunners(ctx);
-  const reviewer = registry.runners.find((entry) => entry.roles.includes('reviewer') && !entry.roles.includes('author'));
-  const res = await runLoop(ctx, { runner: registry.defaultId, reviewer: reviewer.id, gates });
-
-  assert.equal(res.outcome, 'done', ctx.output());
-  assert.equal(existsSync(ctx.holdPath), false, 'environmental refusal must not write breaker 2 HOLD.md');
-  assert.match(ctx.output(), /post-merge gate was refused by the environment/);
-  assert.match(ctx.output(), /environmental: build-lock refusal/);
-  ctx.cleanup();
 });
 
 /**
@@ -343,6 +334,28 @@ test('an environmental gate failure is interrupted for resumption without a seco
   assert.equal(gates.branchCalls(ctx).length, 1);
   assert.match(ctx.output(), /environmental: test-lock refusal/);
   assert.equal(readLedger(ctx).at(-1).outcome, 'interrupted');
+  ctx.cleanup();
+});
+
+test('an environmental refusal on the retry is interrupted and kept out of the failure breaker', async () => {
+  const ctx = repo();
+  const ordinary = FAILING(gateOutput('not ok 1 - ordinary branch failure'));
+  const refused = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: 1, output: 'run-tests: TEST LOCK\nanother test run holds the lock' }],
+    output: 'run-tests: TEST LOCK\nanother test run holds the lock',
+  };
+  const gates = stub(ordinary, refused);
+  const registry = loadRunners(ctx);
+  const reviewer = registry.runners.find((entry) => entry.roles.includes('reviewer') && !entry.roles.includes('author'));
+  const res = await runLoop(ctx, { runner: registry.defaultId, reviewer: reviewer.id, gates });
+
+  assert.equal(gates.branchCalls(ctx).length, 2, 'the retry ran exactly once');
+  assert.equal(res.outcome, 'interrupted', ctx.output());
+  assert.match(ctx.output(), /environmental: test-lock refusal/);
+  assert.match(ctx.output(), /retry after a gate failure with no transport marker/);
+  assert.equal(readLedger(ctx).at(-1).outcome, 'interrupted');
+  assert.equal(existsSync(ctx.holdPath), false, 'an environmental retry refusal does not trip the failure breaker');
   ctx.cleanup();
 });
 

@@ -541,6 +541,11 @@ async function executeJob(ctx, opts) {
         `gates (retry after a ${marked ? 'transport failure' : 'gate failure with no transport marker'}): ` +
           `${gateResult.ok ? 'PASS' : 'FAIL'}`,
       );
+      if (!gateResult.ok && gatesHitEnvironmentalFailure(gateResult)) {
+        const note = gateFailureNote(gateResult, { retried: true });
+        ctx.log(`${note} — recording an interrupted run so it resumes without re-authoring`);
+        return finish({ outcome: 'interrupted', mm, changed, note, gateOutput: gateResult.output });
+      }
       // On the job's permanent record, not only in a log that is not kept: the
       // author invocation's phase entry says a retry happened and how it ended.
       // Without it the ledger cannot tell a job that passed first time from one
@@ -1617,13 +1622,8 @@ export async function runLoop(ctx, opts = {}) {
       }
 
       const built = opts.noGates ? { ok: true } : (typeof opts.gates === 'function' ? opts.gates(ctx, ctx.repoRoot) : runGates(ctx, ctx.repoRoot, { scripts: ['build'] }));
-      const environmental = gatesHitEnvironmentalFailure(built);
-      if (environmental) {
-        ctx.log(`post-merge gate was refused by the environment (${gateFailureNote(built)}) — no build-red hold`);
-      } else {
-        const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
-        if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
-      }
+      const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
+      if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
       // THE PUBLISH IS NOT HERE ANY MORE. It is at the foot of this function,
       // after `commitJobRecords`, and the flag is what carries the decision
       // there. What survives unchanged is the ordering that is load-bearing:

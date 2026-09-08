@@ -109,8 +109,7 @@ function environmentalCondition(result = {}) {
   const noOutput = !String(result.output ?? '').trim();
   if (!timedOut && noOutput && (
     SPAWN_FAILURE_CODES.has(errorCode) ||
-    (result.spawned === true && SPAWN_FAILURE_STATUS.has(result.status)) ||
-    (result.spawned !== true && result.error)
+    (result.spawned === true && SPAWN_FAILURE_STATUS.has(result.status))
   )) {
     return 'child process did not start';
   }
@@ -130,7 +129,7 @@ export function lockWaitBudget(timeoutMs) {
     Math.max(Math.ceil(timeoutMs / 4), 8000),
     Math.max(0, timeoutMs - 1),
   );
-  return Math.max(0, timeoutMs - captureMarginMs);
+  return Math.max(0, Math.min(timeoutMs - 1, timeoutMs - captureMarginMs));
 }
 
 function freeMemoryOnSpawnRefusal(result) {
