@@ -94,7 +94,26 @@ Both entries here were listed for years under "the maintainer's alone", and
 both corrections are his, 2026-09-07: *"I have never edited a single file in
 this repo!"* and *"openspec/specs/ is reserved only because you are never
 supposed to edit a live spec outside of the change process."* Neither path
-waits on a person. Each is reserved from a particular ACTOR doing a particular
+waits on a person.
+
+**He sharpened the first one himself the same evening, and the sharper form is
+the one to carry: *"'never edited a file in this repo' might have been a bit
+reaching. I have never done any CODING in this workspace."*** The distinction
+is load-bearing in both directions. He does not write CODE here — so no code,
+test, spec, script or content file is waiting on him, and treating one as his
+is how work stalls. But his own TOOLING is his and he does act on it: skills,
+settings, the harness configuration. Do not use "he never touches this
+repository" to rule him out as the cause of a change you did not make.
+
+That mistake was measured within the hour of the sentence being written: the
+orchestrator found all 12 openspec skills moved out of `.agents/skills/` into
+`.agents/unused_skills/`, reasoned from the over-strong version that he could
+not have done it, and filed `addictedtoai-4k2a` as an unexplained anomaly. He
+had moved them, deliberately, to cut the context each session loads, and had
+said so. The bead was closed as filed in error. THE CHEAPER MOVE IS ALWAYS TO
+ASK HIM ONE LINE BEFORE FILING AN ANOMALY THAT NAMES HIM — a bead asserting
+what a person did not do is a claim about him, and it costs him more to correct
+than the question would have cost to ask. Each is reserved from a particular ACTOR doing a particular
 thing, and reading them as ownership is what stalls work waiting for a
 signature nobody was ever going to give.
 
