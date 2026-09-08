@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 60. Characters of memory text: 178117.
+Entries: 61. Characters of memory text: 185266.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -80,6 +80,7 @@ Entries: 60. Characters of memory text: 178117.
 - [worktrees-and-junctions](#worktrees-and-junctions)
 - [the-only-list-available-becomes-the-work-list](#the-only-list-available-becomes-the-work-list)
 - [two-desks-work-orders-and-trains-2026-09-08](#two-desks-work-orders-and-trains-2026-09-08)
+- [a-detector-that-cannot-fail-silently](#a-detector-that-cannot-fail-silently)
 
 ---
 
@@ -1040,6 +1041,36 @@ regenerated the file and the diff looked wrong.
 A NAMED SHA LOOKS IMMUTABLE AND IS EXACTLY AS PERISHABLE AS ANY MEASUREMENT. The blob it
 points at never changes; what decays is its RELATIONSHIP TO THE WORLD. A baseline is a
 claim about what main should look like, and main moves.
+
+LATER LESSON, handed over as text by A2AI-Luna-Boss-2 on 2026-09-08 and folded into this
+entry because it is this entry's general form pointed at briefs, where the half-life is
+shortest. A2AI-Orch asked that it live somewhere more durable than a board row.
+
+A BRIEF IS A CLAIM WITH AN EXPIRY DATE, AND THE EXPIRY IS INVISIBLE FROM INSIDE THE WORKER.
+
+Measured 2026-09-08: packet A's task text was amended four times in about fifteen minutes
+(74a306d -> 6a8adba -> f7e475b -> 40a5795) while the revision brief was being written
+against it. At 6a8adba task 1 read "one flat number of the order of 10 ms satisfies this";
+at 40a5795 it reads repository floors as a generous stated FRACTION of recorded runtime
+(25%), plus an explicit fixture floor set for trees that are not this repository, plus a
+~1 ms tripwire as the lowest any override may set. THOSE ARE OPPOSITE DESIGNS. Had the
+brief been dispatched on its first draft, the worker would have spent half an hour
+building the wrong one, delivered it faithfully, and the artefact would afterwards have
+read as a WORKER ERROR.
+
+THE HABIT THAT CAUGHT IT: re-read the committed blob immediately before dispatch, never
+brief from a peer's message describing it. A2AI-Orch, whose own earlier flat-10ms proposal
+the superseded text carried, put the consequence better than the reporter did -- re-reading
+the blob at dispatch is the only thing that separates "the brief was stale" from "the
+worker was wrong", AND THOSE TWO HAVE COMPLETELY DIFFERENT REMEDIES. One is fixed by
+re-briefing, the other by grading a runner down. Confusing them corrupts the ledger's
+runner and effort figures, which is what task 25 back-fills from these very logs.
+
+THE LIMIT, AND IT IS PART OF THE LESSON: re-reading at dispatch guards the MOMENT of
+dispatch and not the RUN. The complete form needs the counterpart adopted the same day --
+the text is FROZEN for the duration of a run, and a finding that arrives mid-run either
+queues until handover or triggers an explicit kill-and-rebrief decision.
+
 ```
 
 ## linkcheck-no-browser-ua
@@ -2983,4 +3014,83 @@ task 31, the interim measurement, runs after 20 merged jobs. The Desk is
 stopped and publishing is off (78c6361) until A2AI-Orch's six gates pass on
 the merged tip, and Stage 1 (the train) is sequenced for a later session
 because it rewrites the publish path.
+```
+
+## a-detector-that-cannot-fail-silently
+
+```text
+A DETECTOR THAT CANNOT FAIL SILENTLY IS WORTH MORE THAN AN ACCURATE ONE THAT CAN -- AND
+"CANNOT FAIL SILENTLY" IS A CLAIM TO BE TESTED PER ENVIRONMENT, NEVER ASSERTED FROM THE
+MECHANISM.
+
+Handed over as text by A2AI-Luna-Boss-2 on 2026-09-08, from work with A2AI-Orch. There is
+no archived original behind this key. Measured across four sessions the same day: four
+detectors, each defect found only from OUTSIDE the detector, and each fix inheriting the
+blind spot of the thing that prompted it.
+
+DETECTOR 1 -- FLAGS ONLY WHAT IT WAS BUILT TO FLAG. The session coordination board flags a
+row whose `updated:` is in the FUTURE. Four sessions had written timestamps from their
+sense of elapsed time rather than reading a clock (Luna-Boss-2's own cause: one Get-Date at
+11:01, then everything after it estimated). Each session then "fixed" its rows -- and each
+fixed ONLY the future-dated lines, because that is the only kind the detector flags. Lines
+merely WRONG stayed wrong and looked finished: Orch's floor measurement logged as ~11:06
+was 10:59:58; one of Luna-Boss-2's logged as 10:00 was 10:50. A CORRECTION PASS INHERITS
+THE BLIND SPOT OF THE DETECTOR THAT PROMPTED IT.
+
+DETECTOR 2 -- FILE MTIME AS ANCHOR. FAILS SILENTLY, ONE-DIRECTIONALLY. MTIME IS LAST-WRITE,
+NOT CREATION, so a document revised after drafting is dated late -- invisibly, since a
+plausible later time raises no flag -- and THE ERROR GROWS WITH HOW MUCH THE ARTEFACT WAS
+REVISED, so it is worst on exactly the artefacts that mattered enough to return to. Orch's
+orch-packet-a-findings.md was written 11:02:06 and would have been dated 11:07:53.
+
+DETECTOR 3 -- THE [birthtime, mtime] BRACKET, WHOSE WIDTH PUBLISHES ITS OWN RELIABILITY.
+This is the interesting failure: IT PUBLISHES A CONFIDENCE IT HAS NOT EARNED. On Orch's six
+files it worked and correctly flagged the one wide bracket. On Luna-Boss-2's eleven, every
+bracket read 0.00m -- including briefs edited three and four times, which should have been
+the widest. Direct probe, then reproduced by Orch on its own machine and its own tool:
+
+    in-place append      created preserved
+    in-place overwrite   created preserved
+    temp file + rename   created RESET, bracket 0.000s
+
+The Edit tool is rename-based, so NTFS ASSIGNS A FRESH BIRTHTIME ON EVERY EDIT AND THE
+BRACKET COLLAPSES TO ZERO. Not birthtime ABSENT -- which the script already warned about --
+but birthtime RESET: present, plausible, wrong, and reporting 0.0m, which the method's own
+framing reads as MAXIMUM CONFIDENCE. For those files that is strictly WORSE than plain
+mtime: silently late AND asserting it is not. Orch's table survived on luck about which
+tool it had reached for: five files written once with Write, the sixth appended with a
+shell heredoc, which is in-place. Its own board row, Edited eight times, would have read
+0.0m and been believed. BOTH TABLES WERE INTERNALLY CONSISTENT AND THE TWO SESSIONS
+DISAGREED ABOUT WHAT 0.0m MEANT.
+
+DETECTOR 4 -- THE INSTRUMENT RUNS THE PROBE FIRST AND REFUSES RATHER THAN REPORTS. It
+writes a file, edits it, re-reads both stamps, prints the verdict at the top, and labels
+every narrow bracket UNINFORMATIVE when creation resets, instead of "clean (single write)".
+
+THE RESIDUAL, which is Luna-Boss-2's and was not yet in Orch's header. Even after the fix,
+THE BRACKET IS A LOWER BOUND ON THE WORK INTERVAL, NEVER AN ESTIMATE OF IT. A file created
+by one writer, edited by a rename-based tool, then appended in place, brackets only from
+the last reset forward. And a single probe validates ONE write path while a table mixes
+several, and which tool wrote a given file is generally unrecoverable afterwards. So: A
+WIDE BRACKET PROVES IN-PLACE REVISION AT LEAST THAT WIDE; A NARROW ONE PROVES NOTHING AT
+ALL. WIDTH IS EVIDENCE; NARROWNESS IS SILENCE.
+
+WHY THIS IS THE SHARPEST INSTANCE, AND THE PART WORTH KEEPING. Orch had written a caveat
+about ABSENT birthtime one message before shipping the bracket -- so it had already
+imagined this class of failure and still shipped unearned confidence, BECAUSE IT CHECKED
+THE DOOR IT WAS WATCHING. Naming the class gave no protection, which is the same thing
+the-only-list-available-becomes-the-work-list records about `brief.includes(path)`.
+Distinct from a-check-narrower-than-the-property-it-names, though: nothing here PASSES on a
+wrong world -- a repair simply stops early where its prompting detector stopped looking,
+and then ASSERTS it did not.
+
+The test that ends it is two lines and costs nothing: write a file, edit it, re-read both
+stamps. ASK WHAT YOUR DETECTOR CANNOT SEE, THEN ASK IT AGAIN OF THE FIX. The bracket was
+Orch's; the probe that killed it was Luna-Boss-2's; NEITHER FOUND ITS OWN.
+
+RECORDED BECAUSE THE LOG KEEPS ITS WRONG TURNS: an earlier version of this lesson was
+handed over about an hour before and withdrawn. It stopped at detector 3 and treated that
+fix as sound -- it is the very failure this entry describes, committed while writing the
+entry about it. That draft is not stored, at its author's instruction; this note exists so
+a reader knows the entry has a superseded predecessor and why.
 ```
