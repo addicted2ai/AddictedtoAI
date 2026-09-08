@@ -715,6 +715,7 @@ test('attribution by path: the engine\'s own files, and nobody else\'s', () => {
   for (const own of [
     'data/changes.jsonl',
     'data/linkcheck.json',
+    'data/indexnow.jsonl',
     'data/derived/queue.json',
     'data/sources/openrouter/latest.json',
     'data/sources/openrouter/minted.json',

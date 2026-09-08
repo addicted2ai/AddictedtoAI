@@ -80,29 +80,43 @@ const ARMED = {
 
 // ── the URL set ───────────────────────────────────────────────────────────
 
-test('changedUrls takes exactly the URLs whose lastmod is the given day', () => {
-  assert.deepEqual(changedUrls(SITEMAP, '2026-08-31'), [
+test('changedUrls selects only URLs newer than their last successful submission', () => {
+  assert.deepEqual(changedUrls(SITEMAP, []), [
     `${SITE_URL}/`,
     `${SITE_URL}/wiki/concept/ai-winter`,
+    `${SITE_URL}/wiki/model/old`,
   ]);
-  assert.deepEqual(changedUrls(SITEMAP, '2026-08-20'), [`${SITE_URL}/wiki/model/old`]);
-  assert.deepEqual(changedUrls(SITEMAP, '2026-01-01'), []);
+  assert.deepEqual(changedUrls(SITEMAP, [{ date: '2026-08-20', url: `${SITE_URL}/`, status: 'success' }]), [
+    `${SITE_URL}/`,
+    `${SITE_URL}/wiki/concept/ai-winter`,
+    `${SITE_URL}/wiki/model/old`,
+  ]);
+  assert.deepEqual(changedUrls(SITEMAP, [{ date: '2026-08-31', url: `${SITE_URL}/`, status: 'success' }]), [
+    `${SITE_URL}/wiki/concept/ai-winter`,
+    `${SITE_URL}/wiki/model/old`,
+  ]);
 });
 
 test('a URL with no lastmod is never submitted — absence is not a claim that it changed', () => {
-  const all = [];
-  for (const day of ['2026-08-31', '2026-08-20', '2026-01-01']) all.push(...changedUrls(SITEMAP, day));
-  assert.ok(!all.includes(`${SITE_URL}/colophon`), '/colophon carries no lastmod and must never be pinged');
+  assert.ok(!changedUrls(SITEMAP, []).includes(`${SITE_URL}/colophon`), '/colophon carries no lastmod and must never be pinged');
 });
 
-test('changedUrls without a day submits nothing rather than everything', () => {
-  assert.deepEqual(changedUrls(SITEMAP, undefined), []);
-  assert.deepEqual(changedUrls(SITEMAP, ''), []);
+test('changedUrls without a ledger treats it as empty, and malformed rows do not qualify as success', () => {
+  assert.deepEqual(changedUrls(SITEMAP, undefined), [
+    `${SITE_URL}/`,
+    `${SITE_URL}/wiki/concept/ai-winter`,
+    `${SITE_URL}/wiki/model/old`,
+  ]);
+  assert.deepEqual(changedUrls(SITEMAP, [{ date: '2026-08-31', url: `${SITE_URL}/`, status: 'failed' }]), [
+    `${SITE_URL}/`,
+    `${SITE_URL}/wiki/concept/ai-winter`,
+    `${SITE_URL}/wiki/model/old`,
+  ]);
 });
 
 test('changedUrls reads the midday stamp as a calendar date, which is why sitemap.ts writes T12:00:00Z', () => {
   const xml = `<urlset><url><loc>${SITE_URL}/x</loc><lastmod>2026-08-31T12:00:00.000Z</lastmod></url></urlset>`;
-  assert.deepEqual(changedUrls(xml, '2026-08-31'), [`${SITE_URL}/x`]);
+  assert.deepEqual(changedUrls(xml, []), [`${SITE_URL}/x`]);
 });
 
 // ── the five guards, each measured alone ──────────────────────────────────
@@ -183,9 +197,45 @@ test('an armed run posts once, to the shared endpoint, with the changed URLs', a
   assert.equal(fetchImpl.calls[0].init.method, 'POST');
   assert.match(fetchImpl.calls[0].init.headers['Content-Type'], /application\/json/);
   const sent = JSON.parse(fetchImpl.calls[0].init.body);
-  assert.deepEqual(sent.urlList, [`${SITE_URL}/`, `${SITE_URL}/wiki/concept/ai-winter`]);
+  assert.deepEqual(sent.urlList, [`${SITE_URL}/`, `${SITE_URL}/wiki/concept/ai-winter`, `${SITE_URL}/wiki/model/old`]);
   assert.equal(result.submitted, true);
-  assert.equal(result.count, 2);
+  assert.equal(result.count, 3);
+});
+
+test('a delayed deploy is submitted once, and an unchanged rerun submits nothing', async () => {
+  const root = fixtureRoot({
+    sitemap: `<urlset><url><loc>${SITE_URL}/delayed</loc><lastmod>2026-08-31T12:00:00.000Z</lastmod></url></urlset>`,
+  });
+  const firstFetch = recordingFetch();
+  const first = await submitIndexNow({ root, day: '2026-09-01', siteUrl: SITE_URL, config: { publish: true }, log: { step: () => {} }, fetchImpl: firstFetch });
+  const secondFetch = recordingFetch();
+  const second = await submitIndexNow({ root, day: '2026-09-02', siteUrl: SITE_URL, config: { publish: true }, log: { step: () => {} }, fetchImpl: secondFetch });
+  assert.equal(first.submitted, true);
+  assert.equal(firstFetch.calls.length, 1);
+  assert.equal(second.reason, 'nothing-changed');
+  assert.equal(secondFetch.calls.length, 0);
+});
+
+test('a failed submission remains retryable and does not suppress a later success', async () => {
+  const root = fixtureRoot({
+    sitemap: `<urlset><url><loc>${SITE_URL}/retry</loc><lastmod>2026-08-20T12:00:00.000Z</lastmod></url></urlset>`,
+  });
+  const failed = await submitIndexNow({ root, day: '2026-09-01', siteUrl: SITE_URL, config: { publish: true }, log: { step: () => {} }, fetchImpl: async () => ({ status: 500 }) });
+  const retried = recordingFetch();
+  const success = await submitIndexNow({ root, day: '2026-09-02', siteUrl: SITE_URL, config: { publish: true }, log: { step: () => {} }, fetchImpl: retried });
+  assert.equal(failed.submitted, false);
+  assert.equal(success.submitted, true);
+  assert.equal(retried.calls.length, 1);
+});
+
+test('a URL unchanged since its successful submission is never submitted, however old the ledger is', async () => {
+  const root = fixtureRoot({ sitemap: `<urlset><url><loc>${SITE_URL}/wiki/model/old</loc><lastmod>2026-08-20T12:00:00.000Z</lastmod></url></urlset>` });
+  mkdirSync(join(root, 'data'), { recursive: true });
+  writeFileSync(join(root, 'data', 'indexnow.jsonl'), JSON.stringify({ date: '2026-08-20', status: 'success', url: `${SITE_URL}/wiki/model/old` }) + '\n');
+  const fetchImpl = recordingFetch();
+  const result = await submitIndexNow({ root, day: '2026-09-01', siteUrl: SITE_URL, config: { publish: true }, log: { step: () => {} }, fetchImpl });
+  assert.equal(result.reason, 'nothing-changed');
+  assert.equal(fetchImpl.calls.length, 0);
 });
 
 test('every unarmed configuration makes NO request at all, and says which guard stopped it', async () => {
@@ -196,9 +246,18 @@ test('every unarmed configuration makes NO request at all, and says which guard 
     ['nothing-changed', { day: '2001-01-01' }],
   ];
   for (const [reason, over] of cases) {
+    const root = fixtureRoot({
+      sitemap: reason === 'nothing-changed'
+        ? `<urlset><url><loc>${SITE_URL}/unchanged</loc><lastmod>2026-08-31T12:00:00.000Z</lastmod></url></urlset>`
+        : SITEMAP,
+    });
+    if (reason === 'nothing-changed') {
+      mkdirSync(join(root, 'data'), { recursive: true });
+      writeFileSync(join(root, 'data', 'indexnow.jsonl'), JSON.stringify({ date: '2026-08-31', status: 'success', url: `${SITE_URL}/unchanged` }) + '\n');
+    }
     const fetchImpl = recordingFetch();
     const result = await submitIndexNow({
-      root: fixtureRoot(),
+      root,
       day: '2026-08-31',
       siteUrl: SITE_URL,
       config: { publish: true },
@@ -296,7 +355,8 @@ test('nothing in indexnow.mjs writes HOLD.md or exits — a failed ping is not a
   const code = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
   assert.ok(!/HOLD\.md/.test(code), 'this module must never write the halt file');
   assert.ok(!/process\.exit/.test(code), 'and must never end the run');
-  assert.ok(!/writeFileSync|appendFileSync/.test(code), 'and writes no state at all');
+  assert.ok(!/writeFileSync|appendFileSync/.test(code), 'and does not write state through raw filesystem calls');
+  assert.match(code, /appendJsonl\(ledgerFile/, 'submission state uses the shared append-only JSONL writer');
 });
 
 test('the Pulse reaches outside pulse/ for exactly five modules, and all are import-free', () => {
