@@ -1993,7 +1993,46 @@ three SPECIFICATION defects (the floor rule that was unsatisfiable; the
 bound) against two IMPLEMENTATION defects (the record before the floor; the
 two arms that could not fail) — a requirement can be correct as a sentence and
 wrong as a specification, and each of the three was caught by someone
-measuring rather than reading. The reviewer also faulted the
+measuring rather than reading.
+
+**B1 round 2 — authority: two-desks-work-orders-and-trains@`8ab1dee`.**
+Branch at `439d083`; worker and sealed reviewer at max; verdict revise, four
+findings; the rewrite largely right: no per-source share survives, the
+mutation table exact on every row the coordinator re-ran, and the live
+tree's largest assembled brief fell from 73,288 to 41,043 characters. The
+severe finding was a specification gap the architect's text left: the floor
+loop reserved space for every LATER floor before allocating an earlier one, so
+under a tight cap the priority order inverted exactly when priority matters
+(three named constitutions at `maxChars: 500` lost `pulse`, the
+highest-priority one, and kept `site` and `review`), contradicting RESULT.md's
+own claim that constitutions remain represented; the coordinator's live-tree
+probe could not reach the condition because the live floor minimums are tiny,
+and it said so — a probe that cannot reach the failing state is not evidence
+of its absence. Task 6 now says what represents a constitution that cannot
+fit: its marker, guaranteed; content in priority order first come; reserve
+counts markers only; a cap below the markers' sum fails loudly. The second
+architect's decision: the subject wiring. The author found `loop/run.mjs`
+writes no subject list, reported it, and then implemented heuristic fallbacks
+(`target`, `raw.subject`, `id`) that recognise only a capability name or a
+`specs/<capability>` path and silently ignore a real content target; the
+reviewer held that a heuristic is not "the subject paths `.job/source.json`
+already names", and the disposition is the minimal honest reading of task 5:
+in Stage 0 the caller passes an empty list and the excerpt set is the
+governing type's requirements only; the path-to-capability map is design that
+belongs to tasks 55 and 59, where declared subjects exist; `run.mjs` does not
+join B1. Also: a pending-only heading fallback at `specs.mjs:315-317` still
+admitted a delta section with no constitutional requirement to amend — bullet
+1 one layer down from the zero-score exception — and the mutation table was
+incomplete over three regions. Two coordinator disclosures: every brief said
+"run the full `npm test` ONCE, at the end", meant as do-not-iterate and read
+as one-attempt, so a worker whose suite died on its own 125.5 s timeout
+correctly declined to retry and the round has no green suite (Orch runs it in
+its lane; the brief now says once governs iteration, not attempts, with a
+600 s floor); and the coordinator's pre-registered hypotheses scored zero of
+six for the third round running while missing all four findings. Mutation
+table, second outing: nothing the reviewer would not have found, and itself a
+finding again; two nils, the target class still not having appeared. Round
+count: A six, B1 three. The reviewer also faulted the
 brief, the third reviewer of the day to find a coordinator defect and the most
 substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
 > 0` to `s.score === 0`) reddened three arms.

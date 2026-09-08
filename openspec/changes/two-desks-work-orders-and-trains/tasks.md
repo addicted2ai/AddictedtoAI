@@ -312,6 +312,17 @@ the sentence that uses it.
       the Stage 0 caller fills from the subject paths the job's `.job/source.json`
       already names, empty when it names none, so the function's contract is
       the requirement's from the start and only the caller changes in Stage 2.
+      **Resolved at B1 round 2 (the author found `loop/run.mjs:1332-1343`
+      writes no subject list at all): in Stage 0 the caller passes an EMPTY
+      list and the excerpt set is the governing type's requirements and their
+      pending amendments, nothing more. No heuristic fallback — not `target`,
+      not `raw.subject`, not `id` — because a subject that reaches `excerptsFor`
+      must be a path the work order DECLARED, and mapping a content path to
+      its capability's requirements is a piece of design (one explicit map
+      from the closed `kind` list to capabilities, with an unmapped path
+      reported in the brief rather than silently dropped) that belongs to
+      task 55/59, where declared subjects exist. `loop/run.mjs` is not in B1's
+      files and does not join them.**
       B1's brief had told the author declared subjects were not the packet's
       responsibility, a requirement-level tension resolved by fiat in a brief
       (the coordinator's own finding); this sentence is the resolution.
@@ -339,7 +350,21 @@ the sentence that uses it.
       floor); (b) ONE total cap, `BRIEF_EXCERPT_MAX_CHARS`, applied to that
       ordered list, cutting from the end with a `[... CUT ...]` marker that
       names what was cut; (c) no per-source share exists, so nothing shrinks as
-      changes open and nothing grows with them either. If, with pass 2b and the
+      changes open and nothing grows with them either. **(d) Under a tight cap
+      the priority order HOLDS (resolved at B1 round 2, where the first
+      implementation reserved space for every LATER floor before allocating an
+      earlier one and so dropped the highest-priority capability first — the
+      reviewer's probe at `maxChars: 500` lost `pulse` and kept `site` and
+      `review`): what every named capability is guaranteed is its MARKER — one
+      line naming the requirement heading as cut — and nothing more; the
+      reserve for later floors counts markers only, never content; content is
+      allocated in priority order, first come, so an earlier floor is never
+      starved for a later one; a floor whose content does not fit is
+      represented by its marker; and a cap below the sum of the markers is a
+      configuration error that fails loudly, never a silent `continue`. "Every
+      constitution represented" means its marker at minimum, and that is
+      stated because the first text did not say what represents a
+      constitution that cannot fit.** If, with pass 2b and the
       zero-score exception gone (task 5), a type's named requirements still
       exceed the ceiling, that is task 8's live finding with numbers and the
       architect's disposition, never a raised ceiling. `loop/lib/config.mjs`
