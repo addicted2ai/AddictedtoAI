@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 148409.
+Entries: 59. Characters of memory text: 151142.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -249,6 +249,24 @@ statements was edited to insert a 59th; it landed BEFORE 58 and orphaned it unde
 header. The land script asserts the numbers run 1..N STRICTLY ASCENDING, and caught it. A
 RANGE CHECK OR A COUNT WOULD HAVE PASSED: there were still 59 statements, still numbered 1
 to 59, just not in that order. The exact form is doing work the permissive form cannot.
+
+--- ADDED 2026-09-08 by A2AI-Orch, handed over as text. NOT part of the original memory
+text above. ---
+
+A THIRD ROUTE TO THE EMPTY-EXPECTATION FAILURE RECORDED ABOVE, and this time the file is
+fine: A BROKEN READER OF A RECORD IS INDISTINGUISHABLE FROM A PERMISSIVE GATE. Passing the
+wrong context to `loadConformance` makes `existsSync(undefined)` return `{}`, and every
+runner then reads as ALLOWED -- byte-identical output to a gate that genuinely permits
+everything. The record on disk is complete and correct; the reader never reached it.
+
+SO THE EXPECTATION-FILE BLIND SPOT HAS THREE ROUTES, NOT TWO: the file EMPTIES, the file
+OMITS THE NEWEST THING, or THE READER NEVER LOADED IT. All three report clean, and the
+third leaves the evidence intact so an audit of the file finds nothing wrong.
+
+THE REMEDY IS THE SAME SHAPE AND ONE LINE: ASSERT THE RECORD COUNT YOU LOADED BEFORE
+TRUSTING ANY VERDICT READ OUT OF A RECORD FILE. A floor on the expectation catches the
+first two routes; asserting the load catches the third. Filed as addictedtoai-2wwu,
+acceptance clause 4.
 ```
 
 ## a-dominating-fixture-member-cannot-pin-a-fold
@@ -1968,6 +1986,34 @@ THE CLASSIFIER CATCHING SOMETHING IS ALSO NOT THE ALARM. The alarm is an approva
 reaching the maintainer, which is what an ambiguous command produces. A blocked call is
 the guardrail working silently. Agents have reported blocks as though they had woken
 someone; they had not.
+
+--- ADDED 2026-09-08 by A2AI-Orch, handed over as text. NOT part of the original memory
+text above. ---
+
+THE INVERSE OF THIS ENTRY, and the more dangerous direction. Above is a DISCIPLINE THAT
+FAILED and was replaced by a mechanism: nine-plus `cd` violations across three days by
+agents whose briefs named the token, until the PreToolUse guard made the prose
+unnecessary. The inverse case is a DISCIPLINE THAT WORKED, and it is invisible.
+
+A DISCIPLINE THAT WORKS IS INDISTINGUISHABLE FROM A MECHANISM THAT EXISTS, RIGHT UP UNTIL
+THE DISCIPLINE IS REMOVED. While it holds, the system is safe and nobody can tell WHY.
+Removing it is the only experiment that separates the two, and it is an experiment run in
+production by definition.
+
+MEASURED 2026-09-08. The maintainer's one-codex-session-at-a-time rule was A HUMAN
+STANDING IN FOR A LOCK. When he lifted it -- "it really was meant to prevent collisions and
+machinery lock issues, you can disregard it moving forward" -- a peer session was told its
+purpose was served by four mechanisms, HAVING EXAMINED NONE OF THEM. Four of six
+concurrency controls then proved broken under parallel workers: breaker 1, the budget
+read-then-act, noOutputStreak and lanePause.
+
+THE DIAGNOSTIC THAT SEPARATES THEM, from A2AI-Luna-Boss-2: A CONTROL THAT COUNTS WITHIN A
+WINDOW SURVIVES CONCURRENCY; A CONTROL THAT DEPENDS ON ORDER, OR THAT READS-THEN-ACTS,
+DOES NOT.
+
+THE RULE: when a discipline is removed, ENUMERATE THE MECHANISMS SUPPOSEDLY DOING ITS WORK
+AND READ EACH ONE. "Its purpose is served by X" is a claim about X, and until X has been
+read it is the same unexamined assertion the discipline was concealing.
 ```
 
 ## snapshot-census-hedge-2026-08-31-commit-23490df
