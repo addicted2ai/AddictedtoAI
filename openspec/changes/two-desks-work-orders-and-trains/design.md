@@ -1833,3 +1833,32 @@ against the dependencies. Round count for the mutation-table hypothesis, kept
 honest: rounds 1 to 5 (10:49, 11:59, 12:45, 13:26, 14:18) are the baseline;
 round 6 carries the first live table, so the test is round 6 plus B1 against
 that baseline, reported either way.
+
+**Round 6 — authority: two-desks-work-orders-and-trains@`658625d` — APPROVE.**
+Sealed review (codex Luna max, about 19 min; worker at medium; `b820031`; one
+arm, one file, +21 lines, production untouched; suite 1,730, up exactly one).
+The coordinator committed five clean-pass criteria to a file before the worker
+ran and verified each independently of the report. The proof that matters is
+the shape of the red: under a constant clock the first assertion to fail is
+`checked.ok`, not the duration assertion, which is only possible if the
+fabricated zero flowed into the floor decision — a number the decision
+consumes, not merely a number measured. The declaration was derived from
+`checkBuild`'s signature rather than from the task's list, which is how the
+author found the optional `floors` alias the task text omitted: nine options,
+three armed, six declared, `runBuild` correctly excluded as a positional
+control argument. A negative result the coordinator went looking for, and
+which is part of why the approve is trusted: the gate spawner has the same
+clock seam feeding the same floor comparison, and mutating `defaultClock` to a
+constant turns 1 of 8 gate arms and 4 of 7 job-gate-set arms red — the parallel
+hole of round 3's shape is not there. The reviewer's own near-miss mutation
+(`gates.mjs:370`, `>= floorMs` weakened to `> 0`) left the new arm green and
+reddened two pre-existing floor arms, reported as evidence of the arm's narrow
+purpose rather than abandoned. The withheld finding was missed and is review
+hygiene only: RESULT.md, gitignored, was appended rather than overwritten and
+carries two authority shas. On the axis that mattered this round — whether a
+reviewer that has returned five consecutive revises would manufacture a sixth —
+it did not. The coordinator's pre-registered hypotheses scored zero of six for
+the second round running. Packet A in total: six rounds, five worker commits
+after the first, six sealed max reviews, about 4.5 hours of wall clock;
+production correct since round 4, rounds 5 and 6 evidence. Whether that was
+worth it is the question B1's mutation table exists to answer.
