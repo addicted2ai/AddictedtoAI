@@ -40,15 +40,29 @@ import { makeRepo, writeQueue, mockCommand, runnersYaml } from './helpers.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-test('lock refusals are environmental and named by the failure note', () => {
+test('only terminal lock refusals are environmental and named by the failure note', () => {
   for (const [output, name] of [
     ['run-tests: TEST LOCK\nanother test run holds the lock', 'test-lock refusal'],
-    ['build-lock: waiting\nanother build holds the lock', 'build-lock refusal'],
+    ['another build holds D:/tmp/build.lock: holder. Waited 5s.\nThat file is the lock for the build surface out.', 'build-lock refusal'],
   ]) {
     const result = { ok: false, results: [{ script: 'test', ok: false, status: 1, output }], output };
     assert.equal(gatesHitEnvironmentalFailure(result), true);
     assert.match(gateFailureNote(result), new RegExp(`environmental: ${name}`));
   }
+  const waited = {
+    ok: false,
+    results: [
+      { script: 'build', ok: true, status: 0, output: 'build-lock: waiting for holder to finish its build.' },
+      { script: 'verify-surfaces', ok: false, status: 1, output: 'ordinary assertion failure' },
+    ],
+  };
+  assert.equal(gatesHitEnvironmentalFailure(waited), false, 'a successful wait must not excuse a later failed gate');
+  assert.match(gateFailureNote(waited), /no transport marker/);
+  assert.equal(
+    gatesHitEnvironmentalFailure({ results: [{ script: 'build', ok: false, status: 1, output: 'build-lock: waiting for holder to finish its build.' }] }),
+    false,
+    'a wait announcement is not a terminal refusal',
+  );
 });
 
 test('a refused child process is environmental, while an ordinary failure remains branch-owned', () => {
@@ -58,6 +72,30 @@ test('a refused child process is environmental, while an ordinary failure remain
   };
   assert.equal(gatesHitEnvironmentalFailure(refused), true);
   assert.match(gateFailureNote(refused), /environmental: child process did not start/);
+
+  for (const status of [3221225477, -1073741819]) {
+    assert.equal(
+      gatesHitEnvironmentalFailure({ results: [{ script: 'test', ok: false, status, spawned: true }] }),
+      true,
+      `access-violation status ${status} is a pre-output spawn failure`,
+    );
+  }
+  for (const errorCode of ['EAGAIN', 'ENOMEM']) {
+    assert.equal(
+      gatesHitEnvironmentalFailure({ results: [{ script: 'test', ok: false, status: null, spawned: true, errorCode }] }),
+      true,
+      `spawn error ${errorCode} is environmental before output`,
+    );
+  }
+
+  // ETIMEDOUT is explicitly not environmental: the child started and was
+  // killed at the cap, so a permanently hanging branch must count as failed.
+  const timedOut = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: null, spawned: true, error: 'spawnSync ETIMEDOUT', errorCode: 'ETIMEDOUT' }],
+  };
+  assert.equal(gatesHitEnvironmentalFailure(timedOut), false);
+  assert.match(gateFailureNote(timedOut), /timed out/);
 
   const ordinary = { ok: false, results: [{ script: 'test', ok: false, status: 1, output: 'not ok 1' }] };
   assert.equal(gatesHitEnvironmentalFailure(ordinary), false);
@@ -73,11 +111,23 @@ test('runGates gives child gates their own lock wait derived from the gate timeo
       "process.stdout.write(`${process.env.ATAI_TEST_LOCK_WAIT_MS},${process.env.ATAI_BUILD_LOCK_WAIT_MS}`); process.exit(1);",
       'utf8',
     );
-    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 5000, lockWaitMs: 4321 });
+    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 4321 });
     assert.match(result.results[0].output, /4321,4321$/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('the loop wires its per-job cap into both gate lock waits', () => {
+  // The injected gate hook cannot observe runGates options, so this checks the
+  // production call site itself. Removing either cap-derived option is the
+  // named mutation this regression must reject.
+  const source = readFileSync(join(REPO_ROOT, 'loop', 'run.mjs'), 'utf8');
+  assert.match(
+    source,
+    /runGates\(ctx, worktree, \{ timeoutMs: gateTimeoutMs, lockWaitMs: gateTimeoutMs \}\)/,
+    'run.mjs must pass the gate cap as the child lock-wait cap',
+  );
 });
 
 /**

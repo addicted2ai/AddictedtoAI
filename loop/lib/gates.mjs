@@ -89,15 +89,28 @@ export function gatesHitTransportFailure(result = {}) {
 }
 
 const TEST_LOCK_REFUSAL = /run-tests:\s*TEST LOCK|another test run holds/i;
-const BUILD_LOCK_REFUSAL = /build-lock:|another build holds/i;
-const SPAWN_FAILURE_STATUS = new Set([0xC0000142, 3221225794, -1073741502]);
+const BUILD_LOCK_REFUSAL = /another build holds .*Waited \d+s\./i;
+const SPAWN_FAILURE_STATUS = new Set([
+  0xC0000142, 3221225794, -1073741502,
+  0xC0000005, 3221225477, -1073741819,
+]);
+const SPAWN_FAILURE_CODES = new Set(['EAGAIN', 'ENOMEM']);
 
 function environmentalCondition(result = {}) {
   const output = `${result.output ?? ''}\n${result.error ?? ''}`;
   if (TEST_LOCK_REFUSAL.test(output)) return 'test-lock refusal';
   if (BUILD_LOCK_REFUSAL.test(output)) return 'build-lock refusal';
-  if (result.error || (result.spawned === true &&
-      (result.status === null || SPAWN_FAILURE_STATUS.has(result.status)))) {
+  // A timeout means the child DID start. It is a real gate failure, even though
+  // spawnSync also reports an error and status null; only creation refusal
+  // before any output belongs to the environmental interruption path.
+  const errorCode = result.errorCode ?? result.code;
+  const timedOut = errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(result.error ?? '');
+  const noOutput = !String(result.output ?? '').trim();
+  if (!timedOut && noOutput && (
+    SPAWN_FAILURE_CODES.has(errorCode) ||
+    (result.spawned === true && SPAWN_FAILURE_STATUS.has(result.status)) ||
+    (result.spawned !== true && result.error)
+  )) {
     return 'child process did not start';
   }
   return null;
@@ -105,8 +118,9 @@ function environmentalCondition(result = {}) {
 
 /** Did a gate fail because the machine refused the check, rather than the branch? */
 export function gatesHitEnvironmentalFailure(result = {}) {
-  if (typeof result.environmental === 'boolean') return result.environmental;
-  return (result.results ?? [result]).some((r) => Boolean(environmentalCondition(r)));
+  return (result.results ?? [result])
+    .filter((r) => !r.ok)
+    .some((r) => Boolean(environmentalCondition(r)));
 }
 
 /**
@@ -148,7 +162,11 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
   const failed = (result.results ?? []).filter((r) => !r.ok);
   const which = failed.length
     ? failed
-        .map((r) => `${gateCommand(r)} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
+        .map((r) => {
+          const timedOut = r.errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(r.error ?? '');
+          const ending = r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
+          return `${gateCommand(r)} (${ending})`;
+        })
         .join(', ')
     : 'no per-gate result was recorded';
   // The marker no longer decides WHETHER the gates were retried — since beads
@@ -227,6 +245,7 @@ function npmRun(worktree, script, timeoutMs, env) {
     ok: r.status === 0,
     status: r.status,
     error: r.error?.message,
+    errorCode: r.error?.code,
     spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
@@ -311,6 +330,7 @@ function nodeRun(worktree, name, spec, timeoutMs, env) {
     ok: r.status === 0,
     status: r.status,
     error: r.error?.message,
+    errorCode: r.error?.code,
     spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
@@ -376,7 +396,9 @@ export function runGates(ctx, worktree, {
   const ok = results.length > 0 && results.every((r) => r.ok);
   // BEFORE THE SLICE, and that ordering is the whole point of the flag.
   const transport = results.some((r) => isTransportFailure(r.output));
-  const environmental = results.some((r) => Boolean(environmentalCondition(r)));
+  const environmental = results
+    .filter((r) => !r.ok)
+    .some((r) => Boolean(environmentalCondition(r)));
   return {
     ok,
     results,
