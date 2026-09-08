@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 151142.
+Entries: 60. Characters of memory text: 178117.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -79,6 +79,7 @@ Entries: 59. Characters of memory text: 151142.
 - [windows-node-and-git-traps](#windows-node-and-git-traps)
 - [worktrees-and-junctions](#worktrees-and-junctions)
 - [the-only-list-available-becomes-the-work-list](#the-only-list-available-becomes-the-work-list)
+- [two-desks-work-orders-and-trains-2026-09-08](#two-desks-work-orders-and-trains-2026-09-08)
 
 ---
 
@@ -2579,4 +2580,407 @@ this still pass on?" -- is precisely what went unrun. It is kept HERE because th
 SET-CONFUSION is what made the loose test look tight: the author was not careless about the
 wrong world, he was confident because a real, complete, correct enumeration existed and he
 had used it. Cross-linked both ways rather than duplicated.
+```
+
+## two-desks-work-orders-and-trains-2026-09-08
+
+```text
+THE DESK REDESIGN IS A MECHANISM FOR THE CEILING NOBODY CHOSE. Named 2026-09-08
+after the maintainer's charter addictedtoai-douz was answered: batch coherent
+work into work orders, route content and machinery into front and back desks,
+run the expensive gate set once per release train, and let the ledger decide
+runner effort and concurrency. The three complaints were CONFIRMED, CONFIRMED
+OVER THE SPAN BUT PARTLY REFUTED IN SHAPE, and CONFIRMED IN WALL-CLOCK AND
+MODEL-MINUTES BUT PARTLY REFUTED ON TOKENS. Stage 0 is the brief diet, gate
+reuse, runner ladder, ledger fields and baseline; Stage 1 is the train at one
+worker; Stage 2 is work orders and ratification; Stage 3 is intake, two desks,
+parallel workers and fleet retirement. The train waits for a later stage because
+it rewrites the publish path, where a mistake is public rather than local.
+(archived as <date>-two-desks-work-orders-and-trains,
+proposal.md; evidence/README.md)
+
+THE PRE-CHANGE BASELINE, WITH THE ANCHORS THAT MUST NOT BE LOST. The median
+merged Desk job changed one content file and four content lines, cost about
+$3.20, and took 24.3 minutes wall-clock for 18.4 model-minutes; 110 of 208
+merged jobs (52.9%) touched exactly one content file. The old fixed-cost
+comparison said 5.5 minutes median non-model overhead, but the Stage-0 anchor
+that survives the train move is brief-commit to merge: 206 included jobs had a
+22.81-minute wall-clock median and a 3.85-minute median non-model overhead
+(3.90 since 2026-09-01). The old brief-commit to records-commit definition was
+5.497 minutes overhead (5.50 rounded), and 41 of those 206 jobs had no records
+commit anywhere in history. That missing endpoint is addictedtoai-l7cx, not a
+reason to keep measuring the wrong span. The 3.85 and 5.50 are different
+quantities; neither is evidence that the redesign already improved the Desk.
+(archived as <date>-two-desks-work-orders-and-trains,
+evidence/stage0-baseline.md; evidence/ledger-report.md §B, §C, §F)
+
+The brief was the real token-shaped cost. Its observed series was
+16,181 -> 33,491 -> 70,349 -> 103,881 characters in eleven days, about 85%
+spec excerpt, with BRIEF_EXCERPT_MAX_CHARS raised from 14,000 to 88,000 four
+times because unarchived changes split the per-source budget and excerptsFor
+pass 2b saturated whatever budget remained. The repair is to delete pass 2b and
+restore the ceiling to 24,000, while asserting the assembled size against a
+pinned fixture (at most 30,000 for a repair) and measuring live brief_chars.
+The live tree is a report, not a fixture; its size changes when changes are
+archived or opened. (archived as <date>-two-desks-work-orders-and-trains,
+evidence/stage0-baseline.md; evidence/desk-mech-report.md §B, §F)
+
+THE PUSH-BAR WAS SIX GATES, NOT THE PER-JOB GATE SET. On main at 78c6361,
+publishing off, the six-gate total was 442.5 seconds: npm test 314.8 seconds,
+70.7% of the total; verify-launch 39.6 seconds, including its own 39-second
+build; verify-design 35.7, npm run build 29.2, verify-analytics 19.5 and
+verify-surfaces 3.7. A current job runs four of those six (test, build,
+verify-surfaces and verify-design) and then pays a post-merge build, about
+412.6 seconds in the arithmetic used by the design. The train moves the full
+set together and reuses verify-launch's build. npm test is also the machine-wide
+lock that makes spare worker capacity illusory. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/gate-timings-final.txt;
+evidence/stage0-baseline.md)
+
+The suite itself was 1,709 tests in 298,091 ms across 122 files. Summed test
+time was about 1,380 seconds, roughly 4.6 times wall-clock because the suite is
+already parallel; its twelve slowest tests, 49.5 down to 13.5 seconds, were all
+Desk-machinery integration tests standing up real builds, git and bare origins.
+Moving the suite therefore changes the machinery while measuring it, and can
+make the suite slower before it makes the Desk faster. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/gate-timings-final.txt)
+
+THE BACKLOG WAS RISING, NOT STANDING STILL. By LOCAL day, 313 beads were filed
+and 212 closed, net +101; the last seven local days were 99 filed against 69
+closed, a 1.43 ratio. Forty-seven of the 101 open beads came from the opening
+08-29..08-31 cohort. The whole cohort was checked against the tree: 48 beads,
+42 still valid, 5 partial and 1 fixed, leaving 47 of 48 open at the check.
+The new-bead machinery share was measured at 64-81%, and the inflow series was
+0.3-0.6 new beads per bead closed. The backlog argument is therefore an
+undigested opening cohort plus a continuing drip above the drain, not a proof
+that every day failed to drain. (archived as
+<date>-two-desks-work-orders-and-trains,
+evidence/scripts/orch-beads-flow-local.mjs; evidence/stale-report.md;
+evidence/stale2-report.md; evidence/beads-report.md §B, §D)
+
+SPEND AND TOKENS WERE DIFFERENT CLAIMS. Workspace spend split 85.6% interactive
+($6,325 of $7,385.50) and 14.3% Desk ($1,057); the Desk figure is a floor,
+consistent with the ledger join but not independent of it, because 40 of 240
+job ids named in commits had no price record. Content was only 4.15% of changed
+lines; data was 34.8% and other was 44.8%, with 187,820 lines written to job
+branches and stripped again. The captured codex lane for 48 sessions that had
+started before 08:00 local read 182,873,547 tokens and produced 688,798 output,
+with 96% cached input: 266→286:1 read-to-write. The all-67-session partial-day
+capture was 238,067,103 input and 828,209 output, 286:1, so the earlier
+182.4M/685K was a running total while three sessions were still live. Token
+count is not the batching argument; wall-clock, gate passes, reviewer
+orientation and the brief are. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/spend-report.md §C, §D;
+evidence/codex-spend-2026-09-08.json; evidence/README.md)
+
+STATEMENT 14, file-the-deferral-or-lose-it, WAS ALREADY NARROWED AT 15fc520 BY
+THE MEMORY CONDITIONER, and this entry cites that amendment rather than
+restating it: the maintainer's 2026-08-29 words verbatim, the subject-path or
+specification-requirement test, the note-on-the-parent fallback, the
+close-refusal and its cause, and the "what did not change" clause all live
+there and in CLAUDE.md and AGENTS.md at bd84b4b. What this entry adds is the
+provenance of the cause. The unbounded rule made inflow a function of
+throughput: every careful job could generate a deferral, every deferral became
+a bead, and closing faster could grow the queue faster. The measured 0.3-0.6
+new beads per bead closed, 64-81% machinery share and 1.43 backlog growth
+ratio are that cause, and his decision was relayed, not witnessed: "I agree
+with all your recommendations." (archived as
+<date>-two-desks-work-orders-and-trains, proposal.md; evidence/beads-report.md
+§B, §D; evidence/scripts/orch-beads-flow-local.mjs)
+
+STATEMENT 21, agent-model-policy, ALREADY CARRIES THE INSTRUCTION AND THE
+POLICY (amended 2026-09-08 at 08b627f (the draft cited b34f584, which is the pre-amend object and is UNREACHABLE), relayed not witnessed: Luna medium for
+routine work, max for complex work and review); this entry adds the LEDGER
+HALF it lacks, and every figure below names its population, because three
+rounds between two sessions were spent on figures whose numerators agreed and
+whose denominators or labels did not. By author runner over ALL job types;
+mm/job is total cell minutes over all jobs whatever their outcome; first-pass
+revise is "review 1 said revise" over jobs that reached a first review, a
+proxy for reviewer agreement and not a defect rate, never to be combined with
+the fail column:
+
+  runner/type                    n     done       mm/job   first-pass revise
+  opencode-deepseek/all          114   93%        20.1     22/108 = 20%
+  claude-code-opus/all            88   86%        23.2      8/76 = 11%
+  codex-gpt-luna-medium/all       25   72%        21.5       7/19 = 37%
+  codex-gpt-luna (max)/all        10   70%        24.1        1/7 = 14%
+
+Like-for-like on REPAIR, per merged job (total cell minutes, all roles and all
+outcomes, over jobs with outcome done; the report's workflow-adjusted method):
+opus 17.7 (32 merged of 34), deepseek 18.0 (76 of 80), luna-medium 23.2 (15 of
+19), luna-max 27.1 (6 of 8). Author-only minutes per merged repair: luna-medium
+11.8, deepseek 12.2, opus 13.6, luna-max 23.8. Rework share, meaning revision
+plus second-review minutes over total cell minutes: luna-medium 24%, deepseek
+11%, opus 4%, luna-max 0% on 8 jobs. First-pass revise among first reviews on
+repair: luna-medium 5 of 16, deepseek 11 of 77, opus 1 of 32. The cheap author
+is the expensive workflow: luna-medium authors a repair for the least and pays
+the most to have it reworked, and the max rung produced nothing needing a
+second look. The memory conditioner reproduced every one of these figures
+independently from data/ledger.jsonl on 2026-09-08; the same numerators over
+all jobs instead of merged jobs give 16.6, 17.1, 18.3 and 20.3, which is why
+the population is written beside every number. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/runner-workflow-cost.md,
+Method and the per-cell tables; evidence/scripts/runner-workflow-cost.mjs;
+evidence/scripts/orch-runner-quality.mjs; design.md D3, the agreement table)
+
+Beyond what statement 21 records: high is registered, conformance-passing and
+named for no role; xhigh is refused and named for no role. The maintainer
+ruled, "If going to high vs max only saves 10%, I'd rather just use max" after
+high measured 7.03 model-minutes against max's 7.81 on four canned checks;
+that 10% is provisional evidence, not a workload. xhigh failed the fabrication
+trap on both runs, with two different fabrications and no averaging-away. Its
+first invented quotation was "The Institute publishes no benchmark numbers
+with this release and makes no claim about response times." Medium, high and
+max passed the same trap. The selector refuses xhigh for author and review,
+and Stage 0 task 22 adds `enabled: false` so a registered but unused rung
+cannot be selected through fail-open job_types. CLAUDE.md's conformance
+paragraph is the companion rule: data/conformance.json is authoritative, an
+absent record warns rather than refuses, and the runners.yml conformance field
+is documentation. (archived as <date>-two-desks-work-orders-and-trains,
+design.md revision records rounds 3, 7, 8 and 10; evidence/README.md)
+
+A FIGURE IN THIS CORPUS IS SAFE WHEN IT NAMES ITS POPULATION, NOT WHEN IT IS
+RIGHT, AND THE TAXONOMY IS PART OF THE POPULATION. Measured on 2026-09-08 in
+three rounds between the architect and the memory conditioner: the numerators
+agreed every time and only the denominator or the label differed (all jobs
+against merged jobs; merged jobs against first-reviewed jobs; total cell
+minutes against author-plus-revision minutes). Second-review minutes were not
+missing data in the third round; they were data on the wrong side of a ratio,
+classed as a cost of checking when they are a cost of having been wrong, and
+only the label says which side. An enumeration of candidate definitions is
+itself a list, and treating it as exhaustive is how a correct "nothing
+matches" becomes a wrong one. This is the memory conditioner's formulation,
+kept because it is the half neither session had at the start.
+
+THE USAGE-SWEEP-DESK-JOBS MEMORY ALSO NEEDS A CALIBRATION CORRECTION. Its claim
+that the sweep reproduced Claude Code's cost "to the cent" is too strong. The
+report's own calibration ratios were 1.06, 0.76 and 0.66, with one 0.0007 ratio
+explained by a fork accumulator. The sweep is a floor, possibly a third low,
+not an exact price oracle. That caveat travels with the $3.20 median and the
+14.3% Desk split: both are useful ledger joins, neither is independent proof
+of the system's full cost. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/spend-report.md §C, §D;
+usage-sweep-desk-jobs, corrected 2026-09-08)
+
+STATEMENT gate-order-and-build-locking's 8-job, approximately 194-model-minute
+contention loss is HISTORICAL. It belonged to lock refusals that were then
+recorded as failed. Since 2026-09-08, the TEST_LOCK_REFUSAL path in
+loop/lib/gates.mjs:92 and run.mjs:571-575 records contention as interrupted:
+resumable and not a breaker step. The forward cost is still 600 seconds of
+wall-clock per contention, but not a lost job or consumed breaker count. The
+redesign's case for moving npm test rests on that wall-clock and on parallelism,
+not on repeating the old loss as if it were current. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/hist-report.md §B.3,
+§C.3; design.md D2)
+
+THE DELETIONS ARE NAMED SO A FUTURE ARCHIVE CANNOT TURN THEM INTO VAGUE
+"CLEANUP." DIRECTIVES.md retires after migration: it was 169 lines / 131,951
+bytes carrying 56 directives (45 done, 10 pending, 1 parked), with ten items
+duplicated by same-day directives. The proposal-expiry sweep and duplicate-slug
+discard are deleted because they never fired: the 15 retired proposals checked
+on 2026-08-31 and the 35 consumed headings rechecked on 2026-09-08 showed no
+traffic for either. The over-cap drop and self-amplification discard are KEPT
+despite never firing, because they close conflict-of-interest paths in a job's
+own output; a zero firing rate is not evidence that that guard is useless.
+
+pass 2b of excerptsFor is deleted, and the excerpt ceiling falls 88,000 to
+24,000. The second and third per-job builds in the old arithmetic are separated
+by fact: the second, the post-merge build at run.mjs:1661, is deleted because
+the tripwire now builds the merged tip; the claimed third per-job build never
+existed, which is why the six-gate arithmetic was corrected from three builds
+to two. The property carried by the deleted build
+survives: building the merged tip still catches green-apart/red-together at one
+build per job. The hand-driven fleet retires at Stage 3, not before the workers
+that replace it exist; its launcher remains as a measurement instrument and its
+cross-change grading becomes the train review. (archived as
+<date>-two-desks-work-orders-and-trains, design.md D4-D6 and
+"What is deleted"; evidence/README.md)
+
+THE PREDICTED INSTANCE 5 FOR STATEMENT 59, the-only-list-available-becomes-
+the-work-list, WAS SEEN AND CLOSED THIS TIME. declared_subjects is an
+enumeration that drives work: it is committed in .job/source.json at selection.
+The merge gate CHECKS the diff against that enumeration rather than
+CONSTITUTING the subject set from the diff. No diff path may escape the
+declaration, and no declared item can retire without its own measured diff or
+a reviewed declaration. The root fix is loop/run.mjs:1577-1594, reached by the
+Opus reviewer and the Luna reviewer by different routes (F2 and MAJOR 3), not
+by copying one reviewer's wording. The empty-diff reviewed outcome now logs and
+refuses instead of silently writing no record. This closes the trap at the
+authority/test boundary: the list is authoritative for what work is declared,
+and the diff is independent evidence checked against it. (archived as
+<date>-two-desks-work-orders-and-trains, design.md D1;
+evidence/reviews/round1-sealed-opus-high.md §1 and F2;
+evidence/reviews/round2-sealed-luna-max.md finding 3)
+
+THE RESERVED PROPERTY WAS CONFIRMED AND ITS SCOPE WAS MADE EXPLICIT. The
+maintainer said, "as long as work is getting reviewed before going live, I am
+good". The applied reading is model-written bytes plus reviewed machinery;
+deterministic derived data from already-reviewed machinery and the review's own
+records are exempt, because a review cannot read its own record. The review
+gate, byte-bound records, STOP/HOLD brakes, reserved paths and
+fail-the-build-don't-warn remain. verify-launch's review-state binding check
+at scripts/verify-launch.mjs:611 and :769 is newly put on the train, so the
+reserved property's own missing-versus-mismatched detector finally runs in the
+automated path. The first sealed Opus review verdict was "PRESERVED, and in one
+place strengthened"; its overall verdict was "Revise before implementation."
+(archived as <date>-two-desks-work-orders-and-trains,
+evidence/reviews/round1-sealed-opus-high.md §1 and OVERALL VERDICT;
+proposal.md §The one property that is reserved)
+
+THE ONE-CODEX-SESSION RULE WAS A HUMAN STANDING IN FOR A LOCK, AND IT WAS
+LIFTED. The maintainer said, "It really was meant to prevent collisions and
+machinery lock issues, you can disregard it moving forward." Luna-Boss-2 gave
+the diagnostic: "A control that counts within a window survives concurrency. A
+control that depends on order, or that reads-then-acts, does not." Four of six
+controls were broken under parallel workers: breaker 1's backwards walk;
+budget ceilings' read-then-act; noOutputStreak's backwards walk; and lanePause
+reading only the provider's newest line. shedState and the ledger/build/test
+locks were sound. W therefore remains 1 until the four broken controls are
+re-derived as windows and the budget gate reads reservations; 3 is the later
+experiment, not today's assumption. (archived as
+<date>-two-desks-work-orders-and-trains, design.md D3,
+"The controls, re-derived rather than inherited"; proposal.md)
+
+THE LEDGER'S SHAPE UNDER W WORKERS IS ONE FILE UNDER A LOCK, AND THE
+ALTERNATIVE WAS AN OWN-MISS BY THE SESSION THAT HOLDS STATEMENT 59. The memory
+conditioner's round-1 finding F3 offered two shapes for concurrent appends to
+data/ledger.jsonl and recommended per-worker line-files as "cheaper and
+removes the lock entirely". The sealed Opus F8 enumerated the file's consumers:
+budget ceilings, breaker 1, shed levels, scoutRanToday and the derived queue
+all read it, five where F3 had held one in mind. Line-files would have been
+invisible to four of them, so W workers would overspend against headroom none
+could see: one race fixed, four controls broken. The shipped shape is one
+ledger file with appendLedger under a ledger lock, a selection lock over
+mint-id, create-branch and the .job/ commit, and a selection-time reservation
+the budget gate reads until the job's own line lands, released on every
+terminal path and expiring at the wall-clock cap. Read with Luna-Boss-2's
+diagnostic: the append is a read-then-act, and the lock is what makes it count
+within a window. The miss has statement 59's shape (one consumer held in mind,
+the work was five) but is not claimed as its instance 5, which is the
+declared_subjects prediction above; a predicted-and-closed instance is worth
+more than another confirmed one. (archived as
+<date>-two-desks-work-orders-and-trains, design.md D3 and revision record
+round 1; evidence/reviews/round1-sealed-opus-high.md F8)
+
+The conformance record supplied the same lesson in serial form. Bead
+addictedtoai-2wwu records that data/conformance.json overwrote one runner's
+history: one green re-run erased a fabrication and made the record look like a
+pass. The repair is append-only per-run records, with history read by the gate;
+a later pass must supersede rather than erase the failure. The xhigh result then
+made the point unmissable: two runs, two different fabrications, both retained.
+(archived as <date>-two-desks-work-orders-and-trains, design.md
+revision records rounds 7-10; evidence/README.md)
+
+THE FRONT/BACK SHAPE CAME FROM h0z0 AND WAS CONFIRMED. The comment named "the
+back-desk idea the maintainer is musing on (front-desk = content jobs; back-desk
+= machinery, spec changes, beads)." The change implements that split as routing
+and accounting, not two physical machines: every candidate and ledger line has
+a desk, and an idle front desk scouts or does nothing. The maintainer raised
+the machinery ceiling from 10% to 30% for the drain at bd84b4b. The upkeep floor
+stays 40% and the new-writing ceiling stays 45%; because the bounds share one
+denominator, 40 + 30 leaves at most 30 points for new writing, so the raise can
+take up to 20 points from site work. addictedtoai-mnzf owns the revert: 30
+stands while any of bind-what-the-catalog-knows, let-the-queue-see-a-judgment
+or keep-the-map-describing-the-territory remains unarchived, then returns to 10
+unless the per-desk share has replaced it. (archived as
+<date>-two-desks-work-orders-and-trains, proposal.md §Answered;
+evidence/beads-report.md §F; design.md revision record round 12)
+
+REVIEW METHOD LESSONS, NOT REVIEW DECORATION. The two sealed first-round
+reviewers found disjoint defects plus one shared root: Opus F2 and Luna MAJOR 3
+both arrived at the declared-subject/diff error by different routes. A fresh
+sealed read is not closure: round-2 Luna admitted that it read the revision
+records while counting lines, so its ordered seal was broken and it was not an
+independent sealed measurement. The separate Opus closure check did not merely
+rubber-stamp closure: it closed 20 of 21 earlier findings and found seven new
+text-level defects. Findings per kilobyte fell from 0.059 to 0.033 against 1.45
+times more text; that is compatible with convergence and with a second reader
+finding less, not a proof that review quality is monotone. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/reviews/round2-sealed-
+luna-max.md; evidence/reviews/round2-opus-closure.md; design.md
+revision record rounds 4 and 11)
+
+An ordered-access seal inside one file is defeated by any whole-file operation:
+the round-2 reviewer broke its own seal by reading the file to count lines. The
+fix is a redacted checkout in which per-job verdicts are absent from the first
+train-review invocation, followed by a separate comparator. A size bound on the
+live tree is likewise a time-dependent test; assert the bound on a pinned
+fixture and measure the live tree. Evidence must live in the repository because
+session scratchpads die, and a script without its captured input is not
+reproducible either: the codex-spend script was not enough until
+codex-spend-2026-09-08.json was captured beside it. (archived as
+<date>-two-desks-work-orders-and-trains, evidence/README.md;
+evidence/codex-spend-2026-09-08.json; design.md D5 and revision record
+round 11)
+
+THE TWELVE REVISION RECORDS ARE PART OF THE LESSON. Round 1 carried the Opus,
+Luna and memory-conditioner's dispositions: verified-SHA publishing,
+leave-one-out rather than prefix bisect, pre-existing hold semantics, the
+subject root fix, one ledger plus selection and ledger locks, the corrected
+four-gate/two-build arithmetic, the 24,000 fixture ceiling, the Stage-0/1/2/3
+restaging, and the decision to keep the conflict-of-interest drops. Round 2
+mechanised failed-claim rederivation with stable identifiers and a result-file
+rederived block, and restored the missing backlog-classification provenance.
+Round 3 made effort a four-rung registry ladder. Round 4's closure check found
+the seven new text defects and reversed the accidental Pulse-to-train
+single-writer freeze. Round 5 recorded the lifted serial rule, repaired the four
+concurrency controls, started W at 1 and gave reservations an expiry. Round 6
+measured bd: second claims fail, re-close is a silent no-op, comments require
+the include flag, and ambiguous cwd can clone the wrong remote; the choke point
+must refuse before spawning. Round 7 recorded high passing and xhigh's first
+fabrication; round 8 applied the maintainer's high-versus-max ruling; round 9
+filed addictedtoai-2wwu for append-only conformance; round 10 added explicit
+enabled:false so a registered-but-unused rung cannot be selected by fail-open
+job_types. Round 11 fixed the post-records verified-SHA contract, Pulse handoff,
+final train bounds, redacted seal, structured affects_merges, captured codex
+input and repeated-review pricing, then recorded xhigh fabricating on 2 of 2
+runs. Round 12 recorded all seven maintainer answers, the 30% drain ceiling,
+the 40+30 denominator arithmetic, owner addictedtoai-mnzf and bd84b4b.
+(archived as <date>-two-desks-work-orders-and-trains,
+design.md revision records rounds 1-12; evidence/bd-measurements.md;
+evidence/reviews/round1-sealed-opus-high.md;
+evidence/reviews/round1-sealed-luna-max.md;
+evidence/reviews/round2-sealed-luna-max.md)
+
+THE DURABLE CITATION FORM IS THE ARCHIVE FORM. This change will move to
+openspec/changes/archive/<date>-two-desks-work-orders-and-trains/. Future
+memory, reviews and jobs must cite evidence as "archived as
+<date>-two-desks-work-orders-and-trains, evidence/<file>" and must not
+point at the live change path. The maintainer's decision, the measurements and
+the corrections belong to the archive, not to a session that happens to still
+have the change directory open.
+
+FOUR SESSIONS COMPACTING ON DIFFERENT CLOCKS LOSE THEIR LAST TWENTY MINUTES OF
+EACH OTHER, AND THE FIX IS A BOARD, NOT A RESEND. Measured 2026-09-08: three of
+four sessions compacted within an hour, each asked its peers to resend, and one
+acknowledgement, one packet-B blocker and one held finding were carried only in
+messages. The maintainer's instruction: "Devise a simple but reliable way for
+the sessions to track the state concurrently/collaboratively." Built at
+D:/addictedtoai-coord/ (outside the repository, never committed): one file per
+session written ONLY by its owner with Write/Edit, so there is no shared
+writer, no lock, no shell and no race; a fixed header (updated in local time,
+state from a closed set, head_seen, role, doing, holds, waiting_on, next,
+do_not) and a short newest-first log; board.mjs prints every row with its age
+and the holds in force. The rules that carry the weight: WRITE THE LOG LINE
+BEFORE YOU SEND THE MESSAGE, because the file is the durable copy and the
+message is the notification; after compaction read your own row, then the
+peers', then the tree, and never ask for a resend; `holds:` is the claim line
+read before anyone merges, gates, pushes, toggles publishing or edits a
+reserved file; facts of the tree stay in the tree and the board carries intent.
+Its first hour produced its first trap: a session wrote invented timestamps
+and its row rendered as 228 minutes in the future, which under the staleness
+rule would have looked fresh forever; times come from the clock, and the
+board now prints a future-dated row as an error. (D:/addictedtoai-coord/README.md)
+
+STAGE 0 OUTCOME, as of 2026-09-08 11:00 local, to be amended when the last
+packet merges: tasks 18, 19, 20, 28, 29 and 30 are done on main (bd84b4b,
+10be428, 7790215, a68ddc1, 301f537, and the desk_baseline section of
+data/launch.json); packet A (tasks 1-4, gate floors and launch-build reuse) is
+committed as f9bf386 on stage0/a-gates-launch awaiting its sealed max review
+and merge; packets B (tasks 5-12), E (25-27), D (23-24), F (21-22) and C
+(13-17) are queued in that order through Luna-Boss-2's one-worker pipeline;
+task 31, the interim measurement, runs after 20 merged jobs. The Desk is
+stopped and publishing is off (78c6361) until A2AI-Orch's six gates pass on
+the merged tip, and Stage 1 (the train) is sequenced for a later session
+because it rewrites the publish path.
 ```
