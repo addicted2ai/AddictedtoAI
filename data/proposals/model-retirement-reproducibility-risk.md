@@ -39,7 +39,7 @@ evidence: >
   was noticed; the abstract page is what is quoted.
 
   Corroborating measurement from this repository's own recorded state, computed
-  2026-09-07 over `data/changes.jsonl` (186 lines, spanning 2026-07-09 to
+  2026-09-07 over `data/changes.jsonl` (186 lines, spanning 2026-06-29 to
   2026-09-06): 15 rows of kind `retirement` in total, 13 of them dated
   2026-08-31 or later, plus 4 `status` field changes whose new value is
   `deprecated`, all 4 in the same seven days. Named retirements in that window
