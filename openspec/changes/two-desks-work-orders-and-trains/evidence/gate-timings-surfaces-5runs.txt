@@ -1,0 +1,42 @@
+verify-surfaces: a five-run distribution, the first multi-sample gate timing
+=========================================================================
+Measured by A2AI-Orch on 2026-09-08 at about 11:20 local, this machine, quiet
+except for one codex worker in a worktree; relayed to the architect by message
+and recorded here so the figure lives in the repository (evidence dies with a
+session). No lock taken: verify-surfaces and verify-design were first checked
+for any reference to buildLock / BUILD_LOCK / TEST_LOCK (none), and only
+verify-surfaces was run, against the existing out/ (export of 08:12 local).
+verify-design binds a port; npm test and npm run build take the machine-wide
+lock and were left alone while a revision worker was live.
+
+Invocation: node D:/AddictedtoAI/scripts/verify-surfaces.mjs, five times, serially.
+
+  run   seconds   exit
+   1      5.87     0
+   2      4.80     0
+   3      4.35     0
+   4      3.54     0
+   5      3.84     0
+
+  min 3.54   median 4.35   mean 4.48   max 5.87   spread max/min 1.66x
+
+What it shows (Orch's reading, adopted in tasks.md task 1 and design.md
+revision record round 13):
+
+1. The 25%-of-one-recorded-run floor rule survives: 25% of the recorded 3.7 s
+   is 0.93 s, which is 26% of the observed minimum; the single sample would
+   have to be about 4x the true minimum for the floor to become unsafe, and
+   the observed spread is 1.66x.
+2. The recorded single sample (3.7 s, in gate-timings-final.txt) was lucky:
+   1.05x the observed minimum. Another gate's single sample could sit anywhere
+   in a 66% band, and a sample near the TOP inflates the floor, which is the
+   direction that produces a false failure. The run-count requirement in the
+   floor bullet exists for this.
+3. The caveat reaches past the floors: the six-gate cost breakdown (npm test
+   70.7% of 442.5 s, verify-launch 8.9%, and so on) is arithmetic over six
+   single samples with, on this evidence, up to 1.66x of spread each. The
+   RANKING is safe (npm test is two orders of magnitude above the rest); the
+   PERCENTAGES are approximate and dated, and are to be read as "of one
+   recorded run on 2026-09-08".
+
+Incidental: verify-surfaces passed 5 of 5 against the 08:12 export.

@@ -124,8 +124,12 @@ the red.
 **Per train.** The full six, once, then the rederive, then the review, then the
 records commit, then the publish.
 
-**Why `npm test` is the item that matters.** It is **314.8s of 442.5s, 70.7%**,
-*and* it holds the machine-wide test lock. Moving it to the train is what makes
+**Why `npm test` is the item that matters.** It is **314.8s of 442.5s, 70.7%**
+— of one recorded run per gate on 2026-09-08; the only gate with a
+distribution, `verify-surfaces` at five runs, spread 1.66x between its fastest
+and slowest (`evidence/gate-timings-surfaces-5runs.txt`), so the RANKING is safe
+(two orders of magnitude separate `npm test` from the rest) and the PERCENTAGES
+are approximate and dated — *and* it holds the machine-wide test lock. Moving it to the train is what makes
 parallel workers possible, not merely what makes a job cheaper. Historically that
 lock cost **8 jobs and ≈194 model-minutes in three days**, with the lock held
 1,100s then 1,701s against a 600s wait (`evidence/hist-report.md` §B.3, §C.3).
@@ -587,7 +591,8 @@ missed** (`evidence/hist-report.md` §B.10).
 codex Luna sessions for token heavy tasks. Yes medium effort for basic work and
 max effort complex and review work. Luna on max effort lands somewhere between
 Sonnet and Opus in terms of capabilities, but is much cheaper."* Recorded in the
-memory store as statement 21 (`b34f584`) and **relayed rather than witnessed** by
+memory store as statement 21 (`08b627f`; an earlier draft cited `b34f584`, the
+pre-amend object, which sits on no ref and is unreachable) and **relayed rather than witnessed** by
 this drafter. He had already ruled one type on 2026-09-07 — *"Scout should be max
 effort for luna"* — which `runners.yml` records, along with his rule that all Luna
 runners are cheap tier.
