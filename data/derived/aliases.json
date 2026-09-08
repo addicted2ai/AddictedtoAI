@@ -865,6 +865,26 @@
       ]
     },
     {
+      "name": "ChatGPT",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/chatgpt-launch",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "ChatGPT launch",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/chatgpt-launch",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Chinchilla scaling",
       "linkable": false,
       "claimed_by": [

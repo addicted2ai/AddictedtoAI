@@ -642,6 +642,12 @@
     ],
     "event/gpt-2-staged-release": [
       {
+        "url": "/wiki/event/chatgpt-launch",
+        "title": "The ChatGPT Launch",
+        "type": "entry",
+        "file": "content/wiki/event/chatgpt-launch.md"
+      },
+      {
         "url": "/learn/open-weights-and-closed-models",
         "title": "Open weights, closed weights",
         "type": "learn",
@@ -2914,6 +2920,12 @@
         "title": "OpenAI Daybreak",
         "type": "entry",
         "file": "content/wiki/concept/openai-daybreak.md"
+      },
+      {
+        "url": "/wiki/event/chatgpt-launch",
+        "title": "The ChatGPT Launch",
+        "type": "entry",
+        "file": "content/wiki/event/chatgpt-launch.md"
       },
       {
         "url": "/wiki/event/eliza",

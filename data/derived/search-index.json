@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 675,
+  "count": 676,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -1518,6 +1518,19 @@
       "i": "event/attention-is-all-you-need",
       "a": [
         "the Transformer paper"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/chatgpt-launch",
+      "t": "The ChatGPT Launch",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/chatgpt-launch",
+      "a": [
+        "ChatGPT",
+        "ChatGPT launch"
       ],
       "b": false
     },
