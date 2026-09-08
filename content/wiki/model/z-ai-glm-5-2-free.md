@@ -37,10 +37,10 @@ mentions:
 
 The `z-ai/glm-5.2:free` row left the OpenRouter catalog in the 2026-09-06
 snapshot, a day after it was last listed — active, priced at zero, with no
-expiry date and no warning in the row itself. Nothing arrived to take its place,
-and the changed feed is where that would show: the withdrawal is the only
-OpenRouter line it recorded that day, and it records arrivals as readily as
-retirements. A live fetch of the catalog on 2026-09-07
+expiry date and no warning in the row itself. No replacement row appeared, and
+the changed feed is where one would show: the withdrawal is the only OpenRouter
+line it recorded that day, while arrivals appear there too. A live fetch of the
+catalog on 2026-09-07
 ([`https://openrouter.ai/api/v1/models`](https://openrouter.ai/api/v1/models))
 carried 430 rows as observed on 7 September 2026, and confirmed the withdrawal.
 It also showed how narrow the withdrawal was: eighteen `:free` rows survived
