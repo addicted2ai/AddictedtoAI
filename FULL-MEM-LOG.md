@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 128744.
+Entries: 59. Characters of memory text: 132194.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -78,6 +78,7 @@ Entries: 58. Characters of memory text: 128744.
 - [verify-launch-and-the-loop-merge-gate-agree](#verify-launch-and-the-loop-merge-gate-agree)
 - [windows-node-and-git-traps](#windows-node-and-git-traps)
 - [worktrees-and-junctions](#worktrees-and-junctions)
+- [the-only-list-available-becomes-the-work-list](#the-only-list-available-becomes-the-work-list)
 
 ---
 
@@ -2233,4 +2234,57 @@ junction, delete it with (Get-Item path).Delete() and VERIFY with Test-Path.
 THE LESSON THAT COST THE PACKAGES: the failure was printed in output already read. When a
 cleanup step reports it could not do the thing, that is a STOP -- and the very next
 command was the destructive one.
+```
+
+## the-only-list-available-becomes-the-work-list
+
+```text
+--- NEW ENTRY, 2026-09-08. This key was NEVER a `bd remember` memory. It was added
+after the distillation, from a lesson handed over as text by A2AI-Orch (the
+orchestrator), under the protocol that findings come to the index holder rather than
+being written to the store. Everything above this line in the file is an original
+memory; this is not. ---
+
+THE ONLY LIST AVAILABLE BECOMES THE WORK LIST. A mechanism publishes an enumeration that
+is complete and correct FOR WHAT IT INDEXES. Because it is the only list anyone has, it
+gets used as the list of WORK TO DO -- and the work is a different, usually larger set,
+typically some CLOSURE over the first. THE GAP IS INVISIBLE PRECISELY BECAUSE THE LIST IS
+AUTHORITATIVE: machine-generated, exhaustive, and right.
+
+Filed as addictedtoai-xrsg (P2, OPEN, created 2026-09-08). THREE INSTANCES the same day,
+three different actors, three domains:
+
+1. data/declined-binding-debt.json enumerates 48 FACT BINDINGS across 29 model entries.
+   The work of removing them is the closure over TRANSCLUSIONS, because {{fact:model/X#f}}
+   resolves cross-entry and an unresolved transclusion is a BUILD ERROR. Measured: 33
+   transclusions break, 12 files fail to build, and FOUR of those twelve carry NO DECLINED
+   BINDING AT ALL, so they appear in no enumeration the machinery offers. The four are ORG
+   entries -- deepseek, google-deepmind, openai, spacexai -- and they are invisible for a
+   specific reason worth keeping: THEY HOLD NO BINDING OF THEIR OWN, THEY ONLY TRANSCLUDE.
+   (Re-verified 2026-09-08 before recording: none of the four appears under an org/ path
+   in declined-binding-debt.json, on an instrument proved live by 19 other matches in the
+   same file -- which rules out the NUL-byte false-absence mode.)
+2. A fleet brief was audited against every IMPERATIVE in its bead -- three defects caught
+   -- while the brief's load-bearing PREMISE about the tree was never checked, and was
+   false. AUDITING A BRIEF FOR FAITHFULNESS TO AN ISSUE IS NOT AUDITING IT FOR BEING TRUE
+   ABOUT THE CODE. Two passes; only one of them was in the procedure.
+3. addictedtoai-mq8e: auditing against an issue's NUMBERED list caught two dropped items
+   and missed a fourth sitting unnumbered in the same paragraph.
+
+THE DIAGNOSTIC, the part worth keeping if anything is trimmed. When a list is about to
+drive work, ask WHAT DOES THIS LIST INDEX, AND IS THAT THE SAME SET AS THE WORK? Then NAME
+ONE MEMBER OF THE WORK THAT WOULD NOT APPEAR IN THE LIST, and go look for it. If you
+cannot construct such a member, say WHY the two sets coincide. All three instances were
+found by someone ACCIDENTALLY STEPPING OUTSIDE THE LIST; none was found by consulting it
+more carefully.
+
+WHY THIS IS ITS OWN ENTRY rather than a fourth example of a neighbour. It is adjacent to
+a-check-narrower-than-the-property-it-names and to never-brief-from-a-truncated-issue, and
+distinct from both. The first is about GUARDS -- a check that PASSES on a wrong world.
+This class produces NO FAILING CHECK AT ALL: everything passes, the work is simply
+incomplete, and the incompleteness surfaces later as a build error or as nothing. The
+briefing entry already carries instance 3 in its own words, which is evidence the shape is
+real but was recorded as a briefing rule rather than as a general one about enumerations.
+THE TRIGGER IS WHAT SEPARATES THEM: this fires when A LIST IS ABOUT TO DRIVE WORK, and
+neither neighbour fires there.
 ```

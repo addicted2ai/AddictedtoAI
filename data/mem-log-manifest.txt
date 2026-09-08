@@ -56,3 +56,4 @@ verify-from-raw-not-from-reports
 verify-launch-and-the-loop-merge-gate-agree
 windows-node-and-git-traps
 worktrees-and-junctions
+the-only-list-available-becomes-the-work-list
