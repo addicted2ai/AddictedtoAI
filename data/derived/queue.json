@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 1,
   "items": [
-    {
-      "detail": "The docket quotes the announcement as \"Continuous Ranked Probability Score (CRPS) improvement of up to 60% against IMERG, 30% for MRMS, and 10% against rain gauge measurements\". I fetched https://blog.google/innovation-and-ai/models-and-research/google-deepmind/introducing-weathernext-3/ on 2026-09-07 and the same sentence ends \"...and 10% against rain gauge measurements for early lead times\". The docket's own done-when line already requires every accuracy figure to name whoever measured it and against what; the lead-time condition belongs in that list, because a CRPS gain at early lead times is not a medium-range claim. Fix: carry the four words.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/proposals/weathernext-3-tops-operational-weatherbench.md",
-      "target": "data/proposals/weathernext-3-tops-operational-weatherbench.md",
-      "title": "Restore the \"for early lead times\" qualifier on the WeatherNext CRPS figures",
-      "type": "repair"
-    },
     {
       "detail": "`verify-frontier-backfill-recheck.md` (\"Domains: nothing to add\") states that \"both Astra posts describe a model acting 'without a person guiding each step'\". Measured: the phrase appears only in `content/blog/openai-astra-critical-designation.md` (line 17). In `content/blog/openai-gpt-6-astra-system-card.md` the phrase is absent and the substring \"agent\" does not occur anywhere in the file at all (case-insensitive Grep, no matches), so nothing in that post supports the attribution. The conclusion the passage reaches — assign no `agents` domain, because `lib/domains.mjs` forbids inference — is unaffected and is if anything stronger. The fix is one word: name the single post that carries the phrase instead of \"both Astra posts\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260906-18 (`j-20260906-18.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -21,5 +12,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 1
 }
