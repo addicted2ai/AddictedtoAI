@@ -39,7 +39,22 @@ per changed line: name the mutation that must turn a test red, and run it. The
 repository already mandates mutation testing; what was missing is that the
 obligation was not enumerated per changed line, so it was satisfiable in
 spirit while leaving exactly those holes. Stated as a HYPOTHESIS with its test,
-not as a measurement: apply it to B1 and count B1's rounds against packet A's.
+not as a measurement. **The test is by CLASS, not by round count** (corrected
+by Orch on its own proposal after B1's first round): does a code-evidence
+defect of the round-2/round-4 shape — a line deletable with no arm moving, an
+injected default no test reaches — reach a sealed reviewer on any packet where
+a table was required? If one does, the table does not work; if those stop
+while specification and coverage defects continue, that is the shape of a
+real effect. Round counts across packets (A six, B1 heading for two) are
+confounded by size, subject and difficulty and measure neither. First data
+point, B1 round 1: the table caught none of five findings, four of which were
+specification and coverage defects outside its class, and the table itself
+carried a defect, so it added work and returned none on that packet. Orch's
+own diagnosis of its proposal is `addictedtoai-xrsg`: the remedy was built
+from the list of defects in hand (packet A rounds 2 and 4, both code-evidence)
+and the work is the closure over every class. Not withdrawn on one packet; if
+B1's second round or packet E returns the same nil, it is ceremony and comes
+out, and that commitment is recorded here before the result.
 
 **And the architect's own obligation before every freeze: when a task says
 "every X", enumerate the X's and confirm each one can satisfy it.** Two of

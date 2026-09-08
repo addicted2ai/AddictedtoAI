@@ -1980,8 +1980,20 @@ did not prevent a revise and produced a defect in itself. But four of the five
 findings are specification and coverage defects — a rule that removed a bound,
 a fixture that filters away the evidence, an assertion that passes on absence —
 and the table targets a different class ("this line is deletable with zero
-arms moving"); it neither caught them nor could have. Round count: packet A
-six, B1 at one review and heading for a second. The reviewer also faulted the
+arms moving"); it neither caught them nor could have. The round count (packet
+A six, B1 heading for two) is NOT evidence either way — Orch said so about its
+own proposal before being asked: two packets of different size, subject and
+difficulty, pooled, measure neither; the test is by class (does a
+code-evidence defect reach a sealed reviewer with a table in force), and the
+Stage 0 preamble now states it that way, with Orch's commitment to call the
+table ceremony and take it out if B1's second round or packet E returns the
+same nil. The tally so far across packets A and B1, worth its own line:
+three SPECIFICATION defects (the floor rule that was unsatisfiable; the
+"every injected dependency" quantifier; task 6's division that was also the
+bound) against two IMPLEMENTATION defects (the record before the floor; the
+two arms that could not fail) — a requirement can be correct as a sentence and
+wrong as a specification, and each of the three was caught by someone
+measuring rather than reading. The reviewer also faulted the
 brief, the third reviewer of the day to find a coordinator defect and the most
 substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
 > 0` to `s.score === 0`) reddened three arms. Timings labelled by condition
