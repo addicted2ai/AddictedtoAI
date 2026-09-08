@@ -77,8 +77,10 @@ ids into it.
 
 - **WHEN** the engine runs twice with nothing in the world changed and the tracker
   reachable both times
-- **THEN** `data/derived/` is byte-identical between the two runs, and no file
-  under it contains an issue id
+- **THEN** the recomputed `data/derived/` is **non-empty** and hashes identically
+  to the derivation the engine itself produced at that commit, file for file, and
+  no file under it contains an issue id — a comparison of hashes over a populated
+  tree, since two empty trees also match
 
 #### Scenario: A closed issue does not clear a standing condition
 

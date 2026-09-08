@@ -116,9 +116,18 @@ and its own value is measurable only if it is sealed.
   whose absence is indistinguishable from its approval is not a gate, and it is
   the one shape by which an implementation could turn a missing result into a
   green path.
-- **The train reviewer SHALL write its findings before it is shown any per-job
-  verdict record**, and its brief SHALL NOT contain one. A reviewer told what
-  earlier reviewers concluded is measuring their conclusions, not the diff.
+- **The train reviewer SHALL run in a worktree from which the per-job verdict
+  records of the train's merges have been removed**, and its brief SHALL contain
+  none of them. The seal is that **redaction**, not an instruction about the order
+  in which files are opened: the reviewer's tree is discarded unconditionally in
+  any case, so removing the records costs nothing and makes the property hold
+  whatever the reviewer does. Where a later pass genuinely needs the verdicts —
+  the comparison below — it is a **separate invocation** with its own tree.
+  Ordered access was considered and is not enough: a reviewer that reads a file it
+  was asked to leave alone has broken nothing it can be caught by, and the sealed
+  reviewer of an earlier round of this very change reported doing exactly that by
+  accident while checking a line count. An instruction that a careful reviewer
+  breaks by accident is not a seal.
 - After its findings are written, the loop SHALL compare them against the per-job
   records the train carries and SHALL record the count of train-review findings
   that appear in **none** of them, on the train's own record. That count is the
@@ -127,9 +136,14 @@ and its own value is measurable only if it is sealed.
 - The train review SHALL NOT replace per-job review: nothing merges without one,
   and the train review is an additional gate rather than a substituted one.
 - A non-approving train review SHALL stop that train from advancing `main`. Each
-  finding SHALL name the merge or merges it concerns; those merges are evicted and
-  the train re-runs its gates **and this review** on the resulting diff, per
-  `loop`. A finding naming no merge rejects the whole train. **A subset of a
+  finding SHALL name the merge or merges it concerns in a **structured
+  `affects_merges:` list**, validated against a **committed train manifest** that
+  the train writes before the review — the merge commits it carries, their job ids
+  and their subjects. A finding whose list names no valid merge in that manifest
+  is the whole-train case, and so is a finding that names none at all: prose
+  naming a merge is not a reference a machine can act on, and the eviction path
+  has to act on it. Named merges are evicted and the train re-runs its gates **and
+  this review** on the resulting diff, per `loop`. **A subset of a
   reviewed diff is not itself reviewed**, which is why the re-run is required
   rather than optional: the surviving combination is a combination no reviewer has
   seen.

@@ -108,7 +108,8 @@ at `78c6361` with publishing off — `npm test` 314.8s, `verify-launch` 39.6s (o
 which its own build is 39s: `verify-launch.mjs:832` starts the timer before the
 build spawn and `:847` reports that span), `verify-design` 35.7s, `npm run build`
 29.2s, `verify-analytics` 19.5s excluding server start, `verify-surfaces` 3.7s
-(`evidence/gate-timings.txt`) — is the **push-bar** cost, not the job cost, and is
+(`evidence/gate-timings-final.txt`, the combined table; the two partial files it
+supersedes are still in `evidence/`) — is the **push-bar** cost, not the job cost, and is
 labelled so. Per job today: 314.8 + 29.2 + 3.7 + 35.7 + 29.2 ≈ **412.6s**. Per job
 after: ≈ **32.9s**. Per train: ≈ **403s** with the launch-build reuse. At five
 merges, **2,063s → 568s**. Reusing `verify-launch`'s build saves ~39s per *train*
@@ -117,7 +118,7 @@ per job.
 
 **The suite is already parallel, and its cost is the Desk's own.** Parsed:
 **1,709 tests, 1,709 pass, 0 fail, 298,091 ms, 122 files**
-(`evidence/gate-timings-npm.txt`). Summed per-test time is 1,380s against 298s
+(`evidence/gate-timings-final.txt`). Summed per-test time is 1,380s against 298s
 wall — a factor of ~4.6 — so wall time is bounded by the longest chain of files;
 median test 4.4 ms; the top 25 tests carry 31% of summed time. The **twelve
 slowest** (49.5s down to 13.5s) are all Desk-machinery integration tests standing
@@ -142,8 +143,8 @@ at 2026-09-08; the last seven local days **99 filed against 69 closed, ratio
 1.43**. So it did not stand still — it rose. But the series is **not monotonic**:
 09-01 was net −11 and 09-06 net −13, both real drain days. And **47 of the 101 open
 issues come from the opening stretch 08-29..08-31**, every one of which has now
-been checked line by line against the tree: of the 48-bead opening cohort, **41
-still valid, 5 partial, 1 already fixed** (`evidence/stale-report.md` for 08-31,
+been checked line by line against the tree: of the 48-bead opening cohort, **42
+still valid, 5 partial, 1 already fixed** — 47 of the 48 still open at the check (`evidence/stale-report.md` for 08-31,
 `evidence/stale2-report.md` for 08-29 and 08-30). So the standing number is an
 **undigested opening cohort plus a drip that exceeds the drain** — and there is no
 triage dividend waiting in it. Ten of those beads already carry same-day
@@ -184,11 +185,15 @@ changed lines**; `data/` 34.8%; "other" **44.8%**, dominated by `.job/brief.md`
 and `.job/source.json` — **187,820 lines written to job branches and stripped
 again**. Last 7 days: Desk $934 for 42 new content files, **$22.23 per file**.
 
-Tokens are the half that does not hold as stated. The codex lane read **182.4M
-input tokens against 685K output on 2026-09-08 — a real 266:1 ratio** — but **96%
-of that input is cached**: marginal uncached input was ~6.1M across 48 sessions,
-about **127K per cold start** (`evidence/scripts/codex-spend.mjs`, method also on
-`addictedtoai-f4vy`). The dose is far smaller than the headline, so **token count
+Tokens are the half that does not hold as stated. Across the 48 codex sessions that had started before 08:00 local on 2026-09-08,
+the lane read **182,873,547 tokens against 688,798 of output**; across all 67
+sessions at capture — **as at about 10:00 local, a partial day** — it read
+**238,067,103 against 828,209, a 286:1 input-to-output ratio with 96.8% of input
+cached** (`evidence/codex-spend-2026-09-08.json`, captured by
+`evidence/scripts/codex-spend-capture.mjs`; method also on `addictedtoai-f4vy`).
+An earlier reading of 182.4M / 685K was taken while three sessions were still
+running and was therefore a running total, not a final one; the fixture is what
+replaces it, and A2AI-Luna-Boss-2 corrected its own number to produce it. The dose is far smaller than the headline, so **token count
 is the wrong thing to batch for.** The win is wall-clock, gate passes and reviewer
 orientation — which argues for the train and for coherence-batched review, not for
 token-motivated batching — **plus the brief diet, which is the one place tokens

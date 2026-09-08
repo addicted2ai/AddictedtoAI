@@ -103,7 +103,7 @@ set) and `:1661` (`build` alone). So a merged job runs **four** gates and pays f
 | per train | — | ≈ **403s** with launch-build reuse |
 | five merges | **2,063s** | **568s** |
 
-The 442.5s six-gate total (`evidence/gate-timings.txt`) is the **push-bar** cost
+The 442.5s six-gate total (`evidence/gate-timings-final.txt`) is the **push-bar** cost
 and is labelled so wherever it appears. Reusing `verify-launch`'s own build saves
 ~39s per **train** and per hand-run push gate, not per job.
 
@@ -136,7 +136,7 @@ contention rather than a lost job. The case for moving the suite therefore rests
 on wall-clock and on parallelism, not on that historical loss.
 
 **What the suite is.** 1,709 tests, 0 fail, 298,091 ms, 122 files
-(`evidence/gate-timings-npm.txt`). Already parallel: summed per-test time 1,380s
+(`evidence/gate-timings-final.txt`). Already parallel: summed per-test time 1,380s
 against 298s wall, ~4.6×, so wall time is bounded by the longest chain of files
 and shaving total work buys nothing unless it shortens that chain. Median test
 4.4 ms; top 25 carry 31% of summed time. The twelve slowest, 49.5s down to 13.5s,
@@ -245,12 +245,37 @@ why open question 5 is less optional than it reads.
 
 ## D3 — Beads are the one backlog; intake routes and bundles for both desks
 
-**Plumbing, reused from the tabled draft.** `loop/lib/beads.mjs` as the single
-`bd` choke point, `--sandbox` on every call, a static import-boundary test
-asserting nothing under `lib/` or the prebuild imports it or spawns `bd`; the loop
-mints, claims and closes and a job never touches its own bead; closure verified by
-reading back before and after; `routedBeadDefects()` shared by the selector and
-any filing helper. Every call site **set-valued**. The **format** half of the
+**Plumbing, reused from the tabled draft and now built on measurement rather than
+on the draft's assumptions.** `loop/lib/beads.mjs` as the single `bd` **invocation**
+choke point, `--sandbox` on every call, a static import-boundary test asserting
+nothing under `lib/` or the prebuild imports it or spawns `bd`; the loop mints,
+claims and closes and a job never touches its own bead; `routedBeadDefects()`
+shared by the selector and any filing helper. Every call site **set-valued**.
+
+`evidence/bd-measurements.md` (task 26, done) settled six things the design had
+been asserting, and two of them change a mechanism. **A second `--claim` by
+another actor fails with exit 1**, so the claim is genuine mutual exclusion and
+the loop needs no second mechanism to keep two runs off one issue. **Re-closing a
+closed issue is a silent exit-0 no-op that discards the new reason**, so closure
+cannot be verified by exit code and the tabled draft's read-back rule is now
+measured rather than prudent; `reopen` clears `close_reason`, so the reason a later
+reader finds is not necessarily any particular job's. The rest is plumbing detail
+that stops an implementer guessing: `show --json` wraps in an array; comment bodies
+need `--include-comments` and are **absent from `list --json`**, which is why the
+`h0z0` comment that this whole front/back split rests on was invisible to every
+earlier scan; metadata round-trips as JSON objects and `--set-metadata` merges;
+200 ids in one argv worked, so the argv ceiling flagged in the Windows notes needs
+no design around it; `--json` stdout is clean.
+
+**And one safety finding nobody went looking for, which adds a clause.**
+Initialising a store with an explicit `--db` path, from a process whose working
+directory sat inside this repository, **auto-detected the repository's real remote
+and cloned the project's Dolt history into a second store under the user profile**.
+The stray store was deleted and nothing under `.beads/` was touched. The choke
+point therefore **pins the working directory of every invocation to the store it
+addresses and refuses before spawning when it is not** — a tool that infers what it
+is addressing from where it was started will eventually address the wrong thing,
+and the cheapest place to stop that is before it runs. The **format** half of the
 requirement already exists in `loop/lib/issues.mjs:1-56`, which already states the
 format/existence split and the Vercel reason; the new module adds the
 **invocation** choke point beside it and does not define a second id format.
@@ -631,21 +656,47 @@ rung**.
 - `codex-gpt-luna-medium` is the starting rung for **`repair` and `interpret`**
   (`interpret` on n=1, stated rather than hidden), with `verify` and `prune`
   considered on evidence.
-- `verify`, `prune`, `entry`, `post`, `scout`, `machinery`, `tutorial`,
-  `education` and anything touching `openspec/` **start at `high`**, and climb only
-  when the ledger's first-pass revise rate for that `(type, effort)` pair says the
-  rung below is not holding. For `verify` and `prune` the reason to start above
-  `medium` is consequence rather than difficulty — a `verify` writes fetched facts
-  into the corpus and a `prune` deletes published work. `machinery` on `medium` is
-  **contradicted** by the ledger: n=2, 2/2 revise, one discarded, **64.8 mm/job,
-  three times any other cell**, plus `j-20260908-14` (machinery, medium, 56.93 mm,
-  discarded for a spec violation). `entry` on `medium` is **not supported**: n=3,
-  two failed. Neither of those says `max`; both say *above `medium`*.
-- **All review, the train review and every revision start at `xhigh`, not `max`** —
-  and that is the experiment the maintainer asked for, stated as one rather than
-  smuggled in as a default. If the revise rate or the review's own findings say
-  `xhigh` is not enough, `max` is one registry edit away and the ledger will have
-  said why.
+- **Every other type starts at `max`**: `verify`, `prune`, `entry`, `post`,
+  `scout`, `machinery`, `tutorial`, `education` and anything touching `openspec/`.
+  For `verify` and `prune` the reason to start above `medium` is consequence rather
+  than difficulty — a `verify` writes fetched facts into the corpus and a `prune`
+  deletes published work. `machinery` on `medium` is **contradicted** by the
+  ledger: n=2, 2/2 revise, one discarded, **64.8 mm/job, three times any other
+  cell**, plus `j-20260908-14` (machinery, medium, 56.93 mm, discarded for a spec
+  violation). `entry` on `medium` is **not supported**: n=3, two failed.
+- **All review, the train review and every revision start at `max`.**
+- **`high` and `xhigh` are named for no role.** `high` stays registered and
+  conformance-passed and may be reopened by a ledger measurement; `xhigh` failed
+  the fabrication trap and is named for nothing at all.
+
+**Three declarations, and they are deliberately separate.** The **registry**
+declares rungs, clearances and **enablement**; the **chain** declares the policy —
+which runner is named for which type and role; the **conformance gate** declares
+fitness. Keeping them apart is what lets a rung be registered, conformance-passing
+and named by nothing, which is exactly `high`'s position. It also survived a
+correction: the registry alone could not express it. An **absent** `job_types`
+means *cleared for every type* (`select.mjs:132-134`; the comment at `:122` says
+so), and an empty list is a load-time error — so leaving `high` without
+`job_types` would have made it eligible for anything the escalation path reached.
+Hence an explicit `enabled: false`, checked before every other gate, with absent
+meaning enabled on the same fail-open convention `job_types` already uses. Until
+that ships, `high` is unnamed **by discipline rather than by mechanism**, and
+these artifacts say so, because a discipline standing in for a mechanism is
+invisible until it lapses — which is the shape of the serial rule this change
+lifted.
+
+**Why two rungs and not four, decided by the maintainer against the measurement.**
+He was shown `high` at 7.03 model-minutes against `max`'s 7.81 — about 90% — and
+ruled: *"If going to high vs max only saves 10%, I'd rather just use max."* That
+returns the policy to his original instruction, now confirmed rather than assumed.
+**The caveat he was given travels with it**: the 10% comes from four tiny canned
+conformance tasks, which are not a workload, and a difference that is small on a
+one-file edit can be large on a blog post. It is held loosely, and the thing that
+would justify revisiting it is the **first-pass revise rate per type and rung on
+real jobs**, which the Stage-0 per-phase runner-and-effort fields exist to make
+computable. **The ladder requirement itself is kept** — a rung is a declared
+registry entry, and a rung rises or falls on that measured rate — so reopening
+`high` later is a registry edit and a ledger reading, not a specification change.
 - `codex-gpt-luna-medium`'s `job_types` narrows from
   `[interpret, verify, entry, tutorial, education, repair, prune, machinery]` to
   `[repair, interpret]`; the new `high` and `xhigh` entries carry the rest.
@@ -660,6 +711,37 @@ observation, not the ledger's: it found a live regression on `4lrp` with a probe
 and graded well against withheld findings. That is an argument for reviewing high
 on the ladder; it is not evidence that `xhigh` is insufficient, which nobody has
 measured.
+
+**`xhigh` failed the fabricated-quote trap, and that is why it is named for
+nothing.** A2AI-Orch ran conformance against both new rungs (task 19's first half,
+`10be428`, verified from the committed blob). `codex-gpt-luna-high`: **four
+passes**, 2.51 / 2.65 / 1.02 / 0.85 = 7.03 model-minutes.
+`codex-gpt-luna-xhigh`: PASS, PASS, **FAIL**, PASS — it produced a quoted
+sentence, *"The Institute publishes no benchmark numbers with this release and
+makes no claim about response times."*, which appears nowhere in the source it was
+given. `medium`, `high` and `max` all passed the same trap. The selector's own gate
+now refuses `xhigh` for author and review, verified by calling it, and
+`runners.yml`'s `conformance:` fields read pass / FAIL accordingly.
+
+**The method rules matter more than the result, because this is n = 1.** One trap,
+one run. A **second** run is a legitimate measurement and one has been requested.
+Re-running until it passes is not a measurement, it is selection. And if a second
+run passes, the record reads **"fabricated on 1 of 2 runs"** — never "passes".
+A fabrication check is the last one whose failures may be averaged away: the
+defect it catches is the one this site exists to avoid, and a rung that produced a
+plausible sentence from nothing once will do it again on work nobody is testing.
+"Pending investigation" is not a status a role assignment may rest on, so `xhigh`
+is not named at all rather than named provisionally.
+
+**The cost observation, and what the maintainer did with it.** At 7.03 mm against
+`max`'s 7.81 and `medium`'s 5.06, `high` costs about 90% of `max` and `medium`
+about 65% of it — on four canned checks, which is not a workload. Shown that, he
+ruled: *"If going to high vs max only saves 10%, I'd rather just use max."* So the
+policy is two rungs, `medium` and `max`, which is his original instruction
+confirmed against a measurement rather than assumed. The observation that the
+interesting gap may be **medium-to-high rather than high-to-max** stands as an
+observation, and the ledger's per-rung revise rate on real jobs is what could
+reopen it.
 
 **The conformance record, re-read rather than quoted.** `data/conformance.json`
 carries **seven** runners: `claude-code-sonnet`, `claude-code-opus`,
@@ -786,10 +868,18 @@ over.
   serialises a worker's tripwire; the train holds both and needs a wait budget set
   for the full set. Pid liveness is defeated by pid reuse
   (`build-lock.mjs:116-117`), so the two new locks carry more than a pid.
-- **`bd` argv.** Metadata is free-form JSON that reads back as a **string**;
-  `--sandbox` on every call. Whether several ids fit one argv on Windows is
-  **unmeasured** — a Stage-0 task measures it against a throwaway store before any
-  mock is written.
+- **`bd` argv — measured, and the earlier note was wrong.** 200 ids in one argv
+  worked, so no batching ceiling needs designing around. Metadata round-trips as
+  **JSON objects**, not as a string as an earlier reading of the tabled draft had
+  it, and `--set-metadata` merges rather than replacing. `--sandbox` on every call
+  stands. Full results in `evidence/bd-measurements.md`.
+- **An empty conformance read looks exactly like a permissive gate.**
+  `loadConformance`, given the wrong context shape, calls `existsSync(undefined)`,
+  returns `{}`, and every runner then reads as "no record, allowed" — because an
+  absent record warns rather than refuses, by design. The design is right and the
+  consequence is nasty: a **broken reader** of the record is indistinguishable from
+  a record in which everything passed. Any code or task that reads conformance
+  programmatically asserts the **record count it loaded** before trusting a verdict.
 - **Archived-change paths.** Nothing under `loop/`, `pulse/`, `scripts/` or `lib/`
   may reference `openspec/changes/<name>/`; a test that did failed the final gate
   run minutes after that change was archived (`addictedtoai-2hsy`). This applies to
@@ -1146,3 +1236,238 @@ endpoint to measure to.
 
 Round 4's record above; this record and the D3 scorecard credit both peer sessions
 by name where the finding was theirs.
+
+## Revision record — round 6
+
+**Task 26 is done** — `evidence/bd-measurements.md`, committed at `e9ce346` — and
+the Stage-3 choke point is now specified against measurement rather than against
+the tabled draft's assumptions. Two results change a mechanism: a second `--claim`
+by another actor **fails with exit 1**, so the claim is real mutual exclusion and
+no second mechanism is needed to keep two runs off one issue; and **re-closing a
+closed issue is a silent exit-0 no-op that discards the new reason**, so closure
+must be verified by reading back — the draft's rule, now measured instead of
+merely prudent. Four more stop an implementer guessing: `show --json` wraps in an
+array; comment bodies need `--include-comments` and are absent from `list --json`
+(**which is why the `h0z0` comment this whole split rests on was invisible to
+every earlier scan**); `reopen` clears `close_reason`; metadata round-trips as JSON
+objects and `--set-metadata` merges. One corrects this document: **200 ids in one
+argv worked**, so the Windows note's "argv ceiling unmeasured" is withdrawn, and
+metadata is objects rather than the string an earlier reading recorded.
+
+**A safety finding nobody went looking for adds a clause.** `bd init --db <path>`,
+from a process whose working directory sat inside this repository, auto-detected
+the repository's real remote and **cloned the project's Dolt history into a second
+store under the user profile**. The stray store was deleted; nothing under
+`.beads/` was touched. The requirement now says the choke point pins the working
+directory of every invocation to the store it addresses and refuses **before
+spawning** when it is not, with a test that asserts on the spawn rather than on the
+outcome. A tool that infers what it is addressing from where it was started will
+eventually address the wrong thing.
+
+**Three tasks ticked, one qualified.** 28 (`bd-measurements.md`); 29
+(`evidence/README.md` carries an invocation line per script, and the
+`orch-backlog-classify.mjs` gap it was also to record is closed rather than
+recorded, the script having arrived in round 2); 30 (`evidence/stage0-baseline.md`
+and `data/launch.json`'s `desk_baseline`, at `301f537`). Task 20's `CLAUDE.md`
+half is done at `301f537` and its `runners.yml` `conformance:` fields are set at
+`10be428`. (Task numbers here are the current ones; two Stage-0 tasks were
+inserted in rounds 9 and 10, which shifted them.)
+
+## Revision record — round 7
+
+**The effort ladder was built, and the experiment produced a refusal rather than a
+ranking.** A2AI-Orch committed task 19's first half at `10be428` — `runners.yml`
+plus `data/conformance.json`, verified from the committed blob.
+`codex-gpt-luna-high`: **four passes**, 7.03 model-minutes.
+`codex-gpt-luna-xhigh`: **FAILED the fabricated-quote trap**, producing
+*"The Institute publishes no benchmark numbers with this release and makes no
+claim about response times."* — a sentence absent from the source it was given —
+while `medium`, `high` and `max` all passed the same trap. The selector's own gate
+refuses `xhigh` for author and review, verified by calling it, and the
+`conformance:` fields read pass / FAIL.
+
+So D7 changes: **review, the train review and revisions start at `high`**, which
+is the maintainer's experiment and the rung that passed everything; **`max` is the
+proven fallback** the ledger may raise to; and **`xhigh` is named for no role**.
+Not "pending investigation" — a role assignment cannot rest on a status like that,
+so the rung is simply not named, and the record carries the failure.
+
+**The method rules are the durable part, and they are in the record on purpose.**
+This is n = 1: one trap, one run. A **second run is a legitimate measurement**, and
+one has been requested. **Re-running until it passes is not a measurement, it is
+selection.** And if a second run passes, the record will read **"fabricated on 1 of
+2 runs"**, never "passes" — a fabrication check is the last one whose failures may
+be averaged away, because the defect it catches is the one this site exists to
+avoid.
+
+**A cost observation, held loosely and labelled so**: `high` at 7.03 mm is ~90% of
+`max`'s 7.81 and `medium` ~65%, on four canned checks that are not a workload. If
+that shape holds, the interesting gap is **medium-to-high, not high-to-max**. The
+real comparison is the first-pass revise rate per rung on real jobs, which the
+Stage-0 ledger fields exist to make computable.
+
+**A tooling trap found in the same work**, now in the Windows notes, in the
+requirement and in task 20: `loadConformance` given the wrong context shape calls
+`existsSync(undefined)`, returns `{}`, and every runner then reads as "no record,
+allowed". An absent record warns rather than refuses, by design and correctly — so
+**a broken reader of the record is indistinguishable from a permissive gate**. Any
+step that reads it programmatically asserts the record count it loaded first.
+
+Task 19's second half — `job_types` per rung — remains open.
+
+## Revision record — round 8
+
+**The maintainer ruled against the ladder's middle, on the measurement.** Shown
+`high` at 7.03 model-minutes against `max`'s 7.81 — about 90% — he said: *"If
+going to high vs max only saves 10%, I'd rather just use max."* So the starting
+rungs are **`medium` for `repair` and `interpret`, and `max` for every other type,
+for all review, the train review and every revision** — his original instruction,
+now confirmed against a measurement rather than assumed. `high` stays registered
+and conformance-passing but is named by no policy; `xhigh` is named by nothing and
+refused by its own record.
+
+**The caveat travels with the ruling**: the 10% came from four tiny canned
+conformance tasks, which are not a workload, and a gap that is small on a one-file
+edit can be large on a blog post. **The ladder requirement itself is kept** — a
+rung is a declared registry entry, and a rung rises or falls on the ledger's
+first-pass revise rate per type and effort — so a later measurement on real work
+can reopen `high` with a registry edit and a ledger reading, not a specification
+change. The Stage-0 per-phase runner-and-effort fields are what would justify it.
+
+**A correction inside the same round**, caught by A2AI-Orch and verified at
+`runners.mjs:63-68`: `job_types` must be a non-empty list when present and
+omitting it clears **every** type, so the registry cannot mark a rung
+"unselectable by policy" — see round 10.
+
+## Revision record — round 9
+
+**The conformance record forgets, and forgetting is a way through a guardrail.**
+A2AI-Orch found it during the `xhigh` re-run: `data/conformance.json` keeps **one
+record per runner**, `loop/conformance.mjs` **overwrites** it, and
+`conformanceGate` reads only the latest. So a runner that fails a check and is
+simply run again has the failure **erased with no trace** — the record afterwards
+is byte-identical to that of a runner which never failed. Re-running is therefore
+sufficient to clear a conformance refusal: "loosen the guardrail that refused you",
+implemented as a data structure, needing nobody to intend it. Today's instance
+survives only because the record happened to be committed between the two runs.
+
+The requirement now says the record **appends** — each run its own entry with date,
+per-check results and model-minutes — and the gate reads the **history**, refusing
+while any recorded FAIL stands unsuperseded, with supersession requiring **three
+consecutive passes of that same check** (a starting value, stated as one). An
+absent record still warns rather than refuses; that is a different state and the
+requirement does not merge them. Filed as **`addictedtoai-2wwu`** (P1), whose two
+acceptance clauses are lifted into the task: prove the **threshold** does the work
+rather than the rewrite — the same FAIL-then-PASS fixture asserted refusing at
+N > 1 and **allowing at N = 1**, the second arm demonstrating that N = 1
+reproduces today's defect exactly — and preserve the absent-record warning
+alongside the reader-count assertion.
+
+**It is Luna-Boss-2's diagnostic seen from the other side.** *A control that counts
+within a window survives concurrency; one that depends on order does not.* The
+ledger survives because it **appends**; the conformance record fails because it
+**overwrites**, and an overwriting record loses exactly the history an intermittent
+failure needs to be visible. Credit to both sessions: Orch for the finding, Luna
+for the frame it fits.
+
+## Revision record — round 10
+
+**The registry could not express what round 8's policy needed.** A2AI-Orch caught
+the fail-open reading: an absent `job_types` means **cleared for every type**
+(`select.mjs:132-134` returns ok on `!Array.isArray`; the comment at `:122` says
+so), and an empty list is a load-time error. So leaving `codex-gpt-luna-high`
+without `job_types` — the obvious way to write "registered but unused" — would have
+made it **eligible for anything the escalation path reached**, which is the
+opposite of the intent.
+
+The registry therefore gains an explicit **`enabled: false`**, loaded by
+`loop/lib/runners.mjs`, **absent meaning enabled** on the same fail-open convention
+`job_types` uses and for the same backward-compatibility reason. The selector
+refuses a disabled entry for both roles **before every other gate** — the registry's
+own comment explains why the job-type gate sits first today, that the refusal line
+a person reads should name the real reason, and a disabled entry has the stronger
+claim to that position — and the escalation path never escalates onto one. The test
+covers **both arms**, since a field whose default is wrong is worse than no field:
+`enabled: false` refuses, and omitting it stays selectable.
+
+Task 19's second half accordingly reads: `codex-gpt-luna-medium`
+`[repair, interpret]`; `codex-gpt-luna` (max) unrestricted; `-high` and `-xhigh`
+`enabled: false`. And D7 now states the split plainly — the **registry** declares
+rungs, clearances and enablement; the **chain** declares the policy; the
+**conformance gate** declares fitness. Until task 22 ships, `high` is unnamed **by
+discipline rather than by mechanism**, and the artifacts say so, because a
+discipline standing in for a mechanism is invisible until it lapses.
+
+## Revision record — round 11
+
+A second sealed Luna review (`evidence/reviews/round2-sealed-luna-max.md`).
+**Its seal broke by its own report**: it read the revision records early while
+checking a line count, and says so in its first paragraph. So it is not a strictly
+independent second reading — and that is itself the proof of its own finding 4,
+that an ordered-access seal is an instruction a careful reader breaks by accident.
+Findings per kilobyte: round 1 **0.059**, round 2 **0.033**, with the reviewer's
+own note that it read the core artifacts and specs in full while attention thinned
+on the evidence reports. All nine dispositions accepted.
+
+1. **BLOCKER — the verified SHA was contradictory.** The gates run over the
+   pre-records tip; the records commit makes a new one; the publisher must push a
+   SHA its gates ran over. Both readings were wrong: declaring the pre-records tip
+   leaves the records unpublished, declaring the post-records tip declares a SHA no
+   gate saw. Fixed: the records commit is **path-restricted by a machine check** to
+   the review records, the ledger, the carried findings and the proposals; the
+   train then re-runs build, `verify-launch` (reusing that build) and
+   `verify-surfaces` on the post-records tip — about 35 seconds — and publishes
+   **that** tip; and the train's record states both that the full set ran on the
+   pre-records tip and that the delta touched only record paths. A records commit
+   touching anything else fails the train.
+2. **The Pulse-to-train handoff is now a mechanism, not a name.** The train works
+   in its own worktree and merges `main` in **under the merge lock** — the same
+   lock a worker takes to merge onto the integration branch. While a train is held,
+   the Pulse keeps committing to `main` and publishing; the held train merges
+   `main` in again and re-tests next cycle. Neither engine calls the other.
+3. **The train's reading bound was measured before the bytes it bounds were
+   final.** It counts content and code paths only; the recomputation writes only
+   under the derived tree by construction; so the train now **asserts after the
+   rederive that no counted path changed**, and the bound is final rather than
+   merely early.
+4. **The train-review seal becomes a redacted checkout.** The reviewer runs in a
+   worktree from which the per-job verdict records have been **removed** — free,
+   since that tree is discarded anyway — and any pass needing the verdicts is a
+   separate invocation. Ordered access is an instruction; this is a mechanism.
+5. **Train findings carry a structured `affects_merges:` list**, validated against
+   a committed train manifest (`.train/manifest.json`: merge shas, job ids,
+   subjects). A finding naming no valid merge is the whole-train case, because
+   prose naming a merge is not a reference the eviction path can act on.
+6. **Provenance.** `evidence/gate-timings-final.txt` carries the combined six-gate
+   table and is what the artifacts now cite; the two partial files are kept as the
+   record of its assembly. `evidence/stale2-report.md` carries an architect's
+   correction — the table has 21 rows and the first totals accounted for 20,
+   omitting `addictedtoai-4w2` — so that cohort reads **17 still valid**, and the
+   whole 48-bead opening cohort is **42 valid, 5 partial, 1 fixed, with 47 of the
+   48 still open at the check**. The proposal's sentence is corrected.
+   The codex figures are replaced by a captured fixture,
+   `evidence/codex-spend-2026-09-08.json`: the earlier 182.4M / 685K was read while
+   three sessions were still running and was a **running total**. The same 48
+   sessions final at **182,873,547 / 688,798**; all 67 at capture — **partial day,
+   about 10:00 local** — at **238,067,103 / 828,209, 96.8% of input cached,
+   286:1**. A2AI-Luna-Boss-2 corrected its own number to produce it.
+7. **Stage 0's claim is narrowed to what is true**: no new module **in `loop/`**,
+   nothing on the merge or publish path, **one standalone reporting script**.
+8. **The derived-queue idempotence scenario asserted something two empty trees
+   satisfy.** It now compares hashes over a **non-empty** tree against the engine's
+   own derivation at that commit, with a mutation that skips derivation and must
+   fail.
+9. **Repeated train reviews are priced.** The per-train ledger line records
+   train-review model-minutes **including re-reviews after evictions**, and the
+   Stage-1 go/no-go compares gate seconds saved against review minutes spent, per
+   train — which gives the drafter's own D2b objection a number to answer it.
+
+**`xhigh`'s conformance is final, and it is worse than round 7 recorded.** A
+second run was taken — the legitimate measurement, not a re-run until it passed —
+and the rung **fabricated on 2 of 2 runs, with two *different* fabrications on the
+one trap**: a fresh invented sentence, then a fragment. `medium`, `high` and `max`
+pass the same trap. Commit `7790215`, and the round-9 recording rule was fixed
+**before** the run. The result is also `addictedtoai-2wwu`'s evidence from the
+other direction: even when a re-run **agrees** with the first, an overwriting
+record shows one FAIL where two occurred, and the count is the thing a reader
+needs.

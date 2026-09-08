@@ -1,10 +1,11 @@
 # Tasks
 
-Four stages. **Stage 0 ships first and alone**: no new module, no new branch,
-nothing on the merge or publish path, every item a local edit to an existing file
-with a test and a named mutation, and every item independently reversible. It is
-also where the baseline measurement is taken, while brief-commit → merge means
-what it meant when the 5.5-minute figure was measured.
+Four stages. **Stage 0 ships first and alone**: **no new module in `loop/`**, no
+new branch, nothing on the merge or publish path, **one standalone reporting
+script** (`lint-deferrals`), every item a local edit to an existing file with a
+test and a named mutation, and every item independently reversible. It is also
+where the baseline measurement is taken, while brief-commit → merge means what it
+meant when the 5.5-minute figure was measured.
 
 Each later stage starts only when the previous stage's measurement task has been
 recorded and read. Every testing task names the **mutation** that proves it
@@ -106,7 +107,7 @@ the orchestrator's work between runs.
       path nor a specification requirement, exiting non-zero only under a
       `--strict` flag. **It SHALL NOT spawn the tracker**: the delta reserves
       tracker invocation to exactly one module, and that module does not exist
-      until task 67 in Stage 3. The operator produces the input with
+      until task 69 in Stage 3. The operator produces the input with
       `bd list --json > <file>` and passes the file, the same shape
       `evidence/scripts/machinery-share.mjs` and `open-by-day.mjs` already use.
       Implements: *A deferral becomes its own bead only when it names a subject or
@@ -134,13 +135,27 @@ the orchestrator's work between runs.
       lane, same cheap tier, differing only in `model_reasoning_effort`
       (`high` / `xhigh`; both accepted by `codex`, verified by running it, as
       `medium` and `max` are, while a bogus value is rejected). Run
-      `node loop/conformance.mjs --runner <id>` against each and commit the record:
-      the `max` entry's four checks cost 2.61 / 2.28 / 2.26 / 0.66 model-minutes,
-      so this is cheap. Then declare `job_types` **per rung** — `medium` narrows
-      from `[interpret, verify, entry, tutorial, education, repair, prune,
-      machinery]` to `[repair, interpret]`, `high` carries the rest of the
-      authoring types, `xhigh` is the reviewer rung — plus the escalation target
-      and each entry's role clearance, as data. Implements: *Runner selection is a
+      `node loop/conformance.mjs --runner <id>` against each and commit the record.
+      **First half done at `10be428`, and the result changed the policy**:
+      `codex-gpt-luna-high` passed all four (2.51 / 2.65 / 1.02 / 0.85 = 7.03 mm);
+      **`codex-gpt-luna-xhigh` FAILED the fabricated-quote trap**, producing a
+      quoted sentence that appears nowhere in its source, where `medium`, `high`
+      and `max` all passed the same trap. The selector's gate now refuses `xhigh`
+      for author and review, verified by calling it.
+      **Second half, open**, and it cannot be done the way an earlier draft said.
+      `runners.mjs:63-68`: `job_types` must be a **non-empty list when present**,
+      and omitting it **clears every type** (`select.mjs:132-134` returns ok on
+      `!Array.isArray`) — an empty list is a load-time error. So the registry as it
+      stands cannot express "registered, conformance-passing, cleared for no work",
+      and a rung left without `job_types` is **eligible for anything the escalation
+      path reaches**. Declare, once task 22 lands: `codex-gpt-luna-medium` →
+      `job_types: [repair, interpret]`; `codex-gpt-luna` (max) → unrestricted;
+      `codex-gpt-luna-high` → **`enabled: false`** (registered, conformance-passing,
+      named by no policy); `codex-gpt-luna-xhigh` → **`enabled: false`**, and
+      refused by its own conformance record regardless. The three declarations are
+      separate on purpose: the **registry** declares rungs, clearances and
+      enablement; the **chain** declares the policy; the **conformance gate**
+      declares fitness. Implements: *Runner selection is a
       declared policy, and escalation is part of it*, the ladder and starting-rung
       bullets. The registry is the only file that may name a model or an effort.
       **[orchestrator]**
@@ -149,54 +164,110 @@ the orchestrator's work between runs.
       runners recorded, six pass all four checks (`claude-code-sonnet`,
       `claude-code-opus`, `opencode-deepseek`, `opencode-muse-spark`,
       `codex-gpt-luna` 15:46:57Z 09-07, `codex-gpt-luna-medium` 22:10:07Z 09-07)
-      and `opencode-openrouter-muse-spark` fails all four. `CLAUDE.md` says four
-      runners and calls `codex-gpt-luna` a FAIL for an expired login; its own
-      instruction is that the JSON is the authority and that the passage "has now
-      been wrong twice" — this is the third. **[orchestrator]**
-- [ ] 21. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
+      and `opencode-openrouter-muse-spark` fails all four; and, since `10be428`,
+      `codex-gpt-luna-high` passes all four while `codex-gpt-luna-xhigh`
+      **fails the fabricated-quote trap**. `CLAUDE.md` says four runners and calls
+      `codex-gpt-luna` a FAIL for an expired login; its own instruction is that the
+      JSON is the authority and that the passage "has now been wrong twice" — this
+      is the third. **Any step that reads the record programmatically SHALL assert
+      the number of records it loaded before trusting a verdict**: `loadConformance`
+      given the wrong context shape calls `existsSync(undefined)`, returns `{}`, and
+      every runner then reads as "no record, allowed", so a broken reader is
+      indistinguishable from a permissive gate. **The `CLAUDE.md` half is done at
+      `301f537`;** the `runners.yml` `conformance:` fields are set to pass / FAIL at
+      `10be428`. **[orchestrator]**
+- [ ] 21. **The conformance record appends; the gate reads the history.**
+      `loop/conformance.mjs` and `data/conformance.json`: each run is its own entry
+      — date, per-check result, model-minutes — and never replaces an earlier one.
+      `conformanceGate` refuses a runner for a role while any recorded FAIL of a
+      check stands unsuperseded, and a FAIL is superseded only by **three
+      consecutive PASSes of that same check**. A runner with no record still warns
+      rather than refuses. Implements: *A swap has a stated procedure and a
+      conformance check*, the append and history bullets. Serves
+      **`addictedtoai-2wwu`** (P1) and lifts its two acceptance clauses:
+      **(a) prove the threshold does the work, not the rewrite** — one fixture whose
+      history is FAIL then PASS, asserted **refusing at N > 1** and **allowing at
+      N = 1**, the second arm existing to demonstrate that N = 1 reproduces today's
+      defect exactly, so the test measures the threshold rather than the fact that
+      the file changed shape; **(b) preserve that an absent record WARNS rather than
+      refuses**, which is deliberate, and assert that any programmatic reader
+      **reports the record count it loaded** before trusting a verdict — the
+      `loadConformance` trap, where a broken reader is indistinguishable from a
+      permissive gate. Further tests: fail-then-three-passes is allowed and the
+      failure is still readable. **Mutation**: restore overwrite semantics and
+      confirm the fail-then-one-pass case is wrongly allowed — which is today's
+      behaviour, and today's instance survives only because the record happened to
+      be committed between the two runs.
+- [ ] 22. **A registered runner that policy names for nothing needs a way to say
+      so.** An absent `job_types` means **cleared for every type**
+      (`select.mjs:132-134` returns ok on `!Array.isArray`; the comment at `:122`
+      says so outright) and an empty list is a load-time error, so the registry
+      today cannot express "registered, conformance-passing, cleared for no work" —
+      and a rung left without `job_types` is eligible for anything the escalation
+      path reaches. Add an explicit **`enabled: false`** field: `loop/lib/runners.mjs`
+      loads it, **absent meaning enabled** — the same fail-open convention
+      `job_types` uses, for the same backward-compatibility reason; the selector
+      refuses a disabled entry for **both roles**, **before every other gate** (the
+      registry's own comment explains why the job-type gate sits first today — the
+      refusal line a person reads should name the real reason — and a disabled entry
+      has the stronger claim to that position); and the escalation path never
+      escalates onto one. Implements: *Runner selection is a declared policy, and
+      escalation is part of it*, the enablement bullet. Test **both arms**: an entry
+      with `enabled: false` named as `--runner` selects nothing and reports
+      `runner:disabled`, **and** an entry omitting the field is still selectable.
+      **Mutation**, both arms too: ignore the field and confirm the disabled entry
+      selects; default it to disabled and confirm every pre-existing entry stops
+      selecting. **[orchestrator]** for the `runners.yml` half. **Until this ships,
+      `high` is unnamed by discipline rather than by mechanism**, and the artifacts
+      say so — a discipline standing in for a mechanism is invisible until it
+      lapses, which is the shape of the serial rule this change lifted.
+- [ ] 23. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
       repository and fires when the **top-ranked** candidate is refused *solely* on
       `runner:job-type`; no other refusal escalates. Implements the same
       requirement's escalation bullets.
-- [ ] 22. `loop/tests/runner-policy.test.mjs`: a top-ranked clearance-only refusal
+- [ ] 24. `loop/tests/runner-policy.test.mjs`: a top-ranked clearance-only refusal
       escalates and authors the top-ranked candidate; a budget-ceiling refusal does
       not escalate; **and the control that matters** — an overdue scout top-ranked
       and refused on clearance with one cleared `repair` below it authors the
       scout, not the repair. **Mutation**: escalate only when every candidate is
       refused, and confirm the scout case fails while the other two still pass.
-      Tests task 21.
+      Tests task 23.
 
 ### The ledger fields, and the baseline
 
-- [ ] 23. `loop/lib/ledger.mjs`: every phase entry records the runner and the effort
+- [ ] 25. `loop/lib/ledger.mjs`: every phase entry records the runner and the effort
       it ran at; every line records `brief_chars`, a `gate_seconds` map, and the
       count of findings each review carried. All additive; `LEDGER_FIELDS` not
       extended. Implements: *The ledger line carries the join, as a list,
       additively*, the measurement bullet, and *Runner selection is a declared
       policy*, bullet 4, and *A reviewer's non-blocking finding…*, the ledger
       bullet.
-- [ ] 24. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
+- [ ] 26. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
       `brief_chars`, `gate_seconds` and a carried-entry count; a pre-existing line
       without any of them still validates. **Mutation**: extend `LEDGER_FIELDS` to
       require `gate_seconds` and confirm the old-line test fails — the additive
-      property is the thing under test. Tests task 23.
-- [ ] 25. `loop/lib/git.mjs:116`: `worktree remove --force` becomes a removal that
+      property is the thing under test. Tests task 25.
+- [ ] 27. `loop/lib/git.mjs:116`: `worktree remove --force` becomes a removal that
       **refuses** rather than forcing when it cannot complete. Implements: *The
       chain from intake to train lives in the repository*, the teardown bullet —
       a requirement that had a scenario and no task, and whose absence deleted 177
       packages from the real `node_modules`. Test with a **mutation** restoring
       `--force`, which must make the refusal assertion fail.
-- [ ] 26. **Measure `bd` before anything mocks it.** Against a throwaway store:
+- [x] 28. **Measure `bd` before anything mocks it.** Against a throwaway store:
       whether `--claim` keys the actor; whether a second claim under a different
       actor fails; whether `close` on an already-closed issue no-ops; whether
       `close_reason` survives a reopen; whether non-empty `metadata` round-trips
       through `ready --json`; and **whether several ids fit one argv on Windows**.
-      Record the answers in `evidence/`. Costs nothing and blocks nothing, which is
-      why it is here and not two stages away.
-- [ ] 27. `evidence/README.md`: an invocation line beside every script row, read
+      **Done — `evidence/bd-measurements.md`.** Every answer, plus a safety finding
+      nobody went looking for: `bd init --db <path>` from a cwd inside this
+      repository auto-detected the real remote and cloned the project's history
+      into a second store under the user profile (the stray store was deleted,
+      nothing under `.beads/` was touched). Task 67 is built on it.
+- [x] 29. `evidence/README.md`: an invocation line beside every script row, read
       from each script's own header, marking any that needs a session-scoped path
-      as such. Record the `orch-backlog-classify.mjs` gap: named in the
-      adjudication, not present here, its four figures carried on attribution.
-- [ ] 28. **The baseline — taken, on the definition the stage gates use.** Done:
+      as such. **Done.** The `orch-backlog-classify.mjs` gap it was also to record
+      is closed instead: the script arrived in round 2.
+- [x] 30. **The baseline — taken, on the definition the stage gates use.** Done:
       `evidence/stage0-baseline.md`, from
       `evidence/scripts/stage0-baseline.mjs` (n = 206 of 208 `done` jobs, each
       anchored on its ledger line's `ts` and the parent of its records commit).
@@ -206,12 +277,12 @@ the orchestrator's work between runs.
       definition — brief-commit → records-commit — the overhead median is
       **5.497 / 5.52 min**, which reproduces `desk-mech-report.md`'s 5.5 almost
       exactly and is what validates the method rather than a separate claim.
-      Record both definitions in `data/launch.json` with the date and the method,
-      so that a later reader cannot compare one against the other by accident.
-      **[orchestrator]**
-- [ ] 29. **Stage-0 interim measurement, and what it may and may not claim.**
+      Both definitions are recorded in `data/launch.json` under `desk_baseline`,
+      at `301f537`, with the date and the method, so that a later reader cannot
+      compare one against the other by accident. **[orchestrator]**
+- [ ] 31. **Stage-0 interim measurement, and what it may and may not claim.**
       After 20 merged jobs, record `brief_chars` and the saved launch build against
-      task 28's baseline.
+      task 30's baseline.
       **The `brief_chars` baseline is the recent window — jobs since 2026-09-06,
       roughly 70,000–104,000 characters — and NOT the all-time median of 37,183.**
       The all-time median is already below the 45,000 figure the later gate uses,
@@ -226,37 +297,46 @@ the orchestrator's work between runs.
 
 ## Stage 1 — the train alone, at one worker
 
-- [ ] 30. `loop/lib/gates.mjs`: `DEFAULT_GATES` becomes `['build',
+- [ ] 32. `loop/lib/gates.mjs`: `DEFAULT_GATES` becomes `['build',
       'verify-surfaces']` and a frozen `TRAIN_GATES` carries the full six in order.
       `loop/run.mjs` drops the post-merge build call site (`:1661`). Implements:
       *A job's gates are a tripwire…*, bullets 1 and 3.
-- [ ] 31. `loop/run.mjs` and `loop/lib/train.mjs` (new): **the tripwire builds the
+- [ ] 33. `loop/run.mjs` and `loop/lib/train.mjs` (new): **the tripwire builds the
       merged tip**, under the merge lock, not the branch; a red merged tip reverts
       the merge at once with no search. This is what keeps "green apart, red
       together" caught per merge after the post-merge build is deleted. Implements
       the same requirement's merged-tip bullet.
-- [ ] 32. `loop/tests/tripwire.test.mjs`: two work orders each green alone and red
+- [ ] 34. `loop/tests/tripwire.test.mjs`: two work orders each green alone and red
       combined — the second merge's tripwire is red and that merge is reverted
       immediately. **Mutation**: build the branch instead of the merged tip and
-      confirm the combined case passes when it must not. Tests task 31.
-- [ ] 33. `loop/lib/train.mjs`: the integration branch, the merge lock,
+      confirm the combined case passes when it must not. Tests task 33.
+- [ ] 35. `loop/lib/train.mjs`: the integration branch, the merge lock,
       **subject-disjoint merges**, the `K`/`T`/idle triggers, the `B_train` and
       `S_train` bounds with the prefix-that-fits rule, and workers branching from
       `train`. Implements: *Merges land on an integration branch and main advances
       only by a green train*.
-- [ ] 34. `loop/lib/train.mjs`: the ordered run — full gate set; **one rederive**;
+- [ ] 36. `loop/lib/train.mjs`: the ordered run — full gate set; **one rederive**;
       **then the train review over the whole diff including the rederived data**;
-      then the records commit; then the publish. Implements the same requirement's
-      ordering bullets and *The train review is sealed…*'s diff bullet.
-- [ ] 35. `loop/tests/train.test.mjs`: five merges trigger one train running the
+      then the records commit **path-restricted to the review records, the ledger, the
+      carried findings and the proposals, with a machine check that fails the train
+      on any other path**; then a re-run of `npm run build`, `verify-launch`
+      (reusing that build) and `verify-surfaces` on the **post-records tip**, which
+      is the SHA the train declares as verified (~35s); then the publish. Also
+      assert, after the rederive, that **no counted path changed** since the
+      reviewed-bytes bound was measured. Implements the same requirement's
+      ordering, records-restriction and published-SHA bullets and *The train review is sealed…*'s diff bullet.
+- [ ] 37. `loop/tests/train.test.mjs`: five merges trigger one train running the
       full set once, one rederive, one records commit, one push; two merges plus
       elapsed `T` trigger a train on two; seven merges past `B_train` run on the
       prefix that fits; a job whose subjects overlap a merge on the train waits.
       **Mutation A**: rederive per merge and confirm the single-recomputation
       assertion fails. **Mutation B**: assemble the train review before the rederive
       and confirm the assertion that the reviewed diff contains the regenerated
-      files fails. Tests tasks 33–34.
-- [ ] 36. `loop/lib/train.mjs`: the red path — classification re-run on the pre-train
+      files fails. **Mutation C**: let the records commit touch a content path and
+      confirm the train fails. **Mutation D**: declare the pre-records tip as the
+      verified SHA and confirm the remote-read assertion finds the records missing.
+      Tests tasks 35–36.
+- [ ] 38. `loop/lib/train.mjs`: the red path — classification re-run on the pre-train
       commit first; `pre-existing` **holds** the train (reported every run, one
       upkeep item, no `HOLD.md`, merge lock admits nothing further);
       **leave-one-out over the whole train** otherwise; revert `-m 1`, mark
@@ -265,7 +345,7 @@ the orchestrator's work between runs.
       The train records the local date it began under and refuses a search that
       would cross a change in it. Implements: *A red train is classified before
       anything is reverted*.
-- [ ] 37. `loop/tests/train-red.test.mjs`: four fixtures — pre-train red; a defect
+- [ ] 39. `loop/tests/train-red.test.mjs`: four fixtures — pre-train red; a defect
       latent in an **early** merge surfacing at the last; no single removal
       clearing it; and a date change mid-search. Assert the classification, the
       reverts, the re-review after eviction and the ledger marks in each.
@@ -274,50 +354,54 @@ the orchestrator's work between runs.
       leave-one-out with a **prefix search** on the fixture whose defect is latent
       in an early merge, and confirm it isolates the wrong merge — a prefix search
       returns the newest, which is the answer "revert the newest" gives and the
-      reason leave-one-out exists. Tests task 36.
-- [ ] 38. `loop/lib/train.mjs`: an evicted merge replayed alone on a fresh train that
+      reason leave-one-out exists. Tests task 38.
+- [ ] 40. `loop/lib/train.mjs`: an evicted merge replayed alone on a fresh train that
       passes is recorded on the ledger as an eviction made wrongly. Implements the
       same requirement's auditability bullet. Test with a **mutation** that never
       records the replay result, which must make the audit assertion fail.
-- [ ] 39. `loop/lib/review.mjs`: `assembleTrainReviewBrief` — the whole train diff,
+- [ ] 41. `loop/lib/review.mjs`: `assembleTrainReviewBrief` — the whole train diff, the committed train manifest
+      (`.train/manifest.json`: merge shas, job ids, subjects),
       the checklists of every kind it touches, the reviewer rung declared in the
       registry, and **no
-      per-job verdict record**. The seal is **ordered file access**: the per-job
-      verdicts sit in a separate file the reviewer is told to open only after
-      writing its own findings file, and the assembler verifies the findings file
-      exists before exposing the verdicts. Implements: *The train review is sealed
+      per-job verdict record**. The seal is a **redacted checkout**: the reviewer
+      runs in a worktree from which the per-job verdict records of the train's
+      merges have been REMOVED, which costs nothing because that tree is discarded
+      unconditionally anyway, and the comparison below is a SEPARATE invocation
+      with its own tree. Ordered access is not enough — the sealed reviewer of an
+      earlier round of this change read the revision records by accident while
+      checking a line count and reported it. Implements: *The train review is sealed
       from the per-job verdicts and reports what they missed*.
-- [ ] 40. `loop/lib/review.mjs`: the train review produces a verdict record on the
+- [ ] 42. `loop/lib/review.mjs`: the train review produces a verdict record on the
       ordinary protocol — a verdict from the closed list, `would-cite` per prose
       piece, the same refusals — and an **absent, empty or malformed record fails
       closed**: no fast-forward, no publish. Implements the same requirement's
       protocol bullet.
-- [ ] 41. `loop/lib/train.mjs`: a non-approving train review evicts the merges its
+- [ ] 43. `loop/lib/train.mjs`: a non-approving train review evicts the merges its
       findings name (`evicted-at-train`, reason review) and re-runs gates and
       review; a finding naming no merge rejects the whole train; two consecutive
       non-approvals over unchanged merges reject the whole train. Implements the
       same requirement's red-path bullets and *A red train…*'s fourth row.
-- [ ] 42. `loop/tests/train-review.test.mjs`: the assembled brief contains none of
+- [ ] 44. `loop/tests/train-review.test.mjs`: the assembled brief contains none of
       the per-job records' text; a missing record fails closed; the
       not-in-any-record count lands on the train's line; a finding naming one merge
       evicts it and triggers a re-review. **Mutation A**: interpolate the per-job
       verdicts into the brief and confirm the seal assertion fails. **Mutation B**:
       treat an absent train-review record as an approval and confirm the
-      fail-closed test goes green when it must not. Tests tasks 39–41.
-- [ ] 43. `pulse/lib/publish.mjs`: the caller declares **the SHA its gates ran
+      fail-closed test goes green when it must not. Tests tasks 41–43.
+- [ ] 45. `pulse/lib/publish.mjs`: the caller declares **the SHA its gates ran
       over**; the step pushes `<sha>:main` and refuses only when that SHA is not a
       descendant of the remote tip, naming both; it reads `data/config.json`'s
       publish flag **itself**; it does not push while `HOLD.md` stands; a scope
       refusal writes no `HOLD.md` and the run states it published nothing and why.
       Implements: *The Pulse publishes what it builds*, the push bullets.
-- [ ] 44. `pulse/run.mjs` **and** `loop/lib/train.mjs`: both callers construct and
+- [ ] 46. `pulse/run.mjs` **and** `loop/lib/train.mjs`: both callers construct and
       pass their verified SHA. Changing only the shared step leaves no caller that
       constructs the scope, which is the whole of `addictedtoai-zuoo` left open
       under a requirement claiming to close it. Implements the same bullets, caller
       side.
-- [ ] 45. `pulse/run.mjs`: the run's own data and content commit lands on `train`,
+- [ ] 47. `pulse/run.mjs`: the run's own data and content commit lands on `train`,
       not `main`. Implements the same requirement's integration-branch bullet.
-- [ ] 46. `pulse/tests/publish-scope.test.mjs`: a throwaway repository with a **bare
+- [ ] 48. `pulse/tests/publish-scope.test.mjs`: a throwaway repository with a **bare
       origin** in the OS temp directory. A declared SHA plus a later local commit
       pushes only the declared tree — read back with `git show --name-only`
       **off the remote**, never from the local tree; a non-descendant SHA is
@@ -325,53 +409,57 @@ the orchestrator's work between runs.
       reads false pushes nothing; a standing `HOLD.md` suppresses the push. Never a
       test whose red path is a live push. **Mutation A**: push the branch instead of
       the SHA and confirm the later-commit case fails. **Mutation B**: trust the
-      caller's flag assertion and confirm the flag case fails. Tests tasks 43–45.
-- [ ] 47. `loop/lib/breakers.mjs`: breaker 2 reads the **train's** build; a build
+      caller's flag assertion and confirm the flag case fails. Tests tasks 45–47.
+- [ ] 49. `loop/lib/breakers.mjs`: breaker 2 reads the **train's** build; a build
       classified `pre-existing` does not trip it; `evicted-at-train` never counts
       toward breaker 1; a tracker-unreachable refusal is not a halt. Implements:
       *Breakers halt the loop, and only the named ones*. Test with a **mutation**
       counting `pre-existing` as a breaker-2 trip, which must write a false
       `HOLD.md` on a three-night fixture.
-- [ ] 48. `loop/run.mjs` and `loop/lib/train.mjs`: every merged job's ledger line is
+- [ ] 50. `loop/run.mjs` and `loop/lib/train.mjs`: every merged job's ledger line is
       appended before the train's single rederive. Implements: *A job's ledger line
       is written before anything recomputes the queue from it*, the batching
       bullet. Test: five merges, one rederive, none re-advertised. **Mutation**:
       rederive before the fifth line is appended and confirm exactly the fifth item
       is re-advertised.
-- [ ] 49. `loop/lib/gates.mjs`: the retry-once policy per gate stage — a job's
+- [ ] 51. `loop/lib/gates.mjs`: the retry-once policy per gate stage — a job's
       tripwire retries its two gates; **a train retries the failing gate, not the
       set**; the classification re-run is a measurement and consumes neither.
       Implements: *A gate failure is retried once, and the record names which kind
       it was*, its new first bullet. Test with a **mutation** making the train retry
       the whole set, which must make the "one re-run of the failing gate"
       assertion fail.
-- [ ] 50. **Stage-1 measurement, and the gate on Stage 2.** Record in
+- [ ] 52. **Stage-1 measurement, and the gate on Stage 2.** Record in
       `data/launch.json`, with date and method: per-gate seconds per train,
-      evictions and how many were later recorded wrong, `pre-existing` holds, and
-      the per-job brief-commit → merge figure against task 28's baseline.
+      evictions and how many were later recorded wrong, `pre-existing` holds,
+      **train-review model-minutes including every re-review after an eviction**,
+      and the per-job brief-commit → merge figure against task 30's baseline. The
+      go/no-go compares **gate seconds saved against review minutes spent, per
+      train** — a train that evicts twice pays three reviews, and counting only the
+      saved gate time would account for one side of the trade.
       **Stage 2 does not start while any eviction in the last twenty trains is
       recorded as wrong**, and does not start unless the per-job brief-commit →
-      merge overhead has fallen below **1.5 minutes** against task 28's baseline of
+      merge overhead has fallen below **1.5 minutes** against task 30's baseline of
       3.85. That threshold is Stage 1's because the train is the mechanism that
       moves it. **[orchestrator]**
 
 ## Stage 2 — work orders
 
-- [ ] 51. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
+- [ ] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
       coherence key within the four bounds; it **splits** an over-bound set into
       more work orders and **refuses at selection**, with a recorded reason, an item
       that alone exceeds the per-subject bound. Implements: *One job is one work
       order, ending in one merge or one discard*, the coherence, bounds and split
       bullets.
-- [ ] 52. `data/config.json`: add `work_order.max_items` 4, `max_subjects` 4,
+- [ ] 54. `data/config.json`: add `work_order.max_items` 4, `max_subjects` 4,
       `max_reviewed_bytes` 60000, `max_reviewed_bytes_per_subject` 30000, and the
       train's `merges` 5, `minutes` 90, `workers` 3, `max_reviewed_bytes` 150000,
       `max_subjects` 12. **[orchestrator]**
-- [ ] 53. `loop/run.mjs`: `.job/source.json` gains `items` and `declared_subjects`,
+- [ ] 55. `loop/run.mjs`: `.job/source.json` gains `items` and `declared_subjects`,
       committed at selection before any executor runs; a missing or empty
       declaration is a merge refusal. Implements the same requirement's structured
       list and empty-declaration bullets.
-- [ ] 54. **The root fix, and it is one task because it is one defect.**
+- [ ] 56. **The root fix, and it is one task because it is one defect.**
       `loop/run.mjs:1577-1594`: the merge's subject set is **constituted** from the
       committed `declared_subjects` — on the `reviewed:` outcome, from the
       executor's declared paths intersected with it — and the measured diff is used
@@ -384,7 +472,7 @@ the orchestrator's work between runs.
       logs. Implements the same requirement's constitution, retirement and
       empty-set bullets, and *The executor result protocol…*'s `reviewed:` subject
       bullet.
-- [ ] 55. `loop/tests/work-order.test.mjs`: four repairs on one page bundle into one
+- [ ] 57. `loop/tests/work-order.test.mjs`: four repairs on one page bundle into one
       order; a mixed-category pair does not; an undeclared diff path is refused; a
       bundle inside the total but over the per-subject limit is refused; **four
       items declared and one file changed retires one item and leaves three open**;
@@ -395,46 +483,46 @@ the orchestrator's work between runs.
       three of four items are wrongly retired. **Mutation C**: derive declared
       subjects by matching paths in the brief text, and confirm a fixture whose
       brief says "do NOT touch `pulse/lib/queue.mjs`" then authorises that path.
-      Tests tasks 51, 53, 54.
-- [ ] 56. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
+      Tests tasks 53, 55, 56.
+- [ ] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
       work the job produced, and **against the declared pages' reviewed surfaces**
       on the empty-diff outcome. Implements the same requirement's enforced-twice
       bullet. Test with a **mutation** measuring the empty diff instead, which must
       let four whole pages through a bound sized for four diffs.
-- [ ] 57. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
+- [ ] 59. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
       one scope rule, keyed on the governing type, including intake's verification
       results where present. `acceptanceChecksFor` and `checklistFor` read the
       governing type. Implements the same requirement, brief side.
-- [ ] 58. `loop/lib/review.mjs` and `loop/lib/verdict.mjs`: `would-cite-for` as a
+- [ ] 60. `loop/lib/review.mjs` and `loop/lib/verdict.mjs`: `would-cite-for` as a
       list of entries sharing `reads-human-from`'s parser and entry shape; the
       duplicate check per entry across other records; two entries in one record may
       match; **"prose piece" is the schema's prose kinds**, not any content file.
       Implements: *The reviewer judges quality with full standing…*.
-- [ ] 59. `loop/tests/would-cite.test.mjs`: three prose subjects with one
+- [ ] 61. `loop/tests/would-cite.test.mjs`: three prose subjects with one
       record-wide field is refused naming the unanswered two; an entry per subject
       passes; two identical entries in one record pass; an entry duplicating
       another record's statement is refused; a directory row among the subjects
       requires no entry. **Mutation A**: make the duplicate check ignore entries and
       confirm only the cross-record case fails. **Mutation B**: define a prose piece
       as any `content/**.md` and confirm the directory-row case fails. Tests
-      task 58.
-- [ ] 60. `loop/lib/result.mjs`: `reviewed: <path>[, <path>…]` as a fourth first-line
+      task 60.
+- [ ] 62. `loop/lib/result.mjs`: `reviewed: <path>[, <path>…]` as a fourth first-line
       form, accepted only when every path is in `declared_subjects` **and** already
       reads `mismatched` at the merge base; `failed` naming the path and the missed
       precondition otherwise; an empty diff on this outcome is not a failure.
       Implements: *The executor result protocol is how outcomes are known*.
-- [ ] 61. `loop/lib/review.mjs`: the review brief for that outcome carries each
+- [ ] 63. `loop/lib/review.mjs`: the review brief for that outcome carries each
       declared page's **machine-generated** reviewed surface and its hash, **no diff
       section at all**, a gates section stating the gates ran on a tree identical to
       the merge base and are therefore not evidence about the pages, and the
       checklist for each page's kind. Implements: *A review of unchanged pages is a
       review of the pages, never of an empty diff*.
-- [ ] 62. `loop/run.mjs`: record each declared page's reviewed-surface hash on the
+- [ ] 64. `loop/run.mjs`: record each declared page's reviewed-surface hash on the
       branch at review-brief assembly; re-measure at merge; **the hash the record
       binds must equal the hash of the bytes the brief carried**, and the merge is
       refused and the run settled `failed` naming the path where they differ.
       Implements the same requirement's hash bullets.
-- [ ] 63. `loop/tests/reviewed-outcome.test.mjs`: a declared, already-mismatched page
+- [ ] 65. `loop/tests/reviewed-outcome.test.mjs`: a declared, already-mismatched page
       ratifies and its record binds the current bytes; an undeclared path is
       refused; a page that was not mismatched is refused; a page moved on `train`
       between brief assembly and merge is refused; and **`hash(brief bytes) ===
@@ -442,17 +530,17 @@ the orchestrator's work between runs.
       fenced block at all. **Mutation A**: emit the diff section unconditionally and
       confirm the empty-fence assertion fails. **Mutation B**: put a stale copy of
       the page in the brief and confirm the equality assertion fails while a
-      presence-only assertion would still pass. Tests tasks 60–62.
-- [ ] 64. `loop/lib/proposals.mjs` and `loop/run.mjs`: proposal consumption and
+      presence-only assertion would still pass. Tests tasks 62–64.
+- [ ] 66. `loop/lib/proposals.mjs` and `loop/run.mjs`: proposal consumption and
       directive marking run per item, gated on the same per-item evidence task 54
       requires. Implements: *A proposal a merged job consumed is retired*. Test with
       a **mutation** consuming both items' proposals when only one item was done,
       which must leave a proposal wrongly retired.
-- [ ] 65. `loop/lib/ledger.mjs`: the `items` key and the partially-done marker,
+- [ ] 67. `loop/lib/ledger.mjs`: the `items` key and the partially-done marker,
       omitted when empty, `LEDGER_FIELDS` unextended. Implements: *The ledger line
       carries the join, as a list, additively*, its `items` bullets. Same additive
-      mutation as task 24.
-- [ ] 66. **Stage-2 measurement, and the decision rule stated in advance.** Record
+      mutation as task 26.
+- [ ] 68. **Stage-2 measurement, and the decision rule stated in advance.** Record
       merged items per train, distinct subjects per work order, and **train-review
       findings present in no per-job record, per subject**. **If that proxy rises
       with `N` over the first twenty work orders, `N_max` is lowered before any
@@ -462,40 +550,57 @@ the orchestrator's work between runs.
 
 ## Stage 3 — intake, the two desks, more than one worker
 
-- [ ] 67. `loop/lib/beads.mjs` (new): the single `bd` **invocation** choke point —
+- [ ] 69. `loop/lib/beads.mjs` (new): the single `bd` **invocation** choke point —
       mint, claim, close, read-back verification, orphaned-claim release, retry of
       unverified closures — with `--sandbox` on every call and every call site
       set-valued. It **names `loop/lib/issues.mjs` as the existing format module**
       and defines no second id format: `issues.mjs:1-56` already states the
-      format/existence split and the Vercel reason. Implements: *The machine's work
-      is joinable to the issue tracker*.
-- [ ] 68. `loop/lib/beads.mjs`: closure **refuses** while the bead carries unresolved
+      format/existence split and the Vercel reason. **Built on
+      `evidence/bd-measurements.md`, not on assumption** (task 28): `show --json`
+      wraps its result in an array; comment bodies require `--include-comments` and
+      never appear in `list --json`; a second `--claim` by another actor fails with
+      exit 1, so the claim is real mutual exclusion and no second mechanism is
+      needed; **re-closing a closed issue is a silent exit-0 no-op that discards the
+      new reason**, so closure is verified by reading back rather than by exit code;
+      `reopen` clears `close_reason`; metadata round-trips as JSON objects and
+      `--set-metadata` merges; 200 ids in one argv worked, so no batching ceiling
+      needs designing around; `--json` stdout is clean. **The module SHALL pin the
+      working directory** of every invocation to the store it addresses and refuse
+      before spawning when it is not — the measurement found that initialising with
+      an explicit `--db` path from a cwd inside this repository auto-detected the
+      real remote and cloned the project's history into a second store under the
+      user profile. Implements: *The machine's work is joinable to the issue
+      tracker*, including its cwd, read-back, claim and comment bullets. Test: an
+      invocation attempted from a wrong cwd is refused **before** `bd` is spawned
+      (assert on the spawn, not the outcome). **Mutation**: drop the cwd pin and
+      confirm the call reaches the tracker.
+- [ ] 70. `loop/lib/beads.mjs`: closure **refuses** while the bead carries unresolved
       deferral notes, naming them, with a `--promote` path that mints a bead per
       note carrying the parent id. Implements the same requirement's closure
       bullets and *A deferral becomes its own bead…*.
-- [ ] 69. `loop/tests/beads-boundary.test.mjs`: a static assertion that no file under
+- [ ] 71. `loop/tests/beads-boundary.test.mjs`: a static assertion that no file under
       `lib/` and no prebuild step imports `loop/lib/beads.mjs` or spawns the
       tracker. **Mutation**: add such an import to a `lib/` file and confirm the
       test fails — the build must never acquire a dependency the host lacks. Tests
-      task 67.
-- [ ] 70. `loop/tests/beads-lifecycle.test.mjs`: only the named points touch the
+      task 69.
+- [ ] 72. `loop/tests/beads-lifecycle.test.mjs`: only the named points touch the
       tracker; a job closing its own bead is recorded unverified; an unverified
       closure retries later; a close with unresolved notes refuses and `--promote`
       mints them. **Mutation**: trust the close command's exit code instead of
       reading back, and confirm the self-closed case passes when it must not. Tests
-      tasks 67–68.
-- [ ] 71. `loop/intake.mjs` (new): the router — desk, shape, subjects, record state,
+      tasks 69–70.
+- [ ] 73. `loop/intake.mjs` (new): the router — desk, shape, subjects, record state,
       blocked/deferred/claimed, clearance, category, coherence key — keying on
       **declared metadata, never on a title or prose**; an undeclared mixed-path
       candidate is reported for a person, with the recorded default applied
       meanwhile. Plus the machinery-share-of-inflow report. Implements: *Intake
       routes and verifies every candidate before a model is invoked*, routing and
       reporting bullets.
-- [ ] 72. `loop/intake.mjs`: the verifier — path exists, quoted string occurs, cited
+- [ ] 74. `loop/intake.mjs`: the verifier — path exists, quoted string occurs, cited
       line still reads as claimed — writing each failure as a note and carrying it
       into the brief; a failed claim routes as needing re-derivation. Implements
       the same requirement's verification bullets.
-- [ ] 73. `loop/tests/intake.test.mjs`: a bead asserting a word that occurs nowhere
+- [ ] 75. `loop/tests/intake.test.mjs`: a bead asserting a word that occurs nowhere
       in the named file routes as needing re-derivation and its failure reaches the
       brief; a bead declaring its desk routes by that declaration; an undeclared
       mixed-path bead is reported, not guessed; an unreachable tracker refuses with
@@ -503,48 +608,48 @@ the orchestrator's work between runs.
       executor invocation recorded**. **Mutation A**: report success on a missing
       string and confirm the first case fails. **Mutation B**: route on a title
       regex and confirm the declaration case still passes while the
-      report-for-a-person case fails. Tests tasks 71–72.
-- [ ] 74. `loop/lib/select.mjs`: sources become routed beads, the derived queue and
+      report-for-a-person case fails. Tests tasks 73–74.
+- [ ] 76. `loop/lib/select.mjs`: sources become routed beads, the derived queue and
       proposals, in priority-band order; the scout's overdue floor above routed
       beads; **a queue floor** after N consecutive runs in which the queue was
       reachable and not reached; **automatic deferral** of a candidate whose run
       produced no result or ended failed/discarded. Intake owns expiry and
       duplicate suppression. Implements: *Work comes from one intake, and cannot
       self-amplify*.
-- [ ] 75. `loop/lib/proposals.mjs`: delete `sweepExpired` (`:380`),
+- [ ] 77. `loop/lib/proposals.mjs`: delete `sweepExpired` (`:380`),
       `sweepExpiredProposals` (`:420`) and `discardDuplicate` (`:346`); keep the
       over-cap drop and the self-amplification discard, which bound a job's own
       output and are conflict-of-interest guards rather than traffic guards.
       Implements the same requirement's expiry and duplicate bullets.
-- [ ] 76. `loop/tests/select.test.mjs`: an overdue scout outranks forty routed beads;
+- [ ] 78. `loop/tests/select.test.mjs`: an overdue scout outranks forty routed beads;
       a rejected-slug candidate is not routed; an expiring proposal outranks the
       queue and a discarded one does not; the queue floor fires after N unreached
       runs; a candidate that produced no result is not reselected next run.
       **Mutation A**: drop the queue floor and confirm the starvation case fails —
       deleting the directives file does not delete the starvation. **Mutation B**:
       drop the automatic deferral and confirm the reselection case fails. Tests
-      tasks 74–75.
-- [ ] 77. `loop/lib/select.mjs` and `loop/lib/budget.mjs`: the two lanes — content
+      tasks 76–77.
+- [ ] 79. `loop/lib/select.mjs` and `loop/lib/budget.mjs`: the two lanes — content
       types on the front desk against the floor and new-writing ceiling, machinery
       and tracker work on the back desk against the machinery ceiling, machinery
       reachable directly in its own band, and an idle front desk running the scout
       or nothing. Implements: *The front desk and the back desk share an intake and
       never share a lane*.
-- [ ] 78. `loop/tests/desks.test.mjs`: an idle front desk with machinery candidates
+- [ ] 80. `loop/tests/desks.test.mjs`: an idle front desk with machinery candidates
       ready selects the scout or nothing; a routed machinery bead is offered with no
       proposal file present. **Mutation**: let the front desk fall through to
       machinery and confirm the first case fails — this is today's behaviour and the
-      72-model-minute measurement it produced. Tests task 77.
-- [ ] 79. `loop/chain.mjs` (new): intake → up to `W` workers, each an ordinary
+      72-model-minute measurement it produced. Tests task 79.
+- [ ] 81. `loop/chain.mjs` (new): intake → up to `W` workers, each an ordinary
       `loop/run.mjs` invocation in its own worktree → train. `STOP` and `HOLD.md`
       checked before each worker and before the train; **stop on a failed run**;
       the lock-wait budget the train's own gates need. Implements: *The chain from
       intake to train lives in the repository*.
-- [ ] 80. `loop/lib/`: the **selection lock** (read ledger → mint id → create branch
+- [ ] 82. `loop/lib/`: the **selection lock** (read ledger → mint id → create branch
       → commit `.job/`) and the **ledger lock** (every append, including the paths
       that never merge), both carrying more than a process id, over **one** ledger
       file. Implements the same requirement's lock bullets.
-- [ ] 81. **The budget reservation.** `loop/lib/budget.mjs` and
+- [ ] 83. **The budget reservation.** `loop/lib/budget.mjs` and
       `loop/lib/select.mjs`: under the selection lock a selected job writes a
       reservation — its per-invocation cap, its category, its tier — and the
       ceilings and the floor are computed over recorded spend **plus** live
@@ -565,7 +670,7 @@ the orchestrator's work between runs.
       test's header that a per-job cap under W workers permits W times the
       wall-clock spend a serial reading of it predicts, which is why the tier-total
       arithmetic and not the per-job cap is what must count reservations.
-- [ ] 82. **Re-derive the four controls the parallel-worker argument leans on,
+- [ ] 84. **Re-derive the four controls the parallel-worker argument leans on,
       one verdict each, before W is raised above 1.**
       (a) **Breaker 1 — re-derived, and it was broken.** `loop/lib/budget.mjs:673-683`
       `consecutiveFailures()` walks the ledger backwards and stops at the first
@@ -576,7 +681,7 @@ the orchestrator's work between runs.
       failed` — three of four failed and the current function returns 1 —
       and a **mutation** restoring the consecutive walk, which must make it red
       again.
-      (b) **Budget ceilings — covered by task 81**, and only by it: without the
+      (b) **Budget ceilings — covered by task 83**, and only by it: without the
       reservation the ceilings are read from a ledger that records a job when it
       ends.
       (c) **Runner health — re-derived, and it was broken.**
@@ -609,7 +714,7 @@ the orchestrator's work between runs.
       verdict unchanged.** The caps bound one invocation and one job's total, both
       per job; the ledger is append-only under its lock and the build and test
       locks are real mutual exclusion.
-- [ ] 83. `loop/tests/chain.test.mjs`: three workers run concurrently and two
+- [ ] 85. `loop/tests/chain.test.mjs`: three workers run concurrently and two
       selecting in one window mint **different** job ids; a worker exhausting its
       budget is abandoned with the same ledger line a lone run would write; a
       failed run stops the chain; the pause check names a live worker's pid; the
@@ -618,40 +723,43 @@ the orchestrator's work between runs.
       distinct-id assertion fails. **Mutation B**: hard-code a runner command in the
       chain and confirm `loop/tests/portability.test.mjs` fails. **Mutation C**:
       decide concurrency by matching the worktree path and confirm the lock test
-      fails once every worktree is a Desk worktree. Tests tasks 79–80.
-- [ ] 84. `pulse/lib/`: the mirror step, outside the derive step — one issue per
+      fails once every worktree is a Desk worktree. Tests tasks 81–82.
+- [ ] 86. `pulse/lib/`: the mirror step, outside the derive step — one issue per
       condition that has none, closed when the condition clears, no issue id in
       `data/derived/`, the condition winning on disagreement with the disagreement
       reported, skipped with a reason when the tracker is unreachable. Implements:
       *The derived queue is mirrored into the tracker outside the derive step*.
-- [ ] 85. `pulse/tests/mirror.test.mjs`: two runs with no world change produce a
-      byte-identical `data/derived/` with no issue id in it; a hand-closed issue
-      does not clear a standing condition; an unreachable tracker leaves the
-      derivation untouched; **and a recomputation over a tree carrying the run's own
-      committed data reproduces it byte for byte**. **Mutation**: call the tracker
-      from inside the derive step and confirm the byte-identity test fails. Tests
-      task 82.
-- [ ] 86. `loop/lib/select.mjs`: an issue becomes selectable only when it is
+- [ ] 87. `pulse/tests/mirror.test.mjs`: two runs with no world change produce a
+      `data/derived/` that is **non-empty** and hashes identically, file for file,
+      to the engine's own derivation at that commit, with no issue id in it; a
+      hand-closed issue does not clear a standing condition; an unreachable tracker
+      leaves the derivation untouched; **and a recomputation over a tree carrying
+      the run's own committed data reproduces it byte for byte**. **Mutation A**:
+      call the tracker from inside the derive step and confirm the byte-identity
+      test fails. **Mutation B**: skip derivation entirely and confirm the test
+      fails rather than passing because two empty trees match. Tests
+      task 86.
+- [ ] 88. `loop/lib/select.mjs`: an issue becomes selectable only when it is
       **routed** — the routing label plus the required fields — and intake refuses
       to route one naming neither a subject path nor a requirement, reporting it.
       Implements: *Routine work never touches OpenSpec; beads holds judgment work*,
       its routed-only bullet, and *A deferral becomes its own bead…*, its intake
       bullet. Test with a **mutation** that skips unroutable issues silently, which
       must make the reporting assertion fail, and one that selects an unlabelled P0.
-- [ ] 87. Migrate `DIRECTIVES.md`: each pending line becomes a routed bead carrying
+- [ ] 89. Migrate `DIRECTIVES.md`: each pending line becomes a routed bead carrying
       the same text and a priority; the file is deleted and
       `loop/lib/directives.mjs` and its call sites go with it, including the parked
       section. Implements: *Work comes from one intake…*, source list.
       **[orchestrator]**
-- [ ] 88. `CLAUDE.md`, `AGENTS.md` and the operating documentation: remove the fleet
+- [ ] 90. `CLAUDE.md`, `AGENTS.md` and the operating documentation: remove the fleet
       as an operating mechanism and record what replaces it — front-desk workers and
       the train review. No new fleet wave starts after this task, and not before it:
       until Stage 3 the fleet is this change's own implementation engine.
       **[orchestrator]**
-- [ ] 89. **Stage-3 measurement.** Record filed versus closed per local day, the
+- [ ] 91. **Stage-3 measurement.** Record filed versus closed per local day, the
       machinery share of inflow, and jobs per train-hour, each against the
       pre-change figures in `proposal.md`. **[orchestrator]**
-- [ ] 90. `loop/intake.mjs`, `loop/lib/brief.mjs`, `loop/lib/result.mjs` and
+- [ ] 92. `loop/intake.mjs`, `loop/lib/brief.mjs`, `loop/lib/result.mjs` and
       `loop/lib/review.mjs`: each failed claim gets a **stable identifier**; the
       brief carries the list by identifier with what was checked and what was
       found; `result.mjs` parses a `rederived:` block of one entry per identifier,
@@ -672,17 +780,17 @@ the orchestrator's work between runs.
 
 ## Gates
 
-- [ ] 91. `openspec validate two-desks-work-orders-and-trains --type change
+- [ ] 93. `openspec validate two-desks-work-orders-and-trains --type change
       --strict --no-interactive` and `node scripts/check-spec-deltas.mjs --strict`,
       at drafting time and after every review round. Neither validator catches a
       dropped requirement heading — one was dropped and both passed — so run the
       heading-to-task count as well.
-- [ ] 92. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [ ] 94. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics` green at the end of each stage, run
       serially. Expect the suite to be **slower** at the end of Stage 1 than at its
       start: the twelve slowest tests are integration tests of the machinery these
       tasks rewrite, and rewriting them is inside the work rather than beside it.
-- [ ] 93. Re-run `openspec validate` for every unarchived change after each stage:
+- [ ] 95. Re-run `openspec validate` for every unarchived change after each stage:
       archiving order is load-bearing, and a change archived in between moves paths
       this one's tests may reference.
 
@@ -690,16 +798,16 @@ the orchestrator's work between runs.
 
 | Capability | ADDED | MODIFIED | REMOVED |
 |---|---|---|---|
-| `loop` | 11 | 10 | 2 |
+| `loop` | 11 | 11 | 2 |
 | `review` | 2 | 2 | 0 |
 | `pulse` | 1 | 1 | 0 |
-| **Total** | **14** | **13** | **2** |
+| **Total** | **14** | **14** | **2** |
 
-Ninety-three numbered tasks, 1–93 with no gaps, of which **26 name a proof by
-mutation and 43 distinct mutations are named** (several tasks name an A, a B and a
+Ninety-five numbered tasks, 1–95 with no gaps, of which **29 name a proof by
+mutation and 49 distinct mutations are named** (several tasks name an A, a B and a
 C, where one mutation alone would leave a control unmeasured). Counted by script,
-not by hand: `tasks: 93, contiguous=true; tasks naming a mutation: 26; distinct
-mutations: 43`.
+not by hand: `tasks: 95, contiguous=true; tasks naming a mutation: 29; distinct
+mutations: 49`. Three are already ticked done (28, 29, 30).
 
 ### Heading-to-task mapping
 
@@ -708,37 +816,38 @@ Machine-readable, covering ADDED, MODIFIED **and REMOVED**. Each row is
 
 | Cap | Kind | Requirement heading | Tasks |
 |---|---|---|---|
-| loop | ADDED | One job is one work order, ending in one merge or one discard | 51, 53, 54, 55, 56, 57 |
-| loop | ADDED | Work comes from one intake, and cannot self-amplify | 74, 75, 76, 87 |
-| loop | ADDED | A job's gates are a tripwire; the full set runs once, on the train | 1, 2, 3, 4, 30, 31, 32 |
-| loop | ADDED | Merges land on an integration branch and main advances only by a green train | 33, 34, 35 |
-| loop | ADDED | A red train is classified before anything is reverted | 36, 37, 38, 41 |
-| loop | ADDED | Intake routes and verifies every candidate before a model is invoked | 71, 72, 73, 90 |
-| loop | ADDED | The front desk and the back desk share an intake and never share a lane | 77, 78 |
+| loop | ADDED | One job is one work order, ending in one merge or one discard | 52, 54, 55, 56, 57, 58 |
+| loop | ADDED | Work comes from one intake, and cannot self-amplify | 75, 76, 77, 88 |
+| loop | ADDED | A job's gates are a tripwire; the full set runs once, on the train | 1, 2, 3, 4, 31, 32, 33 |
+| loop | ADDED | Merges land on an integration branch and main advances only by a green train | 34, 35, 36 |
+| loop | ADDED | A red train is classified before anything is reverted | 37, 38, 39, 42 |
+| loop | ADDED | Intake routes and verifies every candidate before a model is invoked | 72, 73, 74, 91 |
+| loop | ADDED | The front desk and the back desk share an intake and never share a lane | 78, 79 |
 | loop | ADDED | The brief carries the requirements the work order names, and nothing else | 5, 6, 7, 8, 9, 11, 12 |
-| loop | ADDED | The chain from intake to train lives in the repository | 25, 79, 80, 81, 82, 83 |
-| loop | ADDED | Runner selection is a declared policy, and escalation is part of it | 19, 20, 21, 22, 23 |
-| loop | ADDED | A deferral becomes its own bead only when it names a subject or a requirement | 16, 17, 18, 68, 86 |
-| loop | MODIFIED | The executor result protocol is how outcomes are known | 54, 60, 63, 90 |
-| loop | MODIFIED | Breakers halt the loop, and only the named ones | 47, 82 |
-| loop | MODIFIED | A job's ledger line is written before anything recomputes the queue from it | 48 |
-| loop | MODIFIED | The ledger line carries the join, as a list, additively | 23, 24, 65 |
-| loop | MODIFIED | The machine's work is joinable to the issue tracker | 67, 68, 69, 70 |
-| loop | MODIFIED | Routine work never touches OpenSpec; beads holds judgment work | 86, 87 |
-| loop | MODIFIED | A proposal a merged job consumed is retired | 64, 75 |
-| loop | MODIFIED | A gate failure is retried once, and the record names which kind it was | 49 |
-| loop | MODIFIED | Capacity exhaustion is a pause, and degradation is ordered | 82 |
-| loop | MODIFIED | A runner proven unable to run is refused, and refusal is not a halt | 82 |
-| loop | REMOVED | One job is one outcome with one merge or discard | 51, 53, 54 |
-| loop | REMOVED | Work comes from three sources and cannot self-amplify | 74, 75, 87 |
-| review | ADDED | A review of unchanged pages is a review of the pages, never of an empty diff | 61, 62, 63 |
-| review | ADDED | The train review is sealed from the per-job verdicts and reports what they missed | 39, 40, 41, 42 |
-| review | MODIFIED | The reviewer judges quality with full standing, from a named reason list | 10, 12, 58, 59 |
-| review | MODIFIED | A reviewer's non-blocking finding reaches work without editing anything | 13, 14, 15, 23 |
-| pulse | ADDED | The derived queue is mirrored into the tracker outside the derive step | 84, 85 |
-| pulse | MODIFIED | The Pulse publishes what it builds | 43, 44, 45, 46 |
+| loop | ADDED | The chain from intake to train lives in the repository | 26, 80, 81, 82, 83, 84 |
+| loop | ADDED | Runner selection is a declared policy, and escalation is part of it | 19, 20, 22, 23, 24, 25 |
+| loop | ADDED | A deferral becomes its own bead only when it names a subject or a requirement | 16, 17, 18, 69, 87 |
+| loop | MODIFIED | The executor result protocol is how outcomes are known | 55, 61, 64, 91 |
+| loop | MODIFIED | Breakers halt the loop, and only the named ones | 48, 83 |
+| loop | MODIFIED | A job's ledger line is written before anything recomputes the queue from it | 49 |
+| loop | MODIFIED | The ledger line carries the join, as a list, additively | 25, 26, 66 |
+| loop | MODIFIED | A swap has a stated procedure and a conformance check | 21 |
+| loop | MODIFIED | The machine's work is joinable to the issue tracker | 68, 69, 70, 71 |
+| loop | MODIFIED | Routine work never touches OpenSpec; beads holds judgment work | 87, 88 |
+| loop | MODIFIED | A proposal a merged job consumed is retired | 65, 76 |
+| loop | MODIFIED | A gate failure is retried once, and the record names which kind it was | 50 |
+| loop | MODIFIED | Capacity exhaustion is a pause, and degradation is ordered | 83 |
+| loop | MODIFIED | A runner proven unable to run is refused, and refusal is not a halt | 83 |
+| loop | REMOVED | One job is one outcome with one merge or discard | 52, 54, 55 |
+| loop | REMOVED | Work comes from three sources and cannot self-amplify | 75, 76, 88 |
+| review | ADDED | A review of unchanged pages is a review of the pages, never of an empty diff | 62, 63, 64 |
+| review | ADDED | The train review is sealed from the per-job verdicts and reports what they missed | 40, 41, 42, 43 |
+| review | MODIFIED | The reviewer judges quality with full standing, from a named reason list | 10, 12, 59, 60 |
+| review | MODIFIED | A reviewer's non-blocking finding reaches work without editing anything | 13, 14, 15, 25 |
+| pulse | ADDED | The derived queue is mirrored into the tracker outside the derive step | 85, 86 |
+| pulse | MODIFIED | The Pulse publishes what it builds | 44, 45, 46, 47 |
 
-Twenty-nine rows: 14 ADDED + 13 MODIFIED + 2 REMOVED. Every row names at least
+Thirty rows: 14 ADDED + 14 MODIFIED + 2 REMOVED. Every row names at least
 one task, and the REMOVED rows name the tasks that build the requirements their
 bodies were carried into.
 
@@ -753,7 +862,7 @@ bodies were carried into.
 - **Wontfix suppression for the mirror.** The mirror does not honour a closed
   issue as a suppression — the condition wins, full stop. Whether a `wontfix`
   close should become a visible, reported suppression on the model of the build's
-  debt ratchets is a real question, not answered here; file it against task 82.
+  debt ratchets is a real question, not answered here; file it against task 84.
 - **Sharing fixtures or splitting the heaviest test files** to shorten the suite's
   longest chain. Cheap-looking, **unmeasured**, and it touches the tests guarding
   merge and publish, where a shared fixture is how a suite acquires coupling it
@@ -763,7 +872,7 @@ bodies were carried into.
   question 4, which now carries a recommendation rather than a bare question.
 - **Making a failed claim a non-authorable state** until a fresh mechanical check
   records otherwise — the stronger of the two forms a sealed reviewer offered for
-  its MAJOR 5. The structured-evidence form is adopted instead (task 88): the
+  its MAJOR 5. The structured-evidence form is adopted instead (task 90): the
   merge refuses when any failed claim is unanswered, and the answer's *truth* is
   the reviewer's. Blocking authorship outright would stop a job whose honest first
   finding is that the claim was stale, which is the common case.
