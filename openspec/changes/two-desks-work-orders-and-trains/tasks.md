@@ -55,13 +55,19 @@ the orchestrator's work between runs.
       saturation; it does not lower a ceiling, and a ceiling four times the size of
       the material below it bounds nothing. Implements the same requirement's
       ceiling bullet.
-- [ ] 8. `loop/tests/specs.test.mjs`: a fixture with three unarchived changes and a
-      `repair` type produces the same excerpt set as one with zero, **and the
-      assembled brief is at most 30,000 characters against the live tree** — an
-      upper bound on the artifact, not merely unspent budget. **Mutation A**:
-      restore pass 2b and confirm the size assertion fails while the excerpt-set
-      assertion still passes. **Mutation B**: restore the ceiling to 88,000 and
-      confirm the size assertion fails. Tests tasks 5–7.
+- [ ] 8. `loop/tests/specs.test.mjs`: a PINNED fixture corpus with three unarchived
+      changes and a `repair` type produces the same excerpt set as one with zero,
+      **and the assembled brief against that fixture is at most 30,000
+      characters** — an upper bound on the artifact, not merely unspent budget.
+      The bound is asserted on the fixture, never on the live tree: the live
+      brief's size moves with every change archived or opened
+      (`addictedtoai-2sx8`), so a live assertion would go red on a commit that
+      touched nothing near it — the `pre-existing` class reintroduced as a unit
+      test. The live tree's assembled size is MEASURED and printed by the test
+      run, and recorded as `brief_chars` on the ledger (task 25), never asserted.
+      **Mutation A**: restore pass 2b and confirm the size assertion fails while
+      the excerpt-set assertion still passes. **Mutation B**: restore the ceiling
+      to 88,000 and confirm the size assertion fails. Tests tasks 5–7.
 - [ ] 9. `loop/lib/specs.mjs` and `loop/lib/brief.mjs`: deleting pass 2b makes
       `specs.mjs:335`'s `truncated` flag true far more often, which changes the
       brief's "read the full files" guidance. Update that guidance to say what

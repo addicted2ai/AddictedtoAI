@@ -525,8 +525,13 @@ the constant, so the headline "~100,000 → ~30,000 characters" had no mechanism
 behind it and the only thing touching 30,000 was a Stage-2 gate that *measured*
 the claim it was supposed to enforce. The ceiling is restored to **24,000** — its
 value before the four raises — and the test asserts an **upper bound on the
-assembled brief** (a `repair` at most 30,000 characters against the live tree),
-not merely that budget went unspent. A rider no task covered: deleting pass 2b
+assembled brief** (a `repair` at most 30,000 characters against a pinned fixture
+corpus), not merely that budget went unspent. The bound is asserted on the
+fixture and never on the live tree, because the live brief's size moves with
+every change archived or opened (`addictedtoai-2sx8`): a live assertion would be
+the `pre-existing` red reintroduced as a unit test. The live size is measured
+and recorded (`brief_chars`), which is a report, not a guard — a distinction
+A2AI-Orch drew before the packet was written rather than after. A rider no task covered: deleting pass 2b
 makes `specs.mjs:335`'s `truncated` flag true far more often, which changes the
 brief's "read the full files" guidance, so a task covers that too.
 
