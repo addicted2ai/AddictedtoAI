@@ -659,7 +659,19 @@ export function assembleBrief(ctx, {
   // source count, and 14,000 measurably cut a normative requirement
   // mid-sentence for three job types on the live tree. 20,000 did not, for
   // any of them.
-  const ex = excerptsFor(ctx.repoRoot, job.type, { maxChars: BRIEF_EXCERPT_MAX_CHARS });
+  const subjects = Array.isArray(job.subjects)
+    ? job.subjects
+    : Array.isArray(job.declared_subjects)
+      ? job.declared_subjects
+      : Array.isArray(job.raw?.subjects)
+        ? job.raw.subjects
+        : Array.isArray(job.raw?.declared_subjects)
+          ? job.raw.declared_subjects
+          : [job.target, job.raw?.subject, job.id].filter(Boolean);
+  const ex = excerptsFor(ctx.repoRoot, job.type, {
+    maxChars: BRIEF_EXCERPT_MAX_CHARS,
+    subjects,
+  });
   const checks = acceptanceChecksFor(job.type);
   const prose = PROSE_TYPES.includes(job.type);
   // The scout's alone (beads addictedtoai-wg78). The rows exist to widen the

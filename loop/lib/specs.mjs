@@ -181,31 +181,45 @@ function chunkHeading(cap, src, superseded = 0) {
 }
 
 /**
- * A section too large for its share, cut — and SAYING SO, in the text.
+ * A section too large for the remaining total budget, cut — and SAYING SO, in
+ * the text.
  *
  * A requirement that stops mid-sentence with no marker is worse than one left
  * out: an executor reading a truncated SHALL has no way to know it is holding a
  * fragment, and the fragment looks complete. The marker names the file the rest
  * is in, which is in the worktree, so the brief stays self-contained.
  */
-function cutTo(section, share, path) {
+function cutNote(section, path) {
+  return (
+    `\n\n[... CUT: this requirement is ${section.text.length} characters and only the ` +
+    `remaining total excerpt budget was available. What you are reading is the opening ` +
+    `of it, not the whole rule. Read \`${path.replace(/\\/g, '/')}\` in this worktree ` +
+    `before acting on it. ...]`
+  );
+}
+
+function cutTo(section, budget, path) {
+  if (budget >= section.text.length) return section.text;
+  if (budget <= 0) return '';
+  const note = cutNote(section, path);
+  if (budget <= note.length) return note.slice(0, budget);
+  return section.text.slice(0, budget - note.length) + note;
+}
+
+function cutTail(section, budget, path) {
+  if (budget <= 0) return '';
   const note =
-    `\n\n[... CUT: this requirement is ${section.text.length} characters and the brief's ` +
-    `share for this file is ${share}. What you are reading is the opening of it, not the ` +
-    `whole rule. Read \`${path.replace(/\\/g, '/')}\` in this worktree before acting on it. ...]`;
-  const room = Math.max(0, share - note.length);
-  return section.text.slice(0, room) + note;
+    `\n\n[... CUT: the ordered excerpt ends before requirement ${JSON.stringify(section.heading)} ` +
+    `from \`${path.replace(/\\/g, '/')}\`. Read that file for the omitted text. ...]`;
+  return note.slice(0, budget);
 }
 
 /**
  * One source's sections, most relevant first.
  *
  * Ties break toward a `### Requirement:` section and away from the preamble.
- * That is not tidiness — it is the difference between quoting a rule and quoting
- * a note about the rule. Measured on the live tree: the `loop` delta's preamble
- * and its scout requirement both score 5 on the scout keywords, the preamble
- * comes first in the file, and under a document-order tie-break the preamble was
- * quoted while the requirement it describes was dropped for want of budget.
+ * The preamble is never a named requirement, so it is excluded before the
+ * ordered list is built even when it scores against a keyword.
  */
 function scoredSections(path, keywords) {
   return requirementSections(readFileSync(path, 'utf8'))
@@ -220,113 +234,174 @@ function scoredSections(path, keywords) {
     );
 }
 
+const KNOWN_CAPABILITIES = new Set(Object.values(SPECS_FOR_TYPE).flat());
+
+function capabilityFromSubject(subject) {
+  const raw = typeof subject === 'string'
+    ? subject
+    : subject?.capability ?? subject?.cap ?? subject?.path ?? subject?.subject;
+  if (typeof raw !== 'string') return null;
+  const normalized = raw.replace(/\\/g, '/').replace(/^\.?\//, '');
+  if (KNOWN_CAPABILITIES.has(normalized)) return normalized;
+  const match = /(?:^|\/)specs\/([^/]+)(?:\/|$)/.exec(normalized);
+  return match && KNOWN_CAPABILITIES.has(match[1]) ? match[1] : null;
+}
+
+function excerptOptions(subjectsOrOptions, maybeOptions) {
+  if (Array.isArray(subjectsOrOptions)) {
+    return { subjects: subjectsOrOptions, ...(maybeOptions ?? {}) };
+  }
+  return subjectsOrOptions && typeof subjectsOrOptions === 'object'
+    ? subjectsOrOptions
+    : {};
+}
+
+function floorMinimum(section, path) {
+  return Math.min(section.text.length, cutNote(section, path).length);
+}
+
 /**
- * Targeted excerpts for one job type, capped in total size.
+ * Targeted excerpts for one job type, capped by one total budget.
  *
- * `maxChars` is a per-capability excerpt budget. Pending amendments share the
- * capability's allocation rather than shrinking it as more changes open.
+ * The governing type's capabilities come first, followed by declared subject
+ * capabilities. Each source contributes its named requirement, with a pending
+ * amendment for that requirement immediately after its constitution.
+ * Constitution floors are reserved before amendments are admitted. There is
+ * no per-source allocation: the ordered list is cut at the tail by one cap.
  *
- * Pass 1 gives every source — every capability's constitution and every pending
- * amendment to it — an equal guaranteed share, and always quotes that source's
- * most relevant section even when that one section is larger than the share, in
- * which case it is cut to fit. Nothing is ever represented by silence.
- *
- * Pass 2a restores a cut requirement when spare capacity remains. No later
- * pass fills that capacity with unrelated keyword matches: the brief carries
- * named requirements and their pending amendments, and nothing else.
+ * `subjects` accepts capability names or specification paths. Stage 0 callers
+ * may pass an empty list; the later structured work-order field can pass its
+ * declared subject capabilities without changing this contract.
  *
  * @returns {{text: string, files: string[], truncated: boolean, chars: number}}
  */
-export function excerptsFor(repoRoot, type, { maxChars = 14000 } = {}) {
-  const caps = SPECS_FOR_TYPE[type] ?? ['review'];
+export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions = {}) {
+  const options = excerptOptions(subjectsOrOptions, maybeOptions);
+  const requestedMax = Number(options.maxChars ?? 14000);
+  const maxChars = Number.isFinite(requestedMax) ? Math.max(0, Math.floor(requestedMax)) : 14000;
+  const subjects = Array.isArray(options.subjects) ? options.subjects : [];
+  const governing = SPECS_FOR_TYPE[type] ?? ['review'];
+  const subjectCaps = subjects.map(capabilityFromSubject).filter(Boolean);
+  const caps = [...new Set([...governing, ...subjectCaps])];
   const keywords = TYPE_KEYWORDS[type] ?? [];
 
-  /** @type {{cap: string, src: object, scored: object[], picked: object[], used: number, cut: object|null, superseded: number}[]} */
+  /** @type {{cap: string, src: object, sections: object[], candidates: object[], superseded: number}[]} */
   const plan = [];
+  const allFiles = [];
   for (const cap of caps) {
     const sources = specSources(repoRoot, cap).map((src) => ({
       src,
-      scored: scoredSections(src.path, keywords),
+      sections: scoredSections(src.path, keywords),
     }));
-    // A `## MODIFIED Requirements` block restates the whole requirement, so the
-    // constitution's copy of an amended requirement is SUPERSEDED TEXT. Quoting
-    // both spends budget twice on one rule and — worse — hands the executor two
-    // versions of it with nothing but a heading to say which governs. The
-    // amendment's copy is the one kept; the omission is stated in the heading
-    // rather than done silently.
-    const amended = new Set();
-    for (const { src, scored } of sources) {
-      if (src.kind !== 'delta') continue;
-      for (const s of scored) if (s.heading !== '(preamble)') amended.add(s.heading);
-    }
-    for (const { src, scored } of sources) {
-      const kept = src.kind === 'spec' ? scored.filter((s) => !amended.has(s.heading)) : scored;
+    for (const { src } of sources) allFiles.push(src.path);
+
+    const constitution = sources.find(({ src }) => src.kind === 'spec');
+    const constitutionSections = constitution ? constitution.sections : [];
+    const named = constitutionSections.find((s) => s.score > 0 && s.heading !== '(preamble)') ?? null;
+    const namedHeadings = new Set(named ? [named.heading] : []);
+
+    if (constitution) {
       plan.push({
         cap,
-        src,
-        scored: kept,
-        superseded: scored.length - kept.length,
-        picked: [],
-        used: 0,
-        cut: null,
+        src: constitution.src,
+        sections: constitution.sections,
+        candidates: named ? [named] : [],
+        superseded: 0,
       });
     }
-  }
-  if (plan.length === 0) return { text: '', files: [], truncated: false, chars: 0 };
 
-  // Pass 1 — the guaranteed share.
-  const share = Math.floor(maxChars / caps.length);
+    for (const { src, sections } of sources) {
+      if (src.kind !== 'delta') continue;
+      const candidates = namedHeadings.size
+        ? sections.filter((s) => namedHeadings.has(s.heading)).slice(0, 1)
+        : sections.filter((s) => s.heading !== '(preamble)' && s.score > 0).slice(0, 1);
+      plan.push({ cap, src, sections, candidates, superseded: 0 });
+    }
+  }
+  if (plan.length === 0 || maxChars === 0) {
+    return { text: '', files: allFiles, truncated: plan.some((i) => i.candidates.length > 0), chars: 0 };
+  }
+
+  const floors = plan.flatMap((item) =>
+    item.src.kind === 'spec'
+      ? item.candidates.map((candidate) => ({ item, candidate }))
+      : [],
+  );
+  const floorMinimums = floors.map(({ item, candidate }) => floorMinimum(candidate, item.src.path));
+  let used = 0;
+  let floorIndex = 0;
+  let stopped = false;
+  const rendered = new Map();
+  const cutCandidates = new Set();
+
+  // Reserve every constitution floor before admitting any amendment. The
+  // final text is restored to capability order below, so allocation order and
+  // presentation order remain separate without weakening the floor.
+  for (const { item, candidate } of floors) {
+    const reserve = floorMinimums.slice(floorIndex + 1).reduce((n, value) => n + value, 0);
+    const budget = Math.min(candidate.text.length, Math.max(0, maxChars - used - reserve));
+    floorIndex += 1;
+    if (budget <= 0) continue;
+    const text = cutTo(candidate, budget, item.src.path);
+    rendered.set(candidate, text);
+    used += text.length;
+    if (text.length < candidate.text.length) cutCandidates.add(candidate);
+  }
+
+  // Amendments follow their own constitution in the presentation order, but
+  // are admitted only after every constitution floor has been reserved.
   for (const item of plan) {
-    for (const s of item.scored) {
-      if (s.score === 0 && item.picked.length > 0) continue;
-      if (item.picked.length === 0 && s.text.length > share) {
-        item.cut = s;
-        item.picked.push({ ...s, text: cutTo(s, share, item.src.path) });
-        item.used = share;
-        continue;
+    if (item.src.kind !== 'delta' || stopped) continue;
+    for (const candidate of item.candidates) {
+      const budget = maxChars - used;
+      if (budget <= 0) {
+        stopped = true;
+        break;
       }
-      if (item.used + s.text.length > share) continue;
-      item.picked.push(s);
-      item.used += s.text.length;
+      if (candidate.text.length > budget) {
+        const marker = cutTail(candidate, budget, item.src.path);
+        if (marker) {
+          rendered.set(candidate, marker);
+          used += marker.length;
+        }
+        stopped = true;
+        break;
+      }
+      const text = candidate.text;
+      rendered.set(candidate, text);
+      used += text.length;
     }
   }
 
-  let spare = maxChars - plan.reduce((n, i) => n + i.used, 0);
-
-  // Pass 2a — RESTORES, every one of them, before any source takes a second
-  // section. Finishing a requirement the executor will be judged against
-  // outranks quoting one more requirement it will not be. Deltas are restored
-  // first: an amendment is the text nothing else in the worktree points the
-  // executor at, and it is the half that was invisible before this repair.
-  const restoreOrder = [...plan].sort(
-    (a, b) => Number(a.src.kind !== 'delta') - Number(b.src.kind !== 'delta'),
-  );
-  for (const item of restoreOrder) {
-    if (!item.cut) continue;
-    const cost = item.cut.text.length - item.picked[0].text.length;
-    if (cost > spare) continue;
-    item.picked[0] = item.cut;
-    item.used += cost;
-    spare -= cost;
-    item.cut = null;
-  }
-
-  // "Truncated" means RELEVANT MATERIAL WAS LEFT OUT — a section still cut, or
-  // a keyword-matching section never quoted. It drives the brief's guidance to
-  // read the full files, so it must not be set by a spec merely being long.
-  const truncated = plan.some(
-    (i) => i.cut !== null || i.scored.some((s) => s.score > 0 && !i.picked.includes(s)),
-  );
+  // "Truncated" means named material was cut or another matching section was
+  // left out. It drives the brief's instruction to read the full files; a
+  // zero-score section is not relevant material and is deliberately ignored.
+  const truncated =
+    stopped ||
+    cutCandidates.size > 0 ||
+    plan.some(
+      (item) =>
+        item.candidates.some((candidate) => !rendered.has(candidate)) ||
+        item.sections.some(
+          (section) =>
+            section.heading !== '(preamble)' &&
+            section.score > 0 &&
+            !item.candidates.includes(section),
+        ),
+    );
 
   return {
     text: plan
-      .map(
-        (i) =>
-          `${chunkHeading(i.cap, i.src, i.superseded)}\n\n${i.picked.map((s) => s.text).join('\n\n')}`,
-      )
+      .map((item) => {
+        const picked = item.candidates.filter((candidate) => rendered.has(candidate));
+        return picked.length
+          ? `${chunkHeading(item.cap, item.src, item.superseded)}\n\n${picked.map((candidate) => rendered.get(candidate)).join('\n\n')}`
+          : null;
+      })
+      .filter(Boolean)
       .join('\n\n---\n\n'),
-    files: plan.map((i) => i.src.path),
+    files: allFiles,
     truncated,
-    chars: plan.reduce((n, i) => n + i.used, 0),
+    chars: used,
   };
 }
