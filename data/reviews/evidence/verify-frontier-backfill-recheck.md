@@ -154,8 +154,9 @@ add to its stated reasons:
 
 Two assignments, `video` and `coding`, both the post's own subject rather than
 a mention inside it. Four flags carry none, and absence is K38's unmarked
-"general". I re-tested the one near-miss the first pass named: both Astra posts
-describe a model acting "without a person guiding each step", which reads
+"general". I re-tested the one near-miss the first pass named:
+`content/blog/openai-astra-critical-designation.md` describes a model acting
+"without a person guiding each step", which reads
 towards `agents`, and `lib/domains.mjs` forbids exactly that — "**Declared,
 never inferred.** No heuristic over a title, body, aliases or URL may assign a
 domain". Their published capability claims are cyber evaluations, and
