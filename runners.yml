@@ -244,7 +244,12 @@ runners:
     provider: openai
     tier: cheap
     roles: [author]
-    job_types: [interpret, verify, entry, tutorial, education, repair, prune, machinery]
+    # Narrowed 2026-09-08 (two-desks-work-orders-and-trains, task 19): the
+    # maintainer's rule is medium effort for basic work and max for complex and
+    # review work, and the ledger's first-pass revise rate by type supports the
+    # cheap rung for repair (n=19) only; interpret rides along at n=1 until ten
+    # jobs say otherwise. Everything else starts on the max entry.
+    job_types: [repair, interpret]
     model: gpt-5.6-luna
     harness: codex-cli
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="medium" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
