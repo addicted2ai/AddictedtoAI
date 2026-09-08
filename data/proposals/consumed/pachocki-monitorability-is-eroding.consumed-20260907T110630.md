@@ -112,8 +112,8 @@ depend on the essay: the system card is on a different host, it returns 200, and
 it is where the measurement lives. The essay is the occasion; the card is the
 evidence.
 
-This is the concrete case for the deferred work already recorded at
-`data/proposals/dropped/primary-source-fetch-route-for-blocked-vendor-pages.md`.
+This is the concrete case for the live proposal already recorded at
+`data/proposals/primary-source-fetch-route-for-blocked-vendor-pages.md`.
 
 ## What this is not, and why it carries no `frontier` flag
 
