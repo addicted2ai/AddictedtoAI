@@ -126,8 +126,35 @@
  * The Desk is the undeclared caller, and it loses nothing — `loop/run.mjs`
  * commits its own records by exact path before it ever calls this step.
  *
- * Nothing here removes `HOLD.md`. Clearing a hold is the maintainer's, and
- * removing the file is itself a reserved-path violation (specs/loop).
+ * Nothing here removes `HOLD.md`, and nothing here may. The rule this used to
+ * state was the OLD one, and it misquoted the spec it cited: specs/loop reserves
+ * "removal of `HOLD.md` BY THE LOOP ITSELF" and says "the loop MUST NOT remove
+ * either" — a prohibition on THE ACTOR, not on the act. Clearing a diagnosed and
+ * repaired halt is the ORCHESTRATOR'S, between runs, on standing authority
+ * (CLAUDE.md; maintainer 2026-09-07: "The orchestrator can remove HOLD.md, not
+ * STOP - that is mine unless I say otherwise"). `STOP` is his alone.
+ *
+ * The correction is worth its length because the stale form has cost real time
+ * three times: three hours of Desk idle on a halt whose cause had already
+ * cleared, because a written sentence was allowed to outrank what the maintainer
+ * had said in session; then the same sentence in AGENTS.md; then here.
+ *
+ * `HOLD.md` DOES DOUBLE DUTY, AND THE SECOND JOB IS INVISIBLE FROM THE SITE THAT
+ * WRITES IT. It is the Desk's breaker, and it is ALSO this module's publish gate
+ * — phase 2 is suspended entirely while the file exists. Two consequences,
+ * neither of them visible where the decision to write or clear it is made:
+ *
+ *   - REMOVING `HOLD.md` RE-ARMS PUBLISHING. Clearing a hold is a publishing act
+ *     as well as a breaker reset, so the push bar applies to it: the gates pass.
+ *     Diagnose, fix the cause, record it, THEN remove — and know that the next
+ *     run may publish because you did.
+ *   - A GUARDRAIL THAT ALSO GATES SOMETHING ELSE CANNOT BE RELAXED FOR ONE OF
+ *     ITS TWO JOBS. Suppressing the halt for a case that does not deserve one —
+ *     a build that never ran because it could not take the lock — also removes
+ *     the publish gate, and the merged commit reaches the remote with no verified
+ *     build. Measured on addictedtoai-gates round 4; carried by addictedtoai-ml25,
+ *     which needs a THIRD state that does not exist today: not red, not green,
+ *     but "the build did not run" — do not count it, do not halt, DO NOT PUBLISH.
  */
 
 import { execFileSync } from 'node:child_process';
