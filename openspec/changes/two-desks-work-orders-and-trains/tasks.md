@@ -21,26 +21,49 @@ the orchestrator's work between runs.
 ### The gate floor and the launch build
 
 - [ ] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived
-      from a recorded calibration of that gate's runtime on this repository with a
-      stated margin and the date it was taken; `runGates` fails the stage when a
-      gate returns below its floor, naming the gate and the observed duration.
-      Invoke npm scripts through `cmd.exe /c`, never `shell: true`. Implements:
-      *A job's gates are a tripwire; the full set runs once, on the train*, the
-      floor bullets.
+      from a recorded calibration of the gate's **smallest legitimate invocation**
+      on this repository — the spawn cost of reaching the script at all — set
+      with a stated margin below that minimum and above the ~1 ms null-status
+      failure, and recorded with its date. NOT a fraction of the gate's full
+      runtime (corrected 2026-09-08 from packet A's first tip, found by A2AI-Orch):
+      that put verify-design's floor at 35.7 ms and test's at 314.8 ms, while a
+      bare `node` child measured min 61.6 ms / median 67.7 ms and
+      `cmd.exe /c npm run <script>` min 553.5 ms / median 588.1 ms here (7 runs
+      each) and a bare spawn on Linux is commonly 25–40 ms — so the fixture trees
+      in `loop/tests/job-gate-set.test.mjs`, whose gates are `node --version`,
+      would false-fail on faster hardware, and load makes children slower, so the
+      false failure arrives on the FAST machine. One flat number of the order of
+      10 ms satisfies this when every gate's declaration cites the calibration.
+      `runGates` fails the stage when a gate returns below its floor, naming the
+      gate and the observed duration. Invoke npm scripts through `cmd.exe /c`,
+      never `shell: true`. Implements: *A job's gates are a tripwire; the full
+      set runs once, on the train*, the floor bullets.
 - [ ] 2. `loop/tests/gates.test.mjs`: a fake gate returning exit 0, no output, in
       2 ms fails the stage naming the floor; a real gate above its floor passes.
       **Mutation**: delete the floor comparison and confirm the 2 ms case passes
       while the real case still passes — if both stay green the test measures
       nothing. Restore and verify byte-identical by hash. Tests task 1.
 - [ ] 3. `scripts/verify-launch.mjs`: reuse an existing build of the tree under
-      check instead of spawning its own when one is present and current; keep
-      spawning one when it is not. The timer at `:832` and the report at `:847`
+      check instead of spawning its own when one is present, current **and
+      recorded as having succeeded**; keep spawning one when it is not. The
+      success record is written by the spawner: both `verify-launch`'s own build
+      and the build gate in `loop/lib/gates.mjs` remove any earlier record before
+      spawning and write `out/.build-stamp.json` (commit, dirty flag, local time,
+      `ok: true`) only on a zero exit, and `hasCurrentBuild` requires the record
+      as well as the timestamps — a failed export leaves `out/` newer than the
+      sources, so "newer than every source" reports BUILD PASS on a failed build
+      (found by A2AI-Orch on packet A's first tip, 2026-09-08). No `package.json`
+      edit and no prebuild step: prebuild runs before `next build` and cannot
+      know whether it succeeded. The timer at `:832` and the report at `:847`
       then report the reuse. Implements the same requirement's reuse bullet.
-- [ ] 4. `scripts/tests/verify-launch.test.mjs`: with a present build the run
-      **spawns no build process** — asserted on the spawn, not only on the branch —
-      and reports reuse; with none it builds. **Mutation**: make the presence check
-      always return false and confirm the reuse case fails while the build case
-      still passes. Tests task 3.
+- [ ] 4. `scripts/tests/verify-launch.test.mjs`: with a present, recorded build the
+      run **spawns no build process** — asserted on the spawn, not only on the
+      branch — and reports reuse; with none it builds; with an export newer than
+      every source but **no success record, or a record naming another commit,**
+      it builds. **Mutation A**: make the presence check always return false and
+      confirm the reuse case fails while the build case still passes.
+      **Mutation B**: make the record check always return true and confirm the
+      no-record case fails while the reuse case still passes. Tests task 3.
 
 ### The brief diet
 
@@ -48,16 +71,26 @@ the orchestrator's work between runs.
       requirements the governing type and the declared subjects name plus the
       pending-amendment deltas for those requirements only. Implements: *The brief
       carries the requirements the work order names, and nothing else*, bullet 1.
-- [ ] 6. `loop/lib/config.mjs`: the per-source excerpt budget stops dividing across
-      unarchived changes. Implements the same requirement's bullet 2.
+- [ ] 6. `loop/lib/specs.mjs` (`:281`, `share = Math.floor(maxChars / plan.length)`,
+      where `plan` holds one entry per source and `specSources` yields the
+      constitution plus one delta per unarchived change): the per-source excerpt
+      budget stops dividing across unarchived changes. `loop/lib/config.mjs`
+      holds only the constant and its rationale; the division was never there
+      (anchor corrected 2026-09-08 against the tree). Implements the same
+      requirement's bullet 2.
 - [ ] 7. `loop/lib/config.mjs`: **lower `BRIEF_EXCERPT_MAX_CHARS` from 88,000 to
       24,000**, its value before the four raises. Deleting pass 2b removes
       saturation; it does not lower a ceiling, and a ceiling four times the size of
-      the material below it bounds nothing. Implements the same requirement's
-      ceiling bullet.
-- [ ] 8. `loop/tests/specs.test.mjs`: a PINNED fixture corpus with three unarchived
-      changes and a `repair` type produces the same excerpt set as one with zero,
-      **and the assembled brief against that fixture is at most 30,000
+      the material below it bounds nothing. The equality assertion at
+      `loop/tests/brief-excerpt-budget.test.mjs:133` moves to the new value and
+      that file's header comment gains a dated line for this fifth move, down,
+      keeping the four earlier re-measurements as history. Implements the same
+      requirement's ceiling bullet.
+- [ ] 8. `loop/tests/brief-excerpt-budget.test.mjs` (extended — it is the one file
+      that owns the ceiling's assertions and its header is the constant's
+      history; no new `specs.test.mjs`): a PINNED fixture corpus with three
+      unarchived changes and a `repair` type produces the same excerpt set as one
+      with zero, **and the assembled brief against that fixture is at most 30,000
       characters** — an upper bound on the artifact, not merely unspent budget.
       The bound is asserted on the fixture, never on the live tree: the live
       brief's size moves with every change archived or opened
@@ -65,6 +98,13 @@ the orchestrator's work between runs.
       touched nothing near it — the `pre-existing` class reintroduced as a unit
       test. The live tree's assembled size is MEASURED and printed by the test
       run, and recorded as `brief_chars` on the ledger (task 25), never asserted.
+      The file's live-tree no-cut test (`:143`, "no job type's assembled brief
+      cuts a requirement mid-sentence today") is the same time-dependent class:
+      it becomes an assertion on the pinned fixture for every job type, and the
+      live tree is measured and printed per type (largest brief, any cut, which
+      type). A live cut at the new settings is a finding reported with its
+      numbers in RESULT.md; it is never repaired by raising the ceiling, because
+      the requirement sets the ceiling from what the named requirements cost.
       **Mutation A**: restore pass 2b and confirm the size assertion fails while
       the excerpt-set assertion still passes. **Mutation B**: restore the ceiling
       to 88,000 and confirm the size assertion fails. Tests tasks 5–7.

@@ -438,18 +438,28 @@ The mechanical gates are split by what each one can catch and what it costs.
   path it runs at all.
 - `verify-launch` SHALL reuse an existing build of the tree it is checking rather
   than building its own copy, wherever a build of that exact tree is already
-  present. Its own build accounts for the overwhelming majority of its runtime,
-  and rebuilding a tree that has just been built measures nothing new.
+  present **and recorded as having succeeded**. Whichever caller spawns a build
+  SHALL remove any earlier success record before spawning and SHALL write one
+  only on a zero exit, naming the commit and whether the tree was dirty; an
+  export newer than every source that carries no such record SHALL NOT count as
+  present, because a build that fails during export leaves a fresh `out/`
+  behind it and timestamps alone cannot tell a passed build from a failed one.
+  Its own build accounts for the overwhelming majority of its runtime, and
+  rebuilding a tree that has just been built measures nothing new.
 - **A gate that returns faster than any real run of it could SHALL be treated as
   not having run**, and SHALL fail the stage rather than pass it. A gate runner
   that reports success without executing is indistinguishable from a green gate,
   and it is reachable on this platform: a `spawnSync` of a `.cmd` shim without a
   shell returns a null status, no output and no error in about a millisecond.
   Each gate SHALL declare a floor duration and the runner SHALL enforce it. Each
-  floor SHALL be **derived from a recorded calibration** — the gate's own measured
-  runtime on this repository, with a stated margin — and SHALL be recorded with
-  the date it was taken, so that a floor is a measurement rather than a guess and
-  a machine that gets faster does not turn the check into a false failure.
+  floor SHALL be **derived from a recorded calibration** — the measured cost of
+  the gate's smallest legitimate invocation on this repository, a spawn that
+  reaches the script at all, and not the gate's full runtime — set with a stated
+  margin below that minimum and above the millisecond failure, and SHALL be
+  recorded with the date it was taken, so that a floor is a measurement rather
+  than a guess, a machine that gets faster does not turn the check into a false
+  failure, and a fixture tree whose gates are trivial scripts passes the same
+  floors as the repository does.
 - The loop SHALL record **each gate's wall-clock seconds** on the ledger line of
   the run that ran it — per job for the tripwire, per train for the full set — so
   that any claim about what the split saves is answerable from the repository
