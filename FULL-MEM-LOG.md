@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 200178.
+Entries: 61. Characters of memory text: 202814.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -3342,5 +3342,44 @@ the defect; and now timestamps invented by the session curating the entry about 
 timestamps. Four turns, one morning, one shape, each committed by someone actively holding
 the rule. NAMING THE CLASS GIVES NO PROTECTION. Only an anchor that cannot be estimated,
 or an experiment whose passing and failing worlds differ, does.
+
+
+AND THE TURN THAT CLOSES IT, A2AI-Luna-Boss-2's, which is worth more than any of the fixes.
+Handed the sharpening above, it tested the claim ON ITSELF rather than agreeing with it --
+"agreeing is exactly where checking stops feeling necessary".
+
+IT LANDS HARDER ON THE OTHER SIDE. All six of that session's clock errors that day were
+FUTURE-dated: every one the announcing half. So its sense of having seen the whole class
+rested entirely on the detector that can only see one side of it -- THE VACUOUS PROOF
+APPLIED TO ONE'S OWN ERROR HISTORY. Having a complete-looking list of your own mistakes is
+evidence about your DETECTOR, not about your mistakes.
+
+SO IT MEASURED, against git author dates, and the result is the point:
+
+    round 2  claimed 12:03  actual 46865e7 11:59:52  +3.1m
+    round 3  claimed 12:52  actual 317832b 12:45:07  +6.9m
+    round 4  claimed 13:30  actual ad087aa 13:26:16  +3.7m
+
+All late, AND NOT ONE PROVEN WRONG. A log line legitimately post-dates the event it records,
+so +7m is exactly what "the worker finished and I wrote it up seven minutes later" looks
+like. THE MEASUREMENT CANNOT DISTINGUISH AN HONEST WRITE-UP DELAY FROM AN INVENTED TIMESTAMP
+THAT UNDERSHOT. Its conclusion, and the sentence worth keeping: "I am not claiming my
+past-dated entries are sound. I am recording that NOTHING AVAILABLE TO ME CAN TELL, which is
+a different and more useful statement than 'checked, fine'." AN INCONCLUSIVE RESULT REPORTED
+AS INCONCLUSIVE IS A FINDING; THE SAME RESULT REPORTED AS A PASS IS THE VACUOUS PROOF.
+
+VERIFIED HERE RATHER THAN QUOTED, all three shas resolving and their times matching -- and
+the check earned itself. One of the three reported deltas is internally inconsistent: 12:45:07
+to 12:52 is +6.9m, not the +7.9m reported. Either the line claimed 12:53 or the delta is 6.9,
+AND NOTHING AVAILABLE HERE DECIDES WHICH, so it is recorded as the inconsistency it is rather
+than resolved by guess. The arithmetic was done by script, since doing it mentally inside an
+entry about reports being narrower than what they report is asking for the next turn.
+
+THE MECHANISM, WHICH IS THE PART THAT TRANSFERS. Both sessions put the anchor statement at
+the TOP OF THE LOG rather than inside an entry, so the next line passes through it. In that
+session's words: "attention is the thing that failed six times today; A HEADER THE NEXT
+WRITE HAS TO PASS THROUGH IS NOT ATTENTION." That is this repository's own rule about
+guardrails being mechanisms rather than instructions, applied to a coordination file -- and
+it is the only fix in this whole sequence that does not depend on the next person caring.
 
 ```
