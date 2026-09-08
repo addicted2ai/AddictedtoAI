@@ -374,15 +374,25 @@ the orchestrator's work between runs.
 ### The ledger fields, and the baseline
 
 - [ ] 25. `loop/lib/ledger.mjs`: every phase entry records the runner and the effort
-      it ran at; every line records `brief_chars`, a `gate_seconds` map, and the
-      count of findings each review carried. All additive; `LEDGER_FIELDS` not
-      extended. Implements: *The ledger line carries the join, as a list,
+      it ran at; every line records `brief_chars`, a `gate_seconds` map, the
+      count of findings each review carried, and **`authority_sha`** — the commit
+      the brief was assembled against (main at brief time; for work on this
+      change, the commit of its artifacts) — so that "was this work judged
+      against the standard it was built against" is answerable from the ledger
+      rather than from a coordinator's write-up (added 2026-09-08 after tasks
+      1–4 moved four times in fifteen minutes under one brief, two versions
+      specifying opposite floor designs; proposed by A2AI-Luna-Boss-2, mechanism
+      from the `specgraph-origin` session; buys auditability, not prevention —
+      re-reading the committed blob at dispatch stays the habit). Until Stage 3
+      retires the fleet, a fleet round carries the same fact as a line in
+      RESULT.md and the handover, `authority: <change>@<sha>`. All additive;
+      `LEDGER_FIELDS` not extended. Implements: *The ledger line carries the join, as a list,
       additively*, the measurement bullet, and *Runner selection is a declared
       policy*, bullet 4, and *A reviewer's non-blocking finding…*, the ledger
       bullet.
 - [ ] 26. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
-      `brief_chars`, `gate_seconds` and a carried-entry count; a pre-existing line
-      without any of them still validates. **Mutation**: extend `LEDGER_FIELDS` to
+      `brief_chars`, `gate_seconds`, a carried-entry count and `authority_sha`; a
+      pre-existing line without any of them still validates. **Mutation**: extend `LEDGER_FIELDS` to
       require `gate_seconds` and confirm the old-line test fails — the additive
       property is the thing under test. Tests task 25.
 - [ ] 27. `loop/lib/git.mjs:116`: `worktree remove --force` becomes a removal that
