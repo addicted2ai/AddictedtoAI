@@ -48,7 +48,7 @@ job that picks it up.
 
 - **openai.com becoming fetchable from this environment.** That is the single
   blocker, and it is now recorded twice in one sweep, which is itself the
-  argument for the deferred work at
+  argument for the live proposal at
   `data/proposals/primary-source-fetch-route-for-blocked-vendor-pages.md`.
 - Any figure from the post being reproduced with attribution by an outlet this
   environment can reach — the same route the Pachocki candidate uses for its
