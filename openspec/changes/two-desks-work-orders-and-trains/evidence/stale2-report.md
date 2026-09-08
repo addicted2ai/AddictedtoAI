@@ -80,3 +80,13 @@ one sub-item already fixed by a named commit (`ckn` item 1 — no commit hash fo
 confirmed only by content; `4wm` item 2 — no commit hash cited in the bead;
 `bc0` item 4 — commit `752f2f2`) while the rest of the same bead's claim still
 stands, so none of the four bead IDs itself is ready to close.
+
+## Correction, 2026-09-08 (architect)
+
+The table above has 21 rows and the totals above account for 20: addictedtoai-4w2
+(2026-08-30, production /status.json reports dirty:true) is listed STILL-VALID in
+the table and omitted from the totals. Corrected totals: STILL-VALID 17, PARTIAL 4,
+FIXED 0, MOOT 0, CANNOT-TELL 0, over 21 beads. With stale-report.md (27 beads: 25
+valid, 1 partial, 1 fixed), the checked opening cohort is 48 beads: 42 still valid,
+5 partial, 1 fixed (en3s, since closed) — 47 still open at the time of the check.
+Found by the round-2 sealed Luna review (evidence/reviews/round2-sealed-luna-max.md).

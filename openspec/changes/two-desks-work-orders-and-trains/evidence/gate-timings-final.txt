@@ -1,0 +1,21 @@
+SIX-GATE PUSH-BAR TABLE, serial, on main at 78c6361, publishing off, 2026-09-08 (A2AI-Orch)
+
+This file combines gate-timings.txt (the first pass, in which npm test and
+npm run build exited null at 0.0s because spawnSync with npm.cmd and
+shell:false does not execute on Node 24 — kept as the record of that trap)
+with gate-timings-npm.txt (the two npm gates re-run through cmd.exe /c).
+
+gate                exit      secs    share
+npm test              0     314.8    70.7%    1709 tests, 1709 pass, 0 fail, 298,091 ms, 122 files (parsed on a later run)
+verify-launch         0      39.6     8.9%    of which its own build is 39s (verify-launch.mjs:832 starts the timer before the build spawn; :847 reports that span)
+verify-design         0      35.7     8.0%    Playwright
+npm run build         0      29.2     6.6%    standalone; differs from the 39s build inside verify-launch and is not the same figure
+verify-analytics      0      19.5     4.4%    EXCLUDES server start: port 3000 was already served by a serve-static.mjs from 2026-08-29
+verify-surfaces       0       3.7     0.8%
+TOTAL                       442.5   = 7m22s
+
+A Desk job runs four of the six (test, build, verify-surfaces, verify-design)
+plus a post-merge build; verify-launch and verify-analytics are push-bar gates
+that no job runs. The suite is already parallel (summed per-test time 1,380s
+against 298s wall, about 4.6x); the twelve slowest tests are Desk-machinery
+integration tests.
