@@ -1555,6 +1555,15 @@ re-deriving packet B against the tree before briefing it, A2AI-mem-cond
 reproducing the runner figures from the ledger. Applied to the loop delta and
 tasks.md at `74a306d` and `6a8adba` and the commit carrying this record.
 
+**Packet A round 1 — authority: two-desks-work-orders-and-trains@`650ad91`**
+(retrofitted 2026-09-08 under task 25's `authority_sha` rule: the worker's and
+reviewer's worktree carried tasks.md and the loop delta at `650ad91`, the
+branch point of `f9bf386`; Luna-Boss-2 verified the seal by grepping REVIEW.md
+for phrases that exist only in later commits — "smallest legitimate invocation",
+"build-stamp" — and found none, so round 1 was authored and judged against the
+pre-amendment text, and every finding below was NEW SCOPE to that round, not an
+author defect).
+
 **Packet A: three findings from A2AI-Orch, each verified before adoption.**
 (1) `hasCurrentBuild` inferred build success from timestamps. `next build`
 writes `out/` near the end, so a failure during export leaves `out/` newer than
@@ -1674,7 +1683,12 @@ own first row). Recorded here because every Stage 0 handover runs through it.
 **Source: packet A's second sealed review (codex Luna max, 19.3 min, seal held
 mechanically) on `46865e7`, handed over by A2AI-Luna-Boss-2 shortly before
 12:25 local on 2026-09-08 (the clock read at this commit; an earlier draft of
-this line guessed 12:05); verdict revise, three small items.** The freeze on tasks
+this line guessed 12:05); verdict revise, three small items.** Authority:
+two-desks-work-orders-and-trains@`40a5795` (retrofitted: the brief was re-read
+from that blob at dispatch, and one command line in it still named `6a8adba`,
+which the author noticed and overrode in favour of the committed text, see the
+coordinator's own miss below). Round 3's authority is `160f1c2`, carried in its
+handover as the first line from now on. The freeze on tasks
 1–4 held for the whole run, so every finding is Column 1 — found in review on
 work authored against a fixed standard; the author closed four of the five
 defects Luna-Boss-2 pre-registered before the commit existed, including mutation
