@@ -25,6 +25,7 @@ import { companionKeyForRow, sortedSources, splitProviderField } from './registr
 // never matches. `pulse/lib/` already imports from `../../lib/`
 // (`pulse/lib/indexnow.mjs`), so one home is reachable from both sides.
 import { KIND } from '../../lib/change-kinds.mjs';
+import { deriveBatchPricing } from './batch-pricing.mjs';
 
 /** `anthropic/claude-opus-5` -> `anthropic`. Null when the id carries no prefix. */
 export function providerOf(rowId) {
@@ -273,6 +274,8 @@ export function deriveDataLayer(root, registry, corpus) {
     changed_30d: changed30,
     generated_on: today(),
   });
+
+  deriveBatchPricing(root);
 
   return {
     catalog_rows: rows.length,
