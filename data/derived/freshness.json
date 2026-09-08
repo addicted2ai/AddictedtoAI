@@ -99,7 +99,7 @@
   ],
   "date": "2026-09-08",
   "link_check": {
-    "checked": 1,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 9,
     "drifted": 0,
