@@ -10,9 +10,176 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, symlinkSync, unlinkSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  symlinkSync,
+  unlinkSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { freemem } from 'node:os';
-import { join } from 'node:path';
+import { performance } from 'node:perf_hooks';
+import { join, resolve } from 'node:path';
+
+import { ROOT } from '../../lib/paths.mjs';
+
+/*
+ * These are recorded calibrations, not guessed timeouts. Each figure rests on
+ * one serial run on this machine on the local date below, preserved in the
+ * evidence basenames named by each declaration. The npm values use the
+ * corrected cmd.exe /c run; the earlier null-status, 0.0s rows were not
+ * legitimate invocations. verify-analytics excludes server startup because
+ * its calibration already had the server running.
+ *
+ * The 25% floor is deliberately generous while every calibration has only one
+ * observation. It is pending a distribution, not justified by a variance that
+ * has not been measured. The floor is a tripwire for a successful no-op, not a
+ * performance budget. The build currently has no recorded warm-cache run, so
+ * its floor uses the cold calibration until one exists.
+ */
+const REPOSITORY_FLOOR_FRACTION = 0.25;
+export const MIN_GATE_FLOOR_MS = 1;
+const CALIBRATION_DATE = '2026-09-08';
+const CALIBRATION_RUN_COUNT = 1;
+
+function calibratedFloor(calibrationSeconds, source, note) {
+  return Object.freeze({
+    calibrationSeconds,
+    floorMs: Math.round(calibrationSeconds * 1000 * REPOSITORY_FLOOR_FRACTION),
+    floorFraction: REPOSITORY_FLOOR_FRACTION,
+    calibratedOn: CALIBRATION_DATE,
+    calibrationRuns: CALIBRATION_RUN_COUNT,
+    calibrationMethod: 'one serial wall-clock invocation of the gate',
+    source,
+    ...(note ? { note } : {}),
+  });
+}
+
+export const GATE_FLOORS = Object.freeze({
+  test: calibratedFloor(314.8, 'gate-timings-final.txt'),
+  build: calibratedFloor(
+    29.2,
+    'gate-timings-npm.txt',
+    'cold calibration; no warm-cache run was recorded',
+  ),
+  'verify-surfaces': calibratedFloor(3.7, 'gate-timings-final.txt'),
+  'verify-design': calibratedFloor(35.7, 'gate-timings-final.txt'),
+  'verify-launch': calibratedFloor(39.6, 'gate-timings-final.txt', 'includes its recorded 39s build'),
+  'verify-analytics': calibratedFloor(
+    19.5,
+    'gate-timings-final.txt',
+    'calibration excludes server startup; port 3000 was already served',
+  ),
+});
+
+/**
+ * A throwaway tree's gates are deliberately trivial (for example,
+ * `node --version`). Its floor is the millisecond tripwire, not a repository
+ * runtime borrowed from the real tree. Production contexts default to
+ * GATE_FLOORS; callers with another tree can pass an explicit floorSet.
+ */
+export const FIXTURE_FLOORS = Object.freeze(
+  Object.fromEntries(
+    Object.keys(GATE_FLOORS).map((name) => [
+      name,
+      Object.freeze({
+        floorMs: MIN_GATE_FLOOR_MS,
+        floorFraction: null,
+        calibratedOn: CALIBRATION_DATE,
+        calibrationRuns: 7,
+        calibrationMethod: 'seven serial child-process startup measurements',
+        source: 'node --version and npm startup measurements',
+      }),
+    ]),
+  ),
+);
+
+function floorMs(floor) {
+  return typeof floor === 'number' ? floor : floor?.floorMs;
+}
+
+/** Refuse a custom floor that opens the same hole as a successful no-op. */
+export function validateFloorSet(floors) {
+  if (!floors || typeof floors !== 'object') {
+    throw new TypeError('gate floor set must be an object');
+  }
+  for (const [name, floor] of Object.entries(floors)) {
+    const value = floorMs(floor);
+    if (!Number.isFinite(value)) {
+      throw new TypeError(`gate floor for ${name} must have a finite floorMs`);
+    }
+    if (value < MIN_GATE_FLOOR_MS) {
+      throw new RangeError(
+        `gate floor for ${name} is ${value}ms, below the ${MIN_GATE_FLOOR_MS}ms tripwire minimum`,
+      );
+    }
+  }
+  return floors;
+}
+
+function localTime(date = new Date()) {
+  const pad = (n, width = 2) => String(n).padStart(width, '0');
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absolute = Math.abs(offsetMinutes);
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
+    `${pad(date.getMilliseconds(), 3)}${sign}${pad(Math.floor(absolute / 60))}:` +
+    `${pad(absolute % 60)}`;
+}
+
+const BUILD_OUTPUT_DIR = 'out';
+const BUILD_SUCCESS_RECORD = '.build-stamp.json';
+const BUILD_STATUS_FILE = 'status.json';
+
+function buildRecordPath(worktree) {
+  return join(worktree, BUILD_OUTPUT_DIR, BUILD_SUCCESS_RECORD);
+}
+
+function removeBuildSuccessRecord(worktree) {
+  rmSync(buildRecordPath(worktree), { force: true });
+}
+
+/** Copy the prebuild-produced stamp; do not call buildStamp() here. */
+export function writeBuildSuccessRecord(worktree, result, date = new Date()) {
+  if (result?.script !== 'build' || result.ok !== true) return false;
+  const statusPath = join(worktree, BUILD_OUTPUT_DIR, BUILD_STATUS_FILE);
+  let status;
+  try {
+    status = JSON.parse(readFileSync(statusPath, 'utf8'));
+  } catch {
+    return false;
+  }
+  if (!status || typeof status !== 'object' || Array.isArray(status) ||
+      typeof status.commit !== 'string' || typeof status.dirty !== 'boolean') {
+    return false;
+  }
+  try {
+    writeFileSync(
+      buildRecordPath(worktree),
+      `${JSON.stringify({ ok: true, local_time: localTime(date), status }, null, 2)}\n`,
+      'utf8',
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const defaultClock = () => performance.now();
+
+function formatDuration(durationMs) {
+  return `${Number(durationMs).toFixed(1)}ms`;
+}
+
+function npmInvocation(script) {
+  if (process.platform === 'win32') {
+    return { command: 'cmd.exe', args: ['/d', '/s', '/c', `npm run ${script}`] };
+  }
+  return { command: 'npm', args: ['run', script] };
+}
 
 /**
  * THE MARKER A GATE FAILURE CARRIES WHEN THE MACHINE, NOT THE DIFF, FAILED.
@@ -185,13 +352,42 @@ export function gateCommandForName(name) {
   return node ? `node ${node.file}` : `npm run ${name}`;
 }
 
+export function enforceGateFloor(result, floors) {
+  const floor = floors[result.script];
+  if (!Number.isFinite(result.durationMs)) return result;
+
+  if (!floor) {
+    return {
+      ...result,
+      ok: false,
+      floorFailure: true,
+      output: `gate ${result.script} has no declared calibration floor, so it cannot pass.\n` +
+        (result.output ?? ''),
+    };
+  }
+
+  const withFloor = { ...result, floorMs: floorMs(floor) };
+  if (!result.ok || result.durationMs >= floorMs(floor)) return withFloor;
+
+  return {
+    ...withFloor,
+    ok: false,
+    floorFailure: true,
+    output: `gate ${result.script} returned below its declared floor: observed ` +
+      `${formatDuration(result.durationMs)}, floor ${formatDuration(floorMs(floor))}.\n` +
+      (result.output ?? ''),
+  };
+}
+
 export function gateFailureNote(result = {}, { retried = false } = {}) {
   const failed = (result.results ?? []).filter((r) => !r.ok);
   const which = failed.length
     ? failed
         .map((r) => {
           const timedOut = r.errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(r.error ?? '');
-          const ending = r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
+          const ending = r.floorFailure
+            ? `below floor: observed ${formatDuration(r.durationMs)} < ${formatDuration(r.floorMs)}`
+            : r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
           return `${gateCommand(r)} (${ending})`;
         })
         .join(', ')
@@ -259,16 +455,18 @@ function hasScript(worktree, name) {
   }
 }
 
-function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync) {
-  const r = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
+function npmRun(worktree, script, timeoutMs, env, floors, spawn = spawnSync, now = defaultClock) {
+  const invocation = npmInvocation(script);
+  if (script === 'build') removeBuildSuccessRecord(worktree);
+  const started = now();
+  const r = spawn(invocation.command, invocation.args, {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
-    shell: process.platform === 'win32',
     env: { ...process.env, ...env },
   });
-  return {
+  const result = {
     script,
     command: `npm run ${script}`,
     ok: r.status === 0,
@@ -277,8 +475,11 @@ function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync) {
     errorCode: r.error?.code,
     freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
     spawned: true,
+    durationMs: Math.max(0, now() - started),
+    floorMs: floorMs(floors[script]),
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
+  return result;
 }
 
 /**
@@ -327,10 +528,12 @@ export const NODE_GATES = Object.freeze({
   'verify-surfaces': Object.freeze({
     file: 'scripts/verify-surfaces.mjs',
     args: () => ['out'],
+    floor: GATE_FLOORS['verify-surfaces'],
   }),
   'verify-design': Object.freeze({
     file: 'scripts/verify-design.mjs',
     args: () => ['out', process.env.LOOP_VERIFY_DESIGN_PORT ?? '3211'],
+    floor: GATE_FLOORS['verify-design'],
     // A GATE IS A CHECK, NOT A MEASUREMENT OF RECORD. `verify-design` writes
     // its numbers into `data/launch.json`, which is the repository's dated
     // measurement file. Left to write it here, every job's gate would leave the
@@ -345,8 +548,9 @@ export const NODE_GATES = Object.freeze({
 /** The per-job merge gate, in order: the export must exist before it is checked. */
 export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
 
-function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync) {
+function nodeRun(worktree, name, spec, timeoutMs, env, floors, spawn = spawnSync, now = defaultClock) {
   const args = [spec.file, ...spec.args()];
+  const started = now();
   const r = spawn(process.execPath, args, {
     cwd: worktree,
     encoding: 'utf8',
@@ -363,6 +567,8 @@ function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync) {
     errorCode: r.error?.code,
     freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
     spawned: true,
+    durationMs: Math.max(0, now() - started),
+    floorMs: floorMs(floors[name]),
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -381,7 +587,12 @@ export function runGates(ctx, worktree, {
   timeoutMs = 20 * 60 * 1000,
   lockWaitMs = lockWaitBudget(timeoutMs),
   spawn = spawnSync,
+  now = defaultClock,
+  floorSet,
+  floors,
 } = {}) {
+  const defaultFloors = ctx && resolve(ctx.repoRoot) === resolve(ROOT) ? GATE_FLOORS : FIXTURE_FLOORS;
+  const activeFloors = validateFloorSet(floors ?? floorSet ?? defaultFloors);
   linkNodeModules(worktree, ctx.repoRoot);
   const gateEnv = {
     ATAI_TEST_LOCK_WAIT_MS: String(lockWaitMs),
@@ -405,7 +616,7 @@ export function runGates(ctx, worktree, {
         });
         continue;
       }
-      const r = nodeRun(worktree, s, node, timeoutMs, gateEnv, spawn);
+      const r = enforceGateFloor(nodeRun(worktree, s, node, timeoutMs, gateEnv, activeFloors, spawn, now), activeFloors);
       results.push(r);
       if (!r.ok) break;
       continue;
@@ -421,7 +632,11 @@ export function runGates(ctx, worktree, {
       });
       continue;
     }
-    const r = npmRun(worktree, s, timeoutMs, gateEnv, spawn);
+    const r = enforceGateFloor(npmRun(worktree, s, timeoutMs, gateEnv, activeFloors, spawn, now), activeFloors);
+    if (s === 'build') {
+      if (r.ok) writeBuildSuccessRecord(worktree, r);
+      else removeBuildSuccessRecord(worktree);
+    }
     results.push(r);
     if (!r.ok) break;
   }

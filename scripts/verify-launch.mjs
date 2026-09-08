@@ -69,15 +69,28 @@
  * Exits 0 only when every check passed.
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  rmSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 import { ROOT, CONTENT_DIR, DATA_DIR, CONTENT_TYPES } from '../lib/paths.mjs';
+import { shortCommit } from '../lib/stamp.mjs';
 import { Diagnostics } from '../lib/errors.mjs';
 import { loadCorpus } from '../lib/corpus.mjs';
 import { normalizeField, normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
+import {
+  GATE_FLOORS,
+  enforceGateFloor,
+  validateFloorSet,
+  writeBuildSuccessRecord,
+} from '../loop/lib/gates.mjs';
 // The voice bar's SCOPE, from the merge gate that enforces it. Importing the
 // predicate rather than testing `doc.type === 'post'` here is the whole point:
 // if the gate ever widens the rule, this check widens with it in the same edit.
@@ -166,6 +179,119 @@ function record(r) {
 function skipped(id, label, why) {
   results.push({ id, ok: true, skipped: true, label, actual: 'SKIPPED' });
   out(`  SKIP  ${label.padEnd(34)} not measured this run\n        ${why}\n`);
+}
+
+const BUILD_OUTPUT_DIR = 'out';
+const BUILD_SUCCESS_RECORD = '.build-stamp.json';
+// `public/` is written solely by the build's prebuild assets step. The other
+// generated-looking trees are deliberately inputs: Pulse writes data/derived,
+// and prebuild plus lib/paths read openspec/. Excluding either would let an
+// export from before the day's data or spec changes pass as current.
+const BUILD_INPUT_EXCLUSIONS = new Set([
+  '.git',
+  '.next',
+  'node_modules',
+  BUILD_OUTPUT_DIR,
+  'public',
+]);
+
+function newestFileMtime(root, { exclude = new Set(), excludeFiles = new Set() } = {}) {
+  let newest = 0;
+  let files = 0;
+
+  function walk(dir, isRoot) {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (isRoot && exclude.has(entry.name)) continue;
+      const file = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(file, false);
+        continue;
+      }
+      if (!entry.isFile() || excludeFiles.has(entry.name)) continue;
+      try {
+        newest = Math.max(newest, statSync(file).mtimeMs);
+        files += 1;
+      } catch {
+        /* A disappearing file makes the current-build check conservative. */
+      }
+    }
+  }
+
+  walk(root, true);
+  return { newest, files };
+}
+
+/**
+ * A successful record is written by the process that spawned the build, never
+ * by prebuild. It copies out/status.json exactly as that process saw it after
+ * exit 0. The copied stamp establishes the HEAD commit and whether the build
+ * began from a dirty tree; strict output/input mtimes establish freshness.
+ *
+ * This is not a content hash. A byte change to an input that preserves its
+ * mtime is therefore outside what the record can establish. The honest rule is
+ * to document that limit, not to call the commit-and-mtime pair full tree
+ * identity.
+ */
+function buildRecordPath(root) {
+  return join(root, BUILD_OUTPUT_DIR, BUILD_SUCCESS_RECORD);
+}
+
+function readBuildSuccessRecord(root) {
+  try {
+    const record = JSON.parse(readFileSync(buildRecordPath(root), 'utf8'));
+    const status = record?.status;
+    if (
+      record?.ok !== true ||
+      typeof record.local_time !== 'string' ||
+      !record.local_time ||
+      !status ||
+      typeof status !== 'object' ||
+      Array.isArray(status) ||
+      typeof status.commit !== 'string' ||
+      typeof status.dirty !== 'boolean'
+    ) {
+      return null;
+    }
+    return record;
+  } catch {
+    return null;
+  }
+}
+
+function removeBuildSuccessRecord(root) {
+  rmSync(buildRecordPath(root), { force: true });
+}
+
+function hasSuccessfulBuildRecord(root) {
+  const record = readBuildSuccessRecord(root);
+  if (!record) return false;
+  const status = record.status;
+  if (status.commit !== shortCommit(root)) return false;
+  return true;
+}
+
+export function hasCurrentBuild(root = ROOT) {
+  const output = join(root, BUILD_OUTPUT_DIR);
+  if (!existsSync(output) || !hasSuccessfulBuildRecord(root)) return false;
+  // The success record is evidence, not a build artifact. Excluding it keeps
+  // its write-after-build mtime from hiding a source changed after export.
+  const built = newestFileMtime(output, { excludeFiles: new Set([BUILD_SUCCESS_RECORD]) });
+  if (built.files === 0) return false;
+  const inputs = newestFileMtime(root, { exclude: BUILD_INPUT_EXCLUSIONS });
+  return inputs.files > 0 && built.newest > inputs.newest;
+}
+
+function buildInvocation() {
+  if (process.platform === 'win32') {
+    return { command: 'cmd.exe', args: ['/d', '/s', '/c', 'npm run build'] };
+  }
+  return { command: 'npm', args: ['run', 'build'] };
 }
 
 // ---------------------------------------------------------------------------
@@ -817,39 +943,91 @@ function checkReviews(corpus, dataDir) {
   return problems;
 }
 
-function checkBuild(runBuild) {
-  section('BUILD');
+export function checkBuild(runBuild, {
+  root = ROOT,
+  spawn = spawnSync,
+  now = Date.now,
+  localNow = () => new Date(),
+  isCurrent = hasCurrentBuild,
+  floorSet = GATE_FLOORS,
+  floors,
+  write = out,
+  report = record,
+} = {}) {
+  write(`\nBUILD\n${'-'.repeat(5)}\n`);
   if (!runBuild) {
-    skipped(
-      'build',
-      'npm run build',
-      '--no-build was passed. THE BUILD WAS NOT VERIFIED BY THIS RUN. A launch decision ' +
-        'needs it; run without the flag.',
-    );
-    return;
+    const skippedResult = { id: 'build', ok: true, skipped: true, label: 'npm run build', actual: 'SKIPPED' };
+    write('  SKIP  npm run build                    not measured this run\n' +
+      '        --no-build was passed. THE BUILD WAS NOT VERIFIED BY THIS RUN. A launch decision ' +
+      'needs it; run without the flag.\n');
+    if (report === record) results.push(skippedResult);
+    else report(skippedResult);
+    return skippedResult;
   }
-  out('  running `npm run build` ...\n');
-  const started = Date.now();
-  const res = spawnSync('npm', ['run', 'build'], {
-    cwd: ROOT,
-    shell: true,
+  const started = now();
+  if (isCurrent(root)) {
+    const secs = ((now() - started) / 1000).toFixed(3);
+    write('  reusing the existing current build; no build process was spawned\n');
+    return report({
+      id: 'build',
+      ok: true,
+      reused: true,
+      label: 'npm run build',
+      actual: `reused existing build in ${secs}s`,
+      floor: 'existing current build reused',
+      notes: [`checked ${join(root, BUILD_OUTPUT_DIR)} against the current tree`],
+    });
+  }
+
+  write('  running `npm run build` ...\n');
+  const invocation = buildInvocation();
+  removeBuildSuccessRecord(root);
+  const res = spawn(invocation.command, invocation.args, {
+    cwd: root,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
-  const secs = ((Date.now() - started) / 1000).toFixed(0);
-  const ok = res.status === 0;
   const text = `${res.stdout ?? ''}\n${res.stderr ?? ''}`;
   const tail = text.trim().split('\n').slice(-14).join('\n          ');
-  record({
+  const activeFloors = validateFloorSet(floors ?? floorSet);
+  const result = enforceGateFloor({
     id: 'build',
-    ok,
+    script: 'build',
+    command: 'npm run build',
+    ok: res.status === 0,
+    status: res.status,
+    error: res.error?.message,
+    errorCode: res.error?.code,
+    durationMs: Math.max(0, now() - started),
+    output: text,
+  }, activeFloors);
+  const recorded = result.ok && writeBuildSuccessRecord(root, result, localNow());
+  if (!result.ok) removeBuildSuccessRecord(root);
+  const secs = (result.durationMs / 1000).toFixed(0);
+  const floorText = Number.isFinite(result.floorMs)
+    ? `observed ${result.durationMs.toFixed(1)}ms, floor ${result.floorMs.toFixed(1)}ms`
+    : 'no declared floor';
+  return report({
+    ...result,
+    id: 'build',
     label: 'npm run build',
-    actual: ok ? `exit 0 in ${secs}s` : `exit ${res.status} after ${secs}s`,
-    floor: 'exit 0',
-    notes: ok
-      ? ['Every content gate in lib/build-content.mjs ran, and the static export succeeded.']
+    actual: result.floorFailure
+      ? `exit 0 in ${secs}s below floor`
+      : result.ok ? `exit 0 in ${secs}s` : `exit ${res.status} after ${secs}s`,
+    floor: result.floorFailure ? floorText : 'exit 0',
+    notes: result.ok
+      ? [
+          'Every content gate in lib/build-content.mjs ran, and the static export succeeded.',
+          ...(recorded
+            ? ['copied out/status.json into .build-stamp.json after exit 0']
+            : ['out/status.json was unavailable, so no success record was written']),
+        ]
+      : result.floorFailure
+        ? [`The build returned below its declared floor: ${floorText}`]
       : [`Last lines:\n          ${tail}`],
-    shortfall: `npm run build exited ${res.status} — the site does not build`,
+    shortfall: result.floorFailure
+      ? `npm run build returned below its declared floor: ${floorText}`
+      : `npm run build exited ${res.status} — the site does not build`,
   });
 }
 
@@ -939,7 +1117,13 @@ export async function verifyLaunch(opts = {}) {
   checkToolLinks(corpus);
   checkDerived(corpus, dataDir);
   checkReviews(corpus, dataDir);
-  checkBuild(opts.build !== false);
+  checkBuild(opts.build !== false, {
+    root: opts.root ?? ROOT,
+    spawn: opts.spawn ?? spawnSync,
+    now: opts.now ?? Date.now,
+    localNow: opts.localNow ?? (() => new Date()),
+    isCurrent: opts.isBuildCurrent ?? hasCurrentBuild,
+  });
 
   const failed = results.filter((r) => !r.ok);
   const skips = results.filter((r) => r.skipped);
