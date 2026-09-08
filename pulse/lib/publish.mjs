@@ -205,7 +205,7 @@ function git(root, args, opts = {}) {
  * reserved `config.json` — and no engine's to publish on another's behalf.
  */
 export function isEngineWrite(rel) {
-  if (rel === 'data/changes.jsonl' || rel === 'data/linkcheck.json') return true;
+  if (rel === 'data/changes.jsonl' || rel === 'data/linkcheck.json' || rel === 'data/indexnow.jsonl') return true;
   if (rel.startsWith('data/derived/')) return true;
   if (/^data\/sources\/[^/]+\/[^/]+$/.test(rel)) return true;
   if (rel.startsWith('public/')) return true;

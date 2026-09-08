@@ -20,8 +20,9 @@
  *
  * ## WHICH URLs, AND WHY THIS IS NOT A SECOND DEFINITION OF "CHANGED"
  *
- * The set is **every URL in the freshly-built `sitemap.xml` whose `<lastmod>`
- * is today's local date**. Nothing here decides what changed: `app/sitemap.ts`
+ * The set is every URL in the freshly-built `sitemap.xml` whose `<lastmod>`
+ * is newer than its last successful submission in `data/indexnow.jsonl`.
+ * Nothing here decides what changed: `app/sitemap.ts`
  * already answers that from `lib/sitemap-dates.mjs`, which is the
  * material-change definition `addictedtoai-8ho` settled and which the JSON-LD
  * `dateModified` also reuses. Reading the built sitemap means IndexNow cannot
@@ -29,19 +30,11 @@
  * moved, and a page the sitemap deliberately omits — a stub, a demoted
  * tutorial — is never submitted, without a second exclusion rule existing.
  *
- * **The known gap, stated rather than papered over.** A change whose deploy is
- * delayed past local midnight — publishing held down overnight, then re-armed —
- * carries yesterday's `lastmod` and is never pinged. The alternatives were
- * considered and are worse: a multi-day window resubmits the same URLs on every
- * one of the four daily runs, and a `data/` state file recording what was last
- * submitted would sit dirty in the working tree between runs, which is exactly
- * the condition the publish step refuses on. What makes the simple rule
- * defensible is the SHAPE of its failure: a missed ping degrades to the status
- * quo — the crawler finds the page from the sitemap on its own schedule — and
- * it never submits a URL that did not change. It is never wrong; it is
- * occasionally silent. **Filed as `addictedtoai-en3s`**, which also records the
- * shape of the real fix (an append-only submission ledger, and where it can
- * live without sitting dirty between runs).
+ * The ledger is appended after each request returns. Its one-run dirty window
+ * is intentional: the next Pulse phase 1 commits engine-owned state. An
+ * absent ledger is an empty ledger, so a URL carrying an old `lastmod` is
+ * submitted on its first run. Failed requests are recorded as `failed` but do
+ * not advance the successful-submission date, so they remain retryable.
  *
  * ## WHY THIS CANNOT FIRE FROM A TEST OR A VERIFIER
  *
@@ -100,6 +93,7 @@ import { join } from 'node:path';
 
 import { INDEXNOW_KEY, INDEXNOW_KEY_ROUTE } from '../../lib/asset-routes.mjs';
 import { SITE_HOSTS } from '../../lib/site-config.mjs';
+import { appendJsonl, readJsonl } from './core.mjs';
 
 /**
  * The shared endpoint. Submissions to it are forwarded to every participating
@@ -115,7 +109,7 @@ export const MAX_URLS = 10000;
 export const SITEMAP_FILE = (root) => join(root, 'out', 'sitemap.xml');
 
 /**
- * Every `<loc>` whose `<lastmod>` falls on `day`.
+ * Every `<loc>` whose `<lastmod>` is newer than its last successful submission.
  *
  * `app/sitemap.ts` writes each `lastmod` as `<date>T12:00:00Z`, midday
  * precisely so the date survives being read in any zone, so the first ten
@@ -123,13 +117,25 @@ export const SITEMAP_FILE = (root) => join(root, 'out', 'sitemap.xml');
  * `<lastmod>` — `/colophon` today — is never submitted: absence is the
  * sitemap's honest "no date", not a claim that it changed.
  */
-export function changedUrls(sitemapXml, day) {
-  if (!day) return [];
+function successfulDates(ledger) {
+  const latest = new Map();
+  for (const row of ledger ?? []) {
+    if (row?.status !== 'success' || !row.url || !/^\d{4}-\d{2}-\d{2}$/.test(row.date ?? '')) continue;
+    if (!latest.has(row.url) || row.date > latest.get(row.url)) latest.set(row.url, row.date);
+  }
+  return latest;
+}
+
+export function changedUrls(sitemapXml, ledger = []) {
+  const lastSubmitted = successfulDates(ledger);
   const out = [];
   for (const block of String(sitemapXml ?? '').matchAll(/<url>([\s\S]*?)<\/url>/g)) {
     const loc = /<loc>([^<]+)<\/loc>/.exec(block[1])?.[1]?.trim();
     const mod = /<lastmod>([^<]+)<\/lastmod>/.exec(block[1])?.[1]?.trim();
-    if (loc && mod && mod.slice(0, 10) === day) out.push(loc);
+    const date = mod?.slice(0, 10);
+    if (loc && /^\d{4}-\d{2}-\d{2}$/.test(date ?? '') && (!lastSubmitted.has(loc) || date > lastSubmitted.get(loc))) {
+      out.push(loc);
+    }
   }
   return out;
 }
@@ -172,7 +178,7 @@ export function submissionBody({ host, siteUrl, urls }) {
 }
 
 /**
- * Submit today's changed URLs, if and only if every guard says so.
+ * Submit changed URLs, if and only if every guard says so.
  *
  * @param {object} opts
  * @param {string} opts.root        repository root; the sitemap is read from `out/`
@@ -190,7 +196,8 @@ export async function submitIndexNow({ root, day, siteUrl, config, dryRun = fals
   const sitemap = SITEMAP_FILE(root);
   const keyFile = join(root, 'out', INDEXNOW_KEY_ROUTE.replace(/^\//, ''));
   const xml = existsSync(sitemap) ? readFileSync(sitemap, 'utf8') : '';
-  const urls = changedUrls(xml, day);
+  const ledgerFile = join(root, 'data', 'indexnow.jsonl');
+  const urls = changedUrls(xml, readJsonl(ledgerFile));
 
   const decision = armed({
     config,
@@ -204,7 +211,7 @@ export async function submitIndexNow({ root, day, siteUrl, config, dryRun = fals
     // One line, naming the guard. A silent no-op here is indistinguishable
     // from a broken submitter, which is the state this whole feature would rot
     // into unnoticed.
-    say('indexnow', `not submitting (${decision.reason}); ${urls.length} URL(s) changed on ${day ?? 'an unknown day'}`);
+    say('indexnow', `not submitting (${decision.reason}); ${urls.length} URL(s) are newer than their last successful submission`);
     return { submitted: false, reason: decision.reason, count: urls.length };
   }
 
@@ -229,6 +236,7 @@ export async function submitIndexNow({ root, day, siteUrl, config, dryRun = fals
       429: 'too many requests; check submission frequency (nothing here retries and nothing here holds the deploy)',
     }[res.status] ?? 'unknown response; inspect the IndexNow response and request configuration';
     const submitted = res.status === 200 || res.status === 202;
+    appendJsonl(ledgerFile, body.urlList.map((url) => ({ date: day, status: submitted ? 'success' : 'failed', url })));
     say(
       'indexnow',
       `submitted ${body.urlList.length} changed URL(s) to ${INDEXNOW_ENDPOINT} — HTTP ${res.status}` +
@@ -239,6 +247,7 @@ export async function submitIndexNow({ root, day, siteUrl, config, dryRun = fals
     // Deliberately not a throw and deliberately not a HOLD: the deploy landed,
     // a third party did not answer. See the header.
     say('indexnow', `submission failed (${err?.name}: ${err?.message}) — the deploy is unaffected`);
+    appendJsonl(ledgerFile, body.urlList.map((url) => ({ date: day, status: 'failed', url })));
     return { submitted: false, reason: 'request-failed', count: body.urlList.length };
   }
 }
