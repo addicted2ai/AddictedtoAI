@@ -237,6 +237,17 @@ the sentence that uses it.
       the `floorSet` production default with `{}` and confirm its default arm
       fails; **mutation H**: replace `now` with a constant and confirm the
       default-clock arm fails. Tests task 3.
+      **DONE at merge `b700d36` (branch `stage0/a-gates-launch` at `b820031`,
+      six rounds, tasks 1–4 together).** The declaration is derived from
+      `checkBuild`'s signature, not from the list above: the round 6 author
+      found that this text omitted the optional `floors` alias — nine options,
+      three armed (`floorSet`, `isCurrent`, `now`), six declared, `runBuild`
+      excluded as a positional control argument — and reported the omission as
+      a finding, which is the list-versus-work diagnostic applied to the task's
+      own enumeration. Surviving, unreachable today, filed `addictedtoai-m22a`:
+      `enforceGateFloor` answers "cannot evaluate" in opposite directions (an
+      unknown gate name fails closed, a non-finite duration passes unchecked)
+      and is now exported, so its inputs are no longer two visible call sites.
 
 ### The brief diet
 
