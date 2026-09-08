@@ -210,6 +210,28 @@ test('a retirement appends a sourced retired event instead of unknown', () => {
   }
 });
 
+test('a null-valued status change uses a deliberate fallback event', () => {
+  const root = makeRoot([]);
+  try {
+    const file = writeEntry(root, 'content/wiki/model/acme-one.md', {
+      id: 'model/acme-one', kind: 'model', display_name: 'Acme One', status: 'active', maintenance: 'living',
+      aliases: [{ name: 'Acme One', class: 'manual' }], feeds: { models: 'acme/one' }, facts: [], timeline: [], mentions: [],
+    });
+    appendTimelineEvents(root, { entries: [{ path: 'content/wiki/model/acme-one.md', feeds: { models: 'acme/one' } }] }, [{
+      kind: KIND.FIELD_CHANGE, field: 'status', source: 'models', row_id: 'acme/one', date: '2026-09-02',
+      source_url: 'https://example.test/status', old: 'active', new: null,
+    }]);
+    const text = readFileSync(file, 'utf8');
+    const front = YAML.parse(text.slice(4, text.indexOf('\n---', 3) + 1));
+    assert.equal(front.timeline[0].event, 'unknown');
+    assert.notEqual(front.timeline[0].event, 'null');
+    assert.notEqual(front.timeline[0].event, 'undefined');
+    assert.notEqual(front.timeline[0].event, '');
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('a substitution appends a distinct substituted event', () => {
   const root = makeRoot([]);
   try {

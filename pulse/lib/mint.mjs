@@ -288,7 +288,7 @@ export function appendTimelineEvents(root, corpus, changes) {
     }
 
     const eventText = isStatusChange
-      ? String(change.new)
+      ? String(change.new ?? 'unknown') || 'unknown'
       : change.kind === KIND.ARRIVAL
         ? 'arrived'
         : change.kind === KIND.SUBSTITUTION
