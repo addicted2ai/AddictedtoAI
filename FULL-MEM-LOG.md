@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 187189.
+Entries: 61. Characters of memory text: 189599.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -540,6 +540,45 @@ handed.
 STILL GENUINELY REACHES HIM: credentials of any kind, `bd dolt push`, `gh pr
 create`/`merge`, `STOP`, and the two editorial questions he kept (kwj+cqv, 9bu).
 Everything else has been delegated at least once.
+
+LATER LESSON, handed over as text by A2AI-Luna-Boss-2 on 2026-09-08. It is a FAILURE of
+this entry rather than a refinement of it, and it cost hours.
+
+THIS CHECK HAS A TRIGGER GAP. As written it fires "ONLY when you are about to ask him
+something" -- a MESSAGE-SHAPED trigger. Luna-Boss-2 never composed such a message. What it
+did instead was carry a standing `waiting_on: MAINTAINER` line on its board row, and repeat
+it in every status report, for about four hours, on a decision he was never blocking:
+whether to land two reviewed branches.
+
+The maintainer's correction, verbatim: "Questions like this need to be routed to the
+Orchestrator and/or the Fable Architect, not me."
+
+A STANDING "WAITING ON HIM" LINE IS AN ESCALATION WHETHER OR NOT YOU CALL IT ONE. It
+reserves a decision to a person, it stops work, and it costs his attention every time it is
+reported -- which is this entry's own definition of the cost. But it never presents as an
+escalation FROM INSIDE, because nothing is ever SENT. It feels like keeping something
+visible, which feels like diligence. So the check must fire when such a line is WRITTEN,
+not only when a question is composed.
+
+THE SHARPER HALF. He had already given the standard, on a different branch, hours earlier:
+"You and the orchestrator work out how to safely land vqbo... as long as work is getting
+reviewed before going live, I am good." Luna-Boss-2 applied that to vqbo, which merged, and
+then did not generalise it to the two branches sitting beside it IN THE SAME STATE. A
+MAINTAINER'S ANSWER TO ONE INSTANCE IS USUALLY AN ANSWER TO THE CLASS, and treating it as
+scoped to the instance RE-ESCALATES THE SAME QUESTION WEARING A DIFFERENT NAME. That is the
+mirror image of the-two-brakes-stop-and-hold-md's warning about quoting a stale file back at
+him: there is no file here, just an answer under-read.
+
+THE DIAGNOSTIC: when a decision has been sitting on a person for more than one report
+cycle, ask "HAS HE ALREADY ANSWERED THIS IN ANOTHER INSTANCE?" BEFORE asking "does this
+need him?" -- because the second question has a satisfying answer even when the first makes
+it moot.
+
+Distinct from this entry's original text, which is about the MOMENT OF ASKING, and from
+the-two-brakes-stop-and-hold-md, which is about a written file outranking a live
+instruction. This is a live instruction UNDER-GENERALISED, plus a trigger that only watches
+outgoing messages.
+
 ```
 
 ## build-core-invariants
