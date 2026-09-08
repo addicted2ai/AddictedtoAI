@@ -44,7 +44,34 @@ import {
   describeFocusSweep,
   scanFocusableTagsByRoute,
   findUnsampledFocusableTags,
+  buildJsPayloadRecord,
 } from './verify-design.mjs';
+
+function measuredPage(route, label, offset = 0) {
+  return {
+    route,
+    label,
+    chunks: { gzip: 100 * 1024 + offset },
+    inline: { gzip: 20 * 1024 + offset },
+    total: { gzip: 120 * 1024 + offset },
+    html_gzip: 30 * 1024 + offset,
+  };
+}
+
+test('payload record reads all four prior fields, keeps them byte-identical across an advanced clock, and dates value movement', () => {
+  const measurements = [measuredPage('/', 'home'), measuredPage('/catalog', 'table', 1)];
+  const first = buildJsPayloadRecord(measurements, {}, '2026-09-06');
+  const withinNoise = [measuredPage('/', 'home', 55), measuredPage('/catalog', 'table', 56)];
+  const retained = buildJsPayloadRecord(withinNoise, first, '2026-09-07');
+  assert.deepEqual(retained, first, 'unchanged values must retain the complete prior record');
+
+  const grown = buildJsPayloadRecord([measuredPage('/', 'home', 100)], first, '2026-09-07');
+  assert.equal(grown.measured_on, '2026-09-07');
+  assert.notEqual(grown.pages['/'].chunks_kb_gzipped, first.pages['/'].chunks_kb_gzipped);
+  assert.notEqual(grown.pages['/'].inline_kb_gzipped, first.pages['/'].inline_kb_gzipped);
+  assert.notEqual(grown.pages['/'].total_kb_gzipped, first.pages['/'].total_kb_gzipped);
+  assert.notEqual(grown.pages['/'].html_kb_gzipped, first.pages['/'].html_kb_gzipped);
+});
 
 /* ── focusSweepBound / describeFocusSweep (addictedtoai-t6d) ─────────────── */
 

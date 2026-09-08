@@ -35,11 +35,14 @@ import { join, resolve } from 'node:path';
 export const BUDGET_BYTES = 150 * 1024;
 
 /**
- * Route-B measured worst-case spread is 9 gzip bytes. The 51.2-byte half-step
- * of 0.1 KB precision is included so a raw value cannot cross a display
- * boundary merely because of that measured spread.
+ * The 62-byte floor is the conservative maximum across every page and field
+ * in a controlled build-ID simulation: n=16 same-length build-ID variants
+ * over one exported tree produced an observed maximum spread of 10 gzip bytes on
+ * 2026-09-06. It is not repeated measurement of unchanged content or a set of
+ * independent builds; the 51.2-byte half-step of 0.1 KB precision is added so
+ * that this controlled spread cannot cross a display boundary.
  */
-export const RECORDED_NOISE_FLOOR_BYTES = 61;
+export const RECORDED_NOISE_FLOOR_BYTES = 62;
 export const RECORDED_PRECISION_KB = 0.1;
 
 export function recordedKilobytes(bytes) {
