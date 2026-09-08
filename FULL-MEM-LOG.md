@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 116040.
+Entries: 58. Characters of memory text: 118158.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -208,6 +208,28 @@ THE ASYMMETRY THAT SETTLES IT: a vacuous proof is a check that CANNOT FAIL; a co
 abort is a check that FAILED CORRECTLY ON A SAFE INPUT. The second is the cheaper mistake
 by far -- a false refusal costs one retargeted script, a false pass costs whatever it let
 through.
+
+--- ADDED 2026-09-08 by addictedtoai-73, after the corpus was condensed. NOT part of
+the original memory text above. ---
+
+THE VACUOUS-PROOF CLASS WEARING A DIFFERENT HAT: A GUARD WHOSE EXPECTATION FILE CAN
+SILENTLY EMPTY IS A GUARD THAT REPORTS CLEAN ON AN EMPTY WORLD. Any check comparing the
+world against a manifest, fixture list or baseline is only as strong as that file, and
+nothing in the comparison notices when the file itself is truncated or gutted -- zero
+expected entries produce zero failures. PUT A FLOOR ON THE EXPECTATION ITSELF before
+checking anything against it: scripts/mem-log-integrity.test.mjs asserts
+`expected.length >= 58` on data/mem-log-manifest.txt for exactly this reason.
+
+CHOOSE THE DIRECTION OF STRICTNESS TO MATCH WHAT YOU ARE PROTECTING AGAINST. These pull
+opposite ways and collapsing them into one rule loses both:
+- A FLOOR (strict downward, permissive upward) where additions are legitimate and only
+  LOSS is fatal. An exact count there fails on every new entry and gets loosened within
+  the week, which is how a guard dies.
+- An EXACT assertion where any deviation means YOUR PREMISE IS WRONG. Measured
+  2026-09-07/08 on the memory fold: a precondition written as "exactly 58 originals"
+  fired when the script was reused on a one-key pass it was not written for. A permissive
+  form would have passed silently and taught nobody anything. THE STRICTNESS IS THE
+  REUSABLE PART; retargeting is only what you do once it fires.
 ```
 
 ## a-dominating-fixture-member-cannot-pin-a-fold
@@ -1955,6 +1977,16 @@ THE HABIT THAT CATCHES IT: after committing a state-carrying file, read the valu
 the COMMITTED BLOB -- `git show HEAD:<path>` -- not the message, not the diff you
 expected. One line, and the only thing distinguishing "I set the flag" from "the flag is
 set".
+
+--- ADDED 2026-09-08 by addictedtoai-73, after the corpus was condensed. NOT part of
+the original memory text above. ---
+
+UNDERSTATING A CONSEQUENCE IN A RECORD IS ITS OWN VERSION OF THE VACUOUS PROOF:
+TECHNICALLY TRUE, AND IT CANNOT ALARM ANYONE. Measured 2026-09-08 on addictedtoai-lvba,
+first written up as "a repair job restored a file to a stale baseline" -- which describes
+the MECHANISM accurately and hides the CONSEQUENCE, that a revert of merged work reached
+the LIVE SITE past green gates and an approving reviewer. A record that cannot alarm its
+reader has failed at the only job a record has. State what it COST, not only what it DID.
 ```
 
 ## verify-from-raw-not-from-reports
