@@ -43,7 +43,6 @@ import {
 import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import {
-  gateCommand,
   gateFailureNote,
   gatesHitEnvironmentalFailure,
   gatesHitTransportFailure,
@@ -1295,7 +1294,16 @@ export async function runLoop(ctx, opts = {}) {
   // stale directory left by a refused cleanup (removeJobWorktree) is cleared
   // without the delete ever reaching the shared install through the link.
   unlinkNodeModules(worktree);
-  rmSync(worktree, { recursive: true, force: true });
+  try {
+    const rm = ctx.worktreeStartup?.rm ?? rmSync;
+    rm(worktree, { recursive: true, force: true });
+  } catch (e) {
+    const path = e?.path ?? worktree;
+    const errno = e?.errno ?? 'unknown';
+    const reason = `could not clear stale worktree before startup (path=${path}; errno=${errno})`;
+    ctx.log(`REFUSED: ${reason}; the job is left for a later run`);
+    return { started: true, selected: job, jobId, branch, refused: reason };
+  }
   addWorktree(ctx.repoRoot, worktree, branch, { create: !resumed, base });
   if (!resumed) {
     mkdirSync(join(worktree, '.job'), { recursive: true });
