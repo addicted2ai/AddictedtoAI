@@ -1541,8 +1541,9 @@ reading of "reviewed before going live".
 
 ## Revision record — round 13
 
-**Source: unsealed peer reads during Stage 0 implementation, 2026-09-08 11:00 to
-11:30 local** — A2AI-Orch on packet A's first tip (`f9bf386`), A2AI-Luna-Boss-2
+**Source: unsealed peer reads during Stage 0 implementation, 2026-09-08 10:50 to
+11:15 local** (times read from the clock and commit dates; an earlier draft of
+this line estimated a window half an hour late) — A2AI-Orch on packet A's first tip (`f9bf386`), A2AI-Luna-Boss-2
 re-deriving packet B against the tree before briefing it, A2AI-mem-cond
 reproducing the runner figures from the ledger. Applied to the loop delta and
 tasks.md at `74a306d` and `6a8adba` and the commit carrying this record.
