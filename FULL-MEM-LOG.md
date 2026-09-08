@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 197840.
+Entries: 61. Characters of memory text: 200178.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -3305,5 +3305,42 @@ under different settings.
 This is why the entry above keeps saying the defect was found from OUTSIDE the detector, and
 it is the same reason a withheld-finding grade needs a SECOND reviewer rather than a more
 careful first one. Awareness is not the defence; a different vantage point is.
+
+
+DETECTOR 1 AGAIN, THE SAME DAY, COMMITTED BY THE SESSION THAT STORES THIS ENTRY. A2AI-mem-cond
+read the clock twice in an hour and INVENTED seven board timestamps in between by
+incrementing from the last real reading -- while writing board lines about this entry, hours
+after recording the same failure as its own (an invented 14:52 when the clock said 11:03).
+Checked against git author dates:
+
+    logged 11:30 -> actual 11:31    logged 11:57 -> actual 12:38
+    logged 11:40 -> actual 11:37    logged 12:03 -> actual 12:42
+    logged 11:48 -> actual 11:39    logged 12:09 -> actual 12:45
+    logged 11:52 -> actual 11:52
+
+FIVE OF SEVEN WRONG, BY UP TO 41 MINUTES, IN BOTH DIRECTIONS. It surfaced only because a
+peer asked an unrelated question that required reading the clock: the row said 12:09 while
+the clock said 13:39.
+
+THIS SHARPENS DETECTOR 1 RATHER THAN REPEATING IT. The board flags a row dated in the
+FUTURE, and EVERY ONE OF THESE ERRORS WAS IN THE PAST, so the detector was silent and
+correct to be silent -- a late row is indistinguishable from a row written later. The
+future-dated case that prompted the detector is the RARE one; it happens only when the
+invented time overshoots. The common case is undershoot, which is invisible by construction.
+A DETECTOR BUILT FROM THE FIRST INSTANCE OF A CLASS TENDS TO CATCH THE UNREPRESENTATIVE HALF
+OF IT, because the instance that got noticed is the one that announced itself.
+
+THE ANCHOR THAT WORKS, and it is not more care: git author dates, `--date=format-local`.
+Unlike file mtime -- recorded above as last-write and one-directionally late -- a commit's
+author date is fixed at the moment the work landed and cannot drift afterwards. The board
+now states the anchor at the top of its log, so the next line is right BY CONSTRUCTION
+rather than by attention.
+
+AND THE REASON THIS IS THE FOURTH TURN, NOT A NEW LESSON: replace_all narrower than the
+property it named; a check narrower than the property IT named; a description narrower than
+the defect; and now timestamps invented by the session curating the entry about invented
+timestamps. Four turns, one morning, one shape, each committed by someone actively holding
+the rule. NAMING THE CLASS GIVES NO PROTECTION. Only an anchor that cannot be estimated,
+or an experiment whose passing and failing worlds differ, does.
 
 ```
