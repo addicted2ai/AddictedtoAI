@@ -478,7 +478,6 @@ function npmRun(worktree, script, timeoutMs, env, floors, spawn = spawnSync, now
     floorMs: floorMs(floors[script]),
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
-  if (script === 'build' && result.ok) writeBuildSuccessRecord(worktree);
   return result;
 }
 
@@ -633,6 +632,10 @@ export function runGates(ctx, worktree, {
       continue;
     }
     const r = enforceGateFloor(npmRun(worktree, s, timeoutMs, gateEnv, activeFloors, spawn, now), activeFloors);
+    if (s === 'build') {
+      if (r.ok) writeBuildSuccessRecord(worktree);
+      else removeBuildSuccessRecord(worktree);
+    }
     results.push(r);
     if (!r.ok) break;
   }

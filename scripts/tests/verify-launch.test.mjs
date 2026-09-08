@@ -40,8 +40,13 @@ function buildTree(t, { state = 'none' } = {}) {
   mkdirSync(join(dir, 'content'), { recursive: true });
   const source = join(dir, 'content', 'page.md');
   writeFileSync(source, 'a build input\n', 'utf8');
-  writeMtime(source, state === 'stale' ? LATER_SOURCE_TIME : SOURCE_TIME);
-  writeMtime(join(dir, 'package.json'), state === 'stale' ? LATER_SOURCE_TIME : SOURCE_TIME);
+  const sourceTime = state === 'stale'
+    ? LATER_SOURCE_TIME
+    : state === 'equal'
+      ? BUILD_TIME
+      : SOURCE_TIME;
+  writeMtime(source, sourceTime);
+  writeMtime(join(dir, 'package.json'), sourceTime);
 
   if (state === 'empty') {
     mkdirSync(join(dir, 'out'), { recursive: true });
@@ -58,7 +63,7 @@ function buildTree(t, { state = 'none' } = {}) {
   writeMtime(join(out, 'index.html'), BUILD_TIME);
   writeMtime(join(out, 'status.json'), BUILD_TIME);
 
-  if (state === 'current' || state === 'other-commit' || state === 'stale') {
+  if (state === 'current' || state === 'other-commit' || state === 'stale' || state === 'equal') {
     writeJson(join(out, '.build-stamp.json'), {
       ok: true,
       local_time: '2026-09-08T12:00:02.000-06:00',
@@ -141,6 +146,15 @@ test('a stale export builds even when its success record is otherwise valid', (t
   const checked = runBuildCheck(dir);
 
   assert.equal(checked.calls.length, 1, 'a source newer than output defeats reuse');
+  assert.equal(checked.report.reused, undefined);
+});
+
+test('an export whose newest input equals newest output builds', (t) => {
+  const dir = buildTree(t, { state: 'equal' });
+
+  const checked = runBuildCheck(dir);
+
+  assert.equal(checked.calls.length, 1, 'equal mtimes are not current');
   assert.equal(checked.report.reused, undefined);
 });
 

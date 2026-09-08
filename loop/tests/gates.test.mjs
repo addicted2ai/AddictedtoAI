@@ -148,3 +148,31 @@ test('the build gate removes an old record and copies status only after exit 0',
   assert.match(written.local_time, /^\d{4}-\d{2}-\d{2}T/);
   assert.deepEqual(written.status, status, 'the status stamp is copied exactly');
 });
+
+test('a below-floor build leaves no success record', (t) => {
+  const dir = gateTree(t, { packageScripts: { build: 'node build.mjs' } });
+  const out = join(dir, 'out');
+  mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, 'status.json'), JSON.stringify({
+    built_at: '2026-09-08T18:00:00Z',
+    commit: 'fixture-head',
+    dirty: false,
+    stamp: '2026-09-08T18:00:00Z · fixture-head',
+  }) + '\n', 'utf8');
+  const record = join(out, '.build-stamp.json');
+  writeFileSync(record, '{"ok":true}\n', 'utf8');
+
+  const result = runGates({ repoRoot: dir }, dir, {
+    scripts: ['build'],
+    floorSet: { build: { floorMs: 3 } },
+    now: (() => {
+      const ticks = [0, 2];
+      return () => ticks.shift();
+    })(),
+    spawn: () => ({ status: 0, stdout: '', stderr: '' }),
+  });
+
+  assert.equal(result.ok, false, 'a 2 ms build below its floor fails the stage');
+  assert.match(result.output, /build returned below its declared floor/);
+  assert.equal(existsSync(record), false, 'a below-floor build is not a success record');
+});
