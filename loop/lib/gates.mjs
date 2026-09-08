@@ -88,6 +88,27 @@ export function gatesHitTransportFailure(result = {}) {
   return isTransportFailure(result.output);
 }
 
+const TEST_LOCK_REFUSAL = /run-tests:\s*TEST LOCK|another test run holds/i;
+const BUILD_LOCK_REFUSAL = /build-lock:|another build holds/i;
+const SPAWN_FAILURE_STATUS = new Set([0xC0000142, 3221225794, -1073741502]);
+
+function environmentalCondition(result = {}) {
+  const output = `${result.output ?? ''}\n${result.error ?? ''}`;
+  if (TEST_LOCK_REFUSAL.test(output)) return 'test-lock refusal';
+  if (BUILD_LOCK_REFUSAL.test(output)) return 'build-lock refusal';
+  if (result.error || (result.spawned === true &&
+      (result.status === null || SPAWN_FAILURE_STATUS.has(result.status)))) {
+    return 'child process did not start';
+  }
+  return null;
+}
+
+/** Did a gate fail because the machine refused the check, rather than the branch? */
+export function gatesHitEnvironmentalFailure(result = {}) {
+  if (typeof result.environmental === 'boolean') return result.environmental;
+  return (result.results ?? [result]).some((r) => Boolean(environmentalCondition(r)));
+}
+
 /**
  * What KIND of gate failure this was, in the one line the ledger keeps.
  *
@@ -136,7 +157,10 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
   // A note that said only "transport-marked" would leave the ledger unable to
   // tell a first failure from a confirmed one, which is the exact readability
   // this function was written for.
-  const marker = gatesHitTransportFailure(result)
+  const condition = failed.map(environmentalCondition).find(Boolean);
+  const marker = condition
+    ? `environmental: ${condition}`
+    : gatesHitTransportFailure(result)
     ? 'transport-marked'
     : 'no transport marker in the captured output';
   const kind = retried ? `${marker}, retried once and failed again` : marker;
@@ -188,19 +212,22 @@ function hasScript(worktree, name) {
   }
 }
 
-function npmRun(worktree, script, timeoutMs) {
+function npmRun(worktree, script, timeoutMs, env) {
   const r = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
     shell: process.platform === 'win32',
+    env: { ...process.env, ...env },
   });
   return {
     script,
     command: `npm run ${script}`,
     ok: r.status === 0,
     status: r.status,
+    error: r.error?.message,
+    spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -269,20 +296,22 @@ export const NODE_GATES = Object.freeze({
 /** The per-job merge gate, in order: the export must exist before it is checked. */
 export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
 
-function nodeRun(worktree, name, spec, timeoutMs) {
+function nodeRun(worktree, name, spec, timeoutMs, env) {
   const args = [spec.file, ...spec.args()];
   const r = spawnSync(process.execPath, args, {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
-    env: { ...process.env, ...(spec.env ?? {}) },
+    env: { ...process.env, ...env, ...(spec.env ?? {}) },
   });
   return {
     script: name,
     command: `node ${args.join(' ')}`,
     ok: r.status === 0,
     status: r.status,
+    error: r.error?.message,
+    spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -296,8 +325,16 @@ function nodeRun(worktree, name, spec, timeoutMs) {
  *
  * @returns {{ok: boolean, results: Array, transport: boolean, output: string}}
  */
-export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 20 * 60 * 1000 } = {}) {
+export function runGates(ctx, worktree, {
+  scripts = DEFAULT_GATES,
+  timeoutMs = 20 * 60 * 1000,
+  lockWaitMs = timeoutMs,
+} = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
+  const gateEnv = {
+    ATAI_TEST_LOCK_WAIT_MS: String(lockWaitMs),
+    ATAI_BUILD_LOCK_WAIT_MS: String(lockWaitMs),
+  };
   const results = [];
   for (const s of scripts) {
     const node = NODE_GATES[s];
@@ -316,7 +353,7 @@ export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 2
         });
         continue;
       }
-      const r = nodeRun(worktree, s, node, timeoutMs);
+      const r = nodeRun(worktree, s, node, timeoutMs, gateEnv);
       results.push(r);
       if (!r.ok) break;
       continue;
@@ -332,17 +369,19 @@ export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 2
       });
       continue;
     }
-    const r = npmRun(worktree, s, timeoutMs);
+    const r = npmRun(worktree, s, timeoutMs, gateEnv);
     results.push(r);
     if (!r.ok) break;
   }
   const ok = results.length > 0 && results.every((r) => r.ok);
   // BEFORE THE SLICE, and that ordering is the whole point of the flag.
   const transport = results.some((r) => isTransportFailure(r.output));
+  const environmental = results.some((r) => Boolean(environmentalCondition(r)));
   return {
     ok,
     results,
     transport,
+    environmental,
     output: results
       .map((r) => `--- ${gateCommand(r)} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}`})\n${r.output.slice(-6000)}`)
       .join('\n'),
