@@ -4754,6 +4754,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/minimax/minimax-m2.7:free/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/minimax/minimax-m2.7:free/endpoints",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/minimax/minimax-m3:free/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/minimax/minimax-m3:free/endpoints",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/models/openai/gpt-6-astra/endpoints": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -5355,6 +5377,17 @@
       "final_url": "https://platform.kimi.ai/docs/models",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://platform.minimax.io/docs/api-reference/models/anthropic/list-models": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://platform.minimax.io/docs/api-reference/models/anthropic/list-models",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -6833,6 +6866,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.gmicloud.ai/minimax-week": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.gmicloud.ai/minimax-week",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.goodwinlaw.com/en/insights/publications/2025/06/alerts-practices-aiml-northern-district-of-california-judge-rules": {
       "bytes": 0,
       "consecutive_failures": 0,
@@ -7124,6 +7168,17 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://www.minimax.io/about",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.minimax.io/models/text/m3": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.minimax.io/models/text/m3",
       "last_checked": "2026-09-08",
       "last_ok": "2026-09-08",
       "meta_refresh": null,
