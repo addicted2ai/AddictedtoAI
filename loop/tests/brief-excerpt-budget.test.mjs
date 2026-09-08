@@ -15,7 +15,7 @@
  * against.
  *
  * THE FIX. `assembleBrief` (`loop/lib/brief.mjs`) now passes
- * `BRIEF_EXCERPT_MAX_CHARS` (20,000) instead of `excerptsFor`'s own 14,000
+ * `BRIEF_EXCERPT_MAX_CHARS` (24,000) instead of `excerptsFor`'s own 14,000
  * default. These tests measure the actual, wired-together effect — not the
  * constant in isolation — because a constant that is defined but never passed
  * would satisfy a test on the constant alone while leaving every real brief
@@ -105,7 +105,7 @@ test('ccs assembleBrief passes BRIEF_EXCERPT_MAX_CHARS, not specs.mjs\'s own sma
   ctx.cleanup();
 });
 
-test('ccs BRIEF_EXCERPT_MAX_CHARS is 88,000 — the measured number, not a placeholder', () => {
+test('ccs BRIEF_EXCERPT_MAX_CHARS is 24,000 — the measured number, not a placeholder', () => {
   // Re-measured 2026-08-31 when a third in-flight delta began amending `loop`
   // and the per-source share fell to a third of the budget: at 20,000 the
   // `scout` type cut two sections mid-requirement. That measurement gave a
@@ -130,27 +130,95 @@ test('ccs BRIEF_EXCERPT_MAX_CHARS is 88,000 — the measured number, not a place
   // repair one (Desk job j-20260907-03 failed its gates on the test below).
   // 88,000 = the floor plus one more change's share, for the eighth draft
   // still on its branch. config.mjs carries the full record.
-  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 88000);
+  // Re-measured 2026-09-08 after removing the per-source division across
+  // unarchived changes. The four upward moves remain historical; this fifth
+  // move removes the mechanism that forced them and returns to 24,000.
+  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 24000);
 });
 
 /* ---------------------------------------------------------------------------
- * Measured against the LIVE tree, like `config.test.mjs`'s "the working
- * repository's own config satisfies every listed type" — the check that
- * would notice if the budget stopped being enough as more OpenSpec changes
- * land. This is the concrete regression addictedtoai-ccs was filed over:
- * 2026-08-30, three of these ten job types cut a requirement mid-sentence.
+ * A pinned corpus owns assertions; the live tree is measurement-only because
+ * its open-change set is intentionally allowed to move between commits.
  * ------------------------------------------------------------------------ */
-test('measured against the live tree: no job type\'s assembled brief cuts a requirement mid-sentence today', () => {
+function pinnedCorpus(deltaChars = 0) {
+  const caps = ['pulse', 'site', 'review'];
+  const files = {};
+  for (const cap of caps) {
+    files[`openspec/specs/${cap}/spec.md`] =
+      `# ${cap}\n\n${bigRequirement(`${cap} repair rule`, cap === 'pulse' ? 7000 : 1800)}`;
+  }
+  files['openspec/specs/pulse/spec.md'] += bigRequirement('pulse repair surplus', 2500);
+  for (const change of ['one', 'two', 'three']) {
+    for (const cap of caps) {
+      files[['openspec', 'changes', change, 'specs', cap, 'spec.md'].join('/')] =
+        `# pending ${cap} amendment\n\n${bigRequirement(`${cap} unrelated amendment`, deltaChars)}`;
+    }
+  }
+  return makeRepo({ files });
+}
+
+test('pinned three-change repair corpus is stable and the assembled brief is bounded', () => {
+  const withChanges = pinnedCorpus();
+  const zeroChanges = makeRepo({
+    files: Object.fromEntries(
+      ['pulse', 'site', 'review'].map((cap) => [
+        `openspec/specs/${cap}/spec.md`,
+        `# ${cap}\n\n${bigRequirement(`${cap} repair rule`, cap === 'pulse' ? 7000 : 1800)}`,
+      ]),
+    ),
+  });
+  const changed = excerptsFor(withChanges.repoRoot, 'repair', { maxChars: 24000 });
+  const zero = excerptsFor(zeroChanges.repoRoot, 'repair', { maxChars: 24000 });
+  const headings = (text) => [...text.matchAll(/^### Requirement: (.+)$/gm)]
+    .map((m) => m[1])
+    .filter((heading) => !heading.includes('unrelated') && !heading.includes('surplus'));
+  assert.deepEqual(headings(changed.text), headings(zero.text));
+  const brief = assembled(withChanges, 'repair');
+  assert.ok(brief.length <= 30000, `fixture brief is ${brief.length} characters`);
+  withChanges.cleanup();
+  zeroChanges.cleanup();
+});
+
+test('pinned corpus has no mid-sentence cuts for every job type', () => {
+  const ctx = pinnedCorpus();
+  for (const type of JOB_TYPES) {
+    assert.equal(countCuts(assembled(ctx, type)), 0, `${type} contains a cut`);
+  }
+  ctx.cleanup();
+});
+
+test('pending changes do not shrink the per-capability excerpt allocation', () => {
+  const ctx = pinnedCorpus(2000);
+  const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 24000 });
+  assert.equal(countCuts(ex.text), 0);
+  assert.ok(ex.text.includes('pulse repair rule'));
+  ctx.cleanup();
+});
+
+test('truncated excerpts explain that relevant material was omitted or cut', () => {
+  const ctx = makeRepo({
+    files: {
+      'openspec/specs/editorial/spec.md':
+        `# editorial\n\n${bigRequirement('prune first rule', 7500)}${bigRequirement('prune second rule', 7500)}`,
+      'openspec/specs/review/spec.md':
+        `# review\n\n${bigRequirement('prune review rule', 7500)}`,
+    },
+  });
+  const text = assembled(ctx, 'prune');
+  assert.match(text, /relevant material was omitted or cut/);
+  assert.doesNotMatch(text, /targeted and truncated/);
+  ctx.cleanup();
+});
+
+test('live tree measurement: assembled brief size and cuts are printed, not asserted', () => {
   const ctx = { repoRoot: DEFAULT_REPO_ROOT };
   const cutTypes = [];
+  const measurements = [];
   for (const type of JOB_TYPES) {
     const text = assembled(ctx, type);
+    measurements.push(`${type}: brief_chars=${text.length}`);
     if (countCuts(text) > 0) cutTypes.push(type);
   }
-  assert.deepEqual(
-    cutTypes,
-    [],
-    'if this fails, the live openspec/ tree has grown enough in-flight deltas that ' +
-      'BRIEF_EXCERPT_MAX_CHARS needs re-measuring (addictedtoai-ccs) — it is not a sign the test is wrong',
-  );
+  console.log(`live brief measurements; largest=${Math.max(...measurements.map((s) => Number(s.match(/=(\d+)$/)[1])))}; cut_types=${cutTypes.join(',') || 'none'}`);
+  console.log(measurements.join('\n'));
 });

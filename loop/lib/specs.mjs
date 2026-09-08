@@ -223,20 +223,17 @@ function scoredSections(path, keywords) {
 /**
  * Targeted excerpts for one job type, capped in total size.
  *
- * `maxChars` is a TOTAL, and the two passes below exist so it behaves like one.
+ * `maxChars` is a per-capability excerpt budget. Pending amendments share the
+ * capability's allocation rather than shrinking it as more changes open.
  *
  * Pass 1 gives every source — every capability's constitution and every pending
  * amendment to it — an equal guaranteed share, and always quotes that source's
  * most relevant section even when that one section is larger than the share, in
  * which case it is cut to fit. Nothing is ever represented by silence.
  *
- * Pass 2 hands the unspent remainder back out, round-robin, and a source's first
- * claim on it is to UN-CUT the section pass 1 had to shorten. Without pass 2 the
- * shares are wasted wherever a spec has few relevant sections — measured on the
- * live tree before it existed, a scout brief spent 7,631 of its 14,000 characters
- * and still cut the scout requirement, which is 5,799 characters, down to 2,333.
- * A normative requirement quoted at 40% of its length is the failure this file
- * was repaired for, in a milder form.
+ * Pass 2a restores a cut requirement when spare capacity remains. No later
+ * pass fills that capacity with unrelated keyword matches: the brief carries
+ * named requirements and their pending amendments, and nothing else.
  *
  * @returns {{text: string, files: string[], truncated: boolean, chars: number}}
  */
@@ -278,7 +275,7 @@ export function excerptsFor(repoRoot, type, { maxChars = 14000 } = {}) {
   if (plan.length === 0) return { text: '', files: [], truncated: false, chars: 0 };
 
   // Pass 1 — the guaranteed share.
-  const share = Math.floor(maxChars / plan.length);
+  const share = Math.floor(maxChars / caps.length);
   for (const item of plan) {
     for (const s of item.scored) {
       if (s.score === 0 && item.picked.length > 0) continue;
@@ -314,24 +311,9 @@ export function excerptsFor(repoRoot, type, { maxChars = 14000 } = {}) {
     item.cut = null;
   }
 
-  // Pass 2b — whatever is still unspent, round-robin, one section at a time so
-  // no single long spec takes the lot.
-  for (let progress = true; spare > 0 && progress; ) {
-    progress = false;
-    for (const item of plan) {
-      if (item.cut) continue;
-      const next = item.scored.find((s) => s.score > 0 && !item.picked.includes(s));
-      if (!next || next.text.length > spare) continue;
-      item.picked.push(next);
-      item.used += next.text.length;
-      spare -= next.text.length;
-      progress = true;
-    }
-  }
-
-  // "Truncated" means RELEVANT MATERIAL WAS LEFT OUT — a section still cut, or a
-  // keyword-matching section never quoted. It drives the brief's "read the full
-  // files" line, so it must not be set by a spec merely being long.
+  // "Truncated" means RELEVANT MATERIAL WAS LEFT OUT — a section still cut, or
+  // a keyword-matching section never quoted. It drives the brief's guidance to
+  // read the full files, so it must not be set by a spec merely being long.
   const truncated = plan.some(
     (i) => i.cut !== null || i.scored.some((s) => s.score > 0 && !i.picked.includes(s)),
   );

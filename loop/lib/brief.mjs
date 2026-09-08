@@ -713,7 +713,7 @@ ${RESULT_PROTOCOL_INSTRUCTION}
 ## Relevant spec excerpts
 
 These are the rules this work is judged against. They are excerpts targeted at
-this job type${ex.truncated ? ' (targeted and truncated — the full files are in this worktree at the paths named below, read them if you need more)' : ''}.
+this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut — the full files are in this worktree at the paths named below, read them if you need the omitted or complete text)' : ''}.
 
 ${ex.text || '_No spec files found in this worktree._'}
 `;

@@ -292,9 +292,16 @@ export const MIN_INVOCATION_MINUTES = 15;
  * the implementation waves that archive them one by one are what bring it
  * back down (the measurement script: session scratchpad
  * orch-measure-brief-budget.mjs, the binary search over the live tree).
+ *
+ * RE-MEASURED A FIFTH TIME, 2026-09-08. The per-capability allocation no
+ * longer shrinks when unarchived changes add delta sources, so the mechanism
+ * behind the four upward moves above has been removed. The ceiling is set
+ * back to 24,000 and is verified against a pinned three-change fixture; the
+ * live tree is measured by the excerpt-budget test but is intentionally not
+ * an assertion because its open-change set is time-dependent.
  * ---------------------------------------------------------------------------
  */
-export const BRIEF_EXCERPT_MAX_CHARS = 88000;
+export const BRIEF_EXCERPT_MAX_CHARS = 24000;
 // `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
 // (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
 // quota-driven: no selector rule counts published posts. What limits volume now
