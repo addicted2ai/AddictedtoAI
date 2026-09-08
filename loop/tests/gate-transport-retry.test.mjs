@@ -356,6 +356,29 @@ test('an environmental refusal on the retry is interrupted and kept out of the f
   assert.match(ctx.output(), /retry after a gate failure with no transport marker/);
   assert.equal(readLedger(ctx).at(-1).outcome, 'interrupted');
   assert.equal(existsSync(ctx.holdPath), false, 'an environmental retry refusal does not trip the failure breaker');
+
+  // THE RETRY'S OWN RECORD SURVIVES THE ENVIRONMENTAL RETURN (addictedtoai-q6xp).
+  //
+  // That return used to sit ABOVE the phase write, so exactly this case — a
+  // retry refused by the machine — recorded `interrupted` and carried NO gates
+  // entry. It dropped the number the retry policy exists to produce ("did this
+  // job need a second run?") for the one case it most needs to count, and
+  // `first_failed` with it.
+  //
+  // Asserted on the LEDGER, not on a log line: the log is not kept, and the
+  // whole point of the phase entry is that it is the permanent record.
+  const phase = readLedger(ctx).at(-1).phases.find((p) => p.role === 'author');
+  assert.ok(phase, `the ledger line carries no author phase:\n${ctx.output()}`);
+  assert.ok(
+    phase.gates,
+    'the author phase records no retry — the environmental return skipped the phase write',
+  );
+  assert.equal(phase.gates.retried, true);
+  assert.equal(phase.gates.passed, false, 'the retry was refused, so it did not pass');
+  assert.deepEqual(
+    phase.gates.first_failed, ['test'],
+    'first_failed names the scripts the FIRST run failed on — what tells one flaky gate from another',
+  );
   ctx.cleanup();
 });
 

@@ -540,11 +540,6 @@ async function executeJob(ctx, opts) {
         `gates (retry after a ${marked ? 'transport failure' : 'gate failure with no transport marker'}): ` +
           `${gateResult.ok ? 'PASS' : 'FAIL'}`,
       );
-      if (!gateResult.ok && gatesHitEnvironmentalFailure(gateResult)) {
-        const note = gateFailureNote(gateResult, { retried: true });
-        ctx.log(`${note} — recording an interrupted run so it resumes without re-authoring`);
-        return finish({ outcome: 'interrupted', mm, changed, note, gateOutput: gateResult.output });
-      }
       // On the job's permanent record, not only in a log that is not kept: the
       // author invocation's phase entry says a retry happened and how it ended.
       // Without it the ledger cannot tell a job that passed first time from one
@@ -554,6 +549,17 @@ async function executeJob(ctx, opts) {
       // retried-then-passed job's permanent record is three booleans, and no
       // later reader could tell a flaky publish-verify from a flaky
       // exit-code test — which is the distinction xzdd is about.
+      //
+      // WRITTEN BEFORE THE ENVIRONMENTAL RETURN BELOW, AND THAT ORDER IS THE
+      // WHOLE FIX (addictedtoai-q6xp). It used to sit after it, so a retry that
+      // met a build lock recorded `interrupted` and carried NO gates entry —
+      // dropping the measurement for EXACTLY the case the retry policy exists
+      // to measure, and `first_failed` with it. An early return is a
+      // control-flow change as much as a behaviour change, and what it jumps
+      // over is invisible to any test of what it does: the sealed reviewer of
+      // the round that introduced this verified the new classification, mutated
+      // it, watched it go red and restored it, and never asked what the return
+      // skipped.
       if (authorPhase) {
         authorPhase.gates = {
           retried: true,
@@ -561,6 +567,11 @@ async function executeJob(ctx, opts) {
           transport: marked,
           first_failed: firstFailed,
         };
+      }
+      if (!gateResult.ok && gatesHitEnvironmentalFailure(gateResult)) {
+        const note = gateFailureNote(gateResult, { retried: true });
+        ctx.log(`${note} — recording an interrupted run so it resumes without re-authoring`);
+        return finish({ outcome: 'interrupted', mm, changed, note, gateOutput: gateResult.output });
       }
     }
 
