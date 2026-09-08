@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 4,
+  "count": 3,
   "items": [
-    {
-      "detail": "The evidence block says the feed was \"computed 2026-09-07 over data/changes.jsonl (186 lines, spanning 2026-07-09 to 2026-09-06)\". I parsed the same file: 186 lines is right, and the last date is 2026-09-06, but the FIRST date is 2026-06-29, not 2026-07-09. Every load-bearing number around it is correct (15 retirement rows total, 13 dated 2026-08-31 or later, 4 status->deprecated all inside the same seven days, earliest retirement 2026-08-29), so this is an isolated slip in the span. Fix: \"spanning 2026-06-29 to 2026-09-06\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/proposals/model-retirement-reproducibility-risk.md",
-      "target": "data/proposals/model-retirement-reproducibility-risk.md",
-      "title": "Correct the changes.jsonl date span in the model-retirement docket",
-      "type": "repair"
-    },
     {
       "detail": "Two files point at \"data/proposals/dropped/primary-source-fetch-route-for-blocked-vendor-pages.md\". That path does not exist. The file is at data/proposals/primary-source-fetch-route-for-blocked-vendor-pages.md — a live, selectable proposal, not a dropped record. I listed data/proposals/dropped/*.md (54 files) and it is not among them. Beyond the broken path, \"the deferred work already recorded at [dropped/]\" also mis-describes its status: a proposal in data/proposals/ is queued work, not a decline. Fix: drop the \"dropped/\" segment in both places and describe it as a live proposal.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-05 (`j-20260907-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -39,5 +30,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 4
+  "total_before_cap": 3
 }
