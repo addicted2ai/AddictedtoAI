@@ -11,8 +11,10 @@ import {
   TABLE_SCHEMA_VERSION,
   DATASET_SCHEMA_VERSION,
 } from '../../lib/asset-routes.mjs';
+import { getSite } from '../../lib/site.mjs';
 import JsonLd from '../_components/JsonLd';
 import { datasetGraph, DATASET_DESCRIPTION } from '../../lib/jsonld.mjs';
+import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, postChangedOn as resolvePostChangedOn, indexRouteDates } from '../../lib/sitemap-dates.mjs';
 
 /**
  * The open dataset (task 4.9, specs/site).
@@ -33,7 +35,12 @@ export const metadata = {
   description: DATASET_DESCRIPTION,
 };
 
-export default function DataPage() {
+export default async function DataPage() {
+  const site = await getSite();
+  const changedOn = buildChangedOnMap(site.changes);
+  const contentChangedOn = (doc: any) => resolveContentChangedOn(doc, site.reviews.byFile, changedOn);
+  const postChangedOn = (doc: any) => resolvePostChangedOn(doc, site.reviews.byFile, changedOn);
+  const { data: dataChangedOn } = indexRouteDates(site, contentChangedOn, postChangedOn, changedOn);
   // Labels come from `lib/asset-routes.mjs`, beside the routes they name, so
   // this page and the `DataDownload` entries in the graph below print the same
   // description of the same file.
@@ -43,7 +50,7 @@ export default function DataPage() {
 
   return (
     <article>
-      <JsonLd graph={datasetGraph()} />
+      <JsonLd graph={datasetGraph({ dateModified: dataChangedOn })} />
       <p className="eyebrow">open data</p>
       <h1 className="page-title">Take the whole thing</h1>
       <p className="page-lede">
