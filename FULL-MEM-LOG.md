@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 112856.
+Entries: 58. Characters of memory text: 116040.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -192,6 +192,22 @@ change ever held two of them at once.
 
 Related: name-test-is-not-a-source-test (the ladder), and
 a-dominating-fixture-member-cannot-pin-a-fold (the same failure inside a single fixture).
+
+--- ADDED 2026-09-08 by addictedtoai-73, after the corpus was condensed. NOT part of
+the original memory text above. ---
+
+THE MIRROR IMAGE OF THE VACUOUS PROOF: A CHECK THAT REFUSES A CORRECT ACTION FOR THE
+RIGHT REASON. Measured 2026-09-07/08 during the memory fold. A precondition asserting
+"exactly 58 originals" was reused on a one-key pass, found 1, and ABORTED a fold that was
+in fact safe. Loosening the assertion would have been ONE CHARACTER and invisible; the fix
+was to retarget the script instead.
+DO NOT LOOSEN A GUARDRAIL THAT REFUSES YOU. The moment to loosen is always the moment you
+are certain you are right, and BEING RIGHT IS NOT THE PROPERTY THE RULE PROTECTS. A
+guardrail firing on its own author is the only real test of it.
+THE ASYMMETRY THAT SETTLES IT: a vacuous proof is a check that CANNOT FAIL; a correct
+abort is a check that FAILED CORRECTLY ON A SAFE INPUT. The second is the cheaper mistake
+by far -- a false refusal costs one retargeted script, a false pass costs whatever it let
+through.
 ```
 
 ## a-dominating-fixture-member-cannot-pin-a-fold
@@ -744,6 +760,25 @@ The precedent is openspec/changes/let-the-site-see-its-own-gaps, whose proposal 
 holding. Follow that shape: put the corrections in the change's proposal.md, not in a
 commit message, because the next reader needs them and a commit message is not where anyone
 looks.
+
+--- ADDED 2026-09-08 by addictedtoai-73, after the corpus was condensed. NOT part of
+the original memory text above. ---
+
+THE GENERAL FORM, wider than issues: ANY RULE A SESSION LOADED AT START IS A CLAIM WITH AN
+EXPIRY DATE, and the longer the session runs the likelier it has expired. The expiry is
+INVISIBLE FROM INSIDE the session, which is why re-reading beats remembering.
+
+THE SHARPEST INSTANCE IS A COMMIT SHA -- addictedtoai-lvba (P1, opened 2026-09-08).
+Desk repair job j-20260907-30's brief named commit 3ca0ad1 as THE REQUIRED BASELINE for
+data/launch.json. Between that baseline and the job running, addictedtoai-91s landed as
+c003ce1 and legitimately changed the same file: added the precision field, amended method,
+advanced four home-page figures. The job restored the blob from 3ca0ad1 and ROLLED MAIN
+BACKWARDS, reverting merged work and PUBLISHING it, with green gates and an approving
+reviewer who saw the divergence and reasoned it away. Caught only because a later gate run
+regenerated the file and the diff looked wrong.
+A NAMED SHA LOOKS IMMUTABLE AND IS EXACTLY AS PERISHABLE AS ANY MEASUREMENT. The blob it
+points at never changes; what decays is its RELATIONSHIP TO THE WORLD. A baseline is a
+claim about what main should look like, and main moves.
 ```
 
 ## linkcheck-no-browser-ua
@@ -1438,6 +1473,19 @@ DO NOT WRITE A BEHAVIOURAL TEST WHOSE FAILURE MODE IS A DEPLOY. r8k's regression
 structural for exactly this reason: "run it and assert nothing was pushed" deploys the
 site if the guard regresses. A check whose red path is a live push is the defect, not
 the detector.
+
+--- ADDED 2026-09-08 by addictedtoai-73, after the corpus was condensed. NOT part of
+the original memory text above. ---
+
+CALIBRATION ON THE UNSCOPED PUSH: THE EXPOSURE IS UNIFORM, THE IMPACT IS A FUNCTION OF
+WHAT THE COMMIT TOUCHES. Every session's ordinary local commit on main is publishable by
+any other session's run, without exception -- that part does not vary. But ungated
+executable code under lib/, loop/, pulse/, scripts/ or app/ is read by npm test and the
+build, while an ungated file that no build reads and that is not exported into out/
+reaches the remote with NOTHING a visitor sees changed and no build able to break.
+Measured 2026-09-07/08 on FULL-MEM-LOG.md: read by nothing in the tree, not exported.
+So do not stop a productive Desk chain to gate a file no build reads -- that is
+PERFORMING caution rather than exercising it. Gate it in the next merge window.
 ```
 
 ## publish-authority-and-gates
