@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 141809.
+Entries: 59. Characters of memory text: 144351.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -311,6 +311,44 @@ revision, opus on extra high for the hardest and most complex, sparingly".
   author's runner (opus) -- a gap to file if it matters. The chain script gains a
   reviewer argument anyway.
 - The orchestrator's own turns are the session model; this is about agents.
+
+--- AMENDED 2026-09-08. Maintainer instruction, RELAYED by A2AI-Fable-Arch from a session
+this entry's author was not present in. Recorded as relayed, not as witnessed. ---
+
+HIS WORDS, verbatim as given to me: "you can use and should use codex Luna sessions for
+token heavy tasks. Yes medium effort for basic work and max effort complex and review work.
+Luna on max effort lands somewhere between Sonnet and Opus in terms of capabilities, but is
+much cheaper."
+
+WHAT IT CHANGES. The 2026-09-06 table above is NOT repealed, it is NARROWED: opus/medium as
+the default now governs CLAUDE-SIDE agent spawns only. TOKEN-HEAVY authoring, implementation
+and review work goes to codex gpt-5.6-luna sessions instead -- MEDIUM effort for routine
+work, MAX effort for complex and review work. The reason is cost, not capability parity: he
+places Luna-at-max BETWEEN Sonnet and Opus, and buys that gap deliberately.
+
+I COULD NOT VERIFY THE QUOTE (I was not in that session) BUT I VERIFIED THE MACHINERY
+ALREADY MATCHES IT, which is the strongest corroboration available for a relayed
+instruction. Both runners are registered in runners.yml exactly as the instruction
+describes:
+  codex-gpt-luna         model gpt-5.6-luna, model_reasoning_effort="max"
+  codex-gpt-luna-medium  model gpt-5.6-luna, model_reasoning_effort="medium"
+and data/conformance.json records BOTH as pass, all four checks, dated 2026-09-07.
+
+THEREFORE A CORRECTION TO CLAUDE.md, which is stale on this point and will mislead anyone
+who reads it: its conformance paragraph records codex-gpt-luna as FAIL, glossed "an expired
+login, not a portability defect -- it needs codex login, which is the maintainer's". THAT IS
+NO LONGER TRUE. codex-gpt-luna passed all four conformance checks on 2026-09-07, and a
+second Luna runner at medium effort passed the same day. The login is evidently no longer
+expired. CLAUDE.md's own instruction on this is to keep it in step with the JSON BY RE-READING
+THE JSON, which is the authority; that passage has now been wrong three times.
+
+A RELATED MAINTAINER QUOTE already recorded in runners.yml, 2026-09-07: "Scout should be max
+effort for luna." Consistent with the max-for-complex half above.
+
+CAVEAT ON PROVENANCE, stated because this entry is an authority statement and authority
+statements are the ones agents act on without re-checking: the quotation is second-hand. The
+machinery corroborates the POLICY it describes; it does not prove the words. If the wording
+matters for a later decision, get it from the maintainer rather than from here.
 ```
 
 ## archive-a-finished-change-immediately
