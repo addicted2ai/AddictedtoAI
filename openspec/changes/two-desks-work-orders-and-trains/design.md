@@ -1821,4 +1821,15 @@ stated plainly, in the coordinator's words: production has been correct since
 round 4 and rounds 5 and 6 are entirely about evidence; its own six
 pre-registered hypotheses held zero this round, after one of five in each of
 rounds 3 and 4 — the author closed every defect that could be named in
-advance, and the defect that was there was in none of the six.
+advance, and the defect that was there was in none of the six. Orch's reading
+of rounds 3 to 5, adopted as the architect's pre-freeze obligation in the Stage
+0 preamble: round 3 a text defect (the brief), round 4 a code defect, round 5 a
+text defect (the task) — two of five revisions were defects in the standard,
+found by the most expensive detector; the cheap detector is to enumerate every
+quantifier's domain before the freeze. Orch also owns half of round 5's defect
+and said so: its round 4 finding was narrow and measured, and "every injected
+dependency" was that finding generalised into a quantifier nobody checked
+against the dependencies. Round count for the mutation-table hypothesis, kept
+honest: rounds 1 to 5 (10:49, 11:59, 12:45, 13:26, 14:18) are the baseline;
+round 6 carries the first live table, so the test is round 6 plus B1 against
+that baseline, reported either way.

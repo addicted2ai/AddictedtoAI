@@ -41,6 +41,21 @@ obligation was not enumerated per changed line, so it was satisfiable in
 spirit while leaving exactly those holes. Stated as a HYPOTHESIS with its test,
 not as a measurement: apply it to B1 and count B1's rounds against packet A's.
 
+**And the architect's own obligation before every freeze: when a task says
+"every X", enumerate the X's and confirm each one can satisfy it.** Two of
+packet A's five revisions were defects in the STANDARD, not the implementation
+— round 3's brief dropped the word "both"; round 5's task said "every injected
+dependency" when two of the nine default to a real repository and a live build
+— and both were found by a full worker plus a max sealed review, the most
+expensive detector pointed at a text problem; round 5's production bytes were
+identical to round 4's by blob id. A quantifier is the most expensive sentence
+to get wrong: cheap to write, reads as rigour, falsified only by the one member
+nobody enumerated (A2AI-Orch, 2026-09-08; `addictedtoai-xrsg`'s diagnostic —
+name one member of the domain that would not appear in the list). Checked on
+the text frozen at 658625d: six gates, two spawners, six swept directories,
+three named seams, seven packets — every quantifier's domain is enumerated in
+the sentence that uses it.
+
 ### The gate floor and the launch build
 
 - [ ] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived
