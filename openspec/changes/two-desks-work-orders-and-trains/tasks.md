@@ -18,6 +18,29 @@ the orchestrator's work between runs.
 
 ## Stage 0 — measurable local edits, and the baseline
 
+**Every Stage 0 packet's RESULT.md carries a MUTATION TABLE (from packet B1
+onward; packet A's fifth round goes out as briefed).** One row per changed
+line or injected dependency, each naming the mutation that must turn a test
+red and the arm that goes red, with the red run actually performed and the
+restoration verified by hash. A worker that cannot fill a row has found its own
+hole before the reviewer does; the sealed reviewer re-runs rows rather than
+trusting them. Why (A2AI-Orch, 2026-09-08, read from the packet A branch):
+rounds 1 to 4 landed at 10:49, 11:59, 12:45 and 13:26 local — three hours of
+wall clock, four worker runs and four sealed max reviews on one packet of seven,
+for about 500 changed lines in four files (wall clock, not spend: it includes
+message round-trips and task amendments). Three of the four revisions found
+real defects (build identity; the record written before the floor; two arms
+that cannot fail) and only round 3 was transcription loss, so the reviews are
+not the problem; the question is WHERE the enumeration happens. Rounds 2 and 4
+are one class — "this line is deletable with zero arms moving", "no test
+reaches this production default", "the record is written from a signal that
+precedes the check" — and each is answerable at authoring time by one question
+per changed line: name the mutation that must turn a test red, and run it. The
+repository already mandates mutation testing; what was missing is that the
+obligation was not enumerated per changed line, so it was satisfiable in
+spirit while leaving exactly those holes. Stated as a HYPOTHESIS with its test,
+not as a measurement: apply it to B1 and count B1's rounds against packet A's.
+
 ### The gate floor and the launch build
 
 - [ ] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived

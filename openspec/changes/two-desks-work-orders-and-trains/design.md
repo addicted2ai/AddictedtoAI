@@ -1782,3 +1782,15 @@ difference (39.6 s total minus about 0.6 s of checks over 684 pieces), and its
 own merge-window guardrail would have rejected the improvement because it
 refused on elapsed time while a legitimately reused run returns in about a
 second — replaced, before the merge, by having the run name which path it took.
+
+**Packet A as a measurement of the complaint it was meant to fix (Orch, read
+from the branch).** Rounds landed at 10:49 (`f9bf386`), 11:59 (`46865e7`),
+12:45 (`317832b`) and 13:26 (`ad087aa`), with round 5 in flight: three hours of
+wall clock, four worker runs, four sealed max reviews and four task amendments
+on one packet of seven, for about 500 changed lines in four files. Wall clock
+includes message round-trips and the architect's amendments and is not spend;
+it is the number a person watching sees, and the number the maintainer
+complained about. The reviews are not the problem — three of four revisions
+found real defects — so the disposition is a task-text change, the mutation
+table in every packet's RESULT.md (Stage 0 preamble), offered as a hypothesis
+with its test: B1's round count against packet A's.
