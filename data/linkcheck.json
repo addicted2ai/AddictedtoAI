@@ -2800,17 +2800,6 @@
       "ok": true,
       "status": 200
     },
-    "https://en.wikipedia.org/wiki/ChatGPT": {
-      "bytes": 191595,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://en.wikipedia.org/wiki/ChatGPT",
-      "last_checked": "2026-09-08",
-      "last_ok": "2026-09-08",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://en.wikipedia.org/wiki/Cohere": {
       "bytes": 55316,
       "consecutive_failures": 0,
