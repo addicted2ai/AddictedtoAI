@@ -192,17 +192,36 @@ not as a measurement: apply it to B1 and count B1's rounds against packet A's.
       with an old record seeded (the record already absent at spawn time), in
       its own arm separate from the gate's (task 2), keeping the final-absence
       assertion too; **mutation F**: delete that removal line and confirm only
-      this arm fails. (ii) **Every injected dependency has at least one arm that
-      takes the PRODUCTION DEFAULT**: `checkBuild` called without a `floorSet`
-      must apply the repository build floor (observe the floor failure on a
+      this arm fails. (ii) **Every injected dependency that carries a DECISION
+      has at least one arm that takes the PRODUCTION DEFAULT, and every other
+      injected dependency is DECLARED in RESULT.md with the reason it is not
+      armed** — a declared exemption is fine; a claimed coverage that mutation
+      refutes is not, and that distinction is the whole finding. The
+      decision-carrying seams of `checkBuild` are `floorSet` (called without one
+      it must apply the repository build floor: observe the floor failure on a
       below-floor spawn, or assert the reported `floorMs` equals
-      `GATE_FLOORS.build.floorMs`), and called without an injected `isCurrent`
-      must use `hasCurrentBuild` — round 4's helper defaulted to
-      `FIXTURE_FLOORS` and every one of ten calls forwarded a floor set, so
-      `floorSet = GATE_FLOORS` at `:952` replaced by `{}` left all ten green
-      while production would build against no floor. **Mutation G**: replace the
-      production default with `{}` and confirm the default arm fails. Tests
-      task 3.
+      `GATE_FLOORS.build.floorMs`), `isCurrent` (without one it must use
+      `hasCurrentBuild`), and **`now`**, the clock whose difference the floor is
+      compared against: a default-clock arm asserts an observed positive
+      duration reaches the floor comparison, because a constant clock computes
+      the floor decision on a fabricated number, the exact failure the floors
+      exist to catch, unmeasured, in the packet built to measure it. The rest
+      are declared, not armed: `root` and `spawn`, whose defaults are a real
+      repository and a live `npm run build` (forbidden in a unit test by the
+      sealed limits and the machine-wide build lock — the rule's first draft
+      said "every injected dependency" and was unsatisfiable as written, the
+      architect's defect, found by round 5's sealed reviewer); `write`,
+      `report` and `localNow`, output and record-timestamp seams. History:
+      round 4's helper defaulted to `FIXTURE_FLOORS` and every one of ten calls
+      forwarded a floor set, so `floorSet = GATE_FLOORS` at `:952` replaced by
+      `{}` left all ten green while production would build against no floor;
+      round 5 armed `floorSet` and `isCurrent` and proved them by mutation, and
+      the sweep of all nine seams found `now`, `localNow`, `write` and `report`
+      green under a constant or a no-op, the union of the coordinator's and the
+      reviewer's lists being larger than either alone. **Mutation G**: replace
+      the `floorSet` production default with `{}` and confirm its default arm
+      fails; **mutation H**: replace `now` with a constant and confirm the
+      default-clock arm fails. Tests task 3.
 
 ### The brief diet
 

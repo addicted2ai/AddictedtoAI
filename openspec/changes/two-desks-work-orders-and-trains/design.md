@@ -1794,3 +1794,31 @@ complained about. The reviews are not the problem — three of four revisions
 found real defects — so the disposition is a task-text change, the mutation
 table in every packet's RESULT.md (Stage 0 preamble), offered as a hypothesis
 with its test: B1's round count against packet A's.
+
+**Round 5 — authority: two-desks-work-orders-and-trains@`99de120`.** Sealed
+review (codex Luna max, about 18 min; `dc62d39`; tests only, +101/−2, production
+byte-identical to round 4 by blob id; suite 1,729): verdict revise, one finding,
+and the second of five reviewers to construct the withheld finding. Round 5's
+own work stands: the two ordering arms are independent across suites (the gate
+mutation moves 1 of 8 gate arms and no launch arm; mutation F moves 1 of 12
+launch arms and no gate arm), stronger than task 4(i) asked. The finding is
+against the task text as much as the work: task 4(ii) said "every injected
+dependency" and two of the nine — `root` and `spawn` — default to a real
+repository and a live build, so the rule was unsatisfiable as written, the
+architect's defect. Of the remaining seams, `floorSet` and `isCurrent` were
+armed and proved; `now`, `localNow`, `write` and `report` stayed green under a
+constant or a no-op, the union of the coordinator's and the reviewer's lists
+larger than either. The load-bearing one is `now`: the floor is compared
+against its difference, so a constant clock computes the floor decision on a
+fabricated number, the tripwire's own failure mode unmeasured. Disposition,
+deliberately small for a sixth round: the rule narrows to decision-carrying
+dependencies (`floorSet`, `isCurrent`, `now`) with one new default-clock arm and
+mutation H, and the rest are DECLARED with reasons rather than armed — a
+declared exemption is fine, a claimed coverage that mutation refutes is not.
+Round 6 also carries the first live mutation table, one round early, because
+the change is four lines and the table is the hypothesis under test. Cost
+stated plainly, in the coordinator's words: production has been correct since
+round 4 and rounds 5 and 6 are entirely about evidence; its own six
+pre-registered hypotheses held zero this round, after one of five in each of
+rounds 3 and 4 — the author closed every defect that could be named in
+advance, and the defect that was there was in none of the six.
