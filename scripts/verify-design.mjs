@@ -49,7 +49,14 @@ import { AxeBuilder } from '@axe-core/playwright';
 import fg from 'fast-glob';
 import * as cheerio from 'cheerio';
 
-import { measureRoute, formatMeasurement, BUDGET_BYTES } from './measure-payload.mjs';
+import {
+  measureRoute,
+  formatMeasurement,
+  stableRecordedKilobytes,
+  RECORDED_NOISE_FLOOR_BYTES,
+  RECORDED_PRECISION_KB,
+  BUDGET_BYTES,
+} from './measure-payload.mjs';
 import { ROOT } from '../lib/paths.mjs';
 // The build's own LOCAL `YYYY-MM-DD`, imported rather than reimplemented: the
 // dates this script records into data/launch.json are CALENDAR DATES in a
@@ -536,6 +543,45 @@ export function findUnsampledFocusableTags(routeTags, sampledRoutes) {
   return [...byTag.values()].sort((a, b) => a.tag.localeCompare(b.tag));
 }
 
+/** Build the dated payload record without reading or writing repository state. */
+export function buildJsPayloadRecord(measurements, previousRecord = {}, measuredOn) {
+  const previousPages = previousRecord.pages ?? {};
+  const pages = Object.fromEntries(
+    measurements.map((m) => {
+      const previous = previousPages[m.route] ?? {};
+      return [m.route, {
+        label: m.label,
+        chunks_kb_gzipped: stableRecordedKilobytes(m.chunks.gzip, previous.chunks_kb_gzipped),
+        inline_kb_gzipped: stableRecordedKilobytes(m.inline.gzip, previous.inline_kb_gzipped),
+        total_kb_gzipped: stableRecordedKilobytes(m.total.gzip, previous.total_kb_gzipped),
+        html_kb_gzipped: stableRecordedKilobytes(m.html_gzip, previous.html_kb_gzipped),
+      }];
+    }),
+  );
+
+  const valuesChanged = JSON.stringify(pages) !== JSON.stringify(previousPages);
+  const next = {
+    measured_on: valuesChanged ? measuredOn : previousRecord.measured_on ?? measuredOn,
+    budget_kb_gzipped: BUDGET_BYTES / 1024,
+    precision:
+      `${RECORDED_PRECISION_KB.toFixed(1)} KB with hysteresis: retain each prior value unless the raw ` +
+      `gzip measurement moves by more than ${RECORDED_NOISE_FLOOR_BYTES} bytes; the floor is the ` +
+      'conservative maximum of every page and field in a controlled build-ID simulation ' +
+      '(n=16 same-length build-ID variants over one exported tree, observed maximum spread 10 gzip bytes, ' +
+      'measured 2026-09-07; 10 + 51.2-byte half-step = 61.2, rounded up to the 62-byte floor), ' +
+      'not repeated builds of unchanged content',
+    method:
+      'gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every ' +
+      'inline <script> body, measured on the exported build in out/; measured_on means the local ' +
+      'date when a recorded value last advanced, not the date of every gate run',
+    pages,
+  };
+
+  return !valuesChanged && JSON.stringify(next) === JSON.stringify(previousRecord)
+    ? previousRecord
+    : next;
+}
+
 async function main() {
   const out = resolve(process.argv[2] ?? join(ROOT, 'out'));
   const port = Number.parseInt(process.argv[3] ?? '3111', 10);
@@ -609,31 +655,26 @@ async function main() {
   } catch {
     /* first run */
   }
-  launch.js_payload = {
-    measured_on: todayIso(),
-    budget_kb_gzipped: BUDGET_BYTES / 1024,
-    method:
-      'gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every ' +
-      'inline <script> body, measured on the exported build in out/',
-    pages: Object.fromEntries(
-      measurements.map((m) => [
-        m.route,
-        {
-          label: m.label,
-          chunks_kb_gzipped: Number((m.chunks.gzip / 1024).toFixed(1)),
-          inline_kb_gzipped: Number((m.inline.gzip / 1024).toFixed(1)),
-          total_kb_gzipped: Number((m.total.gzip / 1024).toFixed(1)),
-          html_kb_gzipped: Number((m.html_gzip / 1024).toFixed(1)),
-        },
-      ]),
-    ),
-  };
-  launch.design_verification = {
-    date: todayIso(),
-    pass: failures === 0,
-    failures,
-    checks: evidence.length,
-  };
+  // Read the old payload before constructing its replacement; never rely on
+  // evaluation order inside the object being assigned.
+  const previousPayload = launch.js_payload ?? {};
+  const nextPayload = buildJsPayloadRecord(measurements, previousPayload, todayIso());
+  const payloadChanged = JSON.stringify(nextPayload) !== JSON.stringify(previousPayload);
+  if (payloadChanged) launch.js_payload = nextPayload;
+
+  const previousVerification = launch.design_verification;
+  const verificationChanged = !previousVerification ||
+    previousVerification.pass !== (failures === 0) ||
+    previousVerification.failures !== failures ||
+    previousVerification.checks !== evidence.length;
+  if (payloadChanged || verificationChanged) {
+    launch.design_verification = {
+      date: todayIso(),
+      pass: failures === 0,
+      failures,
+      checks: evidence.length,
+    };
+  }
   if (RECORD) await writeFile(LAUNCH_FILE, JSON.stringify(launch, null, 2) + '\n', 'utf8');
 
   process.stdout.write(

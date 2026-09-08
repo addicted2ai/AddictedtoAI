@@ -34,6 +34,29 @@ import { join, resolve } from 'node:path';
 /** The budget from specs/site, in bytes. */
 export const BUDGET_BYTES = 150 * 1024;
 
+/**
+ * The 62-byte floor is the conservative maximum across every page and field
+ * in a controlled build-ID simulation: n=16 same-length build-ID variants
+ * over one exported tree produced an observed maximum spread of 10 gzip bytes on
+ * 2026-09-07. It is not repeated measurement of unchanged content or a set of
+ * independent builds; the 51.2-byte half-step of 0.1 KB precision is added so
+ * that this controlled spread cannot cross a display boundary.
+ */
+export const RECORDED_NOISE_FLOOR_BYTES = 62;
+export const RECORDED_PRECISION_KB = 0.1;
+
+export function recordedKilobytes(bytes) {
+  return Number((bytes / 1024).toFixed(1));
+}
+
+/** Keep the prior record inside the measured noise floor; retain real growth. */
+export function stableRecordedKilobytes(bytes, previous) {
+  if (typeof previous === 'number' && Math.abs(bytes - previous * 1024) <= RECORDED_NOISE_FLOOR_BYTES) {
+    return previous;
+  }
+  return recordedKilobytes(bytes);
+}
+
 const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 
 function attr(tag, name) {
