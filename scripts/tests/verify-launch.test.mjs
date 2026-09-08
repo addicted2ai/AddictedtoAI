@@ -12,6 +12,7 @@ import {
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
+import { FIXTURE_FLOORS, GATE_FLOORS } from '../../loop/lib/gates.mjs';
 import { checkBuild } from '../verify-launch.mjs';
 
 const SOURCE_TIME = new Date('2026-09-08T12:00:00.000Z');
@@ -73,11 +74,14 @@ function buildTree(t, { state = 'none' } = {}) {
   return dir;
 }
 
-function runBuildCheck(dir, { status = 0 } = {}) {
+function runBuildCheck(
+  dir,
+  { status = 0, floorSet = FIXTURE_FLOORS, ticks = [0, 1], isCurrent } = {},
+) {
   const output = [];
   const reports = [];
   const calls = [];
-  const result = checkBuild(true, {
+  const options = {
     root: dir,
     write: (text) => output.push(text),
     report: (report) => {
@@ -85,15 +89,18 @@ function runBuildCheck(dir, { status = 0 } = {}) {
       return report;
     },
     now: (() => {
-      const ticks = [0, 1];
-      return () => ticks.shift() ?? 1;
+      const clock = [...ticks];
+      return () => clock.shift() ?? clock.at(-1) ?? 1;
     })(),
     localNow: () => new Date('2026-09-08T18:00:02.000'),
+    floorSet,
     spawn: (command, args, options) => {
       calls.push({ command, args, options });
       return { status, stdout: '', stderr: status === 0 ? '' : 'failed' };
     },
-  });
+  };
+  if (isCurrent) options.isCurrent = isCurrent;
+  const result = checkBuild(true, options);
   return { calls, output: output.join(''), report: reports[0], result };
 }
 
@@ -180,6 +187,24 @@ test('a failed spawned build removes an earlier success record', (t) => {
 
   assert.equal(checked.ok, false);
   assert.equal(existsSync(record), false);
+});
+
+test('verify-launch below-floor exit 0 fails and leaves no success record', (t) => {
+  const dir = buildTree(t, { state: 'current' });
+  const record = join(dir, 'out', '.build-stamp.json');
+  assert.equal(existsSync(record), true, 'the fixture starts with a stale success record');
+
+  const checked = runBuildCheck(dir, {
+    floorSet: GATE_FLOORS,
+    ticks: [0, 2],
+    isCurrent: () => false,
+  });
+
+  assert.equal(checked.calls.length, 1);
+  assert.equal(checked.report.ok, false, 'a below-floor build reports failure');
+  assert.equal(checked.report.floorFailure, true);
+  assert.match(checked.report.shortfall, /below its declared floor/);
+  assert.equal(existsSync(record), false, 'a below-floor build leaves no success record');
 });
 
 test('a spawned build uses cmd.exe /c on Windows without shell mode', (t) => {

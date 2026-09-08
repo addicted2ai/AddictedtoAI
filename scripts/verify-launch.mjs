@@ -75,7 +75,6 @@ import {
   readdirSync,
   statSync,
   rmSync,
-  writeFileSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -86,6 +85,12 @@ import { shortCommit } from '../lib/stamp.mjs';
 import { Diagnostics } from '../lib/errors.mjs';
 import { loadCorpus } from '../lib/corpus.mjs';
 import { normalizeField, normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
+import {
+  GATE_FLOORS,
+  enforceGateFloor,
+  validateFloorSet,
+  writeBuildSuccessRecord,
+} from '../loop/lib/gates.mjs';
 // The voice bar's SCOPE, from the merge gate that enforces it. Importing the
 // predicate rather than testing `doc.type === 'post'` here is the whole point:
 // if the gate ever widens the rule, this check widens with it in the same edit.
@@ -178,7 +183,6 @@ function skipped(id, label, why) {
 
 const BUILD_OUTPUT_DIR = 'out';
 const BUILD_SUCCESS_RECORD = '.build-stamp.json';
-const BUILD_STATUS_FILE = 'status.json';
 // `public/` is written solely by the build's prebuild assets step. The other
 // generated-looking trees are deliberately inputs: Pulse writes data/derived,
 // and prebuild plus lib/paths read openspec/. Excluding either would let an
@@ -234,17 +238,6 @@ function newestFileMtime(root, { exclude = new Set(), excludeFiles = new Set() }
  * to document that limit, not to call the commit-and-mtime pair full tree
  * identity.
  */
-function localTime(date = new Date()) {
-  const pad = (n, width = 2) => String(n).padStart(width, '0');
-  const offsetMinutes = -date.getTimezoneOffset();
-  const sign = offsetMinutes >= 0 ? '+' : '-';
-  const absolute = Math.abs(offsetMinutes);
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
-    `${pad(date.getMilliseconds(), 3)}${sign}${pad(Math.floor(absolute / 60))}:` +
-    `${pad(absolute % 60)}`;
-}
-
 function buildRecordPath(root) {
   return join(root, BUILD_OUTPUT_DIR, BUILD_SUCCESS_RECORD);
 }
@@ -273,35 +266,6 @@ function readBuildSuccessRecord(root) {
 
 function removeBuildSuccessRecord(root) {
   rmSync(buildRecordPath(root), { force: true });
-}
-
-/** Copy the prebuild-produced stamp; do not call buildStamp() here. */
-function writeBuildSuccessRecord(root, date = new Date()) {
-  let status;
-  try {
-    status = JSON.parse(readFileSync(join(root, BUILD_OUTPUT_DIR, BUILD_STATUS_FILE), 'utf8'));
-  } catch {
-    return false;
-  }
-  if (
-    !status ||
-    typeof status !== 'object' ||
-    Array.isArray(status) ||
-    typeof status.commit !== 'string' ||
-    typeof status.dirty !== 'boolean'
-  ) {
-    return false;
-  }
-  try {
-    writeFileSync(
-      buildRecordPath(root),
-      `${JSON.stringify({ ok: true, local_time: localTime(date), status }, null, 2)}\n`,
-      'utf8',
-    );
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function hasSuccessfulBuildRecord(root) {
@@ -985,6 +949,8 @@ export function checkBuild(runBuild, {
   now = Date.now,
   localNow = () => new Date(),
   isCurrent = hasCurrentBuild,
+  floorSet = GATE_FLOORS,
+  floors,
   write = out,
   report = record,
 } = {}) {
@@ -1021,26 +987,47 @@ export function checkBuild(runBuild, {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
-  const secs = ((now() - started) / 1000).toFixed(0);
-  const ok = res.status === 0;
-  const recorded = ok && writeBuildSuccessRecord(root, localNow());
   const text = `${res.stdout ?? ''}\n${res.stderr ?? ''}`;
   const tail = text.trim().split('\n').slice(-14).join('\n          ');
-  return report({
+  const activeFloors = validateFloorSet(floors ?? floorSet);
+  const result = enforceGateFloor({
     id: 'build',
-    ok,
+    script: 'build',
+    command: 'npm run build',
+    ok: res.status === 0,
+    status: res.status,
+    error: res.error?.message,
+    errorCode: res.error?.code,
+    durationMs: Math.max(0, now() - started),
+    output: text,
+  }, activeFloors);
+  const recorded = result.ok && writeBuildSuccessRecord(root, result, localNow());
+  if (!result.ok) removeBuildSuccessRecord(root);
+  const secs = (result.durationMs / 1000).toFixed(0);
+  const floorText = Number.isFinite(result.floorMs)
+    ? `observed ${result.durationMs.toFixed(1)}ms, floor ${result.floorMs.toFixed(1)}ms`
+    : 'no declared floor';
+  return report({
+    ...result,
+    id: 'build',
     label: 'npm run build',
-    actual: ok ? `exit 0 in ${secs}s` : `exit ${res.status} after ${secs}s`,
-    floor: 'exit 0',
-    notes: ok
+    actual: result.floorFailure
+      ? `exit 0 in ${secs}s below floor`
+      : result.ok ? `exit 0 in ${secs}s` : `exit ${res.status} after ${secs}s`,
+    floor: result.floorFailure ? floorText : 'exit 0',
+    notes: result.ok
       ? [
           'Every content gate in lib/build-content.mjs ran, and the static export succeeded.',
           ...(recorded
             ? ['copied out/status.json into .build-stamp.json after exit 0']
             : ['out/status.json was unavailable, so no success record was written']),
         ]
+      : result.floorFailure
+        ? [`The build returned below its declared floor: ${floorText}`]
       : [`Last lines:\n          ${tail}`],
-    shortfall: `npm run build exited ${res.status} — the site does not build`,
+    shortfall: result.floorFailure
+      ? `npm run build returned below its declared floor: ${floorText}`
+      : `npm run build exited ${res.status} — the site does not build`,
   });
 }
 

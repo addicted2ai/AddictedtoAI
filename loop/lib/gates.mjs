@@ -143,7 +143,8 @@ function removeBuildSuccessRecord(worktree) {
 }
 
 /** Copy the prebuild-produced stamp; do not call buildStamp() here. */
-function writeBuildSuccessRecord(worktree) {
+export function writeBuildSuccessRecord(worktree, result, date = new Date()) {
+  if (result?.script !== 'build' || result.ok !== true) return false;
   const statusPath = join(worktree, BUILD_OUTPUT_DIR, BUILD_STATUS_FILE);
   let status;
   try {
@@ -158,7 +159,7 @@ function writeBuildSuccessRecord(worktree) {
   try {
     writeFileSync(
       buildRecordPath(worktree),
-      `${JSON.stringify({ ok: true, local_time: localTime(), status }, null, 2)}\n`,
+      `${JSON.stringify({ ok: true, local_time: localTime(date), status }, null, 2)}\n`,
       'utf8',
     );
     return true;
@@ -351,7 +352,7 @@ export function gateCommandForName(name) {
   return node ? `node ${node.file}` : `npm run ${name}`;
 }
 
-function enforceGateFloor(result, floors) {
+export function enforceGateFloor(result, floors) {
   const floor = floors[result.script];
   if (!Number.isFinite(result.durationMs)) return result;
 
@@ -633,7 +634,7 @@ export function runGates(ctx, worktree, {
     }
     const r = enforceGateFloor(npmRun(worktree, s, timeoutMs, gateEnv, activeFloors, spawn, now), activeFloors);
     if (s === 'build') {
-      if (r.ok) writeBuildSuccessRecord(worktree);
+      if (r.ok) writeBuildSuccessRecord(worktree, r);
       else removeBuildSuccessRecord(worktree);
     }
     results.push(r);

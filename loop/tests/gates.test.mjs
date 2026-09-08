@@ -173,6 +173,7 @@ test('a below-floor build leaves no success record', (t) => {
   });
 
   assert.equal(result.ok, false, 'a 2 ms build below its floor fails the stage');
+  assert.equal(result.results[0].floorFailure, true);
   assert.match(result.output, /build returned below its declared floor/);
   assert.equal(existsSync(record), false, 'a below-floor build is not a success record');
 });
