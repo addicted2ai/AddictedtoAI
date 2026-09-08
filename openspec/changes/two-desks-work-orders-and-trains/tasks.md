@@ -60,10 +60,18 @@ the orchestrator's work between runs.
       run **spawns no build process** — asserted on the spawn, not only on the
       branch — and reports reuse; with none it builds; with an export newer than
       every source but **no success record, or a record naming another commit,**
-      it builds. **Mutation A**: make the presence check always return false and
-      confirm the reuse case fails while the build case still passes.
-      **Mutation B**: make the record check always return true and confirm the
-      no-record case fails while the reuse case still passes. Tests task 3.
+      it builds; with a **stale** export (any source newer than `out/`) it
+      builds; with an **empty** `out/` it builds. Four arms beyond reuse, because
+      the requirement says "present **and current**" and the first tip shipped
+      only fresh and absent (found by A2AI-Orch, verified by Luna-Boss-2,
+      2026-09-08): with those two arms alone, replacing `hasCurrentBuild`'s whole
+      body with a presence check leaves every test green while the gate reuses a
+      stale export and verifies a tree nobody built. **Mutation A**: make the
+      presence check always return false and confirm the reuse case fails while
+      the build case still passes. **Mutation B**: make the record check always
+      return true and confirm the no-record case fails while the reuse case
+      still passes. **Mutation C**: replace `hasCurrentBuild`'s body with
+      presence alone and confirm the stale and empty cases fail. Tests task 3.
 
 ### The brief diet
 
@@ -105,9 +113,18 @@ the orchestrator's work between runs.
       type). A live cut at the new settings is a finding reported with its
       numbers in RESULT.md; it is never repaired by raising the ceiling, because
       the requirement sets the ceiling from what the named requirements cost.
-      **Mutation A**: restore pass 2b and confirm the size assertion fails while
-      the excerpt-set assertion still passes. **Mutation B**: restore the ceiling
-      to 88,000 and confirm the size assertion fails. Tests tasks 5–7.
+      **Mutation A**: restore pass 2b and confirm the size assertion fails; the
+      excerpt-set assertion may fail too, since pass 2b lets the three-change
+      corpus fill from delta sources the zero-change corpus lacks — report which,
+      and weaken neither. **Mutation B**: restore the ceiling to 88,000 and
+      confirm the size assertion fails. The two mutations need OPPOSITE fixtures
+      (Luna-Boss-2, 2026-09-08): A bites only where there are surplus
+      keyword-matching sections AND unspent budget; B bites only where 24,000
+      actually binds, and with pass 2b gone size follows the material, so a
+      fixture that fits comfortably under 24,000 is byte-identical at 88,000. If
+      one fixture cannot make both go red, use two and say why; a fixture on
+      which a named mutation quietly does nothing is the vacuous proof this
+      repository keeps finding in its own checking apparatus. Tests tasks 5–7.
 - [ ] 9. `loop/lib/specs.mjs` and `loop/lib/brief.mjs`: deleting pass 2b makes
       `specs.mjs:335`'s `truncated` flag true far more often, which changes the
       brief's "read the full files" guidance. Update that guidance to say what
