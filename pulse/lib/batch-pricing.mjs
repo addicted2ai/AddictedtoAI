@@ -1,10 +1,10 @@
 /**
- * Derive the OpenRouter synchronous-versus-batch price view from the committed
- * change feed.  The feed rows carry the source's pricing fields verbatim; this
- * module only joins siblings and performs the comparison.
+ * Derive the OpenRouter synchronous-versus-batch price view from the complete
+ * current catalog snapshot. The change feed is append-only history and cannot
+ * contain every current row, so it is not a complete input for this view.
  */
 
-import { paths, readJsonl, today, writeJson } from './core.mjs';
+import { paths, readJson, sourcePaths, today, writeJson } from './core.mjs';
 
 const SOURCE = 'openrouter-models';
 const BATCH_SUFFIX = ':batch';
@@ -24,23 +24,17 @@ function compare(a, b) {
   return a === b ? 0 : a < b ? -1 : 1;
 }
 
-function newestRows(lines) {
+function currentRows(snapshot) {
   const rows = new Map();
-  for (const line of lines) {
-    if (line?.source !== SOURCE || typeof line.row_id !== 'string') continue;
-    const excerpt = line.excerpt;
-    if (!excerpt || excerpt.id !== line.row_id) continue;
-    const previous = rows.get(line.row_id);
-    if (!previous || compare(previous.date ?? '', line.date ?? '') < 0 ||
-        (previous.date === line.date && compare(previous.key ?? '', line.key ?? '') < 0)) {
-      rows.set(line.row_id, {
-        row_id: line.row_id,
-        display_name: excerpt.name ?? line.display_name ?? line.row_id,
-        prompt: excerpt['pricing.prompt'] ?? null,
-        completion: excerpt['pricing.completion'] ?? null,
-        date: line.date ?? null,
-      });
-    }
+  for (const [rowId, row] of Object.entries(snapshot?.rows ?? {})) {
+    if (!row || row.id !== rowId || typeof rowId !== 'string') continue;
+    rows.set(rowId, {
+      row_id: rowId,
+      display_name: row.name ?? rowId,
+      prompt: row.pricing?.prompt ?? null,
+      completion: row.pricing?.completion ?? null,
+      date: snapshot.date ?? null,
+    });
   }
   return rows;
 }
@@ -77,7 +71,7 @@ function comparison(base, batch) {
 
 /** Write and return the recomputed batch pricing view. */
 export function deriveBatchPricing(root) {
-  const rows = newestRows(readJsonl(paths(root).changes));
+  const rows = currentRows(readJson(sourcePaths(root, SOURCE).latest));
   const comparisons = [];
   for (const [rowId, batch] of rows) {
     if (!rowId.endsWith(BATCH_SUFFIX)) continue;
