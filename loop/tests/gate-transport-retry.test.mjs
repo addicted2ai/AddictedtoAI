@@ -25,6 +25,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runLoop } from '../run.mjs';
+import { loadRunners } from '../lib/runners.mjs';
 import { readLedger, LEDGER_FIELDS } from '../lib/ledger.mjs';
 import { consecutiveFailures } from '../lib/budget.mjs';
 import {
@@ -38,7 +39,7 @@ import {
 } from '../lib/gates.mjs';
 import { assertIngested, assertNoTransportFailure } from '../../pulse/tests/helpers.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml } from './helpers.mjs';
-import { buildLockPath, TEST_LOCK_SUFFIX } from '../../scripts/build-lock.mjs';
+import { buildLockPath, releaseBuildLock, TEST_LOCK_SUFFIX } from '../../scripts/build-lock.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -121,6 +122,15 @@ test('runGates gives child gates a lock wait below the process cap', () => {
   }
 });
 
+test('lockWaitBudget leaves a usable margin below the cap, including for small caps', () => {
+  assert.equal(lockWaitBudget(120000), 90000);
+  assert.equal(lockWaitBudget(12000), 4000);
+  assert.ok(12000 - lockWaitBudget(12000) >= 8000);
+  assert.equal(lockWaitBudget(4000), 1);
+  assert.ok(lockWaitBudget(4000) < 4000);
+  assert.ok(4000 - lockWaitBudget(4000) >= 3999);
+});
+
 test('the loop lets runGates derive a lock grace period from its per-job cap', () => {
   // The injected gate hook cannot observe runGates options, so this checks the
   // production call site itself. Passing the lock wait explicitly at the full
@@ -144,13 +154,13 @@ test('a lock held past the child budget is an environmental refusal before the p
       JSON.stringify({ pid: process.pid, host: hostname(), started: new Date().toISOString(), label: 'test holder' }),
       'utf8',
     );
-    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 4000 });
+    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 18000 });
     assert.equal(result.results[0].errorCode, undefined);
     assert.equal(gatesHitEnvironmentalFailure(result), true, JSON.stringify(result.results[0]));
     assert.match(gateFailureNote(result), /environmental: test-lock refusal/);
     assert.match(result.output, /TEST LOCK/);
   } finally {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    releaseBuildLock(buildLockPath(dir, TEST_LOCK_SUFFIX));
     try {
       rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     } catch {
@@ -160,13 +170,44 @@ test('a lock held past the child budget is an environmental refusal before the p
   }
 });
 
-test('spawn-refusal notes carry the free-memory figure without changing classification', () => {
-  const result = {
-    ok: false,
-    results: [{ script: 'test', ok: false, status: null, spawned: true, errorCode: 'ENOMEM', freeMemoryBytes: 123456789 }],
-  };
+test('spawn-refusal notes capture free memory through the npm gate result path', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-spawn-refusal-'));
+  const refusedSpawn = () => ({
+    status: null,
+    error: Object.assign(new Error('spawn refused'), { code: 'ENOMEM' }),
+    stdout: '',
+    stderr: '',
+  });
+  let result;
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts: { test: 'not actually run' } }), 'utf8');
+    result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], spawn: refusedSpawn });
+  } finally {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  }
   assert.equal(gatesHitEnvironmentalFailure(result), true);
-  assert.match(gateFailureNote(result), /environmental: child process did not start \(free memory: 123456789 bytes\)/);
+  assert.equal(result.results[0].errorCode, 'ENOMEM');
+  assert.equal(result.results[0].spawned, true);
+  assert.match(gateFailureNote(result), /environmental: child process did not start \(free memory: \d+ bytes\)/);
+});
+
+test('a post-merge environmental refusal is named without tripping the build-red breaker', async () => {
+  const ctx = repo();
+  const refused = {
+    ok: false,
+    results: [{ script: 'build', ok: false, status: 1, output: 'another build holds D:/tmp/build.lock: holder. Waited 5s.' }],
+    output: 'another build holds D:/tmp/build.lock: holder. Waited 5s.',
+  };
+  const gates = stub(PASSING, refused);
+  const registry = loadRunners(ctx);
+  const reviewer = registry.runners.find((entry) => entry.roles.includes('reviewer') && !entry.roles.includes('author'));
+  const res = await runLoop(ctx, { runner: registry.defaultId, reviewer: reviewer.id, gates });
+
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.equal(existsSync(ctx.holdPath), false, 'environmental refusal must not write breaker 2 HOLD.md');
+  assert.match(ctx.output(), /post-merge gate was refused by the environment/);
+  assert.match(ctx.output(), /environmental: build-lock refusal/);
+  ctx.cleanup();
 });
 
 /**

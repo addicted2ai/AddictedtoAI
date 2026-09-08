@@ -1617,8 +1617,13 @@ export async function runLoop(ctx, opts = {}) {
       }
 
       const built = opts.noGates ? { ok: true } : (typeof opts.gates === 'function' ? opts.gates(ctx, ctx.repoRoot) : runGates(ctx, ctx.repoRoot, { scripts: ['build'] }));
-      const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
-      if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
+      const environmental = gatesHitEnvironmentalFailure(built);
+      if (environmental) {
+        ctx.log(`post-merge gate was refused by the environment (${gateFailureNote(built)}) — no build-red hold`);
+      } else {
+        const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
+        if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
+      }
       // THE PUBLISH IS NOT HERE ANY MORE. It is at the foot of this function,
       // after `commitJobRecords`, and the flag is what carries the decision
       // there. What survives unchanged is the ordering that is load-bearing:

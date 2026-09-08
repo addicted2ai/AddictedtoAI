@@ -120,11 +120,16 @@ function environmentalCondition(result = {}) {
 /**
  * Leave the child a derived grace period after its lock wait expires, so its
  * refusal can be raised, printed, and captured before the parent cap kills it.
- * The margin is one quarter of the process cap rather than a machine-specific
- * fixed duration; it scales with every per-job cap the loop supplies.
+ * The margin is one quarter of the process cap, with an 8-second floor for
+ * small direct callers. Production caps are measured in minutes, while tests
+ * and future callers may use smaller caps; the floor keeps poll/throw/output
+ * capture from being squeezed by ordinary scheduler jitter.
  */
 export function lockWaitBudget(timeoutMs) {
-  const captureMarginMs = Math.ceil(timeoutMs / 4);
+  const captureMarginMs = Math.min(
+    Math.max(Math.ceil(timeoutMs / 4), 8000),
+    Math.max(0, timeoutMs - 1),
+  );
   return Math.max(0, timeoutMs - captureMarginMs);
 }
 
@@ -255,8 +260,8 @@ function hasScript(worktree, name) {
   }
 }
 
-function npmRun(worktree, script, timeoutMs, env) {
-  const r = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
+function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync) {
+  const r = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
@@ -341,9 +346,9 @@ export const NODE_GATES = Object.freeze({
 /** The per-job merge gate, in order: the export must exist before it is checked. */
 export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
 
-function nodeRun(worktree, name, spec, timeoutMs, env) {
+function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync) {
   const args = [spec.file, ...spec.args()];
-  const r = spawnSync(process.execPath, args, {
+  const r = spawn(process.execPath, args, {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
@@ -376,6 +381,7 @@ export function runGates(ctx, worktree, {
   scripts = DEFAULT_GATES,
   timeoutMs = 20 * 60 * 1000,
   lockWaitMs = lockWaitBudget(timeoutMs),
+  spawn = spawnSync,
 } = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
   const gateEnv = {
@@ -400,7 +406,7 @@ export function runGates(ctx, worktree, {
         });
         continue;
       }
-      const r = nodeRun(worktree, s, node, timeoutMs, gateEnv);
+      const r = nodeRun(worktree, s, node, timeoutMs, gateEnv, spawn);
       results.push(r);
       if (!r.ok) break;
       continue;
@@ -416,7 +422,7 @@ export function runGates(ctx, worktree, {
       });
       continue;
     }
-    const r = npmRun(worktree, s, timeoutMs, gateEnv);
+    const r = npmRun(worktree, s, timeoutMs, gateEnv, spawn);
     results.push(r);
     if (!r.ok) break;
   }
