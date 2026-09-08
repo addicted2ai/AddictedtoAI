@@ -110,7 +110,44 @@ test('npm gates use cmd.exe /c on Windows without shell mode', (t) => {
   assert.equal('shell' in calls[0].options, false);
 });
 
-test('the build gate removes an old record and copies status only after exit 0', (t) => {
+test('the build gate removes an old record before the injected spawn', (t) => {
+  const dir = gateTree(t, { packageScripts: { build: 'node build.mjs' } });
+  const out = join(dir, 'out');
+  mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, 'status.json'), JSON.stringify({
+    built_at: '2026-09-08T18:00:00Z',
+    commit: 'fixture-head',
+    dirty: false,
+    stamp: '2026-09-08T18:00:00Z · fixture-head',
+  }) + '\n', 'utf8');
+  const record = join(out, '.build-stamp.json');
+  writeFileSync(record, '{"ok":true}\n', 'utf8');
+
+  let calls = 0;
+  const result = runGates({ repoRoot: dir }, dir, {
+    scripts: ['build'],
+    floorSet: { build: { floorMs: MIN_GATE_FLOOR_MS } },
+    now: (() => {
+      const ticks = [0, 2];
+      return () => ticks.shift();
+    })(),
+    spawn: () => {
+      calls += 1;
+      assert.equal(
+        existsSync(record),
+        false,
+        'the old success record is absent when the build child starts',
+      );
+      return { status: 1, stdout: '', stderr: 'failed' };
+    },
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.ok, false);
+  assert.equal(existsSync(record), false, 'a failed build leaves no success record');
+});
+
+test('the build gate copies status only after exit 0', (t) => {
   const dir = gateTree(t, { packageScripts: { build: 'node build.mjs' } });
   const out = join(dir, 'out');
   mkdirSync(out, { recursive: true });

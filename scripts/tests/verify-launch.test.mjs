@@ -104,7 +104,7 @@ function runBuildCheck(
   return { calls, output: output.join(''), report: reports[0], result };
 }
 
-test('a present recorded current build is reused without spawning a build process', (t) => {
+test('checkBuild uses hasCurrentBuild by default for a present recorded build', (t) => {
   const dir = buildTree(t, { state: 'current' });
 
   const checked = runBuildCheck(dir);
@@ -113,6 +113,36 @@ test('a present recorded current build is reused without spawning a build proces
   assert.equal(checked.report.reused, true);
   assert.match(checked.report.actual, /reused existing build/);
   assert.match(checked.output, /no build process was spawned/);
+});
+
+test('without an injected floor set, checkBuild applies the repository build floor', (t) => {
+  const dir = buildTree(t, { state: 'current' });
+  const record = join(dir, 'out', '.build-stamp.json');
+  const reports = [];
+  const ticks = [0, 2];
+
+  const checked = checkBuild(true, {
+    root: dir,
+    isCurrent: () => false,
+    now: () => ticks.shift(),
+    write: () => {},
+    report: (report) => {
+      reports.push(report);
+      return report;
+    },
+    spawn: () => ({ status: 0, stdout: '', stderr: '' }),
+  });
+
+  assert.equal(reports.length, 1);
+  assert.equal(checked.ok, false);
+  assert.equal(checked.floorFailure, true);
+  assert.equal(
+    checked.floorMs,
+    GATE_FLOORS.build.floorMs,
+    'the omitted floor set uses the repository build floor',
+  );
+  assert.match(checked.shortfall, /below its declared floor/);
+  assert.equal(existsSync(record), false, 'a below-floor build leaves no success record');
 });
 
 test('without an output directory the launch check spawns the build process', (t) => {
@@ -187,6 +217,38 @@ test('a failed spawned build removes an earlier success record', (t) => {
 
   assert.equal(checked.ok, false);
   assert.equal(existsSync(record), false);
+});
+
+test('verify-launch removes an old record before the injected spawn', (t) => {
+  const dir = buildTree(t, { state: 'current' });
+  const record = join(dir, 'out', '.build-stamp.json');
+  assert.equal(existsSync(record), true, 'the fixture starts with an old success record');
+  let calls = 0;
+
+  const checked = checkBuild(true, {
+    root: dir,
+    isCurrent: () => false,
+    floorSet: FIXTURE_FLOORS,
+    now: (() => {
+      const ticks = [0, 2];
+      return () => ticks.shift();
+    })(),
+    write: () => {},
+    report: (report) => report,
+    spawn: () => {
+      calls += 1;
+      assert.equal(
+        existsSync(record),
+        false,
+        'the old success record is absent when the build child starts',
+      );
+      return { status: 1, stdout: '', stderr: 'failed' };
+    },
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(checked.ok, false);
+  assert.equal(existsSync(record), false, 'a failed build leaves no success record');
 });
 
 test('verify-launch below-floor exit 0 fails and leaves no success record', (t) => {
