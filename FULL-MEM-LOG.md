@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 121981.
+Entries: 58. Characters of memory text: 123762.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -1777,6 +1777,32 @@ CHECK THAT WOULD: compare the DOCUMENT SET across the two days -- new slugs mean
 same 14 documents mean (ii). Reading (ii) is the one addictedtoai-6nrk closes (OPEN, P2,
 "derived catalog-census fact type: close the census class instead of dating it";
 verified open 2026-09-08), so settle it before designing from it.
+
+--- SETTLED 2026-09-08 by A2AI-luna-boss, correcting its own earlier reading;
+commits re-verified independently before recording. ---
+
+THE QUESTION ABOVE IS ANSWERED: IT IS AGEING, NOT ARRIVAL -- reading (ii). Settled by git
+rather than by a document-set diff:
+  content/wiki/model/z-ai-glm-5-2-free.md
+    created             193ba10   Fri 28 Aug 2026 12:49 local  "pulse: mint the model corpus"
+    census prose added  42c4bf2   Mon  7 Sep 2026 03:31 local  job j-20260907-04 (repair)
+    hedged              4f669c2   Tue  8 Sep 2026 01:25 local
+The page PRE-DATES the 7th; its two census claims were authored ON the 7th and are
+exactly the two that moved: 21 hedged + 2 = 23, with the claim count static at 23 across
+both days. NO new claims were authored between the measurements -- the same claims aged.
+The arrival reading was asserted from two reports without a document list, and the
+arithmetic never supported it.
+
+AND THE SENTENCE THAT MAKES addictedtoai-6nrk'S CASE, which neither reading had alone:
+THE CHECK CANNOT WARN THE AUTHOR, BECAUSE ON THE DAY OF AUTHORING THE CLAIM IS COMPLIANT.
+A census anchored to today's fetch matches the day's snapshot, so the hedge is not
+required and the build is GREEN. It goes red OVERNIGHT, in someone else's run, on a page
+nobody is editing. Job j-20260907-04 wrote those two claims correctly and COULD NOT have
+been told to hedge them by any check that existed at the moment it wrote them.
+THAT IS WHY AUTHORING GUIDANCE IS A WEAK ANSWER HERE even though it looks like half the
+fix: guidance has to be obeyed with NO FEEDBACK SIGNAL, on a day when the build agrees
+with the author. A derived census fact recomputed with the snapshot has no such day -- it
+cannot age, so the CLASS closes rather than each instance needing prose.
 ```
 
 ## source-verification-absence-is-weak
