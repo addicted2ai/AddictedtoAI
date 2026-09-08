@@ -95,7 +95,6 @@ mentions:
   - model/minimax-minimax-m2-1
   - model/minimax-minimax-m2-5
   - model/minimax-minimax-m2-7
-  - model/minimax-minimax-m2-7-free
   - model/minimax-minimax-m2-her
   - model/minimax-minimax-m3
   - model/minimax-minimax-m3-batch

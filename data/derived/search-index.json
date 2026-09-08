@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 675,
+  "count": 674,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -3281,16 +3281,6 @@
       "d": "model",
       "s": "active",
       "i": "model/minimax-minimax-m2-7",
-      "a": [],
-      "b": true
-    },
-    {
-      "u": "/wiki/model/minimax-minimax-m2-7-free",
-      "t": "MiniMax: MiniMax M2.7 (free)",
-      "k": "entry",
-      "d": "model",
-      "s": "active",
-      "i": "model/minimax-minimax-m2-7-free",
       "a": [],
       "b": true
     },
