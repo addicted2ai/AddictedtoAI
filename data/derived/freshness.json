@@ -71,23 +71,47 @@
       "state": "failing-once",
       "status": 404,
       "url": "https://thenextweb.com/news/openai-slowdown-pachocki-alien-mind-research-intern-compute"
+    },
+    {
+      "cited_by": [
+        "content/wiki/org/aion-labs.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-08",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://www.aionlabs.ai/privacy-policy/"
+    },
+    {
+      "cited_by": [
+        "content/wiki/org/aion-labs.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-08",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://www.boson.ai/rpbench"
     }
   ],
-  "date": "2026-09-07",
+  "date": "2026-09-08",
   "link_check": {
     "checked": 0,
     "confirm_after_failures": 2,
     "declined": 9,
     "drifted": 0,
-    "due": 18,
+    "due": 2,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 19,
-    "total": 694
+    "total": 696
   },
   "listings": [
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/aider",
@@ -100,7 +124,7 @@
       "url": "https://aider.chat/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/argilla",
@@ -113,7 +137,7 @@
       "url": "https://argilla.io/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/axolotl",
@@ -126,7 +150,7 @@
       "url": "https://axolotl.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/browser-use",
@@ -139,7 +163,7 @@
       "url": "https://browser-use.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/chroma",
@@ -152,7 +176,7 @@
       "url": "https://www.trychroma.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/comfyui",
@@ -165,7 +189,7 @@
       "url": "https://comfy.org/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/continue",
@@ -178,7 +202,7 @@
       "url": "https://continue.dev/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/crewai",
@@ -191,7 +215,7 @@
       "url": "https://crewai.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/cursor",
@@ -204,7 +228,7 @@
       "url": "https://cursor.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/deepgram",
@@ -217,7 +241,7 @@
       "url": "https://deepgram.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/dspy",
@@ -230,7 +254,7 @@
       "url": "https://dspy.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/elevenlabs",
@@ -243,7 +267,7 @@
       "url": "https://elevenlabs.io/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/fireworks-ai",
@@ -256,7 +280,7 @@
       "url": "https://fireworks.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/groq-cloud",
@@ -269,7 +293,7 @@
       "url": "https://groq.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/guardrails-ai",
@@ -282,7 +306,7 @@
       "url": "https://guardrailsai.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/helicone",
@@ -295,7 +319,7 @@
       "url": "https://www.helicone.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/hugging-face-hub",
@@ -308,7 +332,7 @@
       "url": "https://huggingface.co/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/langchain",
@@ -321,7 +345,7 @@
       "url": "https://www.langchain.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/langfuse",
@@ -334,7 +358,7 @@
       "url": "https://langfuse.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/llama-cpp",
@@ -347,7 +371,7 @@
       "url": "https://github.com/ggml-org/llama.cpp"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/llamafile",
@@ -360,7 +384,7 @@
       "url": "https://github.com/mozilla-ai/llamafile"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/llamaindex",
@@ -373,7 +397,7 @@
       "url": "https://www.llamaindex.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/lm-studio",
@@ -386,7 +410,7 @@
       "url": "https://lmstudio.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/ollama",
@@ -399,7 +423,7 @@
       "url": "https://ollama.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/open-webui",
@@ -412,7 +436,7 @@
       "url": "https://openwebui.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/openrouter",
@@ -425,7 +449,7 @@
       "url": "https://openrouter.ai/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/promptfoo",
@@ -438,7 +462,7 @@
       "url": "https://www.promptfoo.dev/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/promptlayer",
@@ -451,7 +475,7 @@
       "url": "https://www.promptlayer.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/qdrant",
@@ -464,7 +488,7 @@
       "url": "https://qdrant.tech/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/replicate",
@@ -477,7 +501,7 @@
       "url": "https://replicate.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/ultralytics",
@@ -490,7 +514,7 @@
       "url": "https://www.ultralytics.com/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/unsloth",
@@ -503,7 +527,7 @@
       "url": "https://github.com/unslothai/unsloth"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/unstructured",
@@ -516,7 +540,7 @@
       "url": "https://unstructured.io/"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/vllm",
@@ -529,7 +553,7 @@
       "url": "https://github.com/vllm-project/vllm"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/weights-and-biases",
@@ -777,35 +801,35 @@
   "slug_collisions": [],
   "sources": [
     {
-      "days_since_change": 1,
-      "display_date": "2026-09-07",
+      "days_since_change": 0,
+      "display_date": "2026-09-08",
       "display_date_label": "last checked",
       "expected_change_days": 3,
       "id": "llm-releases",
-      "last_change_date": "2026-09-06",
-      "last_fetch_date": "2026-09-07",
+      "last_change_date": "2026-09-08",
+      "last_fetch_date": "2026-09-08",
       "refusing": null,
-      "snapshot_date": "2026-09-06",
+      "snapshot_date": "2026-09-08",
       "suspect": false,
       "suspect_after_days": 9
     },
     {
       "days_since_change": 0,
-      "display_date": "2026-09-07",
+      "display_date": "2026-09-08",
       "display_date_label": "last checked",
       "expected_change_days": 3,
       "id": "openrouter-models",
-      "last_change_date": "2026-09-07",
-      "last_fetch_date": "2026-09-07",
+      "last_change_date": "2026-09-08",
+      "last_fetch_date": "2026-09-08",
       "refusing": null,
-      "snapshot_date": "2026-09-07",
+      "snapshot_date": "2026-09-08",
       "suspect": false,
       "suspect_after_days": 9
     }
   ],
   "tutorials": [
     {
-      "age_days": 10,
+      "age_days": 11,
       "path": "content/tutorials/browser-embeddings-no-server.md",
       "reverify_days": 30,
       "slug": "browser-embeddings-no-server",
@@ -813,7 +837,7 @@
       "verified_on": "2026-08-28"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "path": "content/tutorials/chat-template-is-not-the-model.md",
       "reverify_days": 60,
       "slug": "chat-template-is-not-the-model",
@@ -821,7 +845,7 @@
       "verified_on": "2026-08-28"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "path": "content/tutorials/model-file-header-range-requests.md",
       "reverify_days": 60,
       "slug": "model-file-header-range-requests",
@@ -829,7 +853,7 @@
       "verified_on": "2026-08-28"
     },
     {
-      "age_days": 10,
+      "age_days": 11,
       "path": "content/tutorials/openrouter-catalog-watch.md",
       "reverify_days": 30,
       "slug": "openrouter-catalog-watch",
@@ -869,6 +893,22 @@
       "last_seen_date": null,
       "path": "content/wiki/model/ibm-granite-granite-4-1-8b.md",
       "row_id": "ibm-granite/granite-4.1-8b",
+      "source": "openrouter-models"
+    },
+    {
+      "entry_id": "model/minimax-minimax-m2-7-free",
+      "has_last_known": true,
+      "last_seen_date": "2026-09-07",
+      "path": "content/wiki/model/minimax-minimax-m2-7-free.md",
+      "row_id": "minimax/minimax-m2.7:free",
+      "source": "openrouter-models"
+    },
+    {
+      "entry_id": "model/minimax-minimax-m3-free",
+      "has_last_known": true,
+      "last_seen_date": "2026-09-07",
+      "path": "content/wiki/model/minimax-minimax-m3-free.md",
+      "row_id": "minimax/minimax-m3:free",
       "source": "openrouter-models"
     },
     {

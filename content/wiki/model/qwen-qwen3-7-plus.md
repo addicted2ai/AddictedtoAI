@@ -35,4 +35,5 @@ mentions: []
 domains_seeded:
   - coding
   - image
+  - agents
 ---

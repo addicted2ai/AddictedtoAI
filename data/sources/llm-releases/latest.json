@@ -1,7 +1,7 @@
 {
-  "body_hash": "948e5b15febb89e42cdbffdb05c704b07b49822bc0fbe6f41bb690fb088e3b66",
-  "date": "2026-09-06",
-  "fetched_at": "2026-09-07T00:00:04.614Z",
+  "body_hash": "adad7a90a0b3127e6bb0e2cf817ab3817f0e73646dd72e2d8c6b303fcca01bc6",
+  "date": "2026-09-08",
+  "fetched_at": "2026-09-08T06:00:04.133Z",
   "row_count": 60,
   "rows": {
     "06a0c9a7-7f66-487f-8180-dbaae938de80": {
@@ -337,15 +337,6 @@
       "source_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
       "title": "Claude Mythos 5.1 ships to trusted-access programs"
     },
-    "87ca00c6-7e0d-4748-8ffd-b3cd7a1304cd": {
-      "description": "DeepSeek - V4-Flash, the efficient tier of the V4 family, exits preview alongside V4-Pro as DeepSeek retires its legacy deepseek-chat and deepseek-reasoner aliases (cutoff July 24, 2026).",
-      "guid": "87ca00c6-7e0d-4748-8ffd-b3cd7a1304cd",
-      "link": "https://llm-releases.com/models/deepseek-v4-flash",
-      "pubDate": "Mon, 20 Jul 2026 00:00:00 GMT",
-      "source_name": "DeepSeek",
-      "source_url": "https://api-docs.deepseek.com/news",
-      "title": "DeepSeek V4-Flash reaches general availability"
-    },
     "8e267a8e-e4b4-4e41-923e-bdafbc4ea5da": {
       "description": "Ant Group (inclusionAI) - Ant Group inclusionAI open-weighted Ling-3.0-tiny under MIT — a sparse MoE with 7.9B total / ~1.3B active parameters and a 262K context, distinct from the API-only Ling-3.0-flash. Weights ship in BF16, FP8, and INT4.",
       "guid": "8e267a8e-e4b4-4e41-923e-bdafbc4ea5da",
@@ -399,6 +390,15 @@
       "source_name": "Google DeepMind",
       "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
       "title": "Google launches Gemini 3.6 Flash"
+    },
+    "b4fd3a75-eab3-4a68-9a48-597f14dc49b7": {
+      "description": "Ant Group (inclusionAI) - inclusionAI published Ling-3.0-flash-Fin's open weights on Hugging Face (inclusionAI/Ling-3.0-flash-Fin) under the MIT license, delivering the open-weight release announced at the model's Aug 27 launch. Third-party hosting (DeepInfra at $0.06/$0.18 per Mtok) and community GGUF quantizations followed, confirming public availability by 2026-09-04.",
+      "guid": "b4fd3a75-eab3-4a68-9a48-597f14dc49b7",
+      "link": "https://llm-releases.com/models/ling-3-0-flash-fin",
+      "pubDate": "Fri, 04 Sep 2026 00:00:00 GMT",
+      "source_name": "Ant Group (inclusionAI)",
+      "source_url": "https://huggingface.co/inclusionAI/Ling-3.0-flash-Fin",
+      "title": "Ling-3.0-flash-Fin open weights posted under MIT"
     },
     "bd089f31-3f2e-40d7-9596-71c3d8c81216": {
       "description": "Google DeepMind - Google DeepMind ships Gemini 3.8 Flash, the successor to Gemini 3.7 Flash and its fourth Flash model in under four months. It scores 59 on the Artificial Analysis Intelligence Index at high reasoning (up 3 points from 3.7 Flash), 57 at medium and 52 at low, with gains led by agentic evaluations (t^3-Banking tool use +12 points to 45%, Terminal-Bench v2.1 coding, GDPval-AA v2). 1M-token context, multimodal input (text, image, video, speech) with text output. Pricing matches 3.7 Flash at $0.75/$3.75 per Mtok in/out through end of 2026 ($1.50/$7.50 standard), with cached input keeping a 90% discount. Available in the Gemini app (AI Pro/Ultra), AI Mode, and Gemini in Google Sheets, and for developers via Google Antigravity, AI Studio and the Gemini API. Vendor/third-party figures unverified by independent replication at launch.",

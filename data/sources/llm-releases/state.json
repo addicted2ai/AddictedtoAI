@@ -1,9 +1,9 @@
 {
-  "consecutive_no_change_fetches": 1,
-  "last_change_date": "2026-09-06",
+  "consecutive_no_change_fetches": 0,
+  "last_change_date": "2026-09-08",
   "last_error": null,
-  "last_fetch_at": "2026-09-07T06:00:02.913Z",
-  "last_fetch_date": "2026-09-07",
+  "last_fetch_at": "2026-09-08T06:00:04.133Z",
+  "last_fetch_date": "2026-09-08",
   "last_status": 200,
   "refusing": null,
   "seeded": true,

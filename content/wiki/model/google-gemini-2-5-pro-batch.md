@@ -37,4 +37,5 @@ domains_seeded:
   - coding
   - image
   - video
+  - agents
 ---

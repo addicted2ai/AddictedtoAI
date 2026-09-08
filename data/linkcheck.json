@@ -6371,6 +6371,50 @@
       "ok": true,
       "status": 200
     },
+    "https://www.aionlabs.ai/docs/models/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aionlabs.ai/docs/models/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.aionlabs.ai/privacy-policy/": {
+      "bytes": null,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://www.aionlabs.ai/privacy-policy/",
+      "last_checked": "2026-09-08",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
+    },
+    "https://www.aionlabs.ai/privacy/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aionlabs.ai/privacy/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.aionlabs.ai/terms/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aionlabs.ai/terms/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.aisi.gov.uk/work/pre-deployment-evaluation-of-openais-o1-model": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -6411,6 +6455,17 @@
       "final_url": "https://www.aljazeera.com/economy/2026/8/27/openai-says-it-detected-malign-activity-months-before-hugging-face-attack",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.anthropic.com/claude-fable-and-mythos-5-1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -6466,6 +6521,17 @@
       "final_url": "https://www.anthropic.com/news/claude-opus-5",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.anthropic.com/news/enterprise-frontier-safeguards": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -6535,6 +6601,17 @@
       "meta_refresh": null,
       "ok": true,
       "status": 200
+    },
+    "https://www.boson.ai/rpbench": {
+      "bytes": 7526,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://www.boson.ai/rpbench",
+      "last_checked": "2026-09-08",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
     },
     "https://www.bostonglobe.com/2026/09/02/business/justice-department-new-york-times-openai/": {
       "bytes": 228182,
@@ -6789,6 +6866,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.helpnetsecurity.com/2026/09/02/anthropic-enterprise-frontier-safeguards/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.helpnetsecurity.com/2026/09/02/anthropic-enterprise-frontier-safeguards/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.hiarcs.com/games/mercosur2009/mercosur09.html": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -6851,6 +6939,28 @@
       "final_url": "https://www.inceptionlabs.ai/models",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.inclusion-ai.org/about": {
+      "bytes": 2983,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.inclusion-ai.org/about/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.ioi2026.uz/contest-rules": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.ioi2026.uz/contest-rules",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -6976,6 +7086,28 @@
       "ok": true,
       "status": 200
     },
+    "https://www.manifold.security/blog/ai-coding-agents-git-hijack": {
+      "bytes": 487923,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.manifold.security/blog/ai-coding-agents-git-hijack",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.microsoft.com/en-us/privacy/privacystatement": {
+      "bytes": 20,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.microsoft.com/en-us/privacy/privacystatement",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.microsoft.com/en-us/translator/blog/2018/03/14/human-parity-for-chinese-to-english-translations/": {
       "bytes": 0,
       "consecutive_failures": 0,
@@ -6983,6 +7115,28 @@
       "final_url": "https://www.microsoft.com/en-us/translator/blog/2018/03/14/human-parity-for-chinese-to-english-translations/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.minimax.io/about": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.minimax.io/about",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.minimax.io/news/a-deep-dive-into-the-minimax-m2-her-2": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.minimax.io/news/a-deep-dive-into-the-minimax-m2-her-2",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -7005,6 +7159,17 @@
       "final_url": "https://idp.nature.com/transit?redirect_uri=https%3A%2F%2Fwww.nature.com%2Farticles%2Fnature16961&code=448c9ae8-94dd-46ec-9d78-383cdcb62209",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.nbcnews.com/tech/security/openai-linked-ai-agents-swarmed-dormant-german-wiki-report-rcna596182": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.nbcnews.com/tech/security/openai-linked-ai-agents-swarmed-dormant-german-wiki-report-rcna596182",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -7141,6 +7306,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.theglobeandmail.com/business/international-business/us-business/article-openai-5-stake-trump-administration-us-government/": {
+      "bytes": 161218,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.theglobeandmail.com/business/international-business/us-business/article-openai-5-stake-trump-administration-us-government/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.thomsonreuters.com/en-us/posts/innovation/thomson-reuters-standard-for-high-stakes-ai/": {
       "bytes": 16828,
       "consecutive_failures": 0,
@@ -7185,6 +7361,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.unite.ai/in-an-alien-mind-openais-jakub-pachocki-urges-shared-safety-bars/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.unite.ai/in-an-alien-mind-openais-jakub-pachocki-urges-shared-safety-bars/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.wilmerhale.com/en/insights/client-alerts/20260602-new-executive-order-addressing-early-government-access-to-frontier-ai-models": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -7203,6 +7390,17 @@
       "final_url": "https://www2.census.gov/library/working-papers/2024/adrm/ces/CES-WP-24-16.pdf",
       "last_checked": "2026-09-01",
       "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://x.com/AntLingAGI/status/2080351022028095681": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://x.com/AntLingAGI/status/2080351022028095681",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
       "meta_refresh": null,
       "ok": true,
       "status": 200

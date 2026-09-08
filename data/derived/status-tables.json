@@ -1,6 +1,119 @@
 {
   "changed_30d": [
     {
+      "date": "2026-09-08",
+      "display_name": "Z.ai: GLM 4.7 Flash",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "z-ai/glm-4.7-flash-20260119",
+        "context_length": 202752,
+        "created": 1768833913,
+        "expiration_date": null,
+        "id": "z-ai/glm-4.7-flash",
+        "name": "Z.ai: GLM 4.7 Flash",
+        "pricing.completion": "0.0000004",
+        "pricing.prompt": "0.0000000605"
+      },
+      "field": "status",
+      "key": "openrouter-models|519168ec44b8a2c3|c445d17afde865af|z-ai/glm-4.7-flash|status",
+      "kind": "field_change",
+      "new": "active",
+      "old": "deprecated",
+      "row_id": "z-ai/glm-4.7-flash",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-08",
+      "display_name": "Mistral: Mistral Medium 3.5 (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/mistral-medium-3.5-20260430",
+        "context_length": 262144,
+        "created": 1777570439,
+        "expiration_date": null,
+        "id": "mistralai/mistral-medium-3-5:batch",
+        "name": "Mistral: Mistral Medium 3.5 (batch)",
+        "pricing.completion": "0.00000375",
+        "pricing.prompt": "0.00000075"
+      },
+      "field": "context_window",
+      "key": "openrouter-models|519168ec44b8a2c3|c445d17afde865af|mistralai/mistral-medium-3-5:batch|context_window",
+      "kind": "field_change",
+      "new": "262144",
+      "old": "32768",
+      "row_id": "mistralai/mistral-medium-3-5:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-08",
+      "display_name": "MiniMax: MiniMax M3 (free)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "minimax/minimax-m3-20260531",
+        "context_length": 1048576,
+        "created": 1780245374,
+        "expiration_date": null,
+        "id": "minimax/minimax-m3:free",
+        "name": "MiniMax: MiniMax M3 (free)",
+        "pricing.completion": "0",
+        "pricing.prompt": "0"
+      },
+      "field": null,
+      "key": "openrouter-models|519168ec44b8a2c3|c445d17afde865af|minimax/minimax-m3:free|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "minimax/minimax-m3:free",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-08",
+      "display_name": "MiniMax: MiniMax M2.7 (free)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "minimax/minimax-m2.7-20260318",
+        "context_length": 196608,
+        "created": 1773836697,
+        "expiration_date": null,
+        "id": "minimax/minimax-m2.7:free",
+        "name": "MiniMax: MiniMax M2.7 (free)",
+        "pricing.completion": "0",
+        "pricing.prompt": "0"
+      },
+      "field": null,
+      "key": "openrouter-models|519168ec44b8a2c3|c445d17afde865af|minimax/minimax-m2.7:free|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "minimax/minimax-m2.7:free",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-08",
+      "display_name": "Ling-3.0-flash-Fin open weights posted under MIT",
+      "excerpt": {
+        "description": "Ant Group (inclusionAI) - inclusionAI published Ling-3.0-flash-Fin's open weights on Hugging Face (inclusionAI/Ling-3.0-flash-Fin) under the MIT license, delivering the open-weight release announced at the model's Aug 27 launch. Third-party hosting (DeepInfra at $0.06/$0.18 per Mtok) and community GGUF quantizations followed, confirming public availability by 2026-09-04.",
+        "guid": "b4fd3a75-eab3-4a68-9a48-597f14dc49b7",
+        "link": "https://llm-releases.com/models/ling-3-0-flash-fin",
+        "pubDate": "Fri, 04 Sep 2026 00:00:00 GMT",
+        "source_name": "Ant Group (inclusionAI)",
+        "source_url": "https://huggingface.co/inclusionAI/Ling-3.0-flash-Fin",
+        "title": "Ling-3.0-flash-Fin open weights posted under MIT"
+      },
+      "field": null,
+      "key": "llm-releases|28ffbafd08f71cac|03df1f8bd32433bb|b4fd3a75-eab3-4a68-9a48-597f14dc49b7|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "b4fd3a75-eab3-4a68-9a48-597f14dc49b7",
+      "source": "llm-releases",
+      "source_url": "https://llm-releases.com/feed.xml"
+    },
+    {
       "date": "2026-09-06",
       "display_name": "Z.ai: GLM 5.2 (free)",
       "excerpt": {
@@ -3222,23 +3335,9 @@
       "source": "openrouter-models",
       "source_url": "https://openrouter.ai/api/v1/models",
       "status": "deprecated"
-    },
-    {
-      "context_window": "202752",
-      "created": 1768833913,
-      "display_name": "Z.ai: GLM 4.7 Flash",
-      "entry_id": "model/z-ai-glm-4-7-flash",
-      "expiration_date": "2026-09-10",
-      "price_input": "0.00000006",
-      "price_output": "0.0000004",
-      "provider": "z-ai",
-      "row_id": "z-ai/glm-4.7-flash",
-      "source": "openrouter-models",
-      "source_url": "https://openrouter.ai/api/v1/models",
-      "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-07",
+  "generated_on": "2026-09-08",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",

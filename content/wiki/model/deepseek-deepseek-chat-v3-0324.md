@@ -34,4 +34,5 @@ timeline: []
 mentions: []
 domains_seeded:
   - coding
+  - agents
 ---
