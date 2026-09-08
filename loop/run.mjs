@@ -402,7 +402,7 @@ async function executeJob(ctx, opts) {
     const gateTimeoutMs = capMinutes * 60 * 1000;
     const runTheGates = () => (typeof gates === 'function'
       ? gates(ctx, worktree)
-      : runGates(ctx, worktree, { timeoutMs: gateTimeoutMs, lockWaitMs: gateTimeoutMs }));
+      : runGates(ctx, worktree, { timeoutMs: gateTimeoutMs }));
     // -----------------------------------------------------------------------
     // PRINT WHY, NOT JUST THAT — at the moment of the failure, not at the end
     // of the block.

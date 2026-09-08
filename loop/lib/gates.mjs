@@ -11,6 +11,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, symlinkSync, unlinkSync, readFileSync } from 'node:fs';
+import { freemem } from 'node:os';
 import { join } from 'node:path';
 
 /**
@@ -116,6 +117,28 @@ function environmentalCondition(result = {}) {
   return null;
 }
 
+/**
+ * Leave the child a derived grace period after its lock wait expires, so its
+ * refusal can be raised, printed, and captured before the parent cap kills it.
+ * The margin is one quarter of the process cap rather than a machine-specific
+ * fixed duration; it scales with every per-job cap the loop supplies.
+ */
+export function lockWaitBudget(timeoutMs) {
+  const captureMarginMs = Math.ceil(timeoutMs / 4);
+  return Math.max(0, timeoutMs - captureMarginMs);
+}
+
+function freeMemoryOnSpawnRefusal(result) {
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  const errorCode = result.error?.code;
+  const timedOut = errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(result.error?.message ?? '');
+  const noOutput = !output.trim();
+  const refused = !timedOut && noOutput && (
+    SPAWN_FAILURE_CODES.has(errorCode) || SPAWN_FAILURE_STATUS.has(result.status)
+  );
+  return refused ? freemem() : undefined;
+}
+
 /** Did a gate fail because the machine refused the check, rather than the branch? */
 export function gatesHitEnvironmentalFailure(result = {}) {
   return (result.results ?? [result])
@@ -176,8 +199,10 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
   // tell a first failure from a confirmed one, which is the exact readability
   // this function was written for.
   const condition = failed.map(environmentalCondition).find(Boolean);
+  const memory = failed.find((r) => Number.isFinite(r.freeMemoryBytes))?.freeMemoryBytes;
+  const memoryNote = Number.isFinite(memory) ? ` (free memory: ${memory} bytes)` : '';
   const marker = condition
-    ? `environmental: ${condition}`
+    ? `environmental: ${condition}${condition === 'child process did not start' ? memoryNote : ''}`
     : gatesHitTransportFailure(result)
     ? 'transport-marked'
     : 'no transport marker in the captured output';
@@ -246,6 +271,7 @@ function npmRun(worktree, script, timeoutMs, env) {
     status: r.status,
     error: r.error?.message,
     errorCode: r.error?.code,
+    freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
     spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
@@ -331,6 +357,7 @@ function nodeRun(worktree, name, spec, timeoutMs, env) {
     status: r.status,
     error: r.error?.message,
     errorCode: r.error?.code,
+    freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
     spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
@@ -348,7 +375,7 @@ function nodeRun(worktree, name, spec, timeoutMs, env) {
 export function runGates(ctx, worktree, {
   scripts = DEFAULT_GATES,
   timeoutMs = 20 * 60 * 1000,
-  lockWaitMs = timeoutMs,
+  lockWaitMs = lockWaitBudget(timeoutMs),
 } = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
   const gateEnv = {

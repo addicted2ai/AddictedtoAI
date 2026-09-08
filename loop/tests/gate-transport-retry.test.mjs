@@ -20,7 +20,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, readFileSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,10 +33,12 @@ import {
   gatesHitTransportFailure,
   isTransportFailure,
   runGates,
+  lockWaitBudget,
   TRANSPORT_FAILURE_MARKER,
 } from '../lib/gates.mjs';
 import { assertIngested, assertNoTransportFailure } from '../../pulse/tests/helpers.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml } from './helpers.mjs';
+import { buildLockPath, TEST_LOCK_SUFFIX } from '../../scripts/build-lock.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -102,7 +104,7 @@ test('a refused child process is environmental, while an ordinary failure remain
   assert.match(gateFailureNote(ordinary), /no transport marker/);
 });
 
-test('runGates gives child gates their own lock wait derived from the gate timeout', () => {
+test('runGates gives child gates a lock wait below the process cap', () => {
   const dir = mkdtempSync(join(tmpdir(), 'atai-lock-env-'));
   try {
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts: { test: 'node gate.mjs' } }), 'utf8');
@@ -111,23 +113,60 @@ test('runGates gives child gates their own lock wait derived from the gate timeo
       "process.stdout.write(`${process.env.ATAI_TEST_LOCK_WAIT_MS},${process.env.ATAI_BUILD_LOCK_WAIT_MS}`); process.exit(1);",
       'utf8',
     );
-    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 4321 });
-    assert.match(result.results[0].output, /4321,4321$/);
+    const timeoutMs = 120000;
+    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs });
+    assert.match(result.results[0].output, new RegExp(`${lockWaitBudget(timeoutMs)},${lockWaitBudget(timeoutMs)}$`));
   } finally {
-    rmSync(dir, { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   }
 });
 
-test('the loop wires its per-job cap into both gate lock waits', () => {
+test('the loop lets runGates derive a lock grace period from its per-job cap', () => {
   // The injected gate hook cannot observe runGates options, so this checks the
-  // production call site itself. Removing either cap-derived option is the
-  // named mutation this regression must reject.
+  // production call site itself. Passing the lock wait explicitly at the full
+  // cap is the named mutation this regression must reject.
   const source = readFileSync(join(REPO_ROOT, 'loop', 'run.mjs'), 'utf8');
   assert.match(
     source,
-    /runGates\(ctx, worktree, \{ timeoutMs: gateTimeoutMs, lockWaitMs: gateTimeoutMs \}\)/,
-    'run.mjs must pass the gate cap as the child lock-wait cap',
+    /runGates\(ctx, worktree, \{ timeoutMs: gateTimeoutMs \}\)/,
+    'run.mjs must let runGates reserve capture grace below the process cap',
   );
+});
+
+test('a lock held past the child budget is an environmental refusal before the process cap', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-lock-grace-'));
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts: { test: `node ${join(REPO_ROOT, 'scripts', 'run-tests.mjs')}` } }), 'utf8');
+    mkdirSync(join(dir, 'loop'), { recursive: true });
+    writeFileSync(join(dir, 'loop', 'holder.test.mjs'), 'process.exit(0);', 'utf8');
+    writeFileSync(
+      buildLockPath(dir, TEST_LOCK_SUFFIX),
+      JSON.stringify({ pid: process.pid, host: hostname(), started: new Date().toISOString(), label: 'test holder' }),
+      'utf8',
+    );
+    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 4000 });
+    assert.equal(result.results[0].errorCode, undefined);
+    assert.equal(gatesHitEnvironmentalFailure(result), true, JSON.stringify(result.results[0]));
+    assert.match(gateFailureNote(result), /environmental: test-lock refusal/);
+    assert.match(result.output, /TEST LOCK/);
+  } finally {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    } catch {
+      // A timed-out Windows child can retain its cwd briefly; the assertion
+      // above is the mutation proof, so cleanup must not mask its message.
+    }
+  }
+});
+
+test('spawn-refusal notes carry the free-memory figure without changing classification', () => {
+  const result = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: null, spawned: true, errorCode: 'ENOMEM', freeMemoryBytes: 123456789 }],
+  };
+  assert.equal(gatesHitEnvironmentalFailure(result), true);
+  assert.match(gateFailureNote(result), /environmental: child process did not start \(free memory: 123456789 bytes\)/);
 });
 
 /**
