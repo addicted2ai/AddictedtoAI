@@ -149,9 +149,18 @@ the sentence that uses it.
       reports BUILD PASS on a failed build (found by A2AI-Orch on packet A's
       first tip, 2026-09-08). No `package.json` edit and no prebuild step:
       prebuild runs before `next build` in the same npm script and cannot know
-      whether it succeeded. The input walk excludes a path **only if every
-      writer of it runs inside `npm run build` itself** — the rule, not a list:
-      `public/` qualifies (written solely by prebuild's `assets` step through
+      whether it succeeded. **The input walk's rule as first written here —
+      "excludes a path only if every writer of it runs inside `npm run build`"
+      — is SUPERSEDED by task 3b's combined rule (2026-09-08): a path is an
+      INPUT only if some build step READS it, and a read path is EXCLUDED only
+      if every writer of it runs inside `npm run build` (a build-internal
+      output).** The writer test alone tested the wrong end of the relation:
+      it could not exclude `.beads/`, which `bd` writes from outside the build
+      and which nothing in the build reads (Luna-Boss-2 caught the two tasks
+      contradicting each other on that path; the architect's quantifier check
+      had been run on tasks 1–4 and not on the task it added next). The two
+      worked examples agree under either rule and stay as written: `public/`
+      qualifies (written solely by prebuild's `assets` step through
       `lib/site-assets.mjs`, a build output copied into `out/`);
       `data/derived/**` does NOT, because the Pulse rewrites it (`pulse/lib/
       derive.mjs`, `rederive.mjs`, `freshness.mjs`, `frontier.mjs`, `mint.mjs`,
@@ -249,16 +258,25 @@ the sentence that uses it.
       unknown gate name fails closed, a non-finite duration passes unchecked)
       and is now exported, so its inputs are no longer two visible call sites.
 - [ ] 3b. `scripts/verify-launch.mjs` (`hasCurrentBuild`'s input walk) and its
-      test: **the input set is defined by READERS, not writers** — a path
-      belongs in it only if some build step reads it — and `.beads/` at the
-      repository root is excluded explicitly, with the reason recorded in the
-      code: the issue tracker's embedded Dolt database, backup set and journal
-      are written autonomously by `bd` on every issue operation from any
-      session, and no build step reads them (found by A2AI-Orch on 2026-09-08
-      after a captured fourth run rebuilt 49 s three minutes after a 0.365 s
-      reuse; seven of the eight inputs written in between were under
-      `.beads/`). The writer-based rule stays for OUTPUTS the build writes into
-      its own input set (`public/`); the reader-based rule decides membership.
+      test: **the combined rule, which supersedes task 3's writer-only
+      sentence** — a path is an INPUT only if some build step READS it
+      (membership by readers), and a read path is EXCLUDED only if every writer
+      of it runs inside `npm run build` (the exception for build-internal
+      outputs such as `public/`; `data/derived/**` stays in because the Pulse
+      writes it from outside and 24 modules read it). Under that rule `.beads/`
+      at the repository root is excluded explicitly, with the reason recorded
+      in the code: the issue tracker's embedded Dolt database, backup set and
+      journal are written autonomously by `bd` on every issue operation from
+      any session, and no build step reads them (found by A2AI-Orch on
+      2026-09-08 after a captured fourth run rebuilt 49 s three minutes after a
+      0.365 s reuse; seven of the eight inputs written in between were under
+      `.beads/`). Why this is priority rather than tidiness (Luna-Boss-2): every
+      fleet brief's ground rules say "`bd create` for something you find and
+      cannot fix is welcome", so a worker filing a finding mid-run defeats the
+      reuse for whoever runs verify-launch next, 46 to 52 seconds bought by
+      packet A and spent by an instruction the coordinator rightly keeps — the
+      excluded-path rule is what decides whether the reuse fires at all in a
+      repository where a tracker writes on every operation from any session.
       Test: with a current export and record, a write under `.beads/` does not
       defeat reuse (no spawn), and a write to a read input still does.
       **Mutation**: remove the `.beads/` exclusion and confirm the first arm
