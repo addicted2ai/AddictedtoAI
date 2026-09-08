@@ -41,10 +41,10 @@ expiry date and no warning in the row itself. Nothing arrived to take its place,
 and the changed feed is where that would show: the withdrawal is the only
 OpenRouter line it recorded that day, and it records arrivals as readily as
 retirements. A live fetch of the catalog on 2026-09-07
-([`https://openrouter.ai/api/v1/models`](https://openrouter.ai/api/v1/models),
-430 rows) confirms the withdrawal, and confirms how narrow it is: eighteen
-`:free` rows survive across nine other authors, and `z-ai/glm-5.2` itself is
-still listed. The bound facts above render as not published, with no as-of date
+([`https://openrouter.ai/api/v1/models`](https://openrouter.ai/api/v1/models))
+carried 430 rows as observed on 7 September 2026, and confirmed the withdrawal.
+It also showed how narrow the withdrawal was: eighteen `:free` rows survived
+across nine other authors, and `z-ai/glm-5.2` itself was still listed. The bound facts above render as not published, with no as-of date
 to show, rather than a dated last-known value — the row has left both the
 current and the previous snapshot, so the data layer holds no as-of date for
 it, and the values it carried on its last day are pinned in
