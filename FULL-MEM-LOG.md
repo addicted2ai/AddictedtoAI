@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 59. Characters of memory text: 144351.
+Entries: 59. Characters of memory text: 145795.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -349,6 +349,28 @@ CAVEAT ON PROVENANCE, stated because this entry is an authority statement and au
 statements are the ones agents act on without re-checking: the quotation is second-hand. The
 machinery corroborates the POLICY it describes; it does not prove the words. If the wording
 matters for a later decision, get it from the maintainer rather than from here.
+
+--- RESOLVED 2026-09-08. The block above says CLAUDE.md is STALE on the Luna conformance
+record. IT HAS SINCE BEEN CORRECTED, so that warning is now history rather than a live
+finding. Kept, with this note beneath it, because the log is a record. ---
+
+CLAUDE.md now reads, verbatim: `codex-gpt-luna` **pass** (09-07 15:46Z — the 08-30 FAIL
+was an expired `codex login`, since redone), and it enumerates all SEVEN runners the JSON
+carries rather than the four it used to claim. It also now says of itself that the passage
+"has now been wrong three times (the third: it carried the Luna FAIL for a day after the
+JSON recorded the pass)" — so the file records its own correction rather than quietly
+absorbing it, which is the behaviour this corpus asks of a record.
+
+THE INDEX STATEMENT WAS CORRECTED OUTRIGHT, not annotated. Statement 21 had told readers
+that CLAUDE.md was stale on this point; that instruction became false the moment the file
+was fixed, and the index is read in fragments where a reader lands on one line. Same split
+as everywhere else: the log keeps the wrong turn with its refutation, the index carries
+only what is currently true.
+
+THE DURABLE FACT, which is all statement 21 needs to carry: both Luna runners pass
+conformance, recorded 2026-09-07. Where a reader should check it is data/conformance.json,
+which is the authority — not CLAUDE.md and not this entry, both of which have been wrong
+about it and will be again.
 ```
 
 ## archive-a-finished-change-immediately
