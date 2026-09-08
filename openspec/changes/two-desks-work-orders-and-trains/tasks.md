@@ -36,11 +36,25 @@ the orchestrator's work between runs.
       `loop/tests/job-gate-set.test.mjs`, whose gates are `node --version`,
       would false-fail on faster hardware, and load makes children slower so the
       false failure arrives on the FAST machine (A2AI-Orch). The shape that
-      closes both: repository floors near the real minimum (of the order of a
-      tenth of the calibrated runtime, the fraction stated per gate), and
-      `runGates` accepting an explicit floor set for a tree that is not this
-      repository, which the fixture tests pass, with the ~1 ms tripwire as the
-      lowest any override may set. `runGates` fails the stage when a gate
+      closes both: repository floors as a stated fraction of the gate's recorded
+      runtime — **deliberately generous while the calibration is one observation
+      per gate**: at 25% of the single recorded run, test 78.7 s, launch 9.9 s,
+      design 8.9 s, build 7.3 s, analytics 4.9 s, surfaces 0.93 s, so a 400 ms
+      no-op misses the test floor by about 200x and a real gate would have to
+      get four times faster to trip it, which is itself worth stopping to look
+      at — and `runGates` accepting an explicit floor set for a tree that is not
+      this repository, which the fixture tests pass, with the ~1 ms tripwire as
+      the lowest any override may set. The calibration records how many runs
+      each figure rests on (today: one, taken 2026-09-08 on this machine, with
+      the suite's wall time moving under load, 1,380 s summed against 298 s
+      wall); the margin is stated as generous pending a distribution, not
+      justified from a variance nobody has measured. The FIXTURE numbers (npm's
+      own startup around `node --version` in a temp tree) are the basis for the
+      fixture floor and the tripwire minimum and never for a repository floor:
+      the real test gate has no legitimate fast path, and a floor a thousandth
+      of the gate is how the first tip went wrong. `next build` does have a
+      legitimate fast path, the warm cache; its floor is set from a warm run when
+      the calibration has one and the cold run's generous fraction until then. `runGates` fails the stage when a gate
       returns below its floor, naming the gate and the observed duration. Invoke
       npm scripts through `cmd.exe /c`, never `shell: true`. Implements: *A
       job's gates are a tripwire; the full set runs once, on the train*, the

@@ -455,9 +455,10 @@ The mechanical gates are split by what each one can catch and what it costs.
   floor SHALL be **derived from a recorded calibration** of that gate on this
   repository — set by a stated margin **below the fastest legitimate run
   observed**, warm caches included, and **above what a run that did none of the
-  gate's work could take** — and SHALL be recorded with the date it was taken,
-  so that a floor is a measurement rather than a guess and a machine that gets
-  faster does not turn the check into a false failure. A floor that only the
+  gate's work could take** — and SHALL be recorded with the date it was taken
+  and the number of runs it rests on, so that a floor is a measurement rather
+  than a guess, a single observation is not mistaken for a minimum, and a
+  machine that gets faster does not turn the check into a false failure. A floor that only the
   millisecond shim failure could fall under is vacuous for the gate that costs
   most: a test gate that returns in half a second did not run the suite. The
   runner SHALL accept an explicit floor set for a tree that is not this

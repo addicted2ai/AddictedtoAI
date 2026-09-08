@@ -1580,7 +1580,20 @@ run observed (warm caches included) and above what a run that did none of the
 gate's work could take, and requires the runner to accept an explicit floor set
 for a tree that is not this repository, which the fixture tests pass, with the
 millisecond tripwire as the lowest any override may set. Task 2 gains the
-400 ms arm. (3)
+400 ms arm. Orch then named the more important half plainly — a false PASS on a
+gate that ran nothing is the failure that reaches the remote, where its own
+direction is a false FAIL on a fast machine — and headed off the conflation
+that makes a floor a thousand times too low: its spawn measurements are FIXTURE
+numbers (npm startup around `node --version` in a temp tree), the basis for the
+fixture floor and the tripwire minimum, never for a repository floor; the
+repository numbers are the recorded gate runtimes in seconds, and a margin
+below those (25% gives test 78.7 s, launch 9.9 s, design 8.9 s, build 7.3 s,
+analytics 4.9 s, surfaces 0.93 s) is what closes Luna-Boss-2's direction. And
+the caveat on its own table: one observation each, this morning, this machine,
+with the suite's wall time moving under load, so no minimum has been measured
+and the margin is stated as deliberately generous pending a distribution; the
+bullet now requires the calibration to record the number of runs behind each
+figure. (3)
 `scripts/tests/verify-launch.test.mjs` shipped fresh-`out/` and no-`out/`
 fixtures only, so replacing `hasCurrentBuild`'s whole body with a presence check
 left every test green while the gate would reuse a stale export; task 4 gains
