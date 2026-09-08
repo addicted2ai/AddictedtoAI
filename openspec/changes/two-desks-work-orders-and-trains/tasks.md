@@ -56,6 +56,33 @@ and the work is the closure over every class. Not withdrawn on one packet; if
 B1's second round or packet E returns the same nil, it is ceremony and comes
 out, and that commitment is recorded here before the result.
 
+**A review is scoped by its brief; the suite is not.** (A2AI-Orch,
+2026-09-08, verified by Luna-Boss-2 against its own artefacts.) Seven review
+briefs — packet A's six rounds and B1's — said the model-naming and
+change-path rules were "both enforced by tests" and named only
+`loop/tests/portability.test.mjs`; the change-path rule is
+`scripts/no-change-dir-refs.test.mjs`. Six sealed reviews, each faithful,
+reported a property nothing they ran had tested; the first real violation
+(B1's fixture referencing a change directory) was invisible to the review
+that read that very diff and was caught by a full suite run by hand.
+Detection came from a violation, not from an audit, and the instrument that
+caught it is the only one in the chain whose scope is not set by a brief.
+Therefore: **no Stage 0 packet merges without a COMPLETED full suite on its
+final tip** — the 600-second floor, the rule that a command-cap timeout is a
+re-run and not a result, and the orchestrator running the suite when a
+worker's attempt is inconclusive are load-bearing, not tidy, and the suite is
+the step that may not be dropped when a round runs long, which is exactly
+when dropping it is tempting. **And review briefs name the PROPERTY, not the
+instrument:** not "run `portability.test.mjs`" but "nothing here may name a
+model, provider, harness or runner id, and nothing may reference a change
+directory — find what enforces each, run it, and report if you cannot find
+one", so that an inventory the coordinator will get wrong again becomes a
+derivation the reviewer redoes each round, and a rule with no discoverable
+enforcement is a reportable finding rather than a silent gap (Luna-Boss-2's
+corollary: a brief's inventory is a claim with an expiry date its author
+cannot see expire; this is the quantifier obligation pointed at instruments
+and delegated to the agent reading the tree).
+
 **And the architect's own obligation before every freeze: when a task says
 "every X", enumerate the X's and confirm each one can satisfy it.** Two of
 packet A's five revisions were defects in the STANDARD, not the implementation

@@ -2044,7 +2044,23 @@ its lane; the brief now says once governs iteration, not attempts, with a
 six for the third round running while missing all four findings. Mutation
 table, second outing: nothing the reviewer would not have found, and itself a
 finding again; two nils, the target class still not having appeared. Round
-count: A six, B1 three. The reviewer also faulted the
+count: A six, B1 three.
+
+**Orch's suite run on `439d083` was RED, and the reason is structural (Orch,
+verified by Luna-Boss-2 against seven of its own briefs).** B1's fixture
+referenced a change directory, which `scripts/no-change-dir-refs.test.mjs`
+refuses; every review brief of the day had said the model-naming and
+change-path rules were "both enforced by tests" and named only
+`portability.test.mjs`, so six sealed reviews faithfully reported a property
+nothing they ran had tested, and the diff that broke it was reviewed by one
+of them. The full suite, the only instrument in the chain whose scope no
+brief sets, caught it. Packet A was verified clean by the same suite (the
+change-dir test 3 of 3 on main at `cfd9cfa`), which is to say by the suite and
+not by any of its six reviews. Adopted in the Stage 0 preamble: a review is
+scoped by its brief and the suite is not, so no packet merges without a
+completed suite on its final tip, and review briefs name properties and make
+the reviewer find and run their enforcement. B1 round 3 carries the red suite
+as item 0. Round count: A six, B1 heading for four. The reviewer also faulted the
 brief, the third reviewer of the day to find a coordinator defect and the most
 substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
 > 0` to `s.score === 0`) reddened three arms.
