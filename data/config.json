@@ -23,7 +23,7 @@
     "bounds": {
       "upkeep_floor_pct": 40,
       "new_writing_ceiling_pct": 45,
-      "machinery_ceiling_pct": 10
+      "machinery_ceiling_pct": 30
     }
   },
   "job_caps_minutes": {

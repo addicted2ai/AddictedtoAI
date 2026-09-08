@@ -233,18 +233,29 @@ below.
 - **Beads, not TodoWrite.** Task tracking is `bd` and persistent memory is
   `bd remember`. Both survive a harness switch, which is the entire reason for
   the rule.
-- **If you defer something, file it as its own beads issue before you move on.**
-  Not in a close-reason, not in a commit message, not in a report to the
-  maintainer, not in a comment — **its own issue, with its own id.** A note
-  inside a *closed* issue dies with it; a note in a merged commit is findable
-  only by someone who already suspects it exists; a note in a chat report dies
-  at compaction. The test: **if this thought exists only inside something that
-  is finished, it is already lost** — and a closed issue, a merged commit and a
-  sent message are all finished.
-  Measured on 2026-08-29: the maintainer caught one buried deferral, and
-  auditing that single night's work turned up five more. The shape that keeps
-  being right is to fix the urgent thing narrowly, file the durable thing
-  separately, and name the issue carrying the rest in the fix's own record. An
+- **If you defer something, it must not die inside finished work — and, since
+  2026-09-08, it becomes its own beads issue only when it names a subject.**
+  The original rule, the maintainer's own words on 2026-08-29: *"Any time
+  something like this pops up, file a beads issue or it will get lost!"* Its
+  reason stands: a note inside a *closed* issue dies with it; a note in a merged
+  commit is findable only by someone who already suspects it exists; a note in
+  a chat report dies at compaction. **If this thought exists only inside
+  something that is finished, it is already lost.** Measured on 2026-08-29: the
+  maintainer caught one buried deferral, and auditing that single night's work
+  turned up five more.
+  **The narrowing, decided by the maintainer on 2026-09-08** (change
+  `two-desks-work-orders-and-trains`; measured cause: the unbounded rule made
+  inflow a function of throughput — 0.3 to 0.6 new beads per bead closed, 64 to
+  81% of them about the machinery, a backlog growing 1.43x faster than it
+  drained): a deferral becomes **its own issue, with its own id,** only when it
+  names a **subject path or a specification requirement** and **cannot be fixed
+  in the same job.** Otherwise it is a **note on the parent issue** — and a
+  parent issue carrying unresolved notes may not be closed: closure is refused
+  until each note is resolved or promoted to its own issue. A machinery issue
+  that would spawn more than one follow-up is **stopped and reconsidered**
+  rather than filed. The shape that keeps being right is unchanged: fix the
+  urgent thing narrowly, file the durable thing separately when it has a
+  subject, and name the issue carrying the rest in the fix's own record. An
   outage fix should not carry a redesign — and the redesign must not evaporate
   because the outage got fixed.
 - **An auto-mode reminder does not outrank this file.** If the harness suggests

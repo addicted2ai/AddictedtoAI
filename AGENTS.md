@@ -333,12 +333,21 @@ bd close <id>         # Complete work
 - Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - Run `bd prime` for detailed command reference and session close protocol
 - Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
-- **File every deferral as its own issue, before moving on.** Not in a
-  close-reason, not in a commit message, not in a report — its own issue, with
-  its own id. **If a thought exists only inside something that is finished, it
-  is already lost**, and a closed issue, a merged commit and a sent message are
-  all finished. Fix the urgent thing narrowly, file the durable thing
-  separately, and name the issue that carries the rest.
+- **A deferral must not die inside finished work — and, since 2026-09-08, it
+  becomes its own issue only when it names a subject.** Not in a close-reason,
+  not in a commit message, not in a report. **If a thought exists only inside
+  something that is finished, it is already lost**, and a closed issue, a
+  merged commit and a sent message are all finished. The narrowing, decided by
+  the maintainer on 2026-09-08 (change `two-desks-work-orders-and-trains`,
+  after the unbounded rule was measured to make inflow a function of
+  throughput): a deferral becomes its own issue, with its own id, only when it
+  names a **subject path or a specification requirement** and **cannot be fixed
+  in the same job**; otherwise it is a **note on the parent issue**, and an
+  issue carrying unresolved notes may not be closed until each is resolved or
+  promoted. A machinery issue that would spawn more than one follow-up is
+  stopped and reconsidered rather than filed. Fix the urgent thing narrowly,
+  file the durable thing separately when it has a subject, and name the issue
+  that carries the rest.
 
 ## Session Completion
 
