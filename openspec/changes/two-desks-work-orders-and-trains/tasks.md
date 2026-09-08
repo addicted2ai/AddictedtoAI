@@ -63,7 +63,14 @@ the orchestrator's work between runs.
       2 ms fails the stage naming the floor; a fake **test** gate returning exit 0
       in 400 ms fails under the repository floors and passes only under an
       explicit fixture floor set; an override below the tripwire is refused; a
-      real gate above its floor passes.
+      real gate above its floor passes; and a fake **build** gate returning
+      exit 0 below its floor fails the stage **and leaves no build success
+      record on disk** (round 2's severe finding: the record was written on
+      exit status at `gates.mjs:481`, before the floor ran at `:635`, so the
+      floor said "did not run" and the persisted record said "succeeded", and
+      the record is what a later gate believes — two mechanisms for one
+      property must agree, and the record derives from the floor-checked
+      result). That regression test is permanent, not a probe.
       **Mutation**: delete the floor comparison and confirm the 2 ms case passes
       while the real case still passes — if both stay green the test measures
       nothing. Restore and verify byte-identical by hash. Tests task 1.
@@ -76,8 +83,12 @@ the orchestrator's work between runs.
       and the `out/status.json` stamp (`lib/stamp.mjs` `buildStamp`: commit and
       dirty flag, written by prebuild's `assets` step) exactly as the spawner saw
       it after the zero exit, rather than recomputing commit and dirty into a
-      second stamp with a second meaning — only on a zero exit, and
-      `hasCurrentBuild` requires the record as well as the timestamps — a failed
+      second stamp with a second meaning — only on a zero exit **that has also
+      cleared the gate's floor**: the record is written after floor enforcement
+      (or removed on a floor failure), never inside the spawn on exit status
+      alone, so the floor and the record can never disagree about whether the
+      build ran — and `hasCurrentBuild` requires the record as well as the
+      timestamps — a failed
       export leaves `out/` newer than the sources, so "newer than every source"
       reports BUILD PASS on a failed build (found by A2AI-Orch on packet A's
       first tip, 2026-09-08). No `package.json` edit and no prebuild step:
@@ -115,7 +126,15 @@ the orchestrator's work between runs.
       the build case still passes. **Mutation B**: make the record check always
       return true and confirm the no-record case fails while the reuse case
       still passes. **Mutation C**: replace `hasCurrentBuild`'s body with
-      presence alone and confirm the stale and empty cases fail. Tests task 3.
+      presence alone and confirm the stale and empty cases fail. And one fixture
+      whose newest input mtime **equals** the newest output mtime, asserting a
+      build is spawned: the comparison is strict `>` (round 1's equal-timestamp
+      objection, answered at `verify-launch.mjs:323`), but round 2's fixture
+      clock used three constants and never the same value twice, so no fixture
+      had equal mtimes and RESULT.md asserted "equal timestamps do not pass" as
+      though tested while restoring `>=` left all eight tests green.
+      **Mutation D**: restore `>=` and confirm the equal-mtime case fails.
+      Tests task 3.
 
 ### The brief diet
 

@@ -1668,3 +1668,47 @@ toggle or reserved-file edit; write the log line before the message; after
 compaction read rows before the tree; `board.mjs` prints ages and holds and
 flags a future-dated row as an error (the first trap, found by mem-cond on its
 own first row). Recorded here because every Stage 0 handover runs through it.
+
+## Revision record — round 14
+
+**Source: packet A's second sealed review (codex Luna max, 19.3 min, seal held
+mechanically) on `46865e7`, handed over by A2AI-Luna-Boss-2 shortly before
+12:25 local on 2026-09-08 (the clock read at this commit; an earlier draft of
+this line guessed 12:05); verdict revise, three small items.** The freeze on tasks
+1–4 held for the whole run, so every finding is Column 1 — found in review on
+work authored against a fixed standard; the author closed four of the five
+defects Luna-Boss-2 pre-registered before the commit existed, including mutation
+C's discriminating fixture (a stale export with an otherwise-valid record).
+
+**The severe one, which neither unsealed reader had: tasks 1 and 3 built two
+mechanisms for one property and they disagreed.** `gates.mjs:481` wrote the
+build success record inside the spawn on exit status alone; the floor ran only
+at `:635`. A build exiting 0 in 2 ms, below its 7,300 ms floor, correctly failed
+the stage and still left `out/.build-stamp.json` on disk, which `hasCurrentBuild`
+then believes. The floor said "did not run", the record said "succeeded", and
+the record is the one that persists. Neither task was wrong alone; it took one
+reader holding both. Task 3 now says the record is written only after floor
+enforcement (or removed on floor failure) and task 2 makes the below-floor,
+no-record case a permanent regression test.
+
+**The withheld finding, missed on the predicted mode.** `verify-launch.mjs:323`
+is strict `>`, answering round 1's equal-timestamp objection, but the fixture
+clock used three constants and never the same value twice, so no fixture had
+equal mtimes; RESULT.md asserted "equal timestamps do not pass" as though
+tested, and restoring `>=` left all eight tests green. The reviewer listed the
+strict comparison under "sound", reading the fix rather than testing it — while
+earning credit for the class elsewhere: its empty-guard probe deleted the
+`files === 0` return, found the suite stayed green because the strict comparison
+independently rejects the empty fixture, and disclosed the redundancy. Task 4
+gains the equal-mtime fixture and mutation D.
+
+**A coordinator's own miss, disclosed by the coordinator.** The round 2 brief
+told the author to fetch `6a8adba` at two command lines while naming `40a5795`
+as the authority elsewhere: a `replace_all` on the backticked sha never touched
+the bare one — a replacement narrower than the property it names, the
+`addictedtoai-xrsg` shape, committed by the session that had cited it all
+morning. The author noticed the contradiction, treated the committed text as
+controlling and said so in RESULT.md, which is the brief's own "if this brief
+contradicts the requirement, the brief is the defect" instruction working; it
+was one inference from building the superseded design, the wasted run the
+freeze exists to prevent.
