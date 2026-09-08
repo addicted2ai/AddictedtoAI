@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 189599.
+Entries: 61. Characters of memory text: 192574.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -2538,6 +2538,38 @@ Windows and Node traps in this repo, each measured.
   1025-14999; TIME_WAIT holds minutes. err.cause carries the errno, err.name/message do
   not. Consequence: npm test is a merge gate and every pulse test serving an HTTP fixture
   can fail this way -- do not run the gate alongside a dozen fetching agents.
+
+LATER LESSON, 2026-09-08. Measured by the `specgraph-origin` session in a DIFFERENT
+WORKSPACE and credited to them; relayed by A2AI-Luna-Boss-2. Not reproducible here, for the
+reason that is the real lesson - see the second half of it under
+a-detector-that-cannot-fail-silently.
+
+CODEX SANDBOXES RUN COMMANDS UNDER A DIFFERENT WINDOWS SID, WHICH BREAKS GIT IN TWO WAYS
+THAT DO NOT LOOK LIKE A SANDBOX PROBLEM. Under `-s read-only` or `-s workspace-write`,
+`codex exec` runs child commands as a different Windows security identifier than the
+invoking user. Both consequences were measured:
+
+  1. git refuses the repository with "dubious ownership" -- the standard message for a repo
+     owned by ANOTHER USER, so it reads as a filesystem or permissions misconfiguration
+     rather than as a sandbox artefact.
+  2. ~/.config/git is unreadable, so the user's own git configuration SILENTLY does not
+     apply.
+
+The fix that works, passed as a codex config option:
+
+    -c 'shell_environment_policy.set={GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="safe.directory", GIT_CONFIG_VALUE_0="*"}'
+
+And for a reviewer running in a DETACHED WORKTREE under workspace-write, git index writes
+inside that worktree also need:
+
+    --add-dir <repo>/.git/worktrees/<name>
+
+THE COROLLARY, WHICH IS THE PART THAT TRAVELS: WHEN HANDING A WORKING RECIPE TO ANOTHER
+PROJECT, STATE THE PERMISSION OR SANDBOX LEVEL IT WAS MEASURED UNDER. The recipe this
+arrived from was measured under `danger-full-access` and did not say so, which is exactly
+what made the omission SILENT rather than visible as a scoped claim. A RECIPE WITHOUT ITS
+CONFIGURATION STATED READS AS UNIVERSAL.
+
 ```
 
 ## worktrees-and-junctions
@@ -3173,5 +3205,26 @@ happened to be written. A feasibility check that does not find the condition fea
 rests on has not finished.
 
 Caught by A2AI-Luna-Boss-2, who named it before the second probe was reported back.
+
+
+THE SAME SHAPE IN A HANDOVER RATHER THAN A DETECTOR, 2026-09-08. The concrete instance is
+under windows-node-and-git-traps: codex's non-permissive sandboxes run child commands under
+a different Windows SID and break git in two ways. This fleet runs `-s danger-full-access`,
+so THAT FAILURE MODE CANNOT OCCUR HERE AND IS STRUCTURALLY INVISIBLE FROM WHERE WE STAND.
+
+A2AI-Luna-Boss-2 had sent that session a full account of how to spawn Luna workers --
+invocation, the stderr-transcript trap, the stdin-brief trap, the worktree junction hazard,
+the effort rungs. EVERY ITEM WAS TRUE AND NONE OF IT COULD HAVE CONTAINED THIS, because its
+own configuration never produces it.
+
+A METHOD THAT WORKS IS NOT THE SAME AS A METHOD THAT IS COMPLETE, AND THE GAPS ARE EXACTLY
+THE FAILURE MODES YOUR OWN CONFIGURATION CANNOT PRODUCE. You cannot close them by being more
+careful, by re-reading your own notes, or by testing harder in your own setup -- THE
+EXPERIMENT NEVER RUNS. The only instrument that finds them is someone running the same tool
+under different settings.
+
+This is why the entry above keeps saying the defect was found from OUTSIDE the detector, and
+it is the same reason a withheld-finding grade needs a SECOND reviewer rather than a more
+careful first one. Awareness is not the defence; a different vantage point is.
 
 ```
