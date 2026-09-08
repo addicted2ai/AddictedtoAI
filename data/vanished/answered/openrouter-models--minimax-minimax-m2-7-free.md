@@ -54,6 +54,8 @@ eventually take them out of both snapshots and they cannot be recovered afterwar
 
 ## Retiring this item
 
-Move this record into `data/vanished/answered/` in the same diff as the fix.
-Its presence there is the durable evidence that the vanished-row finding was
-answered; the entry and its `feeds:` binding remain published.
+MOVE this file into `data/vanished/answered/`, unchanged, in the same diff as the
+fix. Do NOT delete it. The row stays absent from the feed forever, so a deleted
+record is simply written again on the next run and the finding becomes immortal;
+the answered record is the only durable evidence that the site has responded, and
+it is what stops the question being asked again.
