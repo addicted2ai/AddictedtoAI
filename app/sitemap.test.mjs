@@ -62,7 +62,14 @@ test('1r7 newest and index-route folds live in lib/sitemap-dates.mjs', () => {
   assert.match(SRC, /\bindexRouteDates\b.*from ['"]\.\.\/lib\/sitemap-dates\.mjs['"]/);
   assert.match(DATES_SRC, /export function newest/);
   assert.match(DATES_SRC, /export function indexRouteDates/);
-  assert.ok(!/newest\(site\./.test(SRC), 'index-route member folds must not remain inline');
+  // Catch the realistic local reimplementation shape: mapping a site member
+  // collection into dates and then folding it with sort/reduce/at/max/min.
+  // This is a source guard, not a parser; a substantially different rewrite
+  // would require a different check.
+  assert.ok(
+    !/site\.[A-Za-z_$][\w$]*\s*\.\s*map\s*\([\s\S]*?\)\s*\.\s*(?:sort|reduce|at|max|min)\s*\(/.test(CODE_ONLY),
+    'index-route member date folds must not be reimplemented inline',
+  );
 });
 
 test('1r7 each index route passes its own member-max expression', () => {
