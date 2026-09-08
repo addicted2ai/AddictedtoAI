@@ -16,6 +16,20 @@ Entries: 61. Characters of memory text: 185266.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
+**Amended 2026-09-08, and this one corrects a claim that would have cost rules:** the
+32,767-character command-line cap that limits `distilled-memory-index` binds EACH KEY, not
+the corpus. Probed directly rather than recalled, twice, with a throwaway key deleted
+afterwards and the store verified restored: a second key coexists with the index and does
+not touch it, `bd memories --json` returns both, `bd prime` injects both and its header
+counts them ("Persistent Memories (2)"), and INJECTION ORDER FOLLOWS THE KEY NAME, NOT WRITE
+ORDER -- a key named `aaa-` was written LAST and came back FIRST. So the corpus ceiling is
+about 32,767 x N, splitting this index along its existing section banners is available, and
+its numbering and cross-references are the only real cost. The measurement is A2AI-Luna-Boss-2's
+prompting; it was right to challenge the assumption. NEVER DISPLACE A RULE FOR SPACE BEFORE
+SPLITTING HAS BEEN RULED OUT. Not yet done: the one-memory shape is the maintainer's stated
+design, so the split is offered, not taken.
+
+
 ---
 
 ## Index
