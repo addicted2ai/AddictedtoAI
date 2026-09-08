@@ -69,12 +69,20 @@
  * Exits 0 only when every check passed.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 import { ROOT, CONTENT_DIR, DATA_DIR, CONTENT_TYPES } from '../lib/paths.mjs';
+import { shortCommit } from '../lib/stamp.mjs';
 import { Diagnostics } from '../lib/errors.mjs';
 import { loadCorpus } from '../lib/corpus.mjs';
 import { normalizeField, normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
@@ -169,9 +177,21 @@ function skipped(id, label, why) {
 }
 
 const BUILD_OUTPUT_DIR = 'out';
-const BUILD_INPUT_EXCLUSIONS = new Set(['.git', '.next', 'node_modules', BUILD_OUTPUT_DIR]);
+const BUILD_SUCCESS_RECORD = '.build-stamp.json';
+const BUILD_STATUS_FILE = 'status.json';
+// `public/` is written solely by the build's prebuild assets step. The other
+// generated-looking trees are deliberately inputs: Pulse writes data/derived,
+// and prebuild plus lib/paths read openspec/. Excluding either would let an
+// export from before the day's data or spec changes pass as current.
+const BUILD_INPUT_EXCLUSIONS = new Set([
+  '.git',
+  '.next',
+  'node_modules',
+  BUILD_OUTPUT_DIR,
+  'public',
+]);
 
-function newestFileMtime(root, { exclude = new Set() } = {}) {
+function newestFileMtime(root, { exclude = new Set(), excludeFiles = new Set() } = {}) {
   let newest = 0;
   let files = 0;
 
@@ -189,7 +209,7 @@ function newestFileMtime(root, { exclude = new Set() } = {}) {
         walk(file, false);
         continue;
       }
-      if (!entry.isFile()) continue;
+      if (!entry.isFile() || excludeFiles.has(entry.name)) continue;
       try {
         newest = Math.max(newest, statSync(file).mtimeMs);
         files += 1;
@@ -204,18 +224,103 @@ function newestFileMtime(root, { exclude = new Set() } = {}) {
 }
 
 /**
- * An export is reusable only when it has files and was written after every
- * build input in this tree. The repository has no build-produced tree stamp,
- * so the filesystem timestamp comparison is deliberately conservative: a
- * source newer than `out/` forces a build instead of trusting a stale export.
+ * A successful record is written by the process that spawned the build, never
+ * by prebuild. It copies out/status.json exactly as that process saw it after
+ * exit 0. The copied stamp establishes the HEAD commit and whether the build
+ * began from a dirty tree; strict output/input mtimes establish freshness.
+ *
+ * This is not a content hash. A byte change to an input that preserves its
+ * mtime is therefore outside what the record can establish. The honest rule is
+ * to document that limit, not to call the commit-and-mtime pair full tree
+ * identity.
  */
+function localTime(date = new Date()) {
+  const pad = (n, width = 2) => String(n).padStart(width, '0');
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absolute = Math.abs(offsetMinutes);
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
+    `${pad(date.getMilliseconds(), 3)}${sign}${pad(Math.floor(absolute / 60))}:` +
+    `${pad(absolute % 60)}`;
+}
+
+function buildRecordPath(root) {
+  return join(root, BUILD_OUTPUT_DIR, BUILD_SUCCESS_RECORD);
+}
+
+function readBuildSuccessRecord(root) {
+  try {
+    const record = JSON.parse(readFileSync(buildRecordPath(root), 'utf8'));
+    const status = record?.status;
+    if (
+      record?.ok !== true ||
+      typeof record.local_time !== 'string' ||
+      !record.local_time ||
+      !status ||
+      typeof status !== 'object' ||
+      Array.isArray(status) ||
+      typeof status.commit !== 'string' ||
+      typeof status.dirty !== 'boolean'
+    ) {
+      return null;
+    }
+    return record;
+  } catch {
+    return null;
+  }
+}
+
+function removeBuildSuccessRecord(root) {
+  rmSync(buildRecordPath(root), { force: true });
+}
+
+/** Copy the prebuild-produced stamp; do not call buildStamp() here. */
+function writeBuildSuccessRecord(root, date = new Date()) {
+  let status;
+  try {
+    status = JSON.parse(readFileSync(join(root, BUILD_OUTPUT_DIR, BUILD_STATUS_FILE), 'utf8'));
+  } catch {
+    return false;
+  }
+  if (
+    !status ||
+    typeof status !== 'object' ||
+    Array.isArray(status) ||
+    typeof status.commit !== 'string' ||
+    typeof status.dirty !== 'boolean'
+  ) {
+    return false;
+  }
+  try {
+    writeFileSync(
+      buildRecordPath(root),
+      `${JSON.stringify({ ok: true, local_time: localTime(date), status }, null, 2)}\n`,
+      'utf8',
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasSuccessfulBuildRecord(root) {
+  const record = readBuildSuccessRecord(root);
+  if (!record) return false;
+  const status = record.status;
+  if (status.commit !== shortCommit(root)) return false;
+  return true;
+}
+
 export function hasCurrentBuild(root = ROOT) {
   const output = join(root, BUILD_OUTPUT_DIR);
-  if (!existsSync(output)) return false;
-  const built = newestFileMtime(output);
+  if (!existsSync(output) || !hasSuccessfulBuildRecord(root)) return false;
+  // The success record is evidence, not a build artifact. Excluding it keeps
+  // its write-after-build mtime from hiding a source changed after export.
+  const built = newestFileMtime(output, { excludeFiles: new Set([BUILD_SUCCESS_RECORD]) });
   if (built.files === 0) return false;
   const inputs = newestFileMtime(root, { exclude: BUILD_INPUT_EXCLUSIONS });
-  return built.newest >= inputs.newest;
+  return inputs.files > 0 && built.newest > inputs.newest;
 }
 
 function buildInvocation() {
@@ -878,6 +983,7 @@ export function checkBuild(runBuild, {
   root = ROOT,
   spawn = spawnSync,
   now = Date.now,
+  localNow = () => new Date(),
   isCurrent = hasCurrentBuild,
   write = out,
   report = record,
@@ -909,6 +1015,7 @@ export function checkBuild(runBuild, {
 
   write('  running `npm run build` ...\n');
   const invocation = buildInvocation();
+  removeBuildSuccessRecord(root);
   const res = spawn(invocation.command, invocation.args, {
     cwd: root,
     encoding: 'utf8',
@@ -916,6 +1023,7 @@ export function checkBuild(runBuild, {
   });
   const secs = ((now() - started) / 1000).toFixed(0);
   const ok = res.status === 0;
+  const recorded = ok && writeBuildSuccessRecord(root, localNow());
   const text = `${res.stdout ?? ''}\n${res.stderr ?? ''}`;
   const tail = text.trim().split('\n').slice(-14).join('\n          ');
   return report({
@@ -925,7 +1033,12 @@ export function checkBuild(runBuild, {
     actual: ok ? `exit 0 in ${secs}s` : `exit ${res.status} after ${secs}s`,
     floor: 'exit 0',
     notes: ok
-      ? ['Every content gate in lib/build-content.mjs ran, and the static export succeeded.']
+      ? [
+          'Every content gate in lib/build-content.mjs ran, and the static export succeeded.',
+          ...(recorded
+            ? ['copied out/status.json into .build-stamp.json after exit 0']
+            : ['out/status.json was unavailable, so no success record was written']),
+        ]
       : [`Last lines:\n          ${tail}`],
     shortfall: `npm run build exited ${res.status} — the site does not build`,
   });
@@ -1021,6 +1134,7 @@ export async function verifyLaunch(opts = {}) {
     root: opts.root ?? ROOT,
     spawn: opts.spawn ?? spawnSync,
     now: opts.now ?? Date.now,
+    localNow: opts.localNow ?? (() => new Date()),
     isCurrent: opts.isBuildCurrent ?? hasCurrentBuild,
   });
 

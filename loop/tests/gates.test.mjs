@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { GATE_FLOORS, runGates } from '../lib/gates.mjs';
+import { GATE_FLOORS, MIN_GATE_FLOOR_MS, runGates } from '../lib/gates.mjs';
 
 function gateTree(t, { packageScripts = {}, gateSource = 'process.exit(0);\n' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'atai-gate-floor-'));
@@ -20,6 +20,7 @@ test('a successful two millisecond gate below its floor fails with its observati
   const ticks = [0, 2];
   const result = runGates({ repoRoot: dir }, dir, {
     scripts: ['verify-surfaces'],
+    floorSet: GATE_FLOORS,
     spawn: () => ({ status: 0, stdout: '', stderr: '' }),
     now: () => ticks.shift(),
   });
@@ -40,11 +41,47 @@ test('a real gate that runs longer than its calibrated floor passes', (t) => {
       'while (Date.now() - started < 20) {}\n' +
       'process.exit(0);\n',
   });
-  const result = runGates({ repoRoot: dir }, dir, { scripts: ['verify-surfaces'] });
+  const result = runGates({ repoRoot: dir }, dir, {
+    scripts: ['verify-surfaces'],
+    floorSet: { 'verify-surfaces': { floorMs: MIN_GATE_FLOOR_MS } },
+  });
 
   assert.equal(result.ok, true, result.output);
   assert.equal(result.results[0].status, 0);
-  assert.ok(result.results[0].durationMs >= GATE_FLOORS['verify-surfaces'].floorMs);
+  assert.ok(result.results[0].durationMs >= MIN_GATE_FLOOR_MS);
+});
+
+test('a 400ms test gate fails under repository floors and passes only with fixture floors', (t) => {
+  const dir = gateTree(t, { packageScripts: { test: 'node gate.mjs' } });
+  const run = (floorSet) => {
+    const ticks = [0, 400];
+    return runGates({ repoRoot: dir }, dir, {
+      scripts: ['test'],
+      floorSet,
+      spawn: () => ({ status: 0, stdout: '', stderr: '' }),
+      now: () => ticks.shift(),
+    });
+  };
+
+  const repository = run(GATE_FLOORS);
+  assert.equal(repository.ok, false);
+  assert.match(repository.output, /gate test returned below its declared floor/);
+  assert.match(repository.output, /floor 78700\.0ms/);
+
+  const fixture = run({ test: { floorMs: MIN_GATE_FLOOR_MS } });
+  assert.equal(fixture.ok, true, fixture.output);
+});
+
+test('an override below the millisecond tripwire is refused', (t) => {
+  const dir = gateTree(t, { packageScripts: { test: 'node gate.mjs' } });
+
+  assert.throws(
+    () => runGates({ repoRoot: dir }, dir, {
+      scripts: ['test'],
+      floorSet: { test: { floorMs: MIN_GATE_FLOOR_MS - 0.1 } },
+    }),
+    /tripwire minimum/,
+  );
 });
 
 test('npm gates use cmd.exe /c on Windows without shell mode', (t) => {
@@ -53,6 +90,7 @@ test('npm gates use cmd.exe /c on Windows without shell mode', (t) => {
   const ticks = [0, GATE_FLOORS.test.floorMs + 1];
   const result = runGates({ repoRoot: dir }, dir, {
     scripts: ['test'],
+    floorSet: GATE_FLOORS,
     spawn: (command, args, options) => {
       calls.push({ command, args, options });
       return { status: 0, stdout: '', stderr: '' };
@@ -72,3 +110,41 @@ test('npm gates use cmd.exe /c on Windows without shell mode', (t) => {
   assert.equal('shell' in calls[0].options, false);
 });
 
+test('the build gate removes an old record and copies status only after exit 0', (t) => {
+  const dir = gateTree(t, { packageScripts: { build: 'node build.mjs' } });
+  const out = join(dir, 'out');
+  mkdirSync(out, { recursive: true });
+  const status = {
+    built_at: '2026-09-08T18:00:00Z',
+    commit: 'fixture-head',
+    dirty: false,
+    stamp: '2026-09-08T18:00:00Z · fixture-head',
+  };
+  writeFileSync(join(out, 'status.json'), `${JSON.stringify(status)}\n`, 'utf8');
+  const record = join(out, '.build-stamp.json');
+  writeFileSync(record, '{"ok":true}\n', 'utf8');
+
+  const failed = runGates({ repoRoot: dir }, dir, {
+    scripts: ['build'],
+    floorSet: { build: { floorMs: MIN_GATE_FLOOR_MS } },
+    now: () => 2,
+    spawn: () => ({ status: 1, stdout: '', stderr: 'failed' }),
+  });
+  assert.equal(failed.ok, false);
+  assert.equal(existsSync(record), false, 'a failed build leaves no success record');
+
+  const passed = runGates({ repoRoot: dir }, dir, {
+    scripts: ['build'],
+    floorSet: { build: { floorMs: MIN_GATE_FLOOR_MS } },
+    now: (() => {
+      const ticks = [0, 2];
+      return () => ticks.shift();
+    })(),
+    spawn: () => ({ status: 0, stdout: '', stderr: '' }),
+  });
+  assert.equal(passed.ok, true, passed.output);
+  const written = JSON.parse(readFileSync(record, 'utf8'));
+  assert.equal(written.ok, true);
+  assert.match(written.local_time, /^\d{4}-\d{2}-\d{2}T/);
+  assert.deepEqual(written.status, status, 'the status stamp is copied exactly');
+});
