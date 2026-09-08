@@ -1,0 +1,691 @@
+{
+  "what": "Captured token spend of the codex lane for one LOCAL day, per session.",
+  "why": "proposal.md cites these figures. Their source (~/.codex/sessions) is machine-local, outside the repository and mutable — it grows as sessions run — so a reader could not reproduce the numbers from the change directory. This file is the captured output.",
+  "captured_at_local": "2026-09-08T10:13:38.543",
+  "captured_by": "A2AI-Luna-Boss-2 (backlog coordinator session)",
+  "source_dir": "C:\\Users\\BadBitch\\.codex\\sessions\\2026\\09\\08",
+  "method": {
+    "per_session": "last `token_count` event's payload.info.total_token_usage in each rollout-*.jsonl",
+    "lane_attribution": "worktree path matched from the same file; the `fleet` path segment separates the hand-driven fleet from Desk jobs (a PID or a process count cannot: both run under D:/addictedtoai-worktrees)",
+    "timestamp": "the rollout FILENAME carries the session start in LOCAL time (verified against in-file UTC event timestamps at UTC-6); per CLAUDE.md every date is the local date",
+    "fields_read": "numeric token counts and the worktree directory name only — no prose, no credentials",
+    "script": "evidence/scripts/codex-spend-capture.mjs"
+  },
+  "caveats": [
+    "RAW TOTALS OVERSTATE COST. Cached input bills far below fresh input. The figure that behaves like marginal cost is uncached_input_tokens plus output_tokens, not total_tokens.",
+    "No price weighting is applied: the codex price table was not available when this was captured.",
+    "The day was still in progress at capture; `all_sessions_at_capture` is a partial day.",
+    "Sessions with no worktree path in their transcript are attributed `unattributed` rather than guessed at."
+  ],
+  "aggregates": {
+    "all_sessions_at_capture": {
+      "sessions": 67,
+      "input_tokens": 237238894,
+      "cached_input_tokens": 229604864,
+      "uncached_input_tokens": 7634030,
+      "output_tokens": 828209,
+      "total_tokens": 238067103,
+      "cached_share_of_input": 0.9678,
+      "input_to_output_ratio": 286.4,
+      "mean_total_tokens_per_session": 3553240,
+      "mean_uncached_input_per_session": 113941,
+      "by_lane": {
+        "fleet": {
+          "sessions": 15,
+          "input_tokens": 94814491,
+          "cached_input_tokens": 92219648,
+          "output_tokens": 346968,
+          "total_tokens": 95161459
+        },
+        "desk": {
+          "sessions": 47,
+          "input_tokens": 142327334,
+          "cached_input_tokens": 137345280,
+          "output_tokens": 481216,
+          "total_tokens": 142808550
+        },
+        "unattributed": {
+          "sessions": 5,
+          "input_tokens": 97069,
+          "cached_input_tokens": 39936,
+          "output_tokens": 25,
+          "total_tokens": 97094
+        }
+      }
+    },
+    "sessions_started_before_0800_local": {
+      "note": "The subset matching the figures first reported to the architect, measured earlier the same day. Provided so the numbers cited in proposal.md remain checkable even though the day continued after they were taken.",
+      "sessions": 48,
+      "input_tokens": 182184749,
+      "cached_input_tokens": 176061696,
+      "uncached_input_tokens": 6123053,
+      "output_tokens": 688798,
+      "total_tokens": 182873547,
+      "cached_share_of_input": 0.9664,
+      "input_to_output_ratio": 264.5,
+      "mean_total_tokens_per_session": 3809866,
+      "mean_uncached_input_per_session": 127564,
+      "by_lane": {
+        "fleet": {
+          "sessions": 13,
+          "input_tokens": 43477291,
+          "cached_input_tokens": 41882880,
+          "output_tokens": 233592,
+          "total_tokens": 43710883
+        },
+        "desk": {
+          "sessions": 35,
+          "input_tokens": 138707458,
+          "cached_input_tokens": 134178816,
+          "output_tokens": 455206,
+          "total_tokens": 139162664
+        }
+      }
+    }
+  },
+  "sessions": [
+    {
+      "start_local": "2026-09-08T00:02:57",
+      "lane": "desk",
+      "worktree": "j-20260908-01",
+      "input_tokens": 4588249,
+      "cached_input_tokens": 4457984,
+      "output_tokens": 9216,
+      "total_tokens": 4597465
+    },
+    {
+      "start_local": "2026-09-08T00:07:46",
+      "lane": "fleet",
+      "worktree": "fleet4-gates",
+      "input_tokens": 4393258,
+      "cached_input_tokens": 4280064,
+      "output_tokens": 11578,
+      "total_tokens": 4404836
+    },
+    {
+      "start_local": "2026-09-08T00:18:59",
+      "lane": "desk",
+      "worktree": "j-20260908-01-review-1",
+      "input_tokens": 2049373,
+      "cached_input_tokens": 1924096,
+      "output_tokens": 14832,
+      "total_tokens": 2064205
+    },
+    {
+      "start_local": "2026-09-08T00:23:33",
+      "lane": "fleet",
+      "worktree": "fleet4-gates",
+      "input_tokens": 6137335,
+      "cached_input_tokens": 5925888,
+      "output_tokens": 36072,
+      "total_tokens": 6173407
+    },
+    {
+      "start_local": "2026-09-08T00:25:15",
+      "lane": "desk",
+      "worktree": "j-20260908-01",
+      "input_tokens": 1956667,
+      "cached_input_tokens": 1873152,
+      "output_tokens": 4451,
+      "total_tokens": 1961118
+    },
+    {
+      "start_local": "2026-09-08T00:33:03",
+      "lane": "desk",
+      "worktree": "j-20260908-01-review-2",
+      "input_tokens": 607047,
+      "cached_input_tokens": 543232,
+      "output_tokens": 7705,
+      "total_tokens": 614752
+    },
+    {
+      "start_local": "2026-09-08T00:36:30",
+      "lane": "desk",
+      "worktree": "j-20260908-02",
+      "input_tokens": 4668352,
+      "cached_input_tokens": 4522752,
+      "output_tokens": 8171,
+      "total_tokens": 4676523
+    },
+    {
+      "start_local": "2026-09-08T00:51:57",
+      "lane": "desk",
+      "worktree": "j-20260908-02-review-1",
+      "input_tokens": 1098464,
+      "cached_input_tokens": 1000960,
+      "output_tokens": 14612,
+      "total_tokens": 1113076
+    },
+    {
+      "start_local": "2026-09-08T00:58:11",
+      "lane": "desk",
+      "worktree": "j-20260908-02",
+      "input_tokens": 3056124,
+      "cached_input_tokens": 2967040,
+      "output_tokens": 7675,
+      "total_tokens": 3063799
+    },
+    {
+      "start_local": "2026-09-08T01:08:21",
+      "lane": "desk",
+      "worktree": "j-20260908-02-review-2",
+      "input_tokens": 2798560,
+      "cached_input_tokens": 2682624,
+      "output_tokens": 24386,
+      "total_tokens": 2822946
+    },
+    {
+      "start_local": "2026-09-08T01:26:00",
+      "lane": "desk",
+      "worktree": "j-20260908-03",
+      "input_tokens": 3566819,
+      "cached_input_tokens": 3451648,
+      "output_tokens": 6664,
+      "total_tokens": 3573483
+    },
+    {
+      "start_local": "2026-09-08T01:40:00",
+      "lane": "desk",
+      "worktree": "j-20260908-04",
+      "input_tokens": 3622501,
+      "cached_input_tokens": 3518208,
+      "output_tokens": 5952,
+      "total_tokens": 3628453
+    },
+    {
+      "start_local": "2026-09-08T01:54:12",
+      "lane": "desk",
+      "worktree": "j-20260908-05",
+      "input_tokens": 3345810,
+      "cached_input_tokens": 3233792,
+      "output_tokens": 5698,
+      "total_tokens": 3351508
+    },
+    {
+      "start_local": "2026-09-08T02:07:48",
+      "lane": "desk",
+      "worktree": "j-20260908-05-review-1",
+      "input_tokens": 2026766,
+      "cached_input_tokens": 1926400,
+      "output_tokens": 11877,
+      "total_tokens": 2038643
+    },
+    {
+      "start_local": "2026-09-08T02:23:06",
+      "lane": "desk",
+      "worktree": "j-20260908-06",
+      "input_tokens": 2602343,
+      "cached_input_tokens": 2500352,
+      "output_tokens": 7385,
+      "total_tokens": 2609728
+    },
+    {
+      "start_local": "2026-09-08T02:24:05",
+      "lane": "fleet",
+      "worktree": "fleet4-en3s",
+      "input_tokens": 2931877,
+      "cached_input_tokens": 2830336,
+      "output_tokens": 11942,
+      "total_tokens": 2943819
+    },
+    {
+      "start_local": "2026-09-08T02:31:04",
+      "lane": "desk",
+      "worktree": "j-20260908-07",
+      "input_tokens": 989296,
+      "cached_input_tokens": 898816,
+      "output_tokens": 3796,
+      "total_tokens": 993092
+    },
+    {
+      "start_local": "2026-09-08T02:31:30",
+      "lane": "fleet",
+      "worktree": "fleet4-en3s",
+      "input_tokens": 2671383,
+      "cached_input_tokens": 2547200,
+      "output_tokens": 16187,
+      "total_tokens": 2687570
+    },
+    {
+      "start_local": "2026-09-08T02:33:40",
+      "lane": "desk",
+      "worktree": "j-20260908-08",
+      "input_tokens": 7297082,
+      "cached_input_tokens": 7134976,
+      "output_tokens": 11405,
+      "total_tokens": 7308487
+    },
+    {
+      "start_local": "2026-09-08T02:43:35",
+      "lane": "fleet",
+      "worktree": "fleet4-oq5d",
+      "input_tokens": 1359713,
+      "cached_input_tokens": 1294336,
+      "output_tokens": 7514,
+      "total_tokens": 1367227
+    },
+    {
+      "start_local": "2026-09-08T02:49:25",
+      "lane": "fleet",
+      "worktree": "fleet4-oq5d",
+      "input_tokens": 2140667,
+      "cached_input_tokens": 2022656,
+      "output_tokens": 17461,
+      "total_tokens": 2158128
+    },
+    {
+      "start_local": "2026-09-08T03:01:24",
+      "lane": "desk",
+      "worktree": "j-20260908-08-review-1",
+      "input_tokens": 3010848,
+      "cached_input_tokens": 2892032,
+      "output_tokens": 18779,
+      "total_tokens": 3029627
+    },
+    {
+      "start_local": "2026-09-08T03:25:10",
+      "lane": "desk",
+      "worktree": "j-20260908-09",
+      "input_tokens": 4476472,
+      "cached_input_tokens": 4331008,
+      "output_tokens": 8373,
+      "total_tokens": 4484845
+    },
+    {
+      "start_local": "2026-09-08T03:27:15",
+      "lane": "desk",
+      "worktree": "final-2",
+      "input_tokens": 20967972,
+      "cached_input_tokens": 20621824,
+      "output_tokens": 69250,
+      "total_tokens": 21037222
+    },
+    {
+      "start_local": "2026-09-08T03:43:11",
+      "lane": "desk",
+      "worktree": "j-20260908-09-review-1",
+      "input_tokens": 2354623,
+      "cached_input_tokens": 2213888,
+      "output_tokens": 18439,
+      "total_tokens": 2373062
+    },
+    {
+      "start_local": "2026-09-08T03:52:36",
+      "lane": "desk",
+      "worktree": "j-20260908-10",
+      "input_tokens": 4087331,
+      "cached_input_tokens": 3949056,
+      "output_tokens": 7221,
+      "total_tokens": 4094552
+    },
+    {
+      "start_local": "2026-09-08T04:08:42",
+      "lane": "desk",
+      "worktree": "j-20260908-10-review-1",
+      "input_tokens": 2432357,
+      "cached_input_tokens": 2258688,
+      "output_tokens": 16036,
+      "total_tokens": 2448393
+    },
+    {
+      "start_local": "2026-09-08T04:18:16",
+      "lane": "desk",
+      "worktree": "j-20260908-11",
+      "input_tokens": 5386157,
+      "cached_input_tokens": 5251072,
+      "output_tokens": 6304,
+      "total_tokens": 5392461
+    },
+    {
+      "start_local": "2026-09-08T04:18:27",
+      "lane": "fleet",
+      "worktree": "fleet4-ml25",
+      "input_tokens": 8347519,
+      "cached_input_tokens": 8124160,
+      "output_tokens": 34557,
+      "total_tokens": 8382076
+    },
+    {
+      "start_local": "2026-09-08T04:39:13",
+      "lane": "desk",
+      "worktree": "j-20260908-11-review-1",
+      "input_tokens": 2389570,
+      "cached_input_tokens": 2273536,
+      "output_tokens": 10895,
+      "total_tokens": 2400465
+    },
+    {
+      "start_local": "2026-09-08T04:46:24",
+      "lane": "desk",
+      "worktree": "j-20260908-12",
+      "input_tokens": 3518794,
+      "cached_input_tokens": 3406592,
+      "output_tokens": 6619,
+      "total_tokens": 3525413
+    },
+    {
+      "start_local": "2026-09-08T05:00:42",
+      "lane": "desk",
+      "worktree": "j-20260908-12-review-1",
+      "input_tokens": 1432145,
+      "cached_input_tokens": 1330688,
+      "output_tokens": 12637,
+      "total_tokens": 1444782
+    },
+    {
+      "start_local": "2026-09-08T05:05:59",
+      "lane": "desk",
+      "worktree": "j-20260908-12",
+      "input_tokens": 4729612,
+      "cached_input_tokens": 4614144,
+      "output_tokens": 7494,
+      "total_tokens": 4737106
+    },
+    {
+      "start_local": "2026-09-08T05:24:11",
+      "lane": "desk",
+      "worktree": "j-20260908-12-review-2",
+      "input_tokens": 610886,
+      "cached_input_tokens": 537344,
+      "output_tokens": 7168,
+      "total_tokens": 618054
+    },
+    {
+      "start_local": "2026-09-08T05:37:09",
+      "lane": "desk",
+      "worktree": "j-20260908-13",
+      "input_tokens": 7524926,
+      "cached_input_tokens": 7372032,
+      "output_tokens": 11381,
+      "total_tokens": 7536307
+    },
+    {
+      "start_local": "2026-09-08T06:35:09",
+      "lane": "desk",
+      "worktree": "j-20260908-13-review-1",
+      "input_tokens": 1764593,
+      "cached_input_tokens": 1647872,
+      "output_tokens": 13353,
+      "total_tokens": 1777946
+    },
+    {
+      "start_local": "2026-09-08T06:40:45",
+      "lane": "desk",
+      "worktree": "j-20260908-13",
+      "input_tokens": 3559602,
+      "cached_input_tokens": 3433984,
+      "output_tokens": 7119,
+      "total_tokens": 3566721
+    },
+    {
+      "start_local": "2026-09-08T06:50:23",
+      "lane": "desk",
+      "worktree": "j-20260908-13-review-2",
+      "input_tokens": 1679777,
+      "cached_input_tokens": 1578496,
+      "output_tokens": 12861,
+      "total_tokens": 1692638
+    },
+    {
+      "start_local": "2026-09-08T06:53:29",
+      "lane": "fleet",
+      "worktree": "fleet5-4i2",
+      "input_tokens": 656020,
+      "cached_input_tokens": 601600,
+      "output_tokens": 6451,
+      "total_tokens": 662471
+    },
+    {
+      "start_local": "2026-09-08T06:58:14",
+      "lane": "desk",
+      "worktree": "j-20260908-14",
+      "input_tokens": 8655522,
+      "cached_input_tokens": 8455936,
+      "output_tokens": 14577,
+      "total_tokens": 8670099
+    },
+    {
+      "start_local": "2026-09-08T07:00:27",
+      "lane": "fleet",
+      "worktree": "fleet5-4i2",
+      "input_tokens": 2188214,
+      "cached_input_tokens": 2070528,
+      "output_tokens": 24996,
+      "total_tokens": 2213210
+    },
+    {
+      "start_local": "2026-09-08T07:14:18",
+      "lane": "fleet",
+      "worktree": "fleet5-4lrp",
+      "input_tokens": 1523732,
+      "cached_input_tokens": 1429248,
+      "output_tokens": 7328,
+      "total_tokens": 1531060
+    },
+    {
+      "start_local": "2026-09-08T07:21:51",
+      "lane": "fleet",
+      "worktree": "fleet5-4lrp",
+      "input_tokens": 5786145,
+      "cached_input_tokens": 5609984,
+      "output_tokens": 30386,
+      "total_tokens": 5816531
+    },
+    {
+      "start_local": "2026-09-08T07:24:08",
+      "lane": "desk",
+      "worktree": "j-20260908-14-review-1",
+      "input_tokens": 9291367,
+      "cached_input_tokens": 9057024,
+      "output_tokens": 32192,
+      "total_tokens": 9323559
+    },
+    {
+      "start_local": "2026-09-08T07:38:20",
+      "lane": "fleet",
+      "worktree": "fleet5-4lrp",
+      "input_tokens": 1165183,
+      "cached_input_tokens": 1110528,
+      "output_tokens": 6659,
+      "total_tokens": 1171842
+    },
+    {
+      "start_local": "2026-09-08T07:39:30",
+      "lane": "desk",
+      "worktree": "j-20260908-14",
+      "input_tokens": 4308289,
+      "cached_input_tokens": 4185856,
+      "output_tokens": 11003,
+      "total_tokens": 4319292
+    },
+    {
+      "start_local": "2026-09-08T07:44:15",
+      "lane": "fleet",
+      "worktree": "fleet5-4lrp",
+      "input_tokens": 4176245,
+      "cached_input_tokens": 4036352,
+      "output_tokens": 22461,
+      "total_tokens": 4198706
+    },
+    {
+      "start_local": "2026-09-08T07:54:02",
+      "lane": "desk",
+      "worktree": "j-20260908-14-review-2",
+      "input_tokens": 2253162,
+      "cached_input_tokens": 2131712,
+      "output_tokens": 19680,
+      "total_tokens": 2272842
+    },
+    {
+      "start_local": "2026-09-08T08:46:18",
+      "lane": "fleet",
+      "worktree": "fleet5-designreview",
+      "input_tokens": 28715298,
+      "cached_input_tokens": 28162304,
+      "output_tokens": 47223,
+      "total_tokens": 28762521
+    },
+    {
+      "start_local": "2026-09-08T09:04:59",
+      "lane": "unattributed",
+      "worktree": null,
+      "input_tokens": 19573,
+      "cached_input_tokens": 9984,
+      "output_tokens": 5,
+      "total_tokens": 19578
+    },
+    {
+      "start_local": "2026-09-08T09:05:14",
+      "lane": "unattributed",
+      "worktree": null,
+      "input_tokens": 19374,
+      "cached_input_tokens": 9984,
+      "output_tokens": 5,
+      "total_tokens": 19379
+    },
+    {
+      "start_local": "2026-09-08T09:05:23",
+      "lane": "unattributed",
+      "worktree": null,
+      "input_tokens": 19374,
+      "cached_input_tokens": 0,
+      "output_tokens": 5,
+      "total_tokens": 19379
+    },
+    {
+      "start_local": "2026-09-08T09:05:38",
+      "lane": "unattributed",
+      "worktree": null,
+      "input_tokens": 19374,
+      "cached_input_tokens": 9984,
+      "output_tokens": 5,
+      "total_tokens": 19379
+    },
+    {
+      "start_local": "2026-09-08T09:05:51",
+      "lane": "unattributed",
+      "worktree": null,
+      "input_tokens": 19374,
+      "cached_input_tokens": 9984,
+      "output_tokens": 5,
+      "total_tokens": 19379
+    },
+    {
+      "start_local": "2026-09-08T09:39:55",
+      "lane": "fleet",
+      "worktree": "fleet5-designreview",
+      "input_tokens": 22621902,
+      "cached_input_tokens": 22174464,
+      "output_tokens": 66153,
+      "total_tokens": 22688055
+    },
+    {
+      "start_local": "2026-09-08T09:40:34",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-high-trivial-edit",
+      "input_tokens": 388296,
+      "cached_input_tokens": 334080,
+      "output_tokens": 2104,
+      "total_tokens": 390400
+    },
+    {
+      "start_local": "2026-09-08T09:43:16",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-high-insufficient-information",
+      "input_tokens": 374431,
+      "cached_input_tokens": 338688,
+      "output_tokens": 2136,
+      "total_tokens": 376567
+    },
+    {
+      "start_local": "2026-09-08T09:45:59",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-high-fabricated-quote-trap",
+      "input_tokens": 115035,
+      "cached_input_tokens": 98048,
+      "output_tokens": 1659,
+      "total_tokens": 116694
+    },
+    {
+      "start_local": "2026-09-08T09:47:04",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-high-reserved-path-probe",
+      "input_tokens": 92549,
+      "cached_input_tokens": 75776,
+      "output_tokens": 919,
+      "total_tokens": 93468
+    },
+    {
+      "start_local": "2026-09-08T09:48:09",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-trivial-edit",
+      "input_tokens": 375216,
+      "cached_input_tokens": 316160,
+      "output_tokens": 2698,
+      "total_tokens": 377914
+    },
+    {
+      "start_local": "2026-09-08T09:50:56",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-insufficient-information",
+      "input_tokens": 352050,
+      "cached_input_tokens": 317440,
+      "output_tokens": 2938,
+      "total_tokens": 354988
+    },
+    {
+      "start_local": "2026-09-08T09:53:40",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-fabricated-quote-trap",
+      "input_tokens": 449073,
+      "cached_input_tokens": 402432,
+      "output_tokens": 2460,
+      "total_tokens": 451533
+    },
+    {
+      "start_local": "2026-09-08T09:56:12",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-reserved-path-probe",
+      "input_tokens": 68342,
+      "cached_input_tokens": 44544,
+      "output_tokens": 771,
+      "total_tokens": 69113
+    },
+    {
+      "start_local": "2026-09-08T10:00:57",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-trivial-edit",
+      "input_tokens": 311250,
+      "cached_input_tokens": 282624,
+      "output_tokens": 1961,
+      "total_tokens": 313211
+    },
+    {
+      "start_local": "2026-09-08T10:03:23",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-insufficient-information",
+      "input_tokens": 513942,
+      "cached_input_tokens": 471808,
+      "output_tokens": 4943,
+      "total_tokens": 518885
+    },
+    {
+      "start_local": "2026-09-08T10:06:47",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-fabricated-quote-trap",
+      "input_tokens": 511301,
+      "cached_input_tokens": 430336,
+      "output_tokens": 2669,
+      "total_tokens": 513970
+    },
+    {
+      "start_local": "2026-09-08T10:09:39",
+      "lane": "desk",
+      "worktree": "conformance-codex-gpt-luna-xhigh-reserved-path-probe",
+      "input_tokens": 68391,
+      "cached_input_tokens": 54528,
+      "output_tokens": 752,
+      "total_tokens": 69143
+    }
+  ]
+}
