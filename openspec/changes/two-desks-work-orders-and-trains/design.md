@@ -1753,3 +1753,32 @@ general rule. Luna-Boss-2's own count: the third narrowing of its own in one
 day — a `replace_all` narrower than its property, a sha check narrower than
 its property, a paraphrase narrower than the task — each while citing the
 class; its five pre-registered hypotheses scored one, the one it ranked first.
+
+**Round 4 — authority: two-desks-work-orders-and-trains@`b189256`.** Sealed
+review (codex Luna max, 18 min; author 23.6 min; `ad087aa`; 1,726 tests pass;
+the seal answered honestly for all three prior verdicts): verdict revise, two
+holes, both verified by the coordinator by its own mutation before relaying.
+Column 1: the removal-before-spawn ordering is untested on both spawners —
+`gates.mjs:460` and `verify-launch.mjs:984` are present and correct, and each
+can be deleted outright with zero arms moving (10 of 10 and 7 of 7 still
+green), because every arm inspects only the final state after the spawn
+returns; the consequence is a concurrent launch check reusing a stale record
+while the new build runs. Column 2, the withheld finding, NOTICED rather than
+predicted because the coordinator skipped pre-registration this round and said
+so: no test reaches the production floor default — the helper defaults to
+`FIXTURE_FLOORS` and all ten calls forward a floor set, so
+`floorSet = GATE_FLOORS` at `verify-launch.mjs:952` replaced by `{}` leaves
+every test green while production builds against no floor; the same question
+stands for the injected `isCurrent`. Disposition: round 5 carries both (same
+two files, four lines for the second), stated in tasks 2 and 4 as one property:
+every ordering claim is asserted at the moment it matters, and every injected
+dependency has an arm that takes the production default. The pattern, fifth
+consecutive round and the coordinator's words: this packet's defect rate in the
+IMPLEMENTATION is low and its defect rate in the EVIDENCE is not — correct code
+the suite cannot distinguish from its absence, `addictedtoai-xrsg`'s shape each
+time. Two figures for the merge record, from Orch with their shape attached:
+the 39 s launch build the packet stops repeating is ONE recorded run, derived by
+difference (39.6 s total minus about 0.6 s of checks over 684 pieces), and its
+own merge-window guardrail would have rejected the improvement because it
+refused on elapsed time while a legitimately reused run returns in about a
+second — replaced, before the merge, by having the run name which path it took.

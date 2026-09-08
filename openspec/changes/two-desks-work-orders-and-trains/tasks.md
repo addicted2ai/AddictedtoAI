@@ -70,7 +70,14 @@ the orchestrator's work between runs.
       floor said "did not run" and the persisted record said "succeeded", and
       the record is what a later gate believes — two mechanisms for one
       property must agree, and the record derives from the floor-checked
-      result). That regression test is permanent, not a probe.
+      result). That regression test is permanent, not a probe. And the
+      ORDERING is asserted where it happens, not on the final state: with an
+      old success record seeded, the injected spawn callback asserts the record
+      is already absent at spawn time (round 4 found `gates.mjs:460`, the
+      removal before the spawn, deletable with zero arms moving, because every
+      arm inspected only the state after the spawn returned; a concurrent
+      launch check can observe and reuse the stale record while the new build
+      runs). **Mutation**: delete the removal line and confirm that arm fails.
       **Mutation**: delete the floor comparison and confirm the 2 ms case passes
       while the real case still passes — if both stay green the test measures
       nothing. Restore and verify byte-identical by hash. Tests task 1.
@@ -155,7 +162,24 @@ the orchestrator's work between runs.
       stamp is identity and the mtime walk is freshness, and on this
       permanently dirty tree (13 porcelain entries, always) the stamp alone
       collapses to the sha, so that fixture is what goes red if the freshness
-      comparison alone is deleted (**mutation E**). Tests task 3.
+      comparison alone is deleted (**mutation E**). Two more properties, both
+      from round 4 and both the same class — correct production code the suite
+      cannot distinguish from its absence: (i) the removal-before-spawn ORDERING
+      at `verify-launch.mjs:984` is asserted inside the injected spawn callback
+      with an old record seeded (the record already absent at spawn time), in
+      its own arm separate from the gate's (task 2), keeping the final-absence
+      assertion too; **mutation F**: delete that removal line and confirm only
+      this arm fails. (ii) **Every injected dependency has at least one arm that
+      takes the PRODUCTION DEFAULT**: `checkBuild` called without a `floorSet`
+      must apply the repository build floor (observe the floor failure on a
+      below-floor spawn, or assert the reported `floorMs` equals
+      `GATE_FLOORS.build.floorMs`), and called without an injected `isCurrent`
+      must use `hasCurrentBuild` — round 4's helper defaulted to
+      `FIXTURE_FLOORS` and every one of ten calls forwarded a floor set, so
+      `floorSet = GATE_FLOORS` at `:952` replaced by `{}` left all ten green
+      while production would build against no floor. **Mutation G**: replace the
+      production default with `{}` and confirm the default arm fails. Tests
+      task 3.
 
 ### The brief diet
 
