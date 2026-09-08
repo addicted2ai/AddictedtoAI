@@ -1685,9 +1685,11 @@ mechanically) on `46865e7`, handed over by A2AI-Luna-Boss-2 shortly before
 12:25 local on 2026-09-08 (the clock read at this commit; an earlier draft of
 this line guessed 12:05); verdict revise, three small items.** Authority:
 two-desks-work-orders-and-trains@`40a5795` (retrofitted: the brief was re-read
-from that blob at dispatch, and one command line in it still named `6a8adba`,
-which the author noticed and overrode in favour of the committed text, see the
-coordinator's own miss below). Round 3's authority is `160f1c2`, carried in its
+from that blob at dispatch, and two command lines in it, `.agent-brief.md:40-41`,
+still fetched `6a8adba`'s tasks blob AND its loop-delta blob, so the author had
+to override the superseded sha for both the task text and the requirement,
+which it did in favour of the committed text; see the coordinator's own miss
+below). Round 3's authority is `160f1c2`, carried in its
 handover as the first line from now on. The freeze on tasks
 1–4 held for the whole run, so every finding is Column 1 — found in review on
 work authored against a fixed standard; the author closed four of the five
@@ -1717,8 +1719,9 @@ independently rejects the empty fixture, and disclosed the redundancy. Task 4
 gains the equal-mtime fixture and mutation D.
 
 **A coordinator's own miss, disclosed by the coordinator.** The round 2 brief
-told the author to fetch `6a8adba` at two command lines while naming `40a5795`
-as the authority elsewhere: a `replace_all` on the backticked sha never touched
+told the author to fetch `6a8adba` at two command lines (`.agent-brief.md:40-41`,
+the tasks blob and the loop-delta blob both) while naming `40a5795` as the
+authority at `:35` and `:51`: a `replace_all` on the backticked sha never touched
 the bare one — a replacement narrower than the property it names, the
 `addictedtoai-xrsg` shape, committed by the session that had cited it all
 morning. The author noticed the contradiction, treated the committed text as
