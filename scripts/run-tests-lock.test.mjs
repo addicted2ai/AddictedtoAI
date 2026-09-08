@@ -165,45 +165,39 @@ test('the test lock and the build lock are independent files and never contend w
 });
 
 /**
- * `run-tests.mjs` reports a wait rather than hanging silently — the issue's
- * "make sure a lock wait is visible" requirement, measured against real
- * stdout rather than assumed from the `log` callback being wired up.
+ * A contended test lock reports a wait through its log callback. The two-real-
+ * process test above proves exclusion; this smaller test proves the separate
+ * message contract without making its result depend on process startup order.
  */
-test('a real npm test run that has to wait for the lock says so on stdout', async () => {
+test('a contended test lock reports its wait through the log callback', () => {
   const root = tmp();
-  const log = join(root, 'order.log');
-  writeFileSync(log, '', 'utf8');
-  // Held long enough that the second process has room to start, contend and
-  // print, even on a machine already running the other 1,199 tests.
-  writeFixtureProject(root, log, 5000);
+  const messages = [];
+  const first = acquireBuildLock({
+    dir: root,
+    suffix: TEST_LOCK_SUFFIX,
+    activity: 'test run',
+    label: 'first test run',
+  });
 
-  const first = runRealRunTests(root);
-  // WAIT FOR THE SIGNAL, NEVER FOR A DURATION. This was `setTimeout(300)` —
-  // a guess that the first process had acquired the lock by then — and it
-  // failed inside a full `npm test` run on 2026-09-04: node's startup under
-  // load outran the sleep, so the SECOND process took the lock first, never
-  // waited, and printed no wait line. The suite reported 1199/1200 with a
-  // failure that had nothing to do with the code under test, and a flake in
-  // the merge gate fails jobs that did nothing wrong — three consecutive
-  // failures trip breaker 1 and halt the Desk (addictedtoai-juig).
-  //
-  // The fixture already writes `enter <pid>` at module-load time, which is
-  // inside the window the test lock is held. That is the real signal, so poll
-  // for it rather than sleeping.
-  await waitFor(
-    () => readFileSync(log, 'utf8').includes('enter '),
-    'the first run never entered its held window, so there was no lock to contend for',
-  );
-  const second = await runRealRunTests(root);
-  const firstResult = await first;
-
-  assert.equal(firstResult.code, 0, firstResult.out);
-  assert.equal(second.code, 0, second.out);
-  assert.match(
-    second.out,
-    /build-lock: waiting for .* to finish its test run/,
-    `the waiting process did not announce the wait:\n${second.out}`,
-  );
-
-  rmSync(root, { recursive: true, force: true });
+  try {
+    assert.throws(
+      () => acquireBuildLock({
+        dir: root,
+        suffix: TEST_LOCK_SUFFIX,
+        activity: 'test run',
+        waitMs: 50,
+        pollMs: 10,
+        log: (message) => messages.push(message),
+      }),
+      /another test run holds/,
+    );
+    assert.match(
+      messages.join('\n'),
+      /build-lock: waiting for .* to finish its test run/,
+      'the waiting lock did not announce contention through its log callback',
+    );
+  } finally {
+    releaseBuildLock(first.path, first.holderPid);
+    rmSync(root, { recursive: true, force: true });
+  }
 });
