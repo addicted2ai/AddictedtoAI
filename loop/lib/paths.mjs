@@ -43,6 +43,24 @@ export const DEFAULT_REPO_ROOT = resolve(HERE, '..', '..');
  *   POSIX it additionally keeps worktrees off a possibly-separate `/tmp`
  *   filesystem. `LOOP_WORKTREE_ROOT` still overrides.
  * @param {(s: string) => void} [opts.log]
+ *
+ * THIS FUNCTION MUST KEEP RETURNING AN EXPLICIT OBJECT LITERAL AND MUST NEVER
+ * SPREAD `opts` INTO IT, and something now depends on that rather than merely
+ * benefiting from it.
+ *
+ * `loop/lib/publish.mjs` forwards `ctx.pollBudgetMs` and `ctx.confirmBudgetMs`
+ * to the shared publish step when they are present, so a test can exercise the
+ * deploy-did-not-land path in milliseconds instead of ten minutes. That is safe
+ * only because a context built here CANNOT CARRY THOSE KEYS: they are not named
+ * below, so they are dropped even if a caller passes them. Production builds the
+ * context as `makeContext({ repoRoot, worktreeRoot })` and nothing else.
+ *
+ * Add a spread and that stops being true. `confirmBudgetMs` is floored at three
+ * times the poll budget, but `pollBudgetMs` HAS NO FLOOR — so a config value or
+ * a CLI flag reaching this object could silently shorten the window that
+ * confirms a push actually went live, which is the check that catches a deploy
+ * that never landed. Inert BY CONSTRUCTION is the property; keep it that way, or
+ * give the forward its own floor first (addictedtoai-ml25).
  */
 export function makeContext(opts = {}) {
   const repoRoot = resolve(opts.repoRoot ?? DEFAULT_REPO_ROOT);

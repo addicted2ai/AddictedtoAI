@@ -99,7 +99,21 @@ export async function publishStep(ctx, { cfg, dryRun = false, owned = null } = {
   // with `log` a logger object exposing `step(name, detail)`. Adapting to it
   // here, rather than asking it to adapt to the loop, is what keeps it one step.
   const log = { step: (name, detail) => ctx.log(`${name}${detail ? ' — ' + detail : ''}`) };
-  const res = await fn(ctx.repoRoot, { dryRun, log, owned });
+  // THE DEPLOY POLL BUDGET IS FORWARDED ONLY WHEN THE CONTEXT CARRIES ONE, and
+  // no production caller sets it — `pulse/` and `loop/` both leave it undefined,
+  // so the shared step's ten-minute default is what every real run gets.
+  //
+  // The shared step has exposed this seam from the start, in its own words,
+  // "only so a test can exercise the deploy-did-not-land path in milliseconds
+  // instead of ten minutes". The loop never forwarded it, which made a
+  // behavioural publish test through `runLoop` cost ten minutes per case and is
+  // why the publication half of addictedtoai-ml25 was first asserted against a
+  // log line instead of against a remote. A property that can only be observed
+  // by waiting ten minutes will be observed some cheaper, weaker way.
+  const budgets = {};
+  if (ctx.pollBudgetMs !== undefined) budgets.pollBudgetMs = ctx.pollBudgetMs;
+  if (ctx.confirmBudgetMs !== undefined) budgets.confirmBudgetMs = ctx.confirmBudgetMs;
+  const res = await fn(ctx.repoRoot, { dryRun, log, owned, ...budgets });
   return {
     published: Boolean(res?.published),
     skipped: !res?.published,

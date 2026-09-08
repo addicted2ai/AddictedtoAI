@@ -1629,15 +1629,110 @@ export async function runLoop(ctx, opts = {}) {
         }
       }
 
-      const built = opts.noGates ? { ok: true } : (typeof opts.gates === 'function' ? opts.gates(ctx, ctx.repoRoot) : runGates(ctx, ctx.repoRoot, { scripts: ['build'] }));
-      const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
-      if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
+      // THE POST-MERGE BUILD DERIVES ITS LOCK WAIT FROM THIS JOB'S OWN CAP,
+      // the same way the pre-review gate does (`gateTimeoutMs` above). Passing
+      // no timeout left it on `runGates`'s 20-minute default, so a 120-minute
+      // job waited 900,000 ms for the build lock here and 5,400,000 ms in its
+      // branch gates — the same job, two budgets, for no stated reason
+      // (addictedtoai-ml25). `job_caps_minutes` is the same table the
+      // per-invocation cap comes from.
+      const postMergeCapMs = (cfg.job_caps_minutes?.[job.type] ?? 20) * 60 * 1000;
+      // THE OPTIONS GO TO THE HOOK TOO, not only to the real `runGates`. The
+      // injected hook took `(ctx, dir)` and never saw them, so the budget above
+      // was unobservable from a test: deleting `timeoutMs` left the suite green
+      // and the cap was asserted by reading the source rather than measured.
+      // A property nothing can observe is a property nothing can hold.
+      const postMergeGateOptions = { scripts: ['build'], timeoutMs: postMergeCapMs };
+      const built = opts.noGates
+        ? { ok: true }
+        : (typeof opts.gates === 'function'
+          ? opts.gates(ctx, ctx.repoRoot, postMergeGateOptions)
+          : runGates(ctx, ctx.repoRoot, postMergeGateOptions));
+
+      // ---------------------------------------------------------------------
+      // THREE STATES, NOT TWO (addictedtoai-ml25).
+      //
+      // `ok` is not the only question. A build that RAN and failed is red: the
+      // site cannot be trusted to rebuild, breaker 2 trips, HOLD.md stops the
+      // Desk. A build that NEVER RAN — because it could not take the machine's
+      // build lock, or the child could not be spawned — says nothing about the
+      // site at all, and treating it as red is the most expensive possible
+      // misreading: it halts every SUBSEQUENT job over a machine condition that
+      // has usually cleared by the time anyone reads the file.
+      //
+      // MEASURED before this existed: an orchestrator merge window holds the
+      // shared build lock for ~10 minutes, and any Desk job whose post-merge
+      // build met that lock halted the whole Desk. The mitigation was
+      // discipline — stop the chain before taking the lock — which protects
+      // only whoever remembers.
+      //
+      // THE THIRD STATE IS "THE BUILD DID NOT RUN": do not count it, do not
+      // halt, and DO NOT PUBLISH.
+      //
+      // The last clause is the one that is easy to get wrong and it is why this
+      // was split out of addictedtoai-3ov0 rather than patched inside it. The
+      // obvious fix — suppress the hold for the environmental case — ALSO
+      // removes the publish gate, because `HOLD.md` does double duty: it is the
+      // breaker AND `pulse/lib/publish.mjs` suspends publishing entirely while
+      // it exists. Suppressing the halt without suppressing the publish reaches
+      // the shared publish step with NO VERIFIED BUILD, which breaks the
+      // standing bar: push only what passed the gates. So the publish is
+      // refused here, explicitly, rather than as a side effect of a file.
+      //
+      // WHAT THE NEXT RUN DOES WITH THE UNVERIFIED MERGE, since this leaves one
+      // on `main`: nothing special, and that is the point. The merge and this
+      // job's records are committed locally by `commitJobRecords` below. The
+      // next run that completes a GREEN post-merge build publishes, and its
+      // push carries this merge with it — legitimately, because that build
+      // built the tree INCLUDING this merge. An unverified commit is therefore
+      // held exactly until something verifies it, and no separate re-gating
+      // mechanism is needed. If no later run ever goes green, the merge stays
+      // local, which is the correct end state rather than a leak.
+      const buildDidNotRun = !built.ok && gatesHitEnvironmentalFailure(built);
+
+      if (buildDidNotRun) {
+        ctx.log(
+          `the post-merge build DID NOT RUN — ${gateFailureNote(built)}. Not counted toward the ` +
+          `breaker, no HOLD.md, and NOT PUBLISHED: the merge stays on main until a later run's ` +
+          `own build verifies it.`,
+        );
+      } else {
+        const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
+        if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
+      }
       // THE PUBLISH IS NOT HERE ANY MORE. It is at the foot of this function,
       // after `commitJobRecords`, and the flag is what carries the decision
       // there. What survives unchanged is the ordering that is load-bearing:
       // the build gate above still runs BEFORE the publish, so a run that
       // produced content the build rejects still publishes nothing.
-      publishAfterRecords = true;
+      //
+      // The red path is deliberately UNCHANGED: it still sets the flag and is
+      // still stopped by the `HOLD.md` this block just wrote. Only the
+      // did-not-run path withholds the flag, which is the narrowest edit that
+      // adds the third state without touching the contract for the other two.
+      //
+      // WHAT WITHHOLDING THE FLAG COSTS, stated because it is not quite
+      // nothing. `publishStep`'s phase 1 commits the paths a declaring caller
+      // owns, and `commitJobRecords` below has already committed the same
+      // `staged` array, so on this path phase 1 finds nothing left to do. But it
+      // was also a SECOND NET: if that records commit fails — the
+      // unmatched-pathspec trap of addictedtoai-tqpq, which discarded three
+      // jobs' records in one afternoon while every run still reported `done` —
+      // phase 1 would have had another go at the same paths, because this flag
+      // used to be unconditionally true. It no longer will, in the compound case
+      // where the records commit fails AND the build did not run. Judged not
+      // worth holding the third state for, and recorded here rather than left
+      // for whoever meets it.
+      //
+      // AND THE OTHER HALF OF WHY THE OBVIOUS FIX IS WORSE THAN IT LOOKS,
+      // measured while mutation-testing this block: publishing on the
+      // did-not-run path does not merely push an unverified merge. The push
+      // succeeds, the site does not serve that commit, and the shared step then
+      // writes `HOLD.md` ITSELF with its `deploy-hold:` marker — so the Desk
+      // halts anyway, later, for a confusing reason, with the unverified commit
+      // already public. Suppressing the breaker without suppressing the publish
+      // trades one halt for a halt plus a deploy.
+      publishAfterRecords = !buildDidNotRun;
       if (job.source === 'directive' && job.lineNumber) {
         // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
         // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
