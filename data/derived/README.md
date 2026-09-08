@@ -6,9 +6,7 @@ else. Nothing that is state may live here — the job ledger
 (`data/ledger.jsonl`) and the rolling link-check dates
 (`data/linkcheck.json`) sit at the data root for exactly that reason.
 
-Expected contents: the model catalog rows and status tables, `batch-pricing.json`,
-which compares each OpenRouter model with its synchronous `:batch` sibling,
-`freshness.json`,
+Expected contents: the model catalog rows and status tables, `freshness.json`,
 `queue.json` (the loop's ranked work snapshot — capped at 50, no identity, no
 history, cannot backlog), `aliases.json`, `backlinks.json`, `wants.json`,
 `search-index.json` and `frontier.json`.
