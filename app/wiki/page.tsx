@@ -3,6 +3,7 @@ import { renderEntryRow } from '../../lib/render/entry.mjs';
 import { sortNote } from '../../lib/render/common.mjs';
 import JsonLd from '../_components/JsonLd';
 import { definedTermSetGraph, TERM_KINDS } from '../../lib/jsonld.mjs';
+import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, postChangedOn as resolvePostChangedOn, indexRouteDates } from '../../lib/sitemap-dates.mjs';
 
 /**
  * The wiki browse index (specs/wiki, task 4.1's listing side).
@@ -24,6 +25,10 @@ const SORT = 'name, A to Z';
 
 export default async function WikiIndex() {
   const site = await getSite();
+  const changedOn = buildChangedOnMap(site.changes);
+  const contentChangedOn = (doc: any) => resolveContentChangedOn(doc, site.reviews.byFile, changedOn);
+  const postChangedOn = (doc: any) => resolvePostChangedOn(doc, site.reviews.byFile, changedOn);
+  const { wiki: wikiChangedOn } = indexRouteDates(site, contentChangedOn, postChangedOn, changedOn);
   const rows = site.browsable.map(renderEntryRow).join('');
   const stubs = site.entries.length - site.browsable.length;
   // The `DefinedTermSet` the entry pages' `DefinedTerm`s declare themselves
@@ -35,7 +40,7 @@ export default async function WikiIndex() {
 
   return (
     <>
-      <JsonLd graph={definedTermSetGraph(terms, { description: DESCRIPTION })} />
+      <JsonLd graph={definedTermSetGraph(terms, { description: DESCRIPTION, dateModified: wikiChangedOn })} />
       <p className="eyebrow">wiki</p>
       <h1 className="page-title">Every thing, typed and dated</h1>
       <p className="page-lede">
