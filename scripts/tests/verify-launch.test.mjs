@@ -145,6 +145,27 @@ test('without an injected floor set, checkBuild applies the repository build flo
   assert.equal(existsSync(record), false, 'a below-floor build leaves no success record');
 });
 
+test('without an injected clock, checkBuild measures a positive build duration', (t) => {
+  const dir = buildTree(t, { state: 'none' });
+  const checked = checkBuild(true, {
+    root: dir,
+    isCurrent: () => false,
+    floorSet: { build: { floorMs: 1 } },
+    write: () => {},
+    report: (report) => report,
+    spawn: () => {
+      const started = Date.now();
+      while (Date.now() - started < 5) {}
+      return { status: 0, stdout: '', stderr: '' };
+    },
+  });
+
+  assert.equal(checked.ok, true);
+  assert.ok(checked.durationMs > 0, 'the default clock observed positive elapsed time');
+  assert.ok(checked.durationMs >= checked.floorMs, 'the measured duration reached the floor comparison');
+  assert.notEqual(checked.floorFailure, true, 'positive elapsed time did not trigger a floor failure');
+});
+
 test('without an output directory the launch check spawns the build process', (t) => {
   const dir = buildTree(t, { state: 'none' });
 
