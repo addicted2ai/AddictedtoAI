@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 123762.
+Entries: 58. Characters of memory text: 127149.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -675,6 +675,21 @@ THE SHAPE THAT KEEPS BEING RIGHT: fix the urgent thing narrowly, file the durabl
 separately, and name the issue carrying the rest in the fix's own record. An outage fix
 should not carry a redesign -- and the redesign must not evaporate because the outage got
 fixed.
+
+--- ADDED 2026-09-08, from a paired decision made the same night. NOT part of the
+original memory text above. ---
+
+THE LOG IS A RECORD AND KEEPS ITS WRONG TURNS; THE BEAD IS AN INSTRUCTION AND MUST NOT.
+Same night, same pair of facts, two artefacts, two OPPOSITE choices, both correct. In
+FULL-MEM-LOG.md an open question was left STANDING immediately above its resolution,
+because the sequence -- question posed, evidence gathered, initial reading reversed -- is
+the method working, and a record that quietly rewrites its wrong turns cannot be audited.
+In the bead the erroneous section was REPLACED rather than annotated, because bead notes
+are read IN FRAGMENTS by whoever picks up the work, and a wrong argument left standing
+lets a reader take the wrong half.
+THE TEST IS HOW THE ARTEFACT IS READ, not what it contains. Read end to end as history:
+keep the wrong turn and show the correction beneath it. Read in fragments as instruction:
+excise it, because you cannot control which fragment a reader lands on.
 ```
 
 ## gate-order-and-build-locking
@@ -1508,6 +1523,21 @@ reaches the remote with NOTHING a visitor sees changed and no build able to brea
 Measured 2026-09-07/08 on FULL-MEM-LOG.md: read by nothing in the tree, not exported.
 So do not stop a productive Desk chain to gate a file no build reads -- that is
 PERFORMING caution rather than exercising it. Gate it in the next merge window.
+
+--- ADDED 2026-09-08. NOT part of the original memory text above. ---
+
+HOW OFTEN THE UNSCOPED PUSH ACTUALLY CARRIES SOMEONE ELSE'S WORK. Measured 2026-09-08:
+FIVE of one session's SEVEN local commits had already reached origin/main via OTHER
+sessions' publish steps, none by any act of its own, and the remaining two sat in a
+ten-commit unpushed backlog awaiting whichever Desk job finished next. THE SWEEP IS THE
+NORMAL ROUTE TO THE REMOTE HERE, not an occasional accident, and that is the fact worth
+holding rather than the dramatic single instance.
+THE CONSEQUENCE FOR HOW YOU WORK: "I COMMITTED LOCALLY" IS NOT "I HAVE NOT PUBLISHED".
+CLAUDE.md's "commit locally as often as you like" and "push only what passed the gates"
+cannot both hold while the push is branch-wide and unconditional (addictedtoai-zuoo).
+Keep anything you might still REVERSE on a branch and land it in a window; for
+append-only work no build reads, the sweep is harmless and a branch is ceremony. The
+thing that publishes your work is a job that knows nothing about it.
 ```
 
 ## publish-authority-and-gates
@@ -2070,6 +2100,24 @@ to, so the build failed AGAIN but named a DIFFERENT date -- which reads as progr
 RUNNING THE BUILD, rather than reading the diff and reasoning about it, distinguished a
 moved error from a fixed one. When a second failure looks like movement in the right
 direction, that is a HYPOTHESIS; the run is the evidence.
+
+--- ADDED 2026-09-08 by addictedtoai-73, about itself; relayed via A2AI-luna-boss.
+NOT part of the original memory text above. ---
+
+AGREEMENT IS EXACTLY WHEN CHECKING STOPS FEELING NECESSARY. That is the condition under
+which the question above -- does anything I am about to write REST on this being true --
+stops getting asked at all.
+MEASURED 2026-09-08, and the instance is better than the aphorism. A session had verified
+a peer's claims about addictedtoai-ovrk, about ml25, and about merge scope -- every one --
+then took the same peer's census TREND on trust and wrote it into a bead's notes as though
+it had checked. It had the build's own output, "23 census claim(s) in 14 document(s); 23
+hedged", IN THE SAME CONTEXT as the memory's "23 claims in 14 documents, 21 cleared". The
+constant claim count was in front of it in both numbers. What made it skip the check was
+not carelessness or fatigue: THE ARGUMENT WAS WELL-MADE AND IT AGREED WITH THE CONCLUSION.
+THE OTHER HALF, from the session that caught it: the rule fires ON THE WRITER, NOT THE
+READER. That session nearly wrote the same reading down verbatim and stopped only because
+it was about to type a CAUSAL claim into this corpus and the arithmetic under it did not
+add up. A DISAGREEMENT GETS CHECKED FOR FREE; AN AGREEMENT HAS TO BE CHECKED ON PURPOSE.
 ```
 
 ## verify-from-raw-not-from-reports
