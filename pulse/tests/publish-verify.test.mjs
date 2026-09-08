@@ -151,17 +151,22 @@ function writeLocalBuildStamp(root, commit) {
 /**
  * A loopback `/status.json` whose body each test moves when it chooses.
  *
- * `deadUntil` and `aliveUntil` are counted in REQUESTS, not milliseconds, which
+ * `deadUntil`, `aliveUntil`, and `changeAfterReads` are counted in REQUESTS, not milliseconds, which
  * is what makes the classification tests deterministic rather than racy: the
  * publish step's pre-push baseline read is always request 1, so `aliveUntil: 1`
  * is exactly "the baseline was readable and every reading after the push
  * failed" — the case the replaced free-text clause got wrong.
  */
-async function serveStatus(initialBody, { deadUntil = 0, aliveUntil = Infinity } = {}) {
+async function serveStatus(initialBody, { deadUntil = 0, aliveUntil = Infinity, changeAfterReads = Infinity } = {}) {
   let body = initialBody;
+  let pendingBody;
   let hits = 0;
   const server = createServer((req, res) => {
     hits++;
+    if (hits > changeAfterReads && pendingBody !== undefined) {
+      body = pendingBody;
+      pendingBody = undefined;
+    }
     if (hits <= deadUntil || hits > aliveUntil) {
       res.writeHead(503);
       res.end('');
@@ -175,7 +180,8 @@ async function serveStatus(initialBody, { deadUntil = 0, aliveUntil = Infinity }
   return {
     url: `http://127.0.0.1:${port}`,
     set: (b) => {
-      body = b;
+      if (changeAfterReads === Infinity) body = b;
+      else pendingBody = b;
     },
     get hits() {
       return hits;
@@ -284,14 +290,14 @@ test('declared: success is confirmed against the commit the push actually placed
 });
 
 test('declared: a live stamp that merely changes is not a confirmation — there is no any-change fallback', async (t) => {
-  const { root, live, previousCommit } = await withFixture(t);
+  const { root, live, previousCommit } = await withFixture(t, { changeAfterReads: 1 });
 
   stageableChange(root, 'fourth\n');
   // No local build stamp at all: under the old code this made `expected` null
   // and fell through to `id !== baseline`, which passes on ANY change.
   live.set(stamp(previousCommit, { dirty: true }));
   const unrelated = 'ffffffffffff';
-  setTimeout(() => live.set(stamp(unrelated, { dirty: true })), 40);
+  live.set(stamp(unrelated, { dirty: true }));
 
   const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
   const pushed = short(root);
@@ -665,9 +671,9 @@ test('hold: never-advanced — every reading returned the stamp that was live be
 });
 
 test('hold: advanced-elsewhere — the stamp moved to a commit that is not this one', async (t) => {
-  const { root, live } = await withFixture(t);
+  const { root, live } = await withFixture(t, { changeAfterReads: 1 });
   stageableChange(root, 'elsewhere\n');
-  setTimeout(() => live.set(stamp('ffffffffffff', { dirty: true })), 40);
+  live.set(stamp('ffffffffffff', { dirty: true }));
 
   const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
   assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE);
@@ -714,9 +720,9 @@ test('hold: a baseline that could not be read while later readings could is adva
 });
 
 test('hold: a reading that is not a commit at all is advanced-elsewhere', async (t) => {
-  const { root, live } = await withFixture(t);
+  const { root, live } = await withFixture(t, { changeAfterReads: 1 });
   stageableChange(root, 'unknown-stamp\n');
-  setTimeout(() => live.set(stamp('unknown', { dirty: true })), 40);
+  live.set(stamp('unknown', { dirty: true }));
 
   const res = await publishStep(root, { ...DECLARED, ...FAST, log: { step: () => {} } });
   assert.equal(res.classification, DEPLOY_CLASSIFICATIONS.ADVANCED_ELSEWHERE);
