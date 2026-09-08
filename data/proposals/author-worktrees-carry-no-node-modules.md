@@ -3,27 +3,29 @@ date: 2026-09-04
 slug: author-worktrees-carry-no-node-modules
 type: machinery
 summary: >
-  Link `node_modules` into a job worktree when the worktree is created, not
-  only inside `runGates`. Today `linkNodeModules` is called from exactly one
-  place — `loop/lib/gates.mjs:177`, inside the gate run that happens AFTER the
-  authoring invocation — so an authoring job that runs `npm test` or
-  `npm run build`, which its own acceptance checks require it to do, gets a
-  catastrophic false red instead of a result. The proposed job would move the
-  link to worktree creation (`unlinkNodeModules` already runs on every teardown
-  path in `loop/run.mjs`, so the symmetry is already there), and would make
-  `unlinkNodeModules` distinguish a junction it created from a real directory a
-  job installed, rather than calling `unlinkSync` on a directory and swallowing
-  the throw.
+  Keep `node_modules` available before author and revision executors run. The
+  author/revision calls to `linkNodeModules(worktree, ctx.repoRoot)` have
+  already landed at `loop/run.mjs:300` and `:712`; the gate-time call remains at
+  `loop/lib/gates.mjs:300`. The helper is already idempotent (`already present`
+  is returned at `loop/lib/gates.mjs:157`), so that gate-time call needs no
+  change. The remaining work is teardown safety: `unlinkNodeModules` must
+  distinguish a junction it created from a real directory a job installed,
+  rather than calling `unlinkSync` on a directory and swallowing the throw.
 evidence: >
   Measured in this job's own worktree on 2026-09-04. `npm --prefix
   D:/addictedtoai-worktrees/j-20260904-56 test` reported "91 test file(s)" and
   then failed every one of them with "Error [ERR_MODULE_NOT_FOUND]: Cannot find
   package 'fast-glob' imported from ...\lib\corpus.mjs"; the worktree had no
   `node_modules` at all. After `npm ci` in the worktree the same command
-  returned 1227 pass / 0 fail and `npm run build` completed. `grep -n
-  'linkNodeModules|unlinkNodeModules' loop/` returns one definition and one
-  caller for the link (`loop/lib/gates.mjs:177`) against three callers for the
-  unlink (`loop/run.mjs:275`, `:562`, `:980`) — the asymmetry is the bug.
+  returned 1227 pass / 0 fail and `npm run build` completed. The targeted
+  `rg -n 'linkNodeModules\\(' loop/run.mjs loop/lib/gates.mjs` check reports
+  calls at `loop/run.mjs:300`, `loop/run.mjs:712`, and
+  `loop/lib/gates.mjs:300`; the helper's idempotence is directly confirmed by
+  `loop/lib/gates.mjs:157`. The targeted `rg -n 'unlinkNodeModules\\('
+  loop/run.mjs` check reports callers at `loop/run.mjs:327`, `:728`, `:1272`,
+  and `:1336`, not the older line references. At `loop/lib/gates.mjs:170-178`,
+  the teardown still tests `st.isSymbolicLink() || st.isDirectory()`, calls
+  `unlinkSync(link)`, and swallows the catch — the remaining hazard.
   Related but not the same case: `data/proposals/review-worktrees-carry-no-node-modules.md`
   (2026-09-01) covers the REVIEW worktree, whose remedy would not reach the
   authoring one.
@@ -43,9 +45,11 @@ The fix is small because the machinery is already almost right.
 `linkNodeModules` exists, documents its own reasoning ("A worktree has no
 `node_modules` — it is gitignored, so `git worktree add` does not bring it"),
 uses a Windows junction so it needs no elevated rights, and is paired with an
-`unlinkNodeModules` that `loop/run.mjs` already calls on all three teardown
-paths. Only the call site is late: it sits inside `runGates`, so the link
-appears after the authoring invocation has already exited.
+`unlinkNodeModules` that `loop/run.mjs` calls at all four teardown sites. The
+author and revision calls now happen immediately before their executor
+invocations, and the existing helper's idempotent `already present` result
+means the gate-time call does not need to change. The remaining fix is to make
+teardown safe when a real directory occupies the path.
 
 The second half is the hazard the workaround creates. A job that notices the
 missing tree and runs `npm ci` — the obvious move, and the one this job made —
