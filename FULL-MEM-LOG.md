@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 127149.
+Entries: 58. Characters of memory text: 128744.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -690,6 +690,30 @@ lets a reader take the wrong half.
 THE TEST IS HOW THE ARTEFACT IS READ, not what it contains. Read end to end as history:
 keep the wrong turn and show the correction beneath it. Read in fragments as instruction:
 excise it, because you cannot control which fragment a reader lands on.
+
+--- CORRECTED 2026-09-08. The block immediately above says the bead's erroneous section
+was REPLACED. That is wrong about the mechanism, and the truth is a better rule. ---
+
+VERIFIED IN addictedtoai-6nrk'S STORED NOTES: the wrong reading is not absent, it is
+QUOTED, ATTRIBUTED AND REFUTED IN PLACE, under a heading that announces the correction --
+"THE STRUCTURAL ARGUMENT -- CORRECTED 2026-09-08, AND THE CORRECTION MATTERS / AN EARLIER
+VERSION OF THIS NOTE SAID THE CLIMB WAS ARRIVAL: that each morning's red is a NEW page
+nobody hedged ... THAT WAS WRONG, it was written here by the orchestrator on the
+coordinator's reading, and NEITHER OF US CHECKED THE ARITHMETIC WE BOTH HAD IN FRONT OF
+US."
+
+SO THE TEST IS NOT KEEP-VERSUS-EXCISE. It is whether a reader landing on ANY SINGLE
+FRAGMENT could take the wrong turn as the artefact's POSITION. A bead MAY keep its error,
+provided every fragment that can be read alone carries the refutation with it -- that
+makes the error UNTAKEABLE rather than absent, which is the property actually wanted.
+What a bead may NOT do is leave a wrong argument standing in a form that reads alone as
+its position. A log is read end to end as history and carries no such constraint.
+"Replaced" was shorthand: wrong about the mechanism, right about the effect.
+
+AND NOTE WHAT THIS ENTRY DID WITH ITS OWN ERROR. The wrong block above was KEPT, here,
+with this refutation beneath it -- while the INDEX statement was corrected outright,
+because the index is what sessions load and is read in fragments. The rule applied to
+itself, in both directions, in one edit.
 ```
 
 ## gate-order-and-build-locking
