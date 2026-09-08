@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 58. Characters of memory text: 119067.
+Entries: 58. Characters of memory text: 121981.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -1744,6 +1744,39 @@ WATCH THE HEDGED COUNT. The prebuild census line prints it; if it climbs well pa
 corpus is leaning on the hedge as a default and addictedtoai-6nrk (derived census fact) is
 the real answer. IT IS ALREADY 21 as of 2026-09-07 -- past that threshold, measured, and
 nobody has acted on it.
+
+--- ADDED 2026-09-08 by addictedtoai-73 (found and self-reported), relayed via
+A2AI-luna-boss. NOT part of the original memory text above. ---
+
+REMOVING A DATE FROM A HEDGED PARAGRAPH MOVES THE ANCHOR RATHER THAN REMOVING IT, AND
+THE MOVED ANCHOR CAN BE FALSE. Measured 2026-09-08 on
+content/wiki/model/z-ai-glm-5-2-free.md. The check pairs a census claim with a date in
+its OWN PARAGRAPH, so an author who added the `as observed on DATE` marker while
+DROPPING the ISO date already in the sentence did not leave the claim unanchored -- the
+check bound it to the NEAREST REMAINING date, a 2026-09-06 snapshot mentioned three
+lines earlier, and demanded a hedge dated 6 September. Supplying that would have been
+FALSE: the fetch happened on the 7th. The build failed AGAIN but DIFFERENTLY, which is
+the only reason it was caught.
+
+THE CORRECT REPAIR keeps the ISO date in the sentence AND adds the marker with its date
+immediately after, in the past tense. The landed form, read back out of the file: "A
+live fetch of the catalog on 2026-09-07 ... carried 430 rows as observed on 7 September
+2026". NO NUMBER CHANGES -- the claim was true when it was fetched, and what is repaired
+is the sentence's SILENCE ABOUT AGEING, not its content.
+
+THE HEDGED COUNT AS A SERIES, not a pinned number -- this entry's own count went stale
+within a day, exactly as the entry warned it would:
+  2026-09-07   23 claims in 14 documents, 21 cleared by the hedge, 0 errors, 0 debt
+  2026-09-08   23 claims, 23 hedged, 0 errors, 0 debt
+WHAT THE NUMBERS DO NOT SETTLE, and it changes what fixes this: the CLAIM count did not
+move while the HEDGED count rose by two. That is equally consistent with (i) two new
+hedge-dependent pages arriving, and (ii) the SAME 23 claims, two of which still matched
+the snapshot date on the 7th and AGED INTO needing the hedge on the 8th. The reading
+relayed with these figures was (i); the arithmetic alone does not distinguish them. THE
+CHECK THAT WOULD: compare the DOCUMENT SET across the two days -- new slugs mean (i), the
+same 14 documents mean (ii). Reading (ii) is the one addictedtoai-6nrk closes (OPEN, P2,
+"derived catalog-census fact type: close the census class instead of dating it";
+verified open 2026-09-08), so settle it before designing from it.
 ```
 
 ## source-verification-absence-is-weak
@@ -2001,6 +2034,16 @@ session verified addictedtoai-lvba against `bd show` before citing it, because t
 citation WAS the claim -- and the bead turned out to be stronger than the summary given.
 THE TEST is not "how confident am I?" but "DOES ANYTHING I AM ABOUT TO WRITE OR DO REST
 ON THIS BEING TRUE?"
+
+--- ADDED 2026-09-08 by addictedtoai-73 (found and self-reported), relayed via
+A2AI-luna-boss. NOT part of the original memory text above. ---
+
+A REPAIR THAT CHANGES THE ERROR IS NOT THE SAME AS A REPAIR THAT FIXES IT. Measured
+2026-09-08 on the snapshot-census hedge: a first repair moved WHICH DATE the check bound
+to, so the build failed AGAIN but named a DIFFERENT date -- which reads as progress. Only
+RUNNING THE BUILD, rather than reading the diff and reasoning about it, distinguished a
+moved error from a fixed one. When a second failure looks like movement in the right
+direction, that is a HYPOTHESIS; the run is the evidence.
 ```
 
 ## verify-from-raw-not-from-reports
