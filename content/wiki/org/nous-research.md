@@ -47,16 +47,16 @@ facts:
     value: "\"nearly matches (and in some cases exceeds) the performance of Hermes 4 70B at half the parameter cost\", the vendor's own comparison"
     source_url: "https://nousresearch.com/introducing-hermes-4-3"
     accessed: "2026-09-06"
-    volatility: slow
+    volatility: dated
   - field: psyche_production_first
     source: cited
     value: "\"our first production model post-trained entirely on the Psyche network\""
     source_url: "https://nousresearch.com/introducing-hermes-4-3"
     accessed: "2026-09-06"
-    volatility: slow
+    volatility: dated
   - field: hermes_4_likes
     source: cited
-    value: "299, against 215 for Hermes-4-70B, 181 for Hermes-4-14B and 94 for Hermes-4-405B"
+    value: "299 likes for Hermes-4.3-36B"
     source_url: "https://huggingface.co/api/models/NousResearch/Hermes-4.3-36B"
     accessed: "2026-09-06"
     volatility: dated
@@ -98,7 +98,7 @@ facts:
     volatility: slow
   - field: portal_catalog
     source: cited
-    value: "332 distinct named model rows, counted from the landing page's own per-1M price cells — and not one of them a Nous model"
+    value: "333 distinct model ids, counted from 346 landing-page rows after excluding 13 ~-prefixed free-tier duplicate ids — and not one of them a Nous model"
     source_url: "https://portal.nousresearch.com/"
     accessed: "2026-09-06"
     volatility: dated
