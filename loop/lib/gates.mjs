@@ -11,6 +11,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, symlinkSync, unlinkSync, readFileSync } from 'node:fs';
+import { freemem } from 'node:os';
 import { join } from 'node:path';
 
 /**
@@ -88,6 +89,67 @@ export function gatesHitTransportFailure(result = {}) {
   return isTransportFailure(result.output);
 }
 
+const TEST_LOCK_REFUSAL = /run-tests:\s*TEST LOCK|another test run holds/i;
+const BUILD_LOCK_REFUSAL = /another build holds .*Waited \d+s\./i;
+const SPAWN_FAILURE_STATUS = new Set([
+  0xC0000142, 3221225794, -1073741502,
+  0xC0000005, 3221225477, -1073741819,
+]);
+const SPAWN_FAILURE_CODES = new Set(['EAGAIN', 'ENOMEM']);
+
+function environmentalCondition(result = {}) {
+  const output = `${result.output ?? ''}\n${result.error ?? ''}`;
+  if (TEST_LOCK_REFUSAL.test(output)) return 'test-lock refusal';
+  if (BUILD_LOCK_REFUSAL.test(output)) return 'build-lock refusal';
+  // A timeout means the child DID start. It is a real gate failure, even though
+  // spawnSync also reports an error and status null; only creation refusal
+  // before any output belongs to the environmental interruption path.
+  const errorCode = result.errorCode ?? result.code;
+  const timedOut = errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(result.error ?? '');
+  const noOutput = !String(result.output ?? '').trim();
+  if (!timedOut && noOutput && (
+    SPAWN_FAILURE_CODES.has(errorCode) ||
+    (result.spawned === true && SPAWN_FAILURE_STATUS.has(result.status))
+  )) {
+    return 'child process did not start';
+  }
+  return null;
+}
+
+/**
+ * Leave the child a derived grace period after its lock wait expires, so its
+ * refusal can be raised, printed, and captured before the parent cap kills it.
+ * The margin is one quarter of the process cap, with an 8-second floor for
+ * small direct callers. Production caps are measured in minutes, while tests
+ * and future callers may use smaller caps; the floor keeps poll/throw/output
+ * capture from being squeezed by ordinary scheduler jitter.
+ */
+export function lockWaitBudget(timeoutMs) {
+  const captureMarginMs = Math.min(
+    Math.max(Math.ceil(timeoutMs / 4), 8000),
+    Math.max(0, timeoutMs - 1),
+  );
+  return Math.max(0, Math.min(timeoutMs - 1, timeoutMs - captureMarginMs));
+}
+
+function freeMemoryOnSpawnRefusal(result) {
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  const errorCode = result.error?.code;
+  const timedOut = errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(result.error?.message ?? '');
+  const noOutput = !output.trim();
+  const refused = !timedOut && noOutput && (
+    SPAWN_FAILURE_CODES.has(errorCode) || SPAWN_FAILURE_STATUS.has(result.status)
+  );
+  return refused ? freemem() : undefined;
+}
+
+/** Did a gate fail because the machine refused the check, rather than the branch? */
+export function gatesHitEnvironmentalFailure(result = {}) {
+  return (result.results ?? [result])
+    .filter((r) => !r.ok)
+    .some((r) => Boolean(environmentalCondition(r)));
+}
+
 /**
  * What KIND of gate failure this was, in the one line the ledger keeps.
  *
@@ -127,7 +189,11 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
   const failed = (result.results ?? []).filter((r) => !r.ok);
   const which = failed.length
     ? failed
-        .map((r) => `${gateCommand(r)} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
+        .map((r) => {
+          const timedOut = r.errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(r.error ?? '');
+          const ending = r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
+          return `${gateCommand(r)} (${ending})`;
+        })
         .join(', ')
     : 'no per-gate result was recorded';
   // The marker no longer decides WHETHER the gates were retried — since beads
@@ -136,7 +202,12 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
   // A note that said only "transport-marked" would leave the ledger unable to
   // tell a first failure from a confirmed one, which is the exact readability
   // this function was written for.
-  const marker = gatesHitTransportFailure(result)
+  const condition = failed.map(environmentalCondition).find(Boolean);
+  const memory = failed.find((r) => Number.isFinite(r.freeMemoryBytes))?.freeMemoryBytes;
+  const memoryNote = Number.isFinite(memory) ? ` (free memory: ${memory} bytes)` : '';
+  const marker = condition
+    ? `environmental: ${condition}${condition === 'child process did not start' ? memoryNote : ''}`
+    : gatesHitTransportFailure(result)
     ? 'transport-marked'
     : 'no transport marker in the captured output';
   const kind = retried ? `${marker}, retried once and failed again` : marker;
@@ -188,19 +259,24 @@ function hasScript(worktree, name) {
   }
 }
 
-function npmRun(worktree, script, timeoutMs) {
-  const r = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
+function npmRun(worktree, script, timeoutMs, env, spawn = spawnSync) {
+  const r = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', script], {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
     shell: process.platform === 'win32',
+    env: { ...process.env, ...env },
   });
   return {
     script,
     command: `npm run ${script}`,
     ok: r.status === 0,
     status: r.status,
+    error: r.error?.message,
+    errorCode: r.error?.code,
+    freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
+    spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -269,20 +345,24 @@ export const NODE_GATES = Object.freeze({
 /** The per-job merge gate, in order: the export must exist before it is checked. */
 export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
 
-function nodeRun(worktree, name, spec, timeoutMs) {
+function nodeRun(worktree, name, spec, timeoutMs, env, spawn = spawnSync) {
   const args = [spec.file, ...spec.args()];
-  const r = spawnSync(process.execPath, args, {
+  const r = spawn(process.execPath, args, {
     cwd: worktree,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 32 * 1024 * 1024,
-    env: { ...process.env, ...(spec.env ?? {}) },
+    env: { ...process.env, ...env, ...(spec.env ?? {}) },
   });
   return {
     script: name,
     command: `node ${args.join(' ')}`,
     ok: r.status === 0,
     status: r.status,
+    error: r.error?.message,
+    errorCode: r.error?.code,
+    freeMemoryBytes: freeMemoryOnSpawnRefusal(r),
+    spawned: true,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
   };
 }
@@ -296,8 +376,17 @@ function nodeRun(worktree, name, spec, timeoutMs) {
  *
  * @returns {{ok: boolean, results: Array, transport: boolean, output: string}}
  */
-export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 20 * 60 * 1000 } = {}) {
+export function runGates(ctx, worktree, {
+  scripts = DEFAULT_GATES,
+  timeoutMs = 20 * 60 * 1000,
+  lockWaitMs = lockWaitBudget(timeoutMs),
+  spawn = spawnSync,
+} = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
+  const gateEnv = {
+    ATAI_TEST_LOCK_WAIT_MS: String(lockWaitMs),
+    ATAI_BUILD_LOCK_WAIT_MS: String(lockWaitMs),
+  };
   const results = [];
   for (const s of scripts) {
     const node = NODE_GATES[s];
@@ -316,7 +405,7 @@ export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 2
         });
         continue;
       }
-      const r = nodeRun(worktree, s, node, timeoutMs);
+      const r = nodeRun(worktree, s, node, timeoutMs, gateEnv, spawn);
       results.push(r);
       if (!r.ok) break;
       continue;
@@ -332,17 +421,21 @@ export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 2
       });
       continue;
     }
-    const r = npmRun(worktree, s, timeoutMs);
+    const r = npmRun(worktree, s, timeoutMs, gateEnv, spawn);
     results.push(r);
     if (!r.ok) break;
   }
   const ok = results.length > 0 && results.every((r) => r.ok);
   // BEFORE THE SLICE, and that ordering is the whole point of the flag.
   const transport = results.some((r) => isTransportFailure(r.output));
+  const environmental = results
+    .filter((r) => !r.ok)
+    .some((r) => Boolean(environmentalCondition(r)));
   return {
     ok,
     results,
     transport,
+    environmental,
     output: results
       .map((r) => `--- ${gateCommand(r)} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}`})\n${r.output.slice(-6000)}`)
       .join('\n'),

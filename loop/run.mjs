@@ -45,6 +45,7 @@ import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './li
 import {
   gateCommand,
   gateFailureNote,
+  gatesHitEnvironmentalFailure,
   gatesHitTransportFailure,
   runGates,
   linkNodeModules,
@@ -398,7 +399,10 @@ async function executeJob(ctx, opts) {
   let gateResult = { ok: true, output: 'gates skipped (--no-gates)' };
   let gateReport = { ran: false, why: 'the loop was run with --no-gates' };
   if (gates !== false) {
-    const runTheGates = () => (typeof gates === 'function' ? gates(ctx, worktree) : runGates(ctx, worktree));
+    const gateTimeoutMs = capMinutes * 60 * 1000;
+    const runTheGates = () => (typeof gates === 'function'
+      ? gates(ctx, worktree)
+      : runGates(ctx, worktree, { timeoutMs: gateTimeoutMs }));
     // -----------------------------------------------------------------------
     // PRINT WHY, NOT JUST THAT — at the moment of the failure, not at the end
     // of the block.
@@ -482,6 +486,7 @@ async function executeJob(ctx, opts) {
     let retried = false;
     if (!gateResult.ok) {
       retried = true;
+      const environmental = gatesHitEnvironmentalFailure(gateResult);
       const marked = gatesHitTransportFailure(gateResult);
       // Named BEFORE the retry overwrites `gateResult`. These are the scripts,
       // not their output — cheap enough to carry on the job's permanent record,
@@ -495,7 +500,10 @@ async function executeJob(ctx, opts) {
       // belongs (beads addictedtoai-one6).
       const firstFailed = (gateResult.results ?? []).filter((r) => !r.ok).map((r) => r.script);
       ctx.log(
-        marked
+        environmental
+          ? `the gate was refused by the environment (${gateFailureNote(gateResult)}) — recording an ` +
+              `interrupted run so it resumes without re-authoring; no second wait on the same holder.`
+          : marked
           ? `a gate's full output carried the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the ` +
               `machine, not the diff. It may not appear in the truncated log printed below, which is ` +
               `why the decision is made at capture. transport marker: running the gates ONCE more.`
@@ -508,6 +516,18 @@ async function executeJob(ctx, opts) {
       // this is the ONLY record that anything failed at all, and it is the
       // record the measurement xzdd asks for has to be made from.
       emitGateEvidence(gateResult, 'the FIRST gate run, which FAILED (its evidence, before the retry replaces it)');
+      if (environmental) {
+        gateReport = {
+          ran: true,
+          ok: false,
+          results: gateResult.results ?? [],
+          environmental: true,
+          firstFailed,
+        };
+        const note = gateFailureNote(gateResult);
+        ctx.log(note);
+        return finish({ outcome: 'interrupted', mm, changed, note, gateOutput: gateResult.output });
+      }
       gateResult = runTheGates();
       gateReport = {
         ran: true,
@@ -521,6 +541,11 @@ async function executeJob(ctx, opts) {
         `gates (retry after a ${marked ? 'transport failure' : 'gate failure with no transport marker'}): ` +
           `${gateResult.ok ? 'PASS' : 'FAIL'}`,
       );
+      if (!gateResult.ok && gatesHitEnvironmentalFailure(gateResult)) {
+        const note = gateFailureNote(gateResult, { retried: true });
+        ctx.log(`${note} — recording an interrupted run so it resumes without re-authoring`);
+        return finish({ outcome: 'interrupted', mm, changed, note, gateOutput: gateResult.output });
+      }
       // On the job's permanent record, not only in a log that is not kept: the
       // author invocation's phase entry says a retry happened and how it ended.
       // Without it the ledger cannot tell a job that passed first time from one

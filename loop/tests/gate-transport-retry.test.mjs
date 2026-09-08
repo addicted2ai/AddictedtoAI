@@ -20,24 +20,186 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, readFileSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runLoop } from '../run.mjs';
+import { loadRunners } from '../lib/runners.mjs';
 import { readLedger, LEDGER_FIELDS } from '../lib/ledger.mjs';
 import { consecutiveFailures } from '../lib/budget.mjs';
 import {
   gateFailureNote,
+  gatesHitEnvironmentalFailure,
   gatesHitTransportFailure,
   isTransportFailure,
   runGates,
+  lockWaitBudget,
   TRANSPORT_FAILURE_MARKER,
 } from '../lib/gates.mjs';
 import { assertIngested, assertNoTransportFailure } from '../../pulse/tests/helpers.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml } from './helpers.mjs';
+import { buildLockPath, releaseBuildLock, TEST_LOCK_SUFFIX } from '../../scripts/build-lock.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+test('only terminal lock refusals are environmental and named by the failure note', () => {
+  for (const [output, name] of [
+    ['run-tests: TEST LOCK\nanother test run holds the lock', 'test-lock refusal'],
+    ['another build holds D:/tmp/build.lock: holder. Waited 5s.\nThat file is the lock for the build surface out.', 'build-lock refusal'],
+  ]) {
+    const result = { ok: false, results: [{ script: 'test', ok: false, status: 1, output }], output };
+    assert.equal(gatesHitEnvironmentalFailure(result), true);
+    assert.match(gateFailureNote(result), new RegExp(`environmental: ${name}`));
+  }
+  const waited = {
+    ok: false,
+    results: [
+      { script: 'build', ok: true, status: 0, output: 'build-lock: waiting for holder to finish its build.' },
+      { script: 'verify-surfaces', ok: false, status: 1, output: 'ordinary assertion failure' },
+    ],
+  };
+  assert.equal(gatesHitEnvironmentalFailure(waited), false, 'a successful wait must not excuse a later failed gate');
+  assert.match(gateFailureNote(waited), /no transport marker/);
+  assert.equal(
+    gatesHitEnvironmentalFailure({ results: [{ script: 'build', ok: false, status: 1, output: 'build-lock: waiting for holder to finish its build.' }] }),
+    false,
+    'a wait announcement is not a terminal refusal',
+  );
+});
+
+test('a refused child process is environmental, while an ordinary failure remains branch-owned', () => {
+  const refused = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: 3221225794, spawned: true, error: 'process creation refused' }],
+  };
+  assert.equal(gatesHitEnvironmentalFailure(refused), true);
+  assert.match(gateFailureNote(refused), /environmental: child process did not start/);
+
+  for (const status of [3221225477, -1073741819]) {
+    assert.equal(
+      gatesHitEnvironmentalFailure({ results: [{ script: 'test', ok: false, status, spawned: true }] }),
+      true,
+      `access-violation status ${status} is a pre-output spawn failure`,
+    );
+  }
+  for (const errorCode of ['EAGAIN', 'ENOMEM']) {
+    assert.equal(
+      gatesHitEnvironmentalFailure({ results: [{ script: 'test', ok: false, status: null, spawned: true, errorCode }] }),
+      true,
+      `spawn error ${errorCode} is environmental before output`,
+    );
+  }
+
+  // ETIMEDOUT is explicitly not environmental: the child started and was
+  // killed at the cap, so a permanently hanging branch must count as failed.
+  const timedOut = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: null, spawned: true, error: 'spawnSync ETIMEDOUT', errorCode: 'ETIMEDOUT' }],
+  };
+  assert.equal(gatesHitEnvironmentalFailure(timedOut), false);
+  assert.match(gateFailureNote(timedOut), /timed out/);
+
+  const ordinary = { ok: false, results: [{ script: 'test', ok: false, status: 1, output: 'not ok 1' }] };
+  assert.equal(gatesHitEnvironmentalFailure(ordinary), false);
+  assert.match(gateFailureNote(ordinary), /no transport marker/);
+
+  const ordinaryHookError = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: 1, error: 'assertion failed', output: '' }],
+  };
+  assert.equal(
+    gatesHitEnvironmentalFailure(ordinaryHookError),
+    false,
+    'an ordinary hook error without a known spawn signature remains branch-owned',
+  );
+});
+
+test('runGates gives child gates a lock wait below the process cap', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-lock-env-'));
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts: { test: 'node gate.mjs' } }), 'utf8');
+    writeFileSync(
+      join(dir, 'gate.mjs'),
+      "process.stdout.write(`${process.env.ATAI_TEST_LOCK_WAIT_MS},${process.env.ATAI_BUILD_LOCK_WAIT_MS}`); process.exit(1);",
+      'utf8',
+    );
+    const timeoutMs = 120000;
+    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs });
+    assert.match(result.results[0].output, new RegExp(`${lockWaitBudget(timeoutMs)},${lockWaitBudget(timeoutMs)}$`));
+  } finally {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  }
+});
+
+test('lockWaitBudget leaves a usable margin below the cap, including for small caps', () => {
+  assert.equal(lockWaitBudget(120000), 90000);
+  assert.equal(lockWaitBudget(12000), 4000);
+  assert.ok(12000 - lockWaitBudget(12000) >= 8000);
+  assert.equal(lockWaitBudget(1), 0);
+  assert.ok(lockWaitBudget(1) < 1);
+  assert.ok(1 - lockWaitBudget(1) >= 1);
+});
+
+test('the loop lets runGates derive a lock grace period from its per-job cap', () => {
+  // The injected gate hook cannot observe runGates options, so this checks the
+  // production call site itself. Passing the lock wait explicitly at the full
+  // cap is the named mutation this regression must reject.
+  const source = readFileSync(join(REPO_ROOT, 'loop', 'run.mjs'), 'utf8');
+  assert.match(
+    source,
+    /runGates\(ctx, worktree, \{ timeoutMs: gateTimeoutMs \}\)/,
+    'run.mjs must let runGates reserve capture grace below the process cap',
+  );
+});
+
+test('a lock held past the child budget is an environmental refusal before the process cap', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-lock-grace-'));
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts: { test: `node ${join(REPO_ROOT, 'scripts', 'run-tests.mjs')}` } }), 'utf8');
+    mkdirSync(join(dir, 'loop'), { recursive: true });
+    writeFileSync(join(dir, 'loop', 'holder.test.mjs'), 'process.exit(0);', 'utf8');
+    writeFileSync(
+      buildLockPath(dir, TEST_LOCK_SUFFIX),
+      JSON.stringify({ pid: process.pid, host: hostname(), started: new Date().toISOString(), label: 'test holder' }),
+      'utf8',
+    );
+    const result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], timeoutMs: 18000 });
+    assert.equal(result.results[0].errorCode, undefined);
+    assert.equal(gatesHitEnvironmentalFailure(result), true, JSON.stringify(result.results[0]));
+    assert.match(gateFailureNote(result), /environmental: test-lock refusal/);
+    assert.match(result.output, /TEST LOCK/);
+  } finally {
+    releaseBuildLock(buildLockPath(dir, TEST_LOCK_SUFFIX));
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    } catch {
+      // A timed-out Windows child can retain its cwd briefly; the assertion
+      // above is the mutation proof, so cleanup must not mask its message.
+    }
+  }
+});
+
+test('spawn-refusal notes capture free memory through the npm gate result path', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-spawn-refusal-'));
+  const refusedSpawn = () => ({
+    status: null,
+    error: Object.assign(new Error('spawn refused'), { code: 'ENOMEM' }),
+    stdout: '',
+    stderr: '',
+  });
+  let result;
+  try {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ scripts: { test: 'not actually run' } }), 'utf8');
+    result = runGates({ repoRoot: dir }, dir, { scripts: ['test'], spawn: refusedSpawn });
+  } finally {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  }
+  assert.equal(gatesHitEnvironmentalFailure(result), true);
+  assert.equal(result.results[0].errorCode, 'ENOMEM');
+  assert.equal(result.results[0].spawned, true);
+  assert.match(gateFailureNote(result), /environmental: child process did not start \(free memory: \d+ bytes\)/);
+});
 
 /**
  * Make the real emitter emit, and return what it said.
@@ -159,6 +321,43 @@ function stub(...answers) {
   fn.branchCalls = (ctx) => calls.filter((d) => d !== ctx.repoRoot);
   return fn;
 }
+
+test('an environmental gate failure is interrupted for resumption without a second gate run', async () => {
+  const ctx = repo();
+  const gates = stub({
+    ok: false,
+    results: [{ script: 'test', ok: false, status: 1, output: 'run-tests: TEST LOCK\nanother test run holds the lock' }],
+    output: 'run-tests: TEST LOCK\nanother test run holds the lock',
+  });
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+  assert.equal(res.outcome, 'interrupted', ctx.output());
+  assert.equal(gates.branchCalls(ctx).length, 1);
+  assert.match(ctx.output(), /environmental: test-lock refusal/);
+  assert.equal(readLedger(ctx).at(-1).outcome, 'interrupted');
+  ctx.cleanup();
+});
+
+test('an environmental refusal on the retry is interrupted and kept out of the failure breaker', async () => {
+  const ctx = repo();
+  const ordinary = FAILING(gateOutput('not ok 1 - ordinary branch failure'));
+  const refused = {
+    ok: false,
+    results: [{ script: 'test', ok: false, status: 1, output: 'run-tests: TEST LOCK\nanother test run holds the lock' }],
+    output: 'run-tests: TEST LOCK\nanother test run holds the lock',
+  };
+  const gates = stub(ordinary, refused);
+  const registry = loadRunners(ctx);
+  const reviewer = registry.runners.find((entry) => entry.roles.includes('reviewer') && !entry.roles.includes('author'));
+  const res = await runLoop(ctx, { runner: registry.defaultId, reviewer: reviewer.id, gates });
+
+  assert.equal(gates.branchCalls(ctx).length, 2, 'the retry ran exactly once');
+  assert.equal(res.outcome, 'interrupted', ctx.output());
+  assert.match(ctx.output(), /environmental: test-lock refusal/);
+  assert.match(ctx.output(), /retry after a gate failure with no transport marker/);
+  assert.equal(readLedger(ctx).at(-1).outcome, 'interrupted');
+  assert.equal(existsSync(ctx.holdPath), false, 'an environmental retry refusal does not trip the failure breaker');
+  ctx.cleanup();
+});
 
 test('the marker the loop keys on is the marker the emitting code really writes', () => {
   const emitted = realTransportFailureText();
