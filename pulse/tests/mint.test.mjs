@@ -14,7 +14,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import YAML from 'yaml';
 import { assertIngested, cleanup, jsonSource, makeRoot, readLines, paths, runPulse, serve, writeEntry, writeJson } from './helpers.mjs';
-import { findSlugCollisions, slugFromRowId } from '../lib/mint.mjs';
+import { appendTimelineEvents, findSlugCollisions, slugFromRowId } from '../lib/mint.mjs';
+import { KIND } from '../../lib/change-kinds.mjs';
 
 const NO_BUILD = ['--no-build'];
 
@@ -187,6 +188,66 @@ test('a status flip appends exactly one timeline event to the joined entry, and 
     return YAML.parse(t2.slice(4, t2.indexOf('\n---', 3) + 1));
   })();
   assert.equal(front2.timeline.length, 1, 're-running appends no duplicate');
+});
+
+test('a retirement appends a sourced retired event instead of unknown', () => {
+  const root = makeRoot([]);
+  try {
+    const file = writeEntry(root, 'content/wiki/model/acme-one.md', {
+      id: 'model/acme-one', kind: 'model', display_name: 'Acme One', status: 'active', maintenance: 'living',
+      aliases: [{ name: 'Acme One', class: 'manual' }], feeds: { models: 'acme/one' }, facts: [], timeline: [], mentions: [],
+    });
+    const result = appendTimelineEvents(root, { entries: [{ path: 'content/wiki/model/acme-one.md', feeds: { models: 'acme/one' } }] }, [{
+      kind: KIND.RETIREMENT, source: 'models', row_id: 'acme/one', date: '2026-09-02', source_url: 'https://example.test/models', new: null,
+    }]);
+    assert.equal(result.appended.length, 1);
+    const front = YAML.parse(readFileSync(file, 'utf8').slice(4, readFileSync(file, 'utf8').indexOf('\n---', 3) + 1));
+    assert.equal(front.timeline[0].event, 'retired');
+    assert.notEqual(front.timeline[0].event, 'unknown');
+    assert.deepEqual(Object.keys(front.timeline[0]).sort(), ['date', 'event', 'source_url']);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('a substitution appends a distinct substituted event', () => {
+  const root = makeRoot([]);
+  try {
+    const file = writeEntry(root, 'content/wiki/model/acme-one.md', {
+      id: 'model/acme-one', kind: 'model', display_name: 'Acme One', status: 'active', maintenance: 'living',
+      aliases: [{ name: 'Acme One', class: 'manual' }], feeds: { models: 'acme/one' }, facts: [], timeline: [], mentions: [],
+    });
+    appendTimelineEvents(root, { entries: [{ path: 'content/wiki/model/acme-one.md', feeds: { models: 'acme/one' } }] }, [{
+      kind: KIND.SUBSTITUTION, source: 'models', row_id: 'acme/one', date: '2026-09-02', source_url: 'https://example.test/models', new: null,
+      successors: ['acme/two'],
+    }]);
+    const text = readFileSync(file, 'utf8');
+    const front = YAML.parse(text.slice(4, text.indexOf('\n---', 3) + 1));
+    assert.equal(front.timeline[0].event, 'substituted');
+    assert.notEqual(front.timeline[0].event, 'retired');
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('an arrival appends an arrived event and remains idempotent', () => {
+  const root = makeRoot([]);
+  try {
+    const file = writeEntry(root, 'content/wiki/model/acme-one.md', {
+      id: 'model/acme-one', kind: 'model', display_name: 'Acme One', status: 'active', maintenance: 'living',
+      aliases: [{ name: 'Acme One', class: 'manual' }], feeds: { models: 'acme/one' }, facts: [], timeline: [], mentions: [],
+    });
+    const corpus = { entries: [{ path: 'content/wiki/model/acme-one.md', feeds: { models: 'acme/one' } }] };
+    const change = { kind: KIND.ARRIVAL, source: 'models', row_id: 'acme/one', date: '2026-09-02', source_url: 'https://example.test/models', new: null };
+    assert.equal(appendTimelineEvents(root, corpus, [change]).appended.length, 1);
+    assert.equal(appendTimelineEvents(root, corpus, [change]).appended.length, 0);
+    const text = readFileSync(file, 'utf8');
+    const front = YAML.parse(text.slice(4, text.indexOf('\n---', 3) + 1));
+    assert.equal(front.timeline.length, 1);
+    assert.equal(front.timeline[0].event, 'arrived');
+  } finally {
+    cleanup(root);
+  }
 });
 
 test('a standing diff does not re-fire the timeline event on a later day', async (t) => {

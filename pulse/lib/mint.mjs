@@ -11,8 +11,8 @@
  *     create a wrong link. Upgrading an alias class is entry-editing work
  *     for the Desk.
  *   - **A lifecycle append touches an existing entry, and only its
- *     `timeline`.** Status changes only: prices and other field changes live
- *     in the diff history, never the timeline.
+ *     `timeline`.** Status changes, arrivals and departures are timeline
+ *     events; prices and other field changes live in the diff history.
  *
  * A row whose id is already declared by any entry — stub or hand-authored —
  * never mints again, and a source with no `mints` mapping never creates a
@@ -243,7 +243,7 @@ export function recordMinted(root, sourceId, minted, date) {
 }
 
 /**
- * Append dated, sourced timeline events for status changes on declared rows.
+ * Append dated, sourced timeline events for lifecycle changes on declared rows.
  *
  * The event carries exactly `date`, `event` and `source_url`: the entry
  * schema's timeline shape is strict, so a richer event (from/to, the change
@@ -265,7 +265,9 @@ export function appendTimelineEvents(root, corpus, changes) {
   }
 
   for (const change of changes) {
-    if (change.kind !== KIND.FIELD_CHANGE || change.field !== 'status') continue;
+    const isStatusChange = change.kind === KIND.FIELD_CHANGE && change.field === 'status';
+    const isLifecycleChange = change.kind === KIND.ARRIVAL || change.kind === KIND.RETIREMENT || change.kind === KIND.SUBSTITUTION;
+    if (!isStatusChange && !isLifecycleChange) continue;
     const entry = byRow.get(`${change.source} ${change.row_id}`);
     if (!entry) {
       // An undeclared row never touches an entry (specs/wiki).
@@ -285,9 +287,16 @@ export function appendTimelineEvents(root, corpus, changes) {
       continue; // unparseable front matter is the build's problem, not the engine's
     }
 
+    const eventText = isStatusChange
+      ? String(change.new)
+      : change.kind === KIND.ARRIVAL
+        ? 'arrived'
+        : change.kind === KIND.SUBSTITUTION
+          ? 'substituted'
+          : 'retired';
     const event = {
       date: change.date,
-      event: String(change.new ?? 'unknown'),
+      event: eventText,
       source_url: change.source_url,
     };
 
