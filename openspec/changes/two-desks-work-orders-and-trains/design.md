@@ -1920,7 +1920,71 @@ unrelated state that lives in the repository — and the sharper test is about
 READERS: a path belongs in the input set only if some build step reads it.
 Task 3b excludes `.beads/` with that reason and records both tests, the reader
 form for membership and the writer form for outputs such as `public/`; task
-31 measures availability, not only firing. Timings labelled by condition
+31 measures availability, not only firing.
+
+## Revision record — round 15
+
+**Packet B1 (tasks 5–9, the brief diet), round 1 — authority:
+two-desks-work-orders-and-trains@`fbe1306`.** Branch `stage0/b1-brief-diet` at
+`97b31b3`; worker at medium; sealed codex Luna max review, the coordinator's
+"best review this fleet has produced"; verdict revise, five findings, handed
+over about 16:20 local on 2026-09-08 (clock read at the commit).
+
+**The one that was the architect's: task 6 removed the ceiling's bound.** The
+task said "the per-source excerpt budget stops dividing across unarchived
+changes", and the author did exactly that — `share = Math.floor(maxChars /
+caps.length)` in place of `/ plan.length`. But the division by `plan.length`
+was the total bound: pass 1 gives every plan item up to `share`, and `plan`
+holds one entry per source (each capability's constitution plus one delta per
+open change) while `caps.length` counts capabilities, so the total became
+`maxChars × plan.length / caps.length`, growing with every unarchived change.
+Luna-Boss-2 measured it read-only on the live tree, importing `excerptsFor`
+from the branch: eight of ten job types over the 24,000 ceiling, `interpret`
+at 56,024 (2.33x), `machinery` 47,077, `repair` 43,789; the reviewer found the
+same with a synthetic corpus (`excerpt_chars=68877` against `max_chars=24000`).
+The author's own live measurement had reported the overshoot and attributed it
+to the size of the open change set — the symptom correctly reported, wrongly
+diagnosed, because the brief told it an overshoot was "a finding with numbers,
+not a licence to raise either value" and neither the brief nor the author asked
+whether the number had stopped being a ceiling. The task named the symptom of
+the division and not its second job. Disposition: the budget is not
+pre-divided at all — named requirements in priority order (governing type,
+then declared subjects, each with its own pending amendments), every named
+capability's constitution guaranteed before any amendment, and one total cap
+with a cut marker naming what was cut; nothing shrinks as changes open and
+nothing grows with them. Implements bullet 2 and the ceiling bullet together,
+which is what the first wording failed to see they were.
+
+**The other four.** (1) `specs.mjs:281`'s zero-score exception still admitted
+unrelated sections, nine in the reviewer's direct probe, and the pinned test
+FILTERED unrelated and surplus headings out before comparing sets, so the
+wrong world passed — bullet 1's "and nothing else" unmet and hidden by its own
+test; task 5 now says the exception goes with pass 2b and task 8 says the
+comparison is unfiltered. (3) The all-types no-cut assertion was vacuous for
+most types: the pinned corpus held only `pulse`, `site` and `review`, so for
+`verify` and others there was no source to cut; task 8 now requires a spec for
+every capability any checklist names. (4) The mutation table, first live use,
+was itself a finding: it recorded a fixture size of 32,230 for mutations A and
+B where both produce 32,050 (the coordinator's withheld finding, which the
+reviewer found independently and extended: A reddens two arms and B three,
+listed as one each; rows 5 and 6 carry no red run or hash; row 6's "remove or
+weaken" is not a specific mistake). (5) The brief narrowed the standard — it
+told the author declared subjects did not exist yet and were not the packet's
+responsibility, a requirement-level tension resolved by fiat in a brief; the
+coordinator reported this against itself, and task 5 now carries the Stage 0
+reading: the function takes a subjects list from the start, the caller fills
+it from `.job/source.json`'s subject paths until task 55's field exists.
+
+**The mutation-table hypothesis, first data point, read narrowly.** The table
+did not prevent a revise and produced a defect in itself. But four of the five
+findings are specification and coverage defects — a rule that removed a bound,
+a fixture that filters away the evidence, an assertion that passes on absence —
+and the table targets a different class ("this line is deletable with zero
+arms moving"); it neither caught them nor could have. Round count: packet A
+six, B1 at one review and heading for a second. The reviewer also faulted the
+brief, the third reviewer of the day to find a coordinator defect and the most
+substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
+> 0` to `s.score === 0`) reddened three arms. Timings labelled by condition
 rather than pooled: npm test 314.8 s on a quiet machine (122 files, 1,726
 tests) against 393.0 s with one codex worker at medium running (124 files,
 1,730 tests) — so the 78.7 s test floor, 25.0% of the calibration run, is

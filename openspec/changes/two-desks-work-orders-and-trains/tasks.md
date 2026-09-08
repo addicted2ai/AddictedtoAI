@@ -287,15 +287,49 @@ the sentence that uses it.
 
 - [ ] 5. `loop/lib/specs.mjs`: delete pass 2b (`:317-330`). Excerpts become the
       requirements the governing type and the declared subjects name plus the
-      pending-amendment deltas for those requirements only. Implements: *The brief
-      carries the requirements the work order names, and nothing else*, bullet 1.
+      pending-amendment deltas for those requirements only — **and nothing
+      else means nothing else**: the zero-score exception at `:281` (a section
+      with no matching keyword still admitted when the item picked nothing)
+      goes with pass 2b, because B1's reviewer measured nine unrelated sections
+      in an excerpt built under it. **Stage 0 reading of "declared subjects"
+      (resolved here, not in a brief):** the `declared_subjects` field is Stage
+      2's (task 55); until it exists, `excerptsFor` takes a subjects list that
+      the Stage 0 caller fills from the subject paths the job's `.job/source.json`
+      already names, empty when it names none, so the function's contract is
+      the requirement's from the start and only the caller changes in Stage 2.
+      B1's brief had told the author declared subjects were not the packet's
+      responsibility, a requirement-level tension resolved by fiat in a brief
+      (the coordinator's own finding); this sentence is the resolution.
+      Implements: *The brief carries the requirements the work order names, and
+      nothing else*, bullet 1.
 - [ ] 6. `loop/lib/specs.mjs` (`:281`, `share = Math.floor(maxChars / plan.length)`,
       where `plan` holds one entry per source and `specSources` yields the
-      constitution plus one delta per unarchived change): the per-source excerpt
-      budget stops dividing across unarchived changes. `loop/lib/config.mjs`
-      holds only the constant and its rationale; the division was never there
-      (anchor corrected 2026-09-08 against the tree). Implements the same
-      requirement's bullet 2.
+      constitution plus one delta per unarchived change): **the budget is not
+      pre-divided by source at all.** As first written this task said only
+      "stops dividing across unarchived changes", and B1's author implemented
+      exactly that (`/ caps.length`), which REMOVED THE BOUND: the equal
+      division was doing two jobs, a fair share per source and the total
+      ceiling, and dividing by capabilities while allocating per plan item lets
+      the total reach `maxChars × plan.length / caps.length`, growing with every
+      open change. Measured on the live tree by Luna-Boss-2 at B1's first
+      handover, against a 24,000 ceiling: interpret 56,024 (2.33x), machinery
+      47,077, repair 43,789, entry 36,613, verify 35,522, scout 30,960, tutorial
+      27,328, post 27,226 — eight of ten types over the ceiling. The architect's
+      defect: the task named the symptom of the division and not its second
+      job. The allocation that satisfies both bullets: (a) the named
+      requirements are placed in PRIORITY ORDER — the governing type's
+      requirements, then the declared subjects', each followed by its own
+      pending amendments — with every named capability's constitution excerpt
+      guaranteed present before any amendment is admitted (the per-capability
+      floor); (b) ONE total cap, `BRIEF_EXCERPT_MAX_CHARS`, applied to that
+      ordered list, cutting from the end with a `[... CUT ...]` marker that
+      names what was cut; (c) no per-source share exists, so nothing shrinks as
+      changes open and nothing grows with them either. If, with pass 2b and the
+      zero-score exception gone (task 5), a type's named requirements still
+      exceed the ceiling, that is task 8's live finding with numbers and the
+      architect's disposition, never a raised ceiling. `loop/lib/config.mjs`
+      holds only the constant and its rationale. Implements the same
+      requirement's bullet 2 and its ceiling bullet together.
 - [ ] 7. `loop/lib/config.mjs`: **lower `BRIEF_EXCERPT_MAX_CHARS` from 88,000 to
       24,000**, its value before the four raises. Deleting pass 2b removes
       saturation; it does not lower a ceiling, and a ceiling four times the size of
@@ -306,9 +340,15 @@ the sentence that uses it.
       requirement's ceiling bullet.
 - [ ] 8. `loop/tests/brief-excerpt-budget.test.mjs` (extended — it is the one file
       that owns the ceiling's assertions and its header is the constant's
-      history; no new `specs.test.mjs`): a PINNED fixture corpus with three
-      unarchived changes and a `repair` type produces the same excerpt set as one
-      with zero, **and the assembled brief against that fixture is at most 30,000
+      history; no new `specs.test.mjs`): a PINNED fixture corpus **holding a
+      spec for every capability any job type's checklist names** (B1's first
+      fixture held only `pulse`, `site` and `review`, so the all-types no-cut
+      assertion passed on absence for `verify` and others) with three
+      unarchived changes and a `repair` type produces the same excerpt set as
+      one with zero, **compared WITHOUT filtering** — the set the test asserts
+      on is the excerpt's whole heading set, unrelated and surplus headings
+      included, because B1's first test filtered those out before comparing and
+      so passed on the wrong world (nine unrelated sections admitted) — **and the assembled brief against that fixture is at most 30,000
       characters** — an upper bound on the artifact, not merely unspent budget.
       The bound is asserted on the fixture, never on the live tree: the live
       brief's size moves with every change archived or opened
