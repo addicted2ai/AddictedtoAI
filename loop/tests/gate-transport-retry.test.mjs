@@ -873,9 +873,11 @@ test('the ledger records that a retry happened and how it ended, without a new l
   assert.equal(line.outcome, 'done', ctx.output());
   // LEDGER_FIELDS is untouched: the record rides on `phases`, which is already
   // optional and additive, attached to the invocation the gates were judging.
+  // This stub supplies no durationMs, so task 25(iii)'s optional gate_seconds
+  // map is absent; the other additive outcome keys remain exact here.
   assert.deepEqual(
     Object.keys(line).filter((k) => !LEDGER_FIELDS.includes(k)).sort(),
-    ['phases'],
+    ['authority_sha', 'brief_chars', 'phases'],
     JSON.stringify(line),
   );
   const author = line.phases.find((p) => p.role === 'author');

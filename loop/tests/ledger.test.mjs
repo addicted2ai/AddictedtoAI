@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { appendLedger, makeLedgerLine, readLedger } from '../lib/ledger.mjs';
 import { loadRunners } from '../lib/runners.mjs';
 import { runLoop } from '../run.mjs';
-import { makeRepo, mockCommand, runnersYaml, writeQueue } from './helpers.mjs';
+import { git, makeRepo, mockCommand, runnersYaml, writeQueue } from './helpers.mjs';
 
 test('ledger telemetry and per-phase effort round-trip without changing required fields', (t) => {
   const ctx = makeRepo();
@@ -84,6 +84,7 @@ test('a registry effort is copied to each phase, while absent effort remains nul
   });
   t.after(() => ctx.cleanup());
   writeQueue(ctx, [{ type: 'repair', title: 'a repair for phase telemetry' }]);
+  const authoritySha = git(ctx.repoRoot, ['rev-parse', 'HEAD']).trim();
 
   const result = await runLoop(ctx, {
     runner: 'mock-frontier',
@@ -97,9 +98,62 @@ test('a registry effort is copied to each phase, while absent effort remains nul
   assert.equal(line.phases.find((phase) => phase.role === 'review1').carried, 0);
   assert.equal(line.phases.find((phase) => phase.role === 'author').carried, undefined);
   assert.equal(line.phases.every((phase) => Object.hasOwn(phase, 'effort')), true);
-  assert.equal(line.brief_chars > 0, true);
+  const briefCommit = git(ctx.repoRoot, [
+    'log',
+    '-1',
+    '--format=%H',
+    '--full-history',
+    '--diff-filter=A',
+    `${result.mergedSha}^2`,
+    '--',
+    '.job/brief.md',
+  ]).trim();
+  const committedBrief = git(ctx.repoRoot, ['show', `${briefCommit}:.job/brief.md`]);
+  assert.equal(line.brief_chars, committedBrief.length);
   assert.equal(line.gate_seconds, undefined);
-  assert.equal(line.authority_sha.length, 40);
+  assert.equal(line.authority_sha, authoritySha);
+});
+
+test('a parsed non-empty carry list reaches the review phase ledger entry', async (t) => {
+  const ctx = makeRepo({
+    gitignore: 'node_modules/\n*.log\n/HOLD.md\n/STOP\n/RESULT.md\n',
+    runners: runnersYaml({
+      command: mockCommand('done-edit'),
+      reviewerCommand: mockCommand('review-approve-carry'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [{ type: 'repair', title: 'a repair with carried review findings' }]);
+
+  const result = await runLoop(ctx, {
+    runner: 'mock-frontier',
+    reviewer: 'mock-reviewer',
+    noGates: true,
+  });
+  assert.equal(result.outcome, 'done', ctx.output());
+  const review = readLedger(ctx).at(-1).phases.find((phase) => phase.role === 'review1');
+  assert.equal(review.carried, 2);
+});
+
+test('a review phase without a verdict has no carried key', async (t) => {
+  const ctx = makeRepo({
+    gitignore: 'node_modules/\n*.log\n/HOLD.md\n/STOP\n/RESULT.md\n',
+    runners: runnersYaml({
+      command: mockCommand('done-edit'),
+      reviewerCommand: mockCommand('review-nothing'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [{ type: 'repair', title: 'a repair with no review record' }]);
+
+  const result = await runLoop(ctx, {
+    runner: 'mock-frontier',
+    reviewer: 'mock-reviewer',
+    noGates: true,
+  });
+  assert.equal(result.outcome, 'failed', ctx.output());
+  const review = readLedger(ctx).at(-1).phases.find((phase) => phase.role === 'review1');
+  assert.equal(Object.hasOwn(review, 'carried'), false);
 });
 
 test('a registry effort is optional but invalid empty values fail at load time', (t) => {

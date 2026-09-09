@@ -173,7 +173,15 @@ test('breaker 1 — a marked twice-failed job records the same spend an unmarked
   // Every field but the three that cannot be equal: when the run happened, what
   // it was called, and the note — which is the ONE thing the classification is
   // allowed to change.
-  const varies = new Set(['ts', 'id', 'note', 'mm', 'phases']);
+  const varies = new Set([
+    'ts',
+    'id',
+    'note',
+    'mm',
+    'phases',
+    'authority_sha', // task 25(v): each fixture has its own brief authority commit.
+    'gate_seconds', // task 25(iii): gate timings are run-specific measurements.
+  ]);
   for (const k of Object.keys(marked)) {
     if (!varies.has(k)) assert.deepEqual(marked[k], unmarked[k], `field \`${k}\` differs with the classification`);
   }

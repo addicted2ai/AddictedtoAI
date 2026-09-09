@@ -50,7 +50,7 @@ function verdictPathFromBrief() {
   return m ? m[1] : null;
 }
 
-function writeVerdict({ verdict, reasons = [], wouldCite = '', readsHuman = null, notes = 'mock reviewer notes' }) {
+function writeVerdict({ verdict, reasons = [], wouldCite = '', readsHuman = null, notes = 'mock reviewer notes', carry = '' }) {
   const p = verdictPathFromBrief();
   if (!p) return false;
   // The brief is the reviewer's only channel, so the mock obeys it rather than
@@ -78,7 +78,7 @@ function writeVerdict({ verdict, reasons = [], wouldCite = '', readsHuman = null
   const voiceLine = asked ? `reads-human: ${JSON.stringify(value)}\n` : '';
   writeFileSync(
     p,
-    `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\nwould-cite: ${JSON.stringify(wouldCite)}\n${voiceLine}---\n\n${notes}\n`,
+    `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\nwould-cite: ${JSON.stringify(wouldCite)}\n${voiceLine}${carry}---\n\n${notes}\n`,
     'utf8',
   );
   return true;
@@ -261,6 +261,22 @@ switch (mode) {
   // ---- reviewer modes -----------------------------------------------------
   case 'review-approve':
     writeVerdict({ verdict: 'approve', wouldCite: 'A reader arguing that price changes need dating would link this.' });
+    result('done\n');
+    break;
+
+  case 'review-approve-carry':
+    writeVerdict({
+      verdict: 'approve',
+      wouldCite: 'A reader arguing that price changes need dating would link this.',
+      carry:
+        'carry:\n' +
+        '  - title: tighten the date wording\n' +
+        '    detail: The date wording needs one more precise qualifier.\n' +
+        '    subject: site-note.md\n' +
+        '  - title: name the supporting source\n' +
+        '    detail: The supporting source should be named beside the claim.\n' +
+        '    subject: site-note.md\n',
+    });
     result('done\n');
     break;
 
