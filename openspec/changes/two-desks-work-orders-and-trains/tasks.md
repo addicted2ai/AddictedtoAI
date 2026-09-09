@@ -1064,7 +1064,10 @@ the brief under `evidence/reviews/`.
       lands with D's handover, together with retiring the grep-based
       escalation in the caller's script the requirement names
       (`desk-chain3.sh:94-132` in the orchestrator's scratchpad, whose own
-      comment records that it never fired across 18 jobs on 2026-09-08). (v)
+      comment records that it never fired across 18 jobs on 2026-09-08) and
+      rewriting `runners.yml:219-235`, the max entry's note that "routing is
+      therefore the caller's job", which D makes false (added 2026-09-09
+      09:22 from the brief review's finding 3). (v)
       Escalation applies whether the run's entry came from `--runner` or the
       default (`pickRunner`, `run.mjs:910`) — the chain passes `--runner`
       explicitly and that is the case this exists for; the resume path
@@ -1106,8 +1109,12 @@ the brief under `evidence/reviews/`.
       escalation fires, the adopted selection's job is the scout and the
       returned runner is the frontier entry; (b) a budget-ceiling refusal
       presupposes the candidate PASSED clearance, so (b)'s run entry is cleared
-      for the top-ranked type and the fixture ledger spends that tier's
-      `new_writing` past its ceiling (the `budget.test.mjs:477-498` pattern):
+      for the top-ranked type and the fixture ledger spends `new_writing`
+      past its ceiling on BOTH tiers — the run entry's and the escalation
+      entry's, since pools are per tier (`tierShares` at `select.mjs:150`)
+      and an unspent escalation tier would let the named mutation's re-run
+      adopt the candidate and turn (b) red (added 2026-09-09 09:22 from the
+      brief review's finding 1) — (the `budget.test.mjs:477-498` pattern):
       the top-ranked is refused on `budget:new_writing-ceiling`, nothing is
       escalated, the runner is unchanged and nothing is selected; (c) THE
       CONTROL: the scout first and a `repair` second, the cheap entry cleared
@@ -1126,8 +1133,11 @@ the brief under `evidence/reviews/`.
       brief review's finding 2). (v) The registry arms, in the same file: an
       `escalates_to` naming an unknown id, the entry itself, or an entry not
       cleared for `author` fails `loadRunners` at load; absent loads as
-      `undefined`. (vi) The named mutation: key the escalation on
-      `sel.selected === null` (escalate only when every candidate is refused)
+      `undefined`. (vi) The named mutation: key the escalation, AT THE
+      `run.mjs` CALL SITE (not inside `escalationTarget`, whose rule stays
+      `runner:job-type`; added 2026-09-09 09:22 from the brief review's
+      finding 2), on `sel.selected === null` (escalate only when every
+      candidate is refused)
       — (c) fails because the repair is selected on the cheap entry and nothing
       escalates, while (a) and (b) still pass ((a) has nothing below the
       scout, which is why it is a separate arm); restore. The diff-as-the-list
