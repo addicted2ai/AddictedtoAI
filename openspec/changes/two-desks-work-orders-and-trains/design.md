@@ -2082,17 +2082,29 @@ gates pass", one gate did not, and an inferred green is not a green — the
 moment of being certain is the moment a guardrail must not be loosened, at a
 cost of six minutes in a quiet window. Plan: round 3's suite first, then the
 six re-run pinned to `d8522ac` on a quiet machine, or the combined tip if
-round 3 lands first, reported as such. The reusable finding, Orch's own:
-its hand harness `orch-gates-only.sh` reimplements the gate SEQUENCE and not
-the loop's judgement — `gates.mjs` classifies a transport or lock failure as
-environmental (`gatesHitEnvironmentalFailure`) and books it `interrupted` and
-resumable, the harness books it as a defect — so it is strictly cruder than
-the machinery it stands in for and will one day block a good push or teach
-its operator to override it. The durable answer is Stage 1's train, which
-runs the suite once through `gates.mjs` with that classification; the hand
-harness retires with it. This is also the day's cleanest instance of why the
-train runs the full suite once and alone: three model processes and a suite
-on one machine, and the suite lost a port. The reviewer also faulted the
+round 3 lands first, reported as such. Orch first told the architect that its
+hand harness `orch-gates-only.sh` lacked `gates.mjs`'s environmental
+classification and so booked a dead port as a defect where the loop would
+have booked it resumable; it then read `environmentalCondition`
+(`gates.mjs:267-284`) rather than asserting from memory and RETRACTED that
+within the hour, its third instance of the day of describing an instrument
+from what it is FOR rather than what it DOES: the loop's environmental class
+is deliberately narrow — a test-lock refusal, a build-lock refusal, a child
+that never started, and explicitly not a timeout, because a timeout means the
+child did start — so a transport failure inside a test that ran matches none
+of it, and `gates.mjs` would have booked this run red too. The repository
+already distinguishes environment from defect at two altitudes, neither of
+which converts the failure into a pass: the machine refusing to run a check
+(`gates.mjs`), and the test itself naming a transport failure
+(`assertNoTransportFailure`, `pulse/tests/helpers.mjs:209`, which cites `ar0`
+and says re-run alone); a human reading the failure text is the third. What
+survives of the harness finding is smaller and still worth keeping: the
+harness does not reproduce the lock-refusal handling, so a test-lock refusal
+landing in its run would be booked red where the Desk books it interrupted
+and resumable — a real gap for a different failure than the one hit. The
+train's value here is not that it classifies this better; it is that it runs
+the suite ONCE AND ALONE, which removes the port pressure that caused it:
+three model processes and a suite on one machine, and the suite lost a port. The reviewer also faulted the
 brief, the third reviewer of the day to find a coordinator defect and the most
 substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
 > 0` to `s.score === 0`) reddened three arms.
