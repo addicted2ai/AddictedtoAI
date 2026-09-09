@@ -107,8 +107,9 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
 /**
  * Select one job for `runner`, or report why nothing qualified.
  *
- * @returns {{selected: object|null, refusals: Array, warnings: string[],
- *            notes: string[], shares: object, shed: object, lane: object}}
+ * @returns {{selected: object|null, topRanked: object|null, refusals: Array,
+ *            warnings: string[], notes: string[], shares: object, shed: object,
+ *            lane: object}}
  */
 /**
  * A runner's own clearance for the KIND of work, the exact counterpart of
@@ -154,6 +155,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   if (!conformance.ok) {
     return {
       selected: null,
+      topRanked: null,
       refusals: [{ candidate: null, rule: 'conformance:recorded-fail', reason: conformance.reason }],
       warnings: [],
       notes: [],
@@ -171,6 +173,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   if (!health.ok) {
     return {
       selected: null,
+      topRanked: null,
       refusals: [{ candidate: null, rule: health.rule, reason: health.reason }],
       warnings: [],
       notes: [],
@@ -184,6 +187,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   if (lane.paused) {
     return {
       selected: null,
+      topRanked: null,
       refusals: [{ candidate: null, rule: 'capacity:lane-paused', reason: lane.reason }],
       warnings: [],
       notes: [],
@@ -195,6 +199,8 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   }
 
   const { candidates, warnings, notes } = gatherCandidates(ctx, { dryRun });
+  const topCandidate = candidates[0] ?? null;
+  let topRanked = null;
 
   const gates = [
     (c) => runnerJobTypeGate(runner, c),
@@ -224,15 +230,21 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     if (refused) {
       const { ok, ...rest } = refused;
       refusals.push({ candidate: c, ...rest });
+      if (c === topCandidate) topRanked = { candidate: c, rule: refused.rule };
     } else eligible.push(c);
   }
 
   const floor = applyUpkeepFloor(cfg, shares, eligible);
   refusals.push(...floor.refused);
+  if (topRanked === null && topCandidate) {
+    const floorRefusal = floor.refused.find((r) => r.candidate === topCandidate);
+    if (floorRefusal) topRanked = { candidate: topCandidate, rule: floorRefusal.rule };
+  }
 
   const selected = floor.candidates[0] ?? null;
   return {
     selected,
+    topRanked,
     refusals,
     warnings,
     notes,
@@ -241,6 +253,19 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     lane,
     considered: candidates.length,
   };
+}
+
+/**
+ * Resolve the one declared escalation step for a selection.
+ *
+ * The selector owns the refusal rule and the registry owns the destination.
+ * Keeping this decision pure lets callers test the routing policy without
+ * reading files, invoking an executor, or consulting a second policy source.
+ */
+export function escalationTarget(registry, runner, sel) {
+  if (sel?.topRanked?.rule !== 'runner:job-type') return null;
+  if (runner?.escalates_to === undefined) return null;
+  return registry?.byId?.get(runner.escalates_to) ?? null;
 }
 
 /** One line per refusal, each naming its rule — what the selector prints. */
