@@ -666,14 +666,14 @@ export function assembleBrief(ctx, {
   invocations = 0,
   totalMinutes = null,
   floorMinutes = null,
-}) {
+}, excerptFn = excerptsFor) {
   // BRIEF_EXCERPT_MAX_CHARS, not specs.mjs's own 14,000 default (beads
   // addictedtoai-ccs, config.mjs has the measurement and the reasoning): a
   // job type whose capabilities carry an in-flight OpenSpec delta doubles its
   // source count, and 14,000 measurably cut a normative requirement
   // mid-sentence for three job types on the live tree. 20,000 did not, for
   // any of them.
-  const ex = excerptsFor(ctx.repoRoot, job.type, {
+  const ex = excerptFn(ctx.repoRoot, job.type, {
     maxChars: BRIEF_EXCERPT_MAX_CHARS,
     subjects: [],
     pendingRoot: ctx.pendingRoot,
@@ -772,14 +772,14 @@ export function assembleRevisionBrief(ctx, {
   findings = '',
   diffText = '',
   cites = null,
-}) {
+}, excerptFn = excerptsFor) {
   const cited = (Array.isArray(cites) ? cites : Array.isArray(verdict.cites) ? verdict.cites : [])
     .map((heading) => String(heading ?? '').trim())
     .filter(Boolean);
   const excerptOptions = cited.length
     ? { headings: cited, maxChars: BRIEF_EXCERPT_MAX_CHARS, pendingRoot: ctx.pendingRoot }
     : { maxChars: BRIEF_EXCERPT_MAX_CHARS, subjects: [], pendingRoot: ctx.pendingRoot };
-  const ex = excerptsFor(ctx.repoRoot, job.type, excerptOptions);
+  const ex = excerptFn(ctx.repoRoot, job.type, excerptOptions);
   const missing = Array.isArray(ex.missingHeadings) ? ex.missingHeadings : [];
   const missingMarker = missing.length
     ? `\n\n[... CITED REQUIREMENT HEADINGS NOT FOUND: ${missing.map((heading) => JSON.stringify(heading)).join(', ')} ...]`

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 
 import { assembleBrief, assembleRevisionBrief } from '../lib/brief.mjs';
-import { SPECS_FOR_TYPE } from '../lib/specs.mjs';
+import { excerptsFor, SPECS_FOR_TYPE } from '../lib/specs.mjs';
 import { DEFAULT_REPO_ROOT } from '../lib/paths.mjs';
 import { makeRepo } from './helpers.mjs';
 
@@ -54,17 +54,34 @@ function headingSet(text) {
   return new Set([...text.matchAll(/^### Requirement:\s*(.+)$/gm)].map((match) => match[1].trim()));
 }
 
+function excerptRecorder(calls, label) {
+  return (repoRoot, type, options) => {
+    calls.push({
+      label,
+      repoRoot,
+      type,
+      options: {
+        ...options,
+        ...(Array.isArray(options.headings) ? { headings: [...options.headings] } : {}),
+        ...(Array.isArray(options.subjects) ? { subjects: [...options.subjects] } : {}),
+      },
+    });
+    return excerptsFor(repoRoot, type, options);
+  };
+}
+
 function buildPair() {
   const ctx = makeRepo({ files: fixtureFiles() });
   ctx.pendingRoot = join(ctx.repoRoot, PENDING_ROOT);
   const job = { type: TYPE, source: 'queue', title: 'repair the pinned fixture', detail: 'fix the stated fixture issue' };
+  const excerptCalls = [];
   const common = {
     jobId: 'j-20260910-brief',
     job,
     branch: 'job/j-20260910-brief',
     capMinutes: 30,
   };
-  const author = assembleBrief(ctx, common);
+  const author = assembleBrief(ctx, common, excerptRecorder(excerptCalls, 'author'));
   const verdict = {
     verdict: 'revise',
     reasons: ['not-worth-reading'],
@@ -77,8 +94,8 @@ function buildPair() {
     verdict,
     findings,
     diffText: 'diff without a requirement heading',
-  });
-  return { ctx, author, revision, allHeadings: ALL_HEADINGS };
+  }, excerptRecorder(excerptCalls, 'cited-revision'));
+  return { ctx, author, revision, allHeadings: ALL_HEADINGS, excerptCalls };
 }
 
 function excerptHeadings(text) {
@@ -136,7 +153,8 @@ test('a cited heading that cannot be found is named in a marker', () => {
 });
 
 test('an empty cites list uses the author brief requirement selection', () => {
-  const { ctx, author } = buildPair();
+  const { ctx, author, excerptCalls } = buildPair();
+  const emptyRevisionCalls = [];
   const revision = assembleRevisionBrief(ctx, {
     jobId: 'j-20260910-empty-cites',
     job: { type: TYPE, source: 'queue', title: 'repair the pinned fixture', detail: 'fix the stated fixture issue' },
@@ -145,7 +163,14 @@ test('an empty cites list uses the author brief requirement selection', () => {
     verdict: { verdict: 'revise', reasons: ['not-worth-reading'], notes: 'No structural citations were recorded.', cites: [] },
     findings: 'not-worth-reading\n\nNo structural citations were recorded.',
     diffText: 'diff without a requirement heading',
-  });
+  }, excerptRecorder(emptyRevisionCalls, 'empty-cites-revision'));
+  const authorCall = excerptCalls.find((call) => call.label === 'author');
+  assert.ok(authorCall, 'the author assembler must call the injected excerpt function');
+  assert.equal(emptyRevisionCalls.length, 1, 'the empty-cites revision must call the excerpt function once');
+  assert.deepEqual(emptyRevisionCalls[0].options, authorCall.options);
+  assert.deepEqual(emptyRevisionCalls[0].options.subjects, []);
+  assert.equal(emptyRevisionCalls[0].options.maxChars, authorCall.options.maxChars);
+  assert.equal(emptyRevisionCalls[0].options.pendingRoot, authorCall.options.pendingRoot);
   assert.deepEqual([...excerptHeadings(revision)].sort(), [...excerptHeadings(author)].sort());
   ctx.cleanup();
 });

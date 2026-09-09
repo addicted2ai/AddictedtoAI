@@ -185,6 +185,11 @@ test('the reviewer brief carries the closed reason list, the checklist, and no a
   assert.match(brief, /you have not seen the author's\s+reasoning/);
   assert.match(brief, /no edit rights/);
   assert.match(brief, /outside\*\* the worktree you are reviewing/);
+  assert.match(brief, /# cites: \[<exact heading text after `### Requirement:` on its heading line>\]/);
+  assert.match(brief, /Trimmed, exact and case-sensitive; `\(preamble\)` is not a heading\./);
+  assert.match(brief, /Choose from every capability under `openspec\/specs\/`, using its/);
+  assert.match(brief, /constitution and every unarchived change's delta; this feeds the/);
+  assert.match(brief, /revision brief's requirement excerpts/);
   ctx.cleanup();
 });
 
