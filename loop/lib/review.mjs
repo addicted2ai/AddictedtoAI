@@ -1212,8 +1212,15 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
   gitTry(reviewDir, ['reset', '--hard', 'HEAD']);
   gitTry(reviewDir, ['clean', '-fdx']);
   const dirtyAfter = gitTry(reviewDir, ['status', '--porcelain']).stdout.trim();
-  removeWorktree(ctx.repoRoot, reviewDir);
-  rmSync(reviewDir, { recursive: true, force: true });
+  const removed = removeWorktree(ctx.repoRoot, reviewDir);
+  if (removed.ok) {
+    rmSync(reviewDir, { recursive: true, force: true });
+  } else {
+    ctx.log(
+      `WORKTREE CLEANUP REFUSED: reviewer worktree ${reviewDir} was not removed: ` +
+        `${removed.reason}. The directory is left standing.`,
+    );
+  }
   const after = gitTry(ctx.repoRoot, ['rev-parse', branch]).stdout.trim();
 
   return {

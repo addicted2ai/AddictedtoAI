@@ -112,9 +112,17 @@ export function addWorktree(repo, dir, branch, { create = false, base = 'HEAD', 
   return dir;
 }
 
+/** @returns {{ok: true} | {ok: false, reason: string}} */
 export function removeWorktree(repo, dir) {
-  gitTry(repo, ['worktree', 'remove', '--force', dir]);
+  const removal = gitTry(repo, ['worktree', 'remove', dir]);
   gitTry(repo, ['worktree', 'prune']);
+  if (!removal.ok) {
+    return {
+      ok: false,
+      reason: removal.stderr.trim() || removal.stdout.trim() || 'git worktree remove failed',
+    };
+  }
+  return { ok: true };
 }
 
 /**

@@ -318,7 +318,26 @@ export async function runConformance(ctx, { runner, timeoutMinutes = 15, dryRun 
     // the prune inside addWorktree then clears the registration, and
     // `worktree add -b` dies on "a branch named … already exists". So the
     // registration goes first, then the directory, then the branch.
-    removeWorktree(ctx.repoRoot, dir);
+    const setupRemoval = removeWorktree(ctx.repoRoot, dir);
+    if (!setupRemoval.ok && existsSync(dir)) {
+      ctx.log(
+        `WORKTREE CLEANUP REFUSED: conformance worktree ${dir} was not removed: ` +
+          `${setupRemoval.reason}. The directory is left standing.`,
+      );
+      // This is a throwaway worktree owned by this check. Clean its prior
+      // output, then ask the non-forcing removal to try again; a recursive
+      // delete is never used to bypass git's refusal.
+      gitTry(dir, ['reset', '--hard', 'HEAD']);
+      gitTry(dir, ['clean', '-fdx']);
+      const retryRemoval = removeWorktree(ctx.repoRoot, dir);
+      if (!retryRemoval.ok) {
+        ctx.log(
+          `WORKTREE CLEANUP REFUSED: conformance worktree ${dir} still was not removed: ` +
+            `${retryRemoval.reason}. The directory is left standing.`,
+        );
+        throw new Error(`conformance: a previous check's directory ${dir} cannot be removed, so its worktree cannot be recreated`);
+      }
+    }
     if (!removeThrowawayDir(dir, { log: ctx.log })) {
       throw new Error(`conformance: a previous check's directory ${dir} cannot be removed, so its worktree cannot be recreated`);
     }
@@ -367,8 +386,15 @@ export async function runConformance(ctx, { runner, timeoutMinutes = 15, dryRun 
     // tree: the maintainer (or another agent) may be mid-edit there.
     // The verdict is already in `results`; a directory that will not go is
     // reported, not fatal.
-    removeWorktree(ctx.repoRoot, dir);
-    removeThrowawayDir(dir, { log: ctx.log });
+    const teardownRemoval = removeWorktree(ctx.repoRoot, dir);
+    if (!teardownRemoval.ok) {
+      ctx.log(
+        `WORKTREE CLEANUP REFUSED: conformance worktree ${dir} was not removed: ` +
+          `${teardownRemoval.reason}. The directory is left standing.`,
+      );
+    } else {
+      removeThrowawayDir(dir, { log: ctx.log });
+    }
     gitTry(ctx.repoRoot, ['branch', '-D', branch]);
   }
 

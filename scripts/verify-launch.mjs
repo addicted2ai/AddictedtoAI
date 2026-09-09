@@ -183,16 +183,22 @@ function skipped(id, label, why) {
 
 const BUILD_OUTPUT_DIR = 'out';
 const BUILD_SUCCESS_RECORD = '.build-stamp.json';
-// `public/` is written solely by the build's prebuild assets step. The other
-// generated-looking trees are deliberately inputs: Pulse writes data/derived,
-// and prebuild plus lib/paths read openspec/. Excluding either would let an
-// export from before the day's data or spec changes pass as current.
+// Build inputs are members of the set because a build step reads them, and a
+// read path is excluded only when every writer of it runs inside `npm run
+// build`. This is documented beside the set rather than derived: `public/` is
+// a build-internal output, while Pulse writes `data/derived/` from outside and
+// build code reads it, so `data/derived/` stays in the walk. The issue tracker's
+// `.beads/` tree is the other explicit exception: `bd` autonomously writes its
+// embedded Dolt database, backup set and journal on every issue operation from
+// any session, and no build step reads it. Letting those writes defeat reuse
+// would make an unrelated tracker operation force a fresh build.
 const BUILD_INPUT_EXCLUSIONS = new Set([
   '.git',
   '.next',
   'node_modules',
   BUILD_OUTPUT_DIR,
   'public',
+  '.beads',
 ]);
 
 function newestFileMtime(root, { exclude = new Set(), excludeFiles = new Set() } = {}) {
