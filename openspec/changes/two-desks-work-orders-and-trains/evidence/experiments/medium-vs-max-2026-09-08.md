@@ -54,7 +54,10 @@ merges), and independent of B1's files except one comment line in
   (not estimated); tokens from the codex session rollout for that worktree,
   by the method of `evidence/scripts/codex-spend-capture.mjs` (last
   `token_count` event's `total_token_usage`, attributed by worktree path):
-  input, cached input, output, and reasoning if the rollout separates it;
+  `input_tokens`, `cached_input_tokens`, `cache_write_input_tokens`,
+  `output_tokens`, `reasoning_output_tokens` (all five present in the
+  rollouts, verified by Luna-Boss-2 on round 4's author run; mapping by
+  dispatch timestamp, exact only because the runs are sequential);
   files changed and lines +/−; the targeted tests the worker ran and their
   counts.
 - Same worker brief for both: run the two named test files and
@@ -75,7 +78,22 @@ merges), and independent of B1's files except one comment line in
   of changed behavioural lines, at least one mutation per changed function),
   list findings per implementation, then say which better meets the brief
   and why, or that they are indistinguishable. The judge is NOT told the
-  effort rungs, nor that effort is the question.
+  effort rungs, nor that effort is the question, nor that the two came from
+  the same model ("independent" must not invite a guess about what differs).
+  AMENDED 20:16, before any dispatch, on Luna-Boss-2's objection: TWO blind
+  judges, not one, with X and Y SWAPPED between them — same prompt, same
+  sealing, the key held outside both workspaces. A pairwise comparison on
+  this pipeline earlier today measured a POSITION EFFECT (two blind
+  assessors, order mirrored, each chose the candidate in FIRST position,
+  each citing specifics that checked out); a single judge with a coin flip
+  randomises position but cannot control for it, and its verdict cannot
+  distinguish "chose the better diff" from "chose the first diff". Decision
+  rule for the judges: agreement on the same CANDIDATE is the quality
+  signal; agreement on the same POSITION is the position effect and the
+  quality comparison is VOID — reported as such, with the mechanical checks
+  standing alone; disagreement on candidate with disagreement on position is
+  a split, reported as no preference. Cost: one extra max review, spent so
+  the verdict is defensible.
 
 ## Hypotheses (before any run)
 
