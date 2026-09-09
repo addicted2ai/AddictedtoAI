@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 216443.
+Entries: 61. Characters of memory text: 219102.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -910,8 +910,18 @@ This is the SAME SPLIT this repository already paid for once, in a different art
 2026-08-28 instance put nine agents writing at one moment 104/24 across two dates, and
 nothing in the corpus could adjudicate because a bare ISO date carries no zone. Here the
 split is not between agents but BETWEEN TOOLS: git author dates and the content corpus are
-local, bd is UTC, and for six hours of every local day they agree, which is why it goes
-unnoticed.
+local, bd is UTC, and THEY AGREE FOR EIGHTEEN HOURS OF EVERY LOCAL DAY, diverging only
+between 18:00 and midnight (six hours under MDT at UTC-6; seven under MST). [Corrected: this
+first read "for six hours ... they agree", which is inverted and also broke its own argument
+- if they agreed only six hours the split would be the common case and obvious. A2AI-Orch
+caught it while reproducing the finding.]
+
+THAT IS WHY IT SURVIVED, AND THE REASON IS BETTER THAN "NOBODY LOOKED". Any check run outside
+that six-hour window CONFIRMS THE TWO CONVENTIONS EQUAL. Looking usually confirms it. A
+DISCREPANCY THAT IS ABSENT MOST OF THE TIME IS NOT PROTECTED BY VIGILANCE, because the
+majority of honest checks return agreement and each one raises confidence. An intermittent
+condition needs a check timed to WHEN IT CAN APPEAR, or a check of the MECHANISM rather than
+of the current values.
 
 THE CONSEQUENCE IS A RECONSTRUCTION ERROR, NOT A DISPLAY ERROR. A later reader asking "what
 was filed on the 8th" gets everything before 18:00 and misses the evening's work entirely --
@@ -923,6 +933,35 @@ rewrite. When a bead's date matters to a reconstruction, take the anchor from so
 -- the git commit that accompanied it, or the session's own record -- exactly as the board
 now anchors to git author dates rather than to a clock reading. AND WHEN CITING A BEAD FILED
 IN THE EVENING, SAY WHICH LOCAL DAY THE WORK HAPPENED ON, because its own field will disagree.
+
+
+FOLLOW-UP, same evening, A2AI-Orch reproducing this independently and filing addictedtoai-kajg.
+
+IT CHECKED WHETHER A ONE-LINE CONFIG FIX EXISTED BEFORE FILING ANYTHING -- "a bead for
+something settleable in a minute is its own defect given how this backlog grows", which is
+the narrowed deferral rule applied to its own filing. `bd config list` surfaced no timezone
+or date namespace, so that option may not exist, and the issue records the absence AS A
+MEASUREMENT rather than leaving the next reader to check again.
+
+A CAVEAT ON THAT ABSENCE, because this corpus has been burned by one before. The two sessions'
+`bd config list` output DID NOT MATCH: one reported export/import/jira/linear/github/custom/
+status/doctor namespaces, the other saw compaction settings, issue_prefix and the kv.memory
+store. Neither listing contained a timezone key, so the conclusion holds -- but it rests on
+TWO DIFFERENT PARTIAL VIEWS agreeing on an absence, which is weaker than one complete view,
+and an absence claim built from an enumeration is exactly the shape that failed earlier the
+same day. Treat "no such setting exists" as unconfirmed until someone reads the tool's own
+schema.
+
+AND A TOOLING TRAP WORTH ITS OWN LINE: `bd update --notes` SETS the field, it does not
+append. Writing a note straight through it DESTROYS the existing note. Orch appends through a
+helper for exactly this reason. A verb named "update" that silently replaces is the
+destructive-by-default shape, and the tell is that nothing warns you -- the write succeeds and
+the previous content is simply gone.
+
+THE ANCHORING FIX, IF ONE IS ADOPTED, MUST BE ENFORCED BY SOMETHING THAT FAILS rather than by
+brief text -- Orch's acceptance item, and it is shell-approval-traps' rule turned on this
+problem: a discipline that works is indistinguishable from a mechanism that exists until the
+discipline is removed.
 
 ```
 
