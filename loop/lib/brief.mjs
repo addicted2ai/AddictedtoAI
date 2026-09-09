@@ -256,6 +256,20 @@ export function acceptanceChecksFor(type) {
   return checks;
 }
 
+/** Render the acceptance section shared by author and revision briefs. */
+export function acceptanceChecksSection(type) {
+  const checks = acceptanceChecksFor(type);
+  const prose = PROSE_TYPES.includes(type);
+  return `## Acceptance checks
+
+${checks.map((c) => `- ${c}`).join('\n')}
+- The branch still passes every gate the loop runs on it before review:
+  ${DEFAULT_GATES.map((g) => `\`${gateCommandForName(g)}\``).join(', ')}. This list is
+  generated from the gate set itself, so it cannot drift from what will actually run.
+- The diff contains nothing you cannot defend from a source or a run.
+${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}`;
+}
+
 /**
  * The scout's radar feeds, rendered into its brief as INPUTS (beads
  * addictedtoai-wg78; DESK-ORDER-001 §5; keeper ruling K30).
@@ -652,20 +666,18 @@ export function assembleBrief(ctx, {
   invocations = 0,
   totalMinutes = null,
   floorMinutes = null,
-}) {
+}, excerptFn = excerptsFor) {
   // BRIEF_EXCERPT_MAX_CHARS, not specs.mjs's own 14,000 default (beads
   // addictedtoai-ccs, config.mjs has the measurement and the reasoning): a
   // job type whose capabilities carry an in-flight OpenSpec delta doubles its
   // source count, and 14,000 measurably cut a normative requirement
   // mid-sentence for three job types on the live tree. 20,000 did not, for
   // any of them.
-  const ex = excerptsFor(ctx.repoRoot, job.type, {
+  const ex = excerptFn(ctx.repoRoot, job.type, {
     maxChars: BRIEF_EXCERPT_MAX_CHARS,
     subjects: [],
     pendingRoot: ctx.pendingRoot,
   });
-  const checks = acceptanceChecksFor(job.type);
-  const prose = PROSE_TYPES.includes(job.type);
   // The scout's alone (beads addictedtoai-wg78). The rows exist to widen the
   // sweep's aperture without saturating the surface, and no other job type
   // sweeps; handing them to every brief would be handing every job a reading
@@ -691,14 +703,8 @@ This is **one job with one outcome**. It ends in exactly one merge or one
 discard. Do not widen it: a diff that exceeds the stated outcome is a
 \`scope-violation\` at review and the whole job is rejected for it.
 
-## Acceptance checks
-
-${checks.map((c) => `- ${c}`).join('\n')}
-- The branch still passes every gate the loop runs on it before review:
-  ${DEFAULT_GATES.map((g) => `\`${gateCommandForName(g)}\``).join(', ')}. This list is
-  generated from the gate set itself, so it cannot drift from what will actually run.
-- The diff contains nothing you cannot defend from a source or a run.
-${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}${radar}
+${acceptanceChecksSection(job.type)}
+${radar}
 ## What happens next (so you know what your output is for)
 
 The loop computes the diff itself from this branch — it never takes your
@@ -720,6 +726,94 @@ These are the rules this work is judged against. They are excerpts targeted at
 this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut — the full files are in this worktree at the paths named below, read them if you need the omitted or complete text)' : ''}.
 
 ${ex.text || '_No spec files found in this worktree._'}
+`;
+}
+
+function revisionVerdictSection(verdict = {}, findings = '') {
+  const reasons = Array.isArray(verdict.reasons) ? verdict.reasons : [];
+  const notes = String(verdict.notes ?? '').trim();
+  const base = [reasons.join(', '), notes].filter(Boolean).join('\n\n');
+  const allFindings = String(findings ?? '').trim();
+  let diffFinding = allFindings;
+  if (base && allFindings === base) diffFinding = '';
+  else if (base && allFindings.startsWith(`${base}\n\n`)) diffFinding = allFindings.slice(base.length).trim();
+
+  return `## Verdict
+
+- **Value**: \`${String(verdict.verdict ?? '').trim()}\`
+- **Reasons**: ${reasons.length ? reasons.map((reason) => `\`${reason}\``).join(', ') : '(none)'}
+
+**Free-form notes**
+
+${notes || '_No free-form notes were recorded._'}
+${diffFinding ? `
+**Diff-measured refusal reason**
+
+${diffFinding}
+` : ''}`;
+}
+
+/**
+ * Assemble the smaller brief for the single revision invocation.
+ * It rebuilds the useful inputs instead of carrying the original author brief,
+ * so the revision sees the current verdict, checklist, judged diff and only
+ * the structurally cited requirement excerpts.
+ */
+export function assembleRevisionBrief(ctx, {
+  jobId,
+  job,
+  branch,
+  capMinutes,
+  mmSoFar = 0,
+  invocations = 0,
+  totalMinutes = null,
+  floorMinutes = null,
+  verdict = {},
+  findings = '',
+  diffText = '',
+  cites = null,
+}, excerptFn = excerptsFor) {
+  const cited = (Array.isArray(cites) ? cites : Array.isArray(verdict.cites) ? verdict.cites : [])
+    .map((heading) => String(heading ?? '').trim())
+    .filter(Boolean);
+  const excerptOptions = cited.length
+    ? { headings: cited, maxChars: BRIEF_EXCERPT_MAX_CHARS, pendingRoot: ctx.pendingRoot }
+    : { maxChars: BRIEF_EXCERPT_MAX_CHARS, subjects: [], pendingRoot: ctx.pendingRoot };
+  const ex = excerptFn(ctx.repoRoot, job.type, excerptOptions);
+  const missing = Array.isArray(ex.missingHeadings) ? ex.missingHeadings : [];
+  const missingMarker = missing.length
+    ? `\n\n[... CITED REQUIREMENT HEADINGS NOT FOUND: ${missing.map((heading) => JSON.stringify(heading)).join(', ')} ...]`
+    : '';
+  const diff = String(diffText ?? '');
+
+  return `# Revision pass (one only) — job ${jobId}, type \`${job.type}\`, branch \`${branch}\`
+
+This is a continuing invocation in the same worktree. There is no prior
+conversation and no session to resume.
+
+${invocationAccounting({ capMinutes, mmSoFar, invocations, totalMinutes, floorMinutes })}
+
+${revisionVerdictSection(verdict, findings)}
+
+${acceptanceChecksSection(job.type)}
+## Diff under revision
+
+This is the exact diff the reviewer judged. Address the verdict above in this
+same worktree, change nothing beyond it, and end by writing RESULT.md again.
+
+\`\`\`diff
+${diff}
+\`\`\`
+
+## Relevant spec excerpts
+
+These are the exact requirement headings the verdict structurally cited${ex.truncated ? ' (relevant material was cut; the full files are in this worktree)' : ''}.
+
+${ex.text || '_No cited spec excerpts found in this worktree._'}${missingMarker}
+
+${GROUND_RULES}
+
+${RESULT_PROTOCOL_INSTRUCTION}
 `;
 }
 

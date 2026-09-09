@@ -272,6 +272,8 @@ test('3.1 the re-issue refusals are named together, so callers need not list the
     'reads-human-empty',
     'reads-human-duplicate',
     'corrections-malformed',
+    // Task 10(iv): an unresolved cited heading is a reviewer-record reissue.
+    'cites-unresolved',
     // The carry-forward's two (addictedtoai-37rb): a reviewer's anchor or its
     // recycled statement is a clerical failure in a field ABOUT the record, so
     // the fix is a re-issued verdict, never an author revision pass.

@@ -25,7 +25,7 @@ import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
 import { selectJob, formatRefusals } from './lib/select.mjs';
-import { assembleBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
+import { assembleBrief, assembleRevisionBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import { readResult, classifyRun, reviewProducedNothing, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
@@ -724,18 +724,23 @@ async function executeJob(ctx, opts) {
       return finish({ outcome: 'abandoned', mm, changed, note: revisionAllowance.reason, verdict: gate.verdict, pass });
     }
     ctx.log(`one revision pass against the named findings, under a ${revisionAllowance.capMinutes}-minute cap${capNote(revisionAllowance)}`);
-    // The revision brief is the author brief plus the findings, and the author
-    // brief's spend figures were true when it was assembled and are stale now —
-    // the author run and at least one review have happened since. A brief that
-    // restated "0.00 across 0 invocations" to the third invocation of a job
-    // would be the exact misreading this is for, so the current accounting is
-    // appended and supersedes what is above it.
-    const revisionBrief =
-      `${briefText}\n\n---\n\n## Revision pass (one only)\n\n` +
-      `**This job's accounting, as of now** — these supersede the figures near the top of\n` +
-      `this brief, which were written before the author run and the review:\n\n` +
-      `${invocationAccounting({ capMinutes: revisionAllowance.capMinutes, mmSoFar: spent(), invocations: prior.invocations + phases.length, totalMinutes, floorMinutes })}\n\n` +
-      `The reviewer did not approve. Address exactly these findings, change nothing\nelse, and end by writing RESULT.md again:\n\n${findings}\n`;
+    // The revision brief is rebuilt from the current verdict, accounting,
+    // judged diff and structurally cited requirements. The original author
+    // brief is deliberately not sent again: its spend figures are stale and
+    // its unrelated outcome and proposal prose are not revision inputs.
+    const revisionBrief = assembleRevisionBrief(ctx, {
+      jobId,
+      job,
+      branch,
+      capMinutes: revisionAllowance.capMinutes,
+      mmSoFar: spent(),
+      invocations: prior.invocations + phases.length,
+      totalMinutes,
+      floorMinutes,
+      verdict: gate.verdict,
+      findings,
+      diffText,
+    });
     // A revision is a second executor invocation into the same worktree, so it
     // gets the same brake window as the author run. This is also the ONLY place
     // the "a brake disappeared from the repository root" test is not vacuous:

@@ -34,7 +34,7 @@ import { join } from 'node:path';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { RESULT_FILENAME } from './result.mjs';
-import { PROSE_TYPES } from './specs.mjs';
+import { PROSE_TYPES, requirementHeadings } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
@@ -170,6 +170,7 @@ export const REISSUE_CODES = Object.freeze([
   'reads-human-empty',
   'reads-human-duplicate',
   'corrections-malformed',
+  'cites-unresolved',
   // The carry-forward's two refusals join on the same argument (specs/review,
   // beads addictedtoai-37rb): a reviewer that named the wrong anchor, or
   // recycled its statement, made a clerical failure in a field ABOUT the
@@ -715,6 +716,12 @@ verdict: approve            # or revise / reject
 reasons: []                 # from the closed list above; required unless approve
 would-cite: >-
   <your own-words answer: who would link this, and in what argument>
+# cites: [<exact heading text after \`### Requirement:\` on its heading line>]
+#        # Trimmed, exact and case-sensitive; \`(preamble)\` is not a heading.
+#        # Choose from every capability under \`openspec/specs/\`, using its
+#        # constitution and every unarchived change's delta; this feeds the
+#        # revision brief's requirement excerpts. Omit the field when no
+#        # requirement was relied on.
 ${voice ? `reads-human: >-
   <your own-words answer: where does this read machine-made, or why does it not>
 ` : `# reads-human-from:         # required IF this diff merges a blog post and you
@@ -842,6 +849,20 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed }) {
       ok: false,
       code: 'malformed-verdict',
       reason: `the verdict record at ${path} does not carry one of ${VERDICTS.join(' / ')} (found ${JSON.stringify(v.verdict)}).`,
+      verdict: v,
+    };
+  }
+  const liveHeadings = new Set(requirementHeadings(ctx.repoRoot, ctx.pendingRoot));
+  const unresolvedCites = (v.cites ?? []).filter((heading) => !liveHeadings.has(heading));
+  if (unresolvedCites.length) {
+    return {
+      ok: false,
+      code: 'cites-unresolved',
+      reason:
+        `the verdict's \`cites:\` names requirement heading(s) that do not resolve in the live ` +
+        `specification: ${unresolvedCites.map((heading) => JSON.stringify(heading)).join(', ')}. ` +
+        `Headings are matched exactly after trimming across every capability's constitution and ` +
+        `pending amendments; re-issue the verdict with resolvable headings or omit \`cites:\`.`,
       verdict: v,
     };
   }
@@ -1352,16 +1373,22 @@ export function writeRecordSubjects(path, subjects, { repoRoot = '' } = {}) {
  * that answers for nothing". Written as a YAML list of mappings, one per post,
  * so the record round-trips through `parseReadsHumanFrom` unchanged.
  */
-export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', readsHuman = '', readsHumanFrom = [], notes = '', pass = 1, reviewer = '' }) {
+export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', cites = [], readsHuman = '', readsHumanFrom = [], notes = '', pass = 1, reviewer = '' }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const p = verdictPath(ctx, jobId, pass);
   const carried = (Array.isArray(readsHumanFrom) ? readsHumanFrom : [readsHumanFrom]).filter(Boolean);
+  const cited = (Array.isArray(cites) ? cites : [cites])
+    .map((heading) => String(heading ?? '').trim())
+    .filter(Boolean);
   const fm = [
     '---',
     `job: ${jobId}`,
     `verdict: ${verdict}`,
     `reasons: [${reasons.join(', ')}]`,
     `would-cite: ${JSON.stringify(wouldCite)}`,
+    cited.length
+      ? ['cites:', ...cited.map((heading) => `  - ${JSON.stringify(heading)}`)].join('\n')
+      : null,
     readsHuman ? `reads-human: ${JSON.stringify(readsHuman)}` : null,
     carried.length
       ? [

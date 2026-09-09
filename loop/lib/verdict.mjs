@@ -210,6 +210,19 @@ export function parseReadsHumanFrom(data) {
   return { readsHumanFrom, readsHumanFromWarnings };
 }
 
+/**
+ * `cites:` — the requirement headings a verdict relied on. It is a
+ * front-matter-only field, with the same scalar-or-list and empty-list rules as
+ * `carry:`. A heading is kept exactly after trimming; duplicate entries collapse
+ * without changing the verdict itself.
+ */
+function parseCites(data) {
+  const raw = data?.cites;
+  if (raw === undefined || raw === null) return [];
+  const list = Array.isArray(raw) ? raw : [raw];
+  return [...new Set(list.map((entry) => String(entry ?? '').trim()).filter(Boolean))];
+}
+
 /** Parse a verdict record. Front matter first; a plain-text fallback keeps weaker runners usable. */
 export function parseVerdict(text) {
   let data = {};
@@ -236,6 +249,7 @@ export function parseVerdict(text) {
   // check, which is precisely the failure this field exists to prevent.
   const hasFrontMatter = Object.keys(data).length > 0;
   const fallbackText = hasFrontMatter ? body : text;
+  const cites = parseCites(hasFrontMatter ? data : {});
   if (!verdict) {
     const m = /^\s*(?:\*\*)?verdict(?:\*\*)?\s*:\s*`?([a-z]+)`?/im.exec(fallbackText);
     if (m) verdict = m[1].toLowerCase();
@@ -284,6 +298,7 @@ export function parseVerdict(text) {
     corrections,
     correctionWarnings,
     notes: body.trim(),
+    cites,
     // The record's front matter as parsed, so a caller that needs a key this
     // parser does not interpret — `subject:`, `reviewed:`, `job:`, `date:` —
     // reads it from the one parse rather than opening the file again. A second

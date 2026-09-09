@@ -144,6 +144,35 @@ export function requirementSections(text) {
   });
 }
 
+function liveSpecCapabilities(repoRoot) {
+  try {
+    return readdirSync(join(repoRoot, 'openspec', 'specs'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+      .map((entry) => entry.name)
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Enumerate the live requirement headings across every capability source.
+ * `specSources` supplies each constitution followed by its pending amendments,
+ * and `requirementSections` is the only heading parser used here and by the
+ * excerpt planner. Preambles are deliberately excluded: they are not headings.
+ */
+export function requirementHeadings(repoRoot, pendingRoot = null) {
+  const headings = new Set();
+  for (const capability of liveSpecCapabilities(repoRoot)) {
+    for (const source of specSources(repoRoot, capability, pendingRoot)) {
+      for (const section of requirementSections(readFileSync(source.path, 'utf8'))) {
+        if (section.heading !== '(preamble)') headings.add(section.heading);
+      }
+    }
+  }
+  return [...headings];
+}
+
 const TYPE_KEYWORDS = {
   interpret: ['interpret', 'change', 'annotation', 'material', 'diff history'],
   verify: ['verif', 'stale', 'demot', 'freshness', 're-verif'],
@@ -280,19 +309,31 @@ function renderExcerpt(plan, rendered) {
  * `subjects` accepts capability names or specification paths. Stage 0 callers
  * may pass an empty list; the later structured work-order field can pass its
  * declared subject capabilities without changing this contract.
+ * `headings`, when non-empty, selects exact trimmed requirement headings across
+ * every capability source, bypassing keyword scoring. Constitution sections
+ * come before matching pending amendments. Empty `headings` has no filter.
  * `pendingRoot` is an optional alternate pending-source root for isolated
  * fixtures; production defaults to the repository's in-flight source root.
  *
- * @returns {{text: string, files: string[], truncated: boolean, chars: number}}
+ * @returns {{text: string, files: string[], truncated: boolean, chars: number,
+ *            missingHeadings: string[]}}
  */
 export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions = {}) {
   const options = excerptOptions(subjectsOrOptions, maybeOptions);
   const requestedMax = Number(options.maxChars ?? 14000);
   const maxChars = Number.isFinite(requestedMax) ? Math.max(0, Math.floor(requestedMax)) : 14000;
   const subjects = Array.isArray(options.subjects) ? options.subjects : [];
+  const requestedHeadings = new Set(
+    Array.isArray(options.headings)
+      ? options.headings.map((heading) => String(heading ?? '').trim()).filter(Boolean)
+      : [],
+  );
+  const headingFilter = requestedHeadings.size > 0;
   const governing = SPECS_FOR_TYPE[type] ?? ['review'];
   const subjectCaps = subjects.map(capabilityFromSubject).filter(Boolean);
-  const caps = [...new Set([...governing, ...subjectCaps])];
+  const caps = headingFilter
+    ? liveSpecCapabilities(repoRoot)
+    : [...new Set([...governing, ...subjectCaps])];
   const keywords = TYPE_KEYWORDS[type] ?? [];
 
   /** @type {{cap: string, src: object, sections: object[], candidates: object[], superseded: number}[]} */
@@ -301,12 +342,38 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
   for (const cap of caps) {
     const sources = specSources(repoRoot, cap, options.pendingRoot).map((src) => ({
       src,
-      sections: scoredSections(src.path, keywords),
+      sections: headingFilter
+        ? requirementSections(readFileSync(src.path, 'utf8')).map((section) => ({ ...section, score: 0 }))
+        : scoredSections(src.path, keywords),
     }));
     for (const { src } of sources) allFiles.push(src.path);
 
     const constitution = sources.find(({ src }) => src.kind === 'spec');
     const constitutionSections = constitution ? constitution.sections : [];
+    if (headingFilter) {
+      if (constitution) {
+        const candidates = constitutionSections.filter(
+          (section) => section.heading !== '(preamble)' && requestedHeadings.has(section.heading),
+        );
+        if (candidates.length) {
+          plan.push({
+            cap,
+            src: constitution.src,
+            sections: constitution.sections,
+            candidates,
+            superseded: 0,
+          });
+        }
+      }
+      for (const { src, sections } of sources) {
+        if (src.kind !== 'delta') continue;
+        const candidates = sections.filter(
+          (section) => section.heading !== '(preamble)' && requestedHeadings.has(section.heading),
+        );
+        if (candidates.length) plan.push({ cap, src, sections, candidates, superseded: 0 });
+      }
+      continue;
+    }
     const named = constitutionSections.find((s) => s.score > 0 && s.heading !== '(preamble)') ?? null;
     const namedHeadings = new Set(named ? [named.heading] : []);
 
@@ -328,8 +395,20 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
       plan.push({ cap, src, sections, candidates, superseded: 0 });
     }
   }
+  const resolvedHeadings = headingFilter
+    ? new Set(plan.flatMap((item) => item.candidates.map((candidate) => candidate.heading)))
+    : new Set();
+  const missingHeadings = headingFilter
+    ? [...requestedHeadings].filter((heading) => !resolvedHeadings.has(heading))
+    : [];
   if (plan.length === 0) {
-    return { text: '', files: allFiles, truncated: plan.some((i) => i.candidates.length > 0), chars: 0 };
+    return {
+      text: '',
+      files: allFiles,
+      truncated: headingFilter ? missingHeadings.length > 0 : plan.some((i) => i.candidates.length > 0),
+      chars: 0,
+      missingHeadings,
+    };
   }
 
   const floors = plan.flatMap((item) =>
@@ -339,7 +418,14 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
   );
   const floorMinimums = floors.map(({ item, candidate }) => floorMinimum(candidate, item.src.path));
   const floorItems = [...new Set(floors.map(({ item }) => item))];
-  const floorOverhead = floorItems.reduce((n, item) => n + chunkHeading(item.cap, item.src, item.superseded).length + 2, 0) +
+  const floorOverhead = floorItems.reduce(
+    (n, item) =>
+      n +
+        chunkHeading(item.cap, item.src, item.superseded).length +
+        2 +
+        Math.max(0, item.candidates.length - 1) * '\n\n'.length,
+    0,
+  ) +
     Math.max(0, floorItems.length - 1) * '\n\n---\n\n'.length;
   const floorMinimumTotal = floorMinimums.reduce((n, value) => n + value, 0) + floorOverhead;
   if (maxChars < floorMinimumTotal) {
@@ -352,7 +438,13 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
     );
   }
   if (maxChars === 0) {
-    return { text: '', files: allFiles, truncated: plan.some((i) => i.candidates.length > 0), chars: 0 };
+    return {
+      text: '',
+      files: allFiles,
+      truncated: headingFilter ? true : plan.some((i) => i.candidates.length > 0),
+      chars: 0,
+      missingHeadings,
+    };
   }
   let contentUsed = 0;
   let floorIndex = 0;
@@ -406,24 +498,26 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
   // "Truncated" means named material was cut or another matching section was
   // left out. It drives the brief's instruction to read the full files; a
   // zero-score section is not relevant material and is deliberately ignored.
-  const truncated =
-    stopped ||
-    cutCandidates.size > 0 ||
-    plan.some(
-      (item) =>
-        item.candidates.some((candidate) => !rendered.has(candidate)) ||
-        item.sections.some(
-          (section) =>
-            section.heading !== '(preamble)' &&
-            section.score > 0 &&
-            !item.candidates.includes(section),
-        ),
-    );
+  const truncated = headingFilter
+    ? stopped || cutCandidates.size > 0 || plan.some((item) => item.candidates.some((candidate) => !rendered.has(candidate)))
+    : stopped ||
+      cutCandidates.size > 0 ||
+      plan.some(
+        (item) =>
+          item.candidates.some((candidate) => !rendered.has(candidate)) ||
+          item.sections.some(
+            (section) =>
+              section.heading !== '(preamble)' &&
+              section.score > 0 &&
+              !item.candidates.includes(section),
+          ),
+      );
 
   return {
     text: renderExcerpt(plan, rendered),
     files: allFiles,
     truncated,
     chars: renderExcerpt(plan, rendered).length,
+    missingHeadings,
   };
 }

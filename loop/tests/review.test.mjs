@@ -38,6 +38,10 @@ import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, git, daysAgo } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
+const OUTSIDE_CONSTITUTION = 'Fixture outside constitution heading';
+const OUTSIDE_PENDING = 'Fixture outside pending heading';
+const CARRIED_FINDING = 'data/carried/j-seed-carry-1.md';
+const CARRIED_DIFF_SENTINEL = 'JUDGED_DIFF_SENTINEL: the page asserts an interval it never measured.';
 
 function repo(authorMode, reviewerMode, opts = {}) {
   const ctx = makeRepo({
@@ -185,6 +189,13 @@ test('the reviewer brief carries the closed reason list, the checklist, and no a
   assert.match(brief, /you have not seen the author's\s+reasoning/);
   assert.match(brief, /no edit rights/);
   assert.match(brief, /outside\*\* the worktree you are reviewing/);
+  assert.match(brief, /# cites: \[<exact heading text after `### Requirement:` on its heading line>\]/);
+  assert.match(brief, /Trimmed, exact and case-sensitive; `\(preamble\)` is not a heading\./);
+  assert.match(brief, /Choose from every capability under `openspec\/specs\/`, using its/);
+  assert.match(brief, /constitution and every unarchived change's delta; this feeds the/);
+  assert.match(brief, /revision brief's requirement excerpts/);
+  assert.match(brief, /Omit the field when no/);
+  assert.match(brief, /requirement was relied on/);
   ctx.cleanup();
 });
 
@@ -351,24 +362,86 @@ test('C45/C46/C47 the reviewer brief does the same, with the spend the job has a
 });
 
 test('C46 the revision brief supersedes the stale figures it inherits', async () => {
-  // The revision brief is the author brief plus the findings. The author brief
-  // was assembled before anything ran, so on its own it would tell the third
-  // invocation of a job that the job had spent nothing — the precise misreading
-  // this requirement exists to end.
+  // The revision brief is rebuilt from the current accounting and the findings.
+  // It does not carry the author brief's stale body or figures into the third
+  // invocation of a job.
   const ctx = repo('done-content-entry', 'review-revise-then-approve');
   const res = await go(ctx);
   assert.equal(res.outcome, 'done', ctx.output());
   const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-revision-brief.md`), 'utf8');
 
-  assert.match(brief, /\*\*This job's accounting, as of now\*\*/);
-  assert.match(brief, /these supersede the figures near the top/);
+  assert.doesNotMatch(brief, /\*\*This job's accounting, as of now\*\*/);
+  assert.doesNotMatch(brief, /these supersede the figures near the top/);
   assert.match(brief, /across 2\s+completed invocations/, 'the author run and the first review');
-  // The stale block is still above it — that is what "supersede" means — so the
-  // fresh one must not be the only thing asserted.
-  assert.ok(brief.indexOf('as of now') > brief.indexOf('## The outcome'), 'the fresh accounting comes after the inherited brief body');
+  assert.match(brief, /## Verdict/);
+  assert.match(brief, /## Acceptance checks/);
+  assert.match(brief, /## Diff under revision/);
+  const sectionHeadings = [
+    '## Verdict',
+    '## Acceptance checks',
+    '## Diff under revision',
+    '## Relevant spec excerpts',
+    '## Ground rules (non-negotiable)',
+    '## How to end (required)',
+  ];
+  // The judged diff is fenced and may quote the brief that produced it. Strip
+  // every fenced block before locating section headings so copied headings do
+  // not become false section boundaries.
+  const briefOutsideFences = brief.replace(/```[\s\S]*?```/g, '');
+  const sectionIndexes = sectionHeadings.map((heading) => briefOutsideFences.indexOf(heading));
+  for (let i = 1; i < sectionIndexes.length; i += 1) {
+    assert.ok(sectionIndexes[i] >= 0, `${sectionHeadings[i]} must be present outside fenced blocks`);
+    assert.ok(
+      sectionIndexes[i] > sectionIndexes[i - 1],
+      `${sectionHeadings[i]} index ${sectionIndexes[i]} must follow ${sectionHeadings[i - 1]} index ${sectionIndexes[i - 1]}`,
+    );
+  }
+  assert.match(brief, /^# Revision pass \(one only\) — job /);
+  assert.match(brief, /This is a continuing invocation in the same worktree\. There is no prior/);
+  const excerptsAt = brief.indexOf('## Relevant spec excerpts');
+  assert.ok(brief.lastIndexOf('## Ground rules (non-negotiable)') > excerptsAt, 'revision tail carries ground rules after excerpts');
+  assert.ok(brief.lastIndexOf('## How to end (required)') > excerptsAt, 'revision tail carries the result protocol after excerpts');
+  assert.doesNotMatch(brief.slice(0, brief.indexOf('## Diff under revision')), /## The outcome/);
   for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
     assert.ok(!re.test(brief), `the revision brief still carries the removed phrasing ${was}`);
   }
+  ctx.cleanup();
+});
+
+function carriedRevisionRepo() {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('retire-carried-only'),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+    files: {
+      [CARRIED_FINDING]:
+        `---\ntitle: "name the measurement on the fixture page"\n` +
+        `origin: review of job j-seed\ndate: 2026-09-05\n---\n\n` +
+        `${CARRIED_DIFF_SENTINEL}\n`,
+    },
+  });
+  writeQueue(ctx, [
+    {
+      type: 'repair',
+      title: 'Clear the carried finding on the fixture page',
+      detail: 'The page asserts an interval it never measured.',
+      subject: CARRIED_FINDING,
+      target: CARRIED_FINDING,
+    },
+  ]);
+  return ctx;
+}
+
+test('C46 the revision prompt carries the reviewer finding and the judged diff', async () => {
+  const ctx = carriedRevisionRepo();
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'discarded', ctx.output());
+  const prompt = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-revision-brief.md`), 'utf8');
+  assert.match(prompt, /\*\*Free-form notes\*\*\n\nmock reviewer notes/);
+  assert.match(prompt, /\*\*Diff-measured refusal reason\*\*[\s\S]*claims a fix it does not contain/);
+  assert.match(prompt, /JUDGED_DIFF_SENTINEL: the page asserts an interval it never measured\./);
   ctx.cleanup();
 });
 
@@ -629,6 +702,108 @@ test('parseVerdict reads front matter and falls back to plain text for weaker ru
   assert.equal(plain.verdict, 'revise');
   assert.deepEqual(plain.reasons, ['not-worth-reading', 'overclaiming-summary']);
   assert.equal(plain.wouldCite, 'nobody yet');
+});
+
+test('parseVerdict reads a trimmed, deduplicated cites list from front matter only', () => {
+  const parsed = parseVerdict(
+    '---\nverdict: revise\ncites:\n  - "  First requirement  "\n  - First requirement\n  - ""\n---\ncites: Body heading\n',
+  );
+  assert.equal(parsed.verdict, 'revise');
+  assert.deepEqual(parsed.cites, ['First requirement']);
+  assert.deepEqual(parseVerdict('---\nverdict: revise\ncites: Single heading\n---\n').cites, ['Single heading']);
+  assert.deepEqual(parseVerdict('cites: Body heading\n').cites, []);
+});
+
+function citesContext() {
+  const ctx = makeRepo({
+    now: () => NOW,
+    files: {
+      'openspec/specs/loop/spec.md': '# loop\n\n### Requirement: Fixture constitution heading\n\nThe constitution.\n',
+      'openspec/specs/review/spec.md': '# review\n\n### Requirement: Review fixture heading\n\nThe review rule.\n',
+      'openspec/specs/editorial/spec.md': `# editorial\n\n### Requirement: ${OUTSIDE_CONSTITUTION}\n\nThe outside constitution rule.\n`,
+      'pending/one/specs/loop/spec.md': '# pending loop\n\n### Requirement: Fixture pending heading\n\nThe pending rule.\n',
+      'pending/one/specs/editorial/spec.md': `# pending editorial\n\n### Requirement: ${OUTSIDE_PENDING}\n\nThe outside pending rule.\n`,
+    },
+  });
+  ctx.pendingRoot = join(ctx.repoRoot, 'pending');
+  return ctx;
+}
+
+test('a cites heading held by a pending amendment passes', () => {
+  const ctx = citesContext();
+  writeVerdictRecord(ctx, 'j-cites-valid', {
+    verdict: 'approve',
+    cites: [' Fixture pending heading ', 'Fixture pending heading'],
+  });
+  const valid = mergeGate(ctx, { jobId: 'j-cites-valid', type: 'machinery' });
+  assert.equal(valid.ok, true, valid.reason);
+  assert.deepEqual(valid.verdict.cites, ['Fixture pending heading']);
+  ctx.cleanup();
+});
+
+test('cites from an outside capability resolve on approve and revise', () => {
+  const ctx = citesContext();
+  const outsideCites = [OUTSIDE_CONSTITUTION, OUTSIDE_PENDING];
+  writeVerdictRecord(ctx, 'j-cites-outside-approve', {
+    verdict: 'approve',
+    cites: outsideCites,
+  });
+  const approve = mergeGate(ctx, { jobId: 'j-cites-outside-approve', type: 'machinery' });
+  assert.equal(approve.ok, true, approve.reason);
+
+  writeVerdictRecord(ctx, 'j-cites-outside-revise', {
+    verdict: 'revise',
+    reasons: ['not-worth-reading'],
+    cites: outsideCites,
+  });
+  const revise = mergeGate(ctx, { jobId: 'j-cites-outside-revise', type: 'machinery' });
+  assert.equal(revise.ok, false, 'a revise verdict is still non-approving');
+  assert.equal(revise.code, 'revise', revise.reason);
+  assert.deepEqual(revise.verdict.cites, outsideCites);
+  ctx.cleanup();
+});
+
+test('merge refuses unresolved cites on approve', () => {
+  const ctx = citesContext();
+  writeVerdictRecord(ctx, 'j-cites-approve', {
+    verdict: 'approve',
+    cites: ['Missing approve heading', 'Missing second heading'],
+  });
+  const approve = mergeGate(ctx, { jobId: 'j-cites-approve', type: 'machinery' });
+  assert.equal(approve.ok, false);
+  assert.equal(approve.code, 'cites-unresolved');
+  assert.match(approve.reason, /Missing approve heading/);
+  assert.match(approve.reason, /Missing second heading/);
+  ctx.cleanup();
+});
+
+test('merge refuses unresolved cites on revise', () => {
+  const ctx = citesContext();
+  writeVerdictRecord(ctx, 'j-cites-revise', {
+    verdict: 'revise',
+    reasons: ['not-worth-reading'],
+    cites: ['Missing revise heading'],
+  });
+  const revise = mergeGate(ctx, { jobId: 'j-cites-revise', type: 'machinery' });
+  assert.equal(revise.ok, false);
+  assert.equal(revise.code, 'cites-unresolved');
+  assert.match(revise.reason, /Missing revise heading/);
+  ctx.cleanup();
+});
+
+test('merge refuses `(preamble)` cites on approve and revise', () => {
+  const ctx = citesContext();
+  for (const [jobId, verdict, reasons] of [
+    ['j-cites-preamble-approve', 'approve', []],
+    ['j-cites-preamble-revise', 'revise', ['not-worth-reading']],
+  ]) {
+    writeVerdictRecord(ctx, jobId, { verdict, reasons, cites: ['(preamble)'] });
+    const gate = mergeGate(ctx, { jobId, type: 'machinery' });
+    assert.equal(gate.ok, false);
+    assert.equal(gate.code, 'cites-unresolved');
+    assert.match(gate.reason, /\(preamble\)/);
+  }
+  ctx.cleanup();
 });
 
 test('a non-prose job type does not require would-cite', () => {
