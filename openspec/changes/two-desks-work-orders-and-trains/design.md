@@ -2386,3 +2386,22 @@ new scope in the same round. Luna-Boss-2's defect-location hypotheses come
 out of its procedure from B2 onward on their own kill condition (round 4 at
 0, round 5 no-data, round 6 at 0 of 5), honoured as written; the withheld
 finding stays, productive in three of three outings.
+
+**REVIEW6, the first delta review: revise, 7 minutes at medium — a third of
+a sealed max review's cost, with real findings; it declared itself unsealed
+in both places.** Its remedy was wrong and Luna-Boss-2 did not brief it: the
+reviewer measured that editing `cap 24000` to `cap 1` inside a message leaves
+the suite green and asked for an arm that fails when a message's number is
+wrong, which would be machinery to test strings. The defect is DUPLICATION —
+`:357` compares `ex.chars` with `ex.text.length` and never reads the cap, yet
+its message announces `cap 24000`, a re-typed literal that can drift with
+nothing to catch it. Round 7's rule over the whole sweep, the "both numbers"
+rule read correctly: a message states only the numbers its own assertion
+compares and derives them from the values the assertion uses; a number that
+is not compared is derived from the value in scope or removed. Its third
+finding (`RESULT6.md` an out-of-scope tracked file) was a correct
+observation against a decision the delta brief had not carried — the
+architect's rule that numbered reports stay in the reviewed tip and move to
+`evidence/reviews/` by one commit on main — so the defect was the brief's: a
+brief that scopes a diff owes the reason a file is in it. Round 7 dispatched
+21:13 at medium, class-scoped, with the census script for the reviewer.
