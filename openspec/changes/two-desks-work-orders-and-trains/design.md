@@ -2174,7 +2174,23 @@ all fourteen logs added; `git ls-files` is now the check, and the README
 rows say which commit first held each log. That is also the member of
 yejx's sweep that a grep for its fixed names would not return: the
 consuming side, where a copy to a repository path was dropped by the
-repository itself. Orch first declined to push until Stage 0's last packet,
+repository itself. Orch verified the negation behaviourally rather than by
+reading it, with `git check-ignore -q` against paths that do not exist yet —
+a tracked file stays tracked whatever the rules say, so the tracked count
+proves nothing about the NEXT log — for a future run directory, for the
+archive path (`openspec/changes/archive/<date>-<name>/evidence/…`, the case
+most expected to break, which holds), and for an ordinary `.log` elsewhere
+(still ignored). The gotcha it avoided, kept for whoever touches that file
+next: git cannot re-include a file under an excluded PARENT directory, and
+`*.log` excludes files only, which is the only reason the negation is
+reachable; `logs/` or `**/evidence/` would have failed silently and looked
+identical. Dates: `addictedtoai-kajg` (mem-cond, while verifying yejx) — bd
+stamps a bead's created date in UTC while this repository's convention is the
+local date, so every bead filed after 18:00 local reads a day ahead (yejx
+reads 2026-09-09; tbho, fnsp, m22a and kb9e read 2026-09-08; all filed the
+same local day). Nobody rewrote bd's field, which is another tool's record;
+this document cites beads by id and by the local clock, never by that
+field, and a grep for the UTC date across the four documents finds nothing. Orch first declined to push until Stage 0's last packet,
 naming the cost (81 commits and today's visitor-facing repairs invisible, the
 mission's complaint made literal); the architect recommended pushing the
 verified sha with publishing left off, the two being separate switches — the
