@@ -411,6 +411,26 @@ the sentence that uses it.
       **Mutation**: remove the `.beads/` exclusion and confirm the first arm
       fails while the second still passes. Small; rides with packet E. Serves
       task 31's availability measurement.
+      **Resolved before E's freeze (2026-09-09 02:50, from `de400f7`):** (i)
+      `hasCurrentBuild(root)` (`verify-launch.mjs:279-288`) walks the whole
+      root with `BUILD_INPUT_EXCLUSIONS` = `.git`, `.next`, `node_modules`,
+      `out`, `public` (`:190-196`, root-level names only, `:210`), so `.beads`
+      is walked today and every `bd` write defeats reuse; `data/derived/**` is
+      walked and stays walked. (ii) The combined rule is DOCUMENTED beside the
+      set — a comment stating membership-by-readers and exclusion-by-writers,
+      with `.beads` added and its reason — not computed: deriving readership
+      from the build is design beyond this task. (iii) The test is NEW,
+      `scripts/verify-launch-build-reuse.test.mjs` — no test names
+      `hasCurrentBuild` today; `hasCurrentBuild` takes a root, so the fixture is
+      a throwaway git repository under the OS temp directory with one commit,
+      an `out/` holding one file, and a valid `.build-stamp.json` whose
+      `status.commit` equals that repository's short HEAD (read
+      `readBuildSuccessRecord` at `:245` for the exact shape). Arms: (a) with
+      that current record, a later write under `.beads/` leaves
+      `hasCurrentBuild` true; (b) a later write under `content/` makes it
+      false. Named mutation: remove `.beads` from the exclusion set and confirm
+      (a) fails while (b) still passes. (iv) Files: `scripts/verify-launch.mjs`
+      (the set and its comment only) and the new test.
 
 ### The brief diet
 
@@ -900,7 +920,12 @@ the sentence that uses it.
       `>= 0` stays green) and the recursive `skipTests` propagation (`:39`)
       have no arm (judge 2) — F adds one each or records why an arm cannot
       reach it. Packet F's brief drops the two enforcement paragraphs above
-      as written and carries (a)–(c) in their place.
+      as written and carries (a)–(c) in their place. **Added 2026-09-09
+      00:36 (the maintainer's "max for everything", Orch's
+      `addictedtoai-v8q8`, agreed by both):** when `enabled: false` ships,
+      it goes on `codex-gpt-luna-medium` as well as `-high` and `-xhigh` —
+      the entry stays defined (its conformance record survives; "for now"
+      is reversible) and unselected by mechanism rather than by discipline.
 - [ ] 23. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
       repository and fires when the **top-ranked** candidate is refused *solely* on
       `runner:job-type`; no other refusal escalates. Implements the same
@@ -932,17 +957,98 @@ the sentence that uses it.
       additively*, the measurement bullet, and *Runner selection is a declared
       policy*, bullet 4, and *A reviewer's non-blocking finding…*, the ledger
       bullet.
+      **Resolved before E's freeze (the architect's quantifier enumeration,
+      2026-09-09 02:50, from the code at `de400f7`):** (i) "the runner" per
+      phase is already `who.id` (`run.mjs:261-273`); "the effort it ran at"
+      is a property of the REGISTRY ENTRY, because a rung IS an entry ("the
+      registry MAY carry one entry per rung"): `loadRunners`
+      (`runners.mjs:16`) accepts an optional `effort` string per entry
+      (non-empty when present, else a load-time error, the `job_types`
+      pattern; absent means the entry declares no rung), and every phase
+      entry records `effort: who.effort ?? null` — `null` rather than
+      omitted, so a reader can tell "no rung declared" from "written before
+      the key existed". The `runners.yml` half — `effort: max` on
+      `codex-gpt-luna`, `medium`, `high` and `xhigh` on its three siblings,
+      nothing on the Claude and opencode entries until their harnesses expose
+      a rung — is **[orchestrator]** (a reserved file) and lands with E's
+      handover; the code half merges independently and records `null` until
+      it does. (ii) `brief_chars` is `briefText.length` of the text the
+      AUTHOR phase actually received (the assembled brief for a new job, the
+      resumed brief for a resumed one), on the job's outcome line
+      (`run.mjs:1431`); the two abandon-sweep lines (`:979`, `:1050`) carry
+      none of the new keys, because no process ran. (iii) `gate_seconds` is a
+      map `{ <gate name>: <seconds, one decimal> }` for every gate the job's
+      OWN run executed (`runGates` results' `durationMs / 1000`), a retried
+      gate recording its LAST run; absent when no gate ran. (iv) "the count of
+      findings each review carried" is, per REVIEW phase entry, `carried:
+      <n>` = the length of that pass's parsed `carry:` list (`parseCarry`,
+      the non-blocking findings of the review delta's ledger bullet): `0`
+      when the record parsed and carried none, absent when there was no
+      record. (v) `authority_sha` is the full 40-character sha the author
+      brief was assembled against — for a Desk job `mergeBaseSha` at brief
+      time (`run.mjs:1369`); a fleet round's is its RESULT line, a practice
+      not code. (vi) Additive: `LEDGER_FIELDS` unchanged (task 26's mutation
+      proves it), a pre-existing eight-key line validates unchanged. (vii)
+      Files: `loop/lib/ledger.mjs` (`makeLedgerLine` accepts and emits the new
+      optional keys), `loop/lib/runners.mjs` (the optional `effort`),
+      `loop/run.mjs` (the phase entry gains `effort`, a review phase gains
+      `carried`, the outcome line passes `brief_chars`, `gate_seconds`,
+      `authority_sha`), and task 26's new test.
 - [ ] 26. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
       `brief_chars`, `gate_seconds`, a carried-entry count and `authority_sha`; a
       pre-existing line without any of them still validates. **Mutation**: extend `LEDGER_FIELDS` to
       require `gate_seconds` and confirm the old-line test fails — the additive
       property is the thing under test. Tests task 25.
+      **Resolved before E's freeze (2026-09-09 02:50):** (i)
+      `loop/tests/ledger.test.mjs` is NEW — no file of that name exists;
+      `ledger-order`, `ledger-before-publish` and `job-budget` test other
+      properties and stay where they are. (ii) Arms, on a throwaway repository
+      via `makeRepo`: a line built by `makeLedgerLine` with phases carrying
+      `effort` (one `null`, one string) and a review phase carrying
+      `carried`, plus `brief_chars`, `gate_seconds` and `authority_sha`,
+      round-trips through `appendLedger` and `readLedger` with every key
+      present and equal; a pre-existing line of the eight required keys only
+      passes `appendLedger`'s validation unchanged. (iii) "Per phase" quantifies
+      over EVERY entry of `phases` (author, review1, revision, review2):
+      each carries `runner` and `effort`; `carried` appears on review entries
+      only. (iv) The named mutation: extend `LEDGER_FIELDS` with
+      `gate_seconds` and confirm the old-line arm fails; restore.
 - [ ] 27. `loop/lib/git.mjs:116`: `worktree remove --force` becomes a removal that
       **refuses** rather than forcing when it cannot complete. Implements: *The
       chain from intake to train lives in the repository*, the teardown bullet —
       a requirement that had a scenario and no task, and whose absence deleted 177
       packages from the real `node_modules`. Test with a **mutation** restoring
       `--force`, which must make the refusal assertion fail.
+      **Resolved before E's freeze (2026-09-09 02:50, from `de400f7`):** (i)
+      `removeWorktree` (`git.mjs:115-118`) runs `git worktree remove <dir>`
+      WITHOUT `--force`; on a non-zero exit it returns `{ ok: false, reason }`
+      (git's stderr, which names why) and does not fall back to `--force` or
+      to any delete; on success `{ ok: true }`. (ii) "The removal" is the
+      whole of `removeJobWorktree` (`run.mjs:827-894`), not the git call
+      alone: today it runs `remove`, then `rmSync(worktree, { recursive,
+      force })`, then `prune`, each guarded separately, so a git REFUSAL would
+      be followed by a recursive delete of the very directory git refused to
+      delete. Under this task the `rmSync` step runs ONLY after git's removal
+      returned `ok` (it exists for the Windows EPERM case where git has already
+      taken the files and left the directory — `addictedtoai-osru`); on a
+      refusal the directory is left standing, the reason logged, and the run
+      continues to its ledger line and records commit exactly as the junction
+      refusal at `:852-874` already does; `prune` still runs in every case (the
+      test at `worktree-cleanup.test.mjs:252` pins that). (iii) The other
+      callers get the same behaviour: `review.mjs:1194` (the reviewer's
+      detached worktree, `reset --hard` and `clean -fdx` before removal, so a
+      refusal there is news and is logged) and `conformance.mjs:321,370`. (iv)
+      RECORDED, out of scope: `worktree prune` (`git.mjs:101`, `:117`,
+      `run.mjs:830`) deregisters ANY registration whose directory is absent,
+      including one temporarily moved — on 2026-09-08 about twenty registered
+      worktrees were moved by accident and repaired by hand; the Desk's
+      worktrees are the only ones it creates, but prune is repository-wide.
+      (v) Arms, in `loop/tests/worktree-cleanup.test.mjs` (the file that owns
+      removal; no new file): a worktree git refuses to remove without force
+      (one modified tracked file) is left standing with its file intact and the
+      refusal reported, and `rmSync` was not called (observe it through the
+      existing `deps.rm` seam); positive control: a clean worktree is removed.
+      Named mutation: restore `--force` and confirm the refusal arm fails.
 - [x] 28. **Measure `bd` before anything mocks it.** Against a throwaway store:
       whether `--claim` keys the actor; whether a second claim under a different
       actor fails; whether `close` on an already-closed issue no-ops; whether
