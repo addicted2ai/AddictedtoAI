@@ -2816,3 +2816,93 @@ closure defect cost one round in each packet, and the brief review, which
 cannot see that class either (it checks the brief against the code, not the
 list against the closure), caught three specification defects before any
 worker saw them. Recorded, not scored.
+
+## Revision record — round 19
+
+**Packet D (tasks 23 and 24 — escalation into the repository) — authority
+two-desks-work-orders-and-trains@`5414899`, every dispatch at codex Luna
+max.** The architect's quantifier enumeration (06:59, from the code at
+`9c1d980`; the `run.mjs` drift map to `f74f606` added as (ix) at `5414899`,
+10:29) preceded the brief; the brief went through seven second-model runs
+before dispatch — DeepSeek's runs 1 and 2 each a REVISE whose findings were
+folded into the tasks themselves (`2940298`, `9174d1f`: the reviewer-cleared
+fixture entry, `topRanked` null on the early returns, arm (b) spending both
+tiers past the ceiling, the named mutation keyed at the call site, Orch's
+handover rewriting `runners.yml:219-235`), run 5 dying in a provider HTTP 400
+mid-run and run 6 saying dispatch — and was dispatched at about 11:06.
+
+**Round 1 (`8f5e14f`, 33.5 minutes at max; four files, +332/−5).** As
+enumerated: `loadRunners` accepting an optional `escalates_to` that must name
+another registered author-capable entry; `selectJob` exposing the top-ranked
+candidate's refusal as `topRanked` and a pure `escalationTarget`; the one
+`run.mjs` call site re-running the selection on the escalation entry and
+adopting it only when the top-ranked candidate itself was selected there;
+the new `runner-policy.test.mjs` with arms (a)–(d) through both the helper
+and the dry-run call site. Six mutation rows, all red and restored; the
+suite 1,790 of 1,790 in 477 s; the architect's re-run of the seven targeted
+files 87 of 87. Between the rounds the maintainer retired DeepSeek from the
+brief review (12:07: "Lets switch to just using muse to review the briefs
+for now") on the tally to that point — one real defect DeepSeek caught that
+Muse missed, against 7–20 minutes and two no-verdict runs per text; the
+sealed-review brief had already gone out on Muse's DISPATCH (11:44) while
+DeepSeek's run on it died server-side at 11:51 and its poller ended NO
+VERDICT at 12:21, untouched. REVIEW1 (sealed, 26.9 minutes): revise, two
+findings of one class — changed lines whose mutation stayed green: the three
+early returns' `topRanked: null` (`{}` survived selector rules 17/17, health
+23/23, budget 20/20) and the non-empty-string guard on `escalates_to`
+(disabled, 6/6 and 17/17 green) — no production defect; all six author
+mutations reproduced with the same counts, its own upkeep-floor mutation
+red, the closure confirmed (`deepEqual(sel.warnings, [])` the only
+field-level pin outside the list), the diff exactly the four files.
+
+**Round 2 (`46528c5`, 26 minutes at max; tests only, one file, +129).**
+Seven arms: the three early returns reached THROUGH `selectJob` with the
+scout first in the queue — a recorded conformance FAIL, three
+`produced-nothing` ledger lines, a paused `provider-a` lane — each asserting
+`topRanked` and `selected` null under `assert/strict`, `blocked` set and
+`escalationTarget` null; four malformed registry values (`''`, whitespace,
+a number, a bare key) each asserting the guard's EXACT message, because with
+the guard disabled `''` still throws — as an unknown runner — and an arm
+that only asserts "it throws" is the survivor REVIEW1 found. The four named
+mutations red (9 → 8/1 three times, each only its own arm; the guard 13 →
+9/4) and restored by hash; the sweep naming every changed code line of
+`5414899..8f5e14f` with the arm that covers it; the suite 1,797 of 1,797 in
+445 s; the architect's re-run 91 of 91. Both round-2 briefs were reviewed by
+Muse alone (DISPATCH in 1.8 and 1.3 minutes, 51K and 31K tokens, no
+findings; one style note — name the health import — folded in). REVIEW2
+(delta at max, given REVIEW1 and declared unsealed; 12 minutes): the four
+named mutations red under it and restored by hash, three spot-check
+mutations of other changed lines red (`candidates[0]` → `[1]`, the returned
+`topRanked` forced null, the adopted runner not adopted), the new arms
+judged strict, the diff one test file, the properties green, nothing
+carried — and a verdict of "revise" on one finding of REPORT completeness:
+six lines of the round-1 diff missing from RESULT2's sweep. The architect
+read them from the tip — five closing delimiters and the `escalationTarget`
+declaration line, whose bodies the sweep attributes to arms — and closed the
+finding with a dated addendum on the banked report rather than a third
+author round, on the reviewer's own reading that the right entry is a
+reason-none-can line and not an arm, and on the maintainer's standing
+instruction to spend tokens where they buy something. Stated in the merge
+message, the task notes and Orch's diff-read request, so the ruling was
+visible before the merge. Orch's diff read: MERGE, the three production
+files read in full and the escalated `selectJob`'s re-evaluation of
+conformance, health and the lane pause checked rather than assumed; the
+six-line ruling read by Orch itself and agreed, with the call recorded as
+the architect's; two notes carried non-blocking on task 23 — the adoption
+condition infers candidate identity instead of comparing the escalated
+selection with `top` (sound only while gathering is deterministic within
+the run), and the tier label in the budget log prints before the switch.
+Merged as `dc54da0` at 13:27:12.
+
+**The cost.** Two author rounds and two reviews, 11:06:04 to 13:27:12 —
+2 hours 21 minutes of wall clock, the brief-review runs and one compaction
+(12:22) included —
+and, from the four codex rollouts naming the worktree (`arch-tokens.mjs`),
+67,839,745 total tokens (37.1M the round-1 author, 18.2M the sealed review,
+8.8M the round-2 author, 3.7M the delta review) and 108,213 reasoning tokens,
+for five files and +461/−5 lines. Beside E's 113.9M for +565/−73 and B2's
+291M for +836/−55: no closure defect this time — the enumeration's (viii)
+grepped for the pins before the file list was written — and the one revise
+round was the residual-coverage class, which the brief review cannot see
+either (it reads the brief against the code, not the tests against the
+diff). Recorded, not scored.

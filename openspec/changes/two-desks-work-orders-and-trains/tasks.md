@@ -1024,7 +1024,35 @@ the brief under `evidence/reviews/`.
       it goes on `codex-gpt-luna-medium` as well as `-high` and `-xhigh` —
       the entry stays defined (its conformance record survives; "for now"
       is reversible) and unselected by mechanism rather than by discipline.
-- [ ] 23. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
+- [x] 23. (DONE 2026-09-09 at merge `dc54da0`, packet D, authority `5414899`:
+      round 1 `8f5e14f` — `loadRunners` validates the optional `escalates_to`
+      at `runners.mjs:86-88` and `:104-119`; `selectJob` returns `topRanked`
+      and `select.mjs:265-269` adds the pure `escalationTarget`; the one
+      `run.mjs` call site at `:1285-1315` re-runs the selection on the
+      escalation entry and adopts on `escalated.topRanked === null &&
+      escalated.selected !== null`; round 2 `46528c5` tests only. REVIEW1
+      sealed: revise on two green mutants of changed lines, no production
+      defect; REVIEW2 delta: every named and spot-check mutation red, "revise"
+      on report completeness only — six closing/declaration lines missing from
+      the sweep — closed by the architect's dated addendum on the banked
+      report, no third round. CARRIED to Orch's registry half, a reserved
+      file: the `escalates_to: codex-gpt-luna` line on `codex-gpt-luna-medium`
+      — until it lands no entry declares an escalation and the loop escalates
+      nothing, by design — with `desk-chain3.sh:94-132`'s grep escalation
+      retired and `runners.yml:219-235` rewritten; and task 25's three
+      opencode `effort:` lines. CARRIED, non-blocking, from Orch's diff read:
+      (1) the adoption condition INFERS candidate identity from
+      `topRanked === null && selected !== null` instead of comparing the
+      escalated selection with `top`, sound only because `gatherCandidates`
+      is deterministic within a run — a queue writer between the two calls
+      (the Pulse is a scheduled third mover) would mislabel the adopted log
+      line; the remedy is one identity comparison, to be weighed in packet
+      F's enumeration; (2) the `budget (<tier> tier, …)` log line prints
+      before the escalation block, so on an adopted escalation it names the
+      runner that did not run the job — nothing is misspent, allowances key
+      off the job type (`budget.mjs:158-160`), but a later reader must not
+      cite that line as which runner's budget was used. Live line numbers are
+      `46528c5`'s.) `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
       repository and fires when the **top-ranked** candidate is refused *solely* on
       `runner:job-type`; no other refusal escalates. Implements the same
       requirement's escalation bullets.
@@ -1108,7 +1136,20 @@ the brief under `evidence/reviews/`.
       (measured by `git diff 9c1d980..f74f606`, 2026-09-09 10:29). The
       registry now also carries `effort:` on the four codex entries
       (`f74f606`), which `loadRunners` validates at `runners.mjs:77-81`.
-- [ ] 24. `loop/tests/runner-policy.test.mjs`: a top-ranked clearance-only refusal
+- [x] 24. (DONE 2026-09-09 at merge `dc54da0`, packet D:
+      `loop/tests/runner-policy.test.mjs` new at `8f5e14f` with arms (a)–(d)
+      through `escalationTarget` and the dry-run `runLoop` call site plus the
+      registry and pure-helper arms; the named mutation — escalate only on
+      `sel.selected === null`, at the call site — turned (c) and (d) red with
+      (a) and (b) green, and the adoption-condition mutation turned (d) red;
+      `46528c5` added the three early-return arms through `selectJob`
+      (a recorded conformance FAIL, `produced-nothing` health lines, a paused
+      lane; each `topRanked === null` under strict equality, `escalationTarget`
+      null, the scout first in the queue) and four malformed-`escalates_to`
+      arms asserting the guard's exact message. Thirteen tests in the file;
+      the suite 1,797 of 1,797; the architect's re-run of seven targeted files
+      91 of 91. Carried, non-blocking: none — REVIEW2 found no further green
+      mutant.) `loop/tests/runner-policy.test.mjs`: a top-ranked clearance-only refusal
       escalates and authors the top-ranked candidate; a budget-ceiling refusal does
       not escalate; **and the control that matters** — an overdue scout top-ranked
       and refused on clearance with one cleared `repair` below it authors the
