@@ -2070,8 +2070,11 @@ origin) was adopted because the isolation argument runs the other way from
 next packet's run stays attributable, while waiting moves the same merge into
 a window that will hold a packet. Merge-tree showed zero conflict markers, two
 files, +98/−6 in `pulse/lib/mint.mjs` and its test. Six gates pinned to
-`d8522ac`: test EXIT 1 (314 s, 1,733 passed, 1 failed), build 0, launch 0,
-design 0, surfaces 0, analytics 0. The one failure named itself environmental
+`d8522ac`: test EXIT 1 (314 s, 124 files, 1,734 tests, 1,733 passed, 1
+failed), build 0 (30 s), launch 0 (32 s, spawned — the merge had written
+inputs), design 0 (34 s), surfaces 0 (4 s), analytics 0 (20 s); the whole run
+is banked at `evidence/gate-run-2026-09-08-d8522ac/`, the red test log
+uncut and the alone re-run beside it. The one failure named itself environmental
 in its own message — `pulse/tests/domain-seeds.test.mjs:210`, `openrouter-models`
 lost its connection during `runPulse --no-build` with `connect EADDRINUSE`, no
 ephemeral port to spare, three codex processes on the machine including round
@@ -2133,7 +2136,24 @@ passed), build 0 (37 s), launch 0 (34 s, spawned — the merge and the Pulse had
 both written inputs newer than `out/`, the guard declining correctly, the
 third distinct innocent explanation for a spawn and the first that was neither
 Orch's harness nor a misreading), design 0 (34 s), surfaces 0 (4 s),
-analytics 0 (20 s). Orch first declined to push until Stage 0's last packet,
+analytics 0 (20 s). THE LOGS OF THAT RUN NO LONGER EXIST, so every figure in
+the previous sentence is reported from the terminal and none is a captured
+artefact: Orch's harness wrote six fixed log names and truncated its summary
+at the start of every run, and the `d8522ac` run at 17:50 overwrote the
+`b8fa5c1` run in place. Measured by Orch after the architect asked for the
+files by name at 18:30: no file in its scratchpad was written between 16:20
+and 16:50 except a pre-run launch log at 16:31, all six logs carry 17:55 to
+17:57 mtimes, and the summary's first line names `d8522ac`. What attests the
+six-green is Orch's own board entries at 16:39 and 16:43, the three pre-push
+checks named below, and its 17:19 live-site read (`/status.json` reporting
+commit `b8fa5c1942c2` built 22:42:58Z; the launch entry HTTP 200 carrying the
+archive; the learn page rendering the inbound link) — which attests the
+DEPLOY, not the gate run, and does not stand in for the logs. The class, in
+Orch's words: the evidence-producing tool destroyed the evidence for the only
+push of the day, silently, at the moment of producing new evidence, and
+nothing warned. Orch is giving the harness a per-run directory and filing the
+bead; the `d8522ac` run is banked whole at
+`evidence/gate-run-2026-09-08-d8522ac/`. Orch first declined to push until Stage 0's last packet,
 naming the cost (81 commits and today's visitor-facing repairs invisible, the
 mission's complaint made literal); the architect recommended pushing the
 verified sha with publishing left off, the two being separate switches — the

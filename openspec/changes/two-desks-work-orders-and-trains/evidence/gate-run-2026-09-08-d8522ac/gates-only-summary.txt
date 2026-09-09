@@ -1,0 +1,63 @@
+pin OK: announced and HEAD agree at d8522ac
+gating HEAD d8522ac at 17:50:42; publish=false; no loop running, no brake standing
+THIS SCRIPT NEVER PUSHES. A green result is a report, not a deploy.
+
+=== 1-test starting 17:50:43 ===
+1-test EXIT=1 314s
+--- last 40 lines of 1-test ---
+✔ describeFocusSweep: hitting the safety bound is a FAILURE, reported as an anomaly, never a quiet cap (0.1629ms)
+✔ t6d reproduction: a violation past the old 150-stop cap was structurally unreachable, and the new bound reaches it (0.1836ms)
+✔ PASSES: no route outside the sample uses a tag the sample has never seen (0.4426ms)
+✔ TRIPS: an unsampled route renders a tag no sampled route renders (0.1418ms)
+✔ PASSES (control): the same data, once the route is added to the sample (0.1644ms)
+✔ a new tag shared by many unsampled routes is ONE finding, not one per route (0.2302ms)
+✔ a tag covered by ANY sampled route is not flagged, even if it also appears on an unsampled route (0.1301ms)
+✔ file paths map to routes the way the export does: index.html is /, nested files keep their path (49.7503ms)
+✔ the static scan agrees with the browser selector: no href means not focusable, tabindex="-1" is excluded (4.2779ms)
+✔ 0qs reproduction: the exact /tools sequence — flagged before the route was sampled, clean after (9.3869ms)
+✔ one6 the launch.json write is guarded, so a gate run records nothing (0.9065ms)
+✔ N4 a post whose current record carries only a valid carry-forward is answered (95.3086ms)
+✔ N4 an anchor that approves a different piece answers nothing (45.5831ms)
+✔ N4 an anchor whose own answer is a carry-forward is not an answering record (29.2564ms)
+✔ N4 each of two posts in one record resolves through ITS OWN entry (28.8495ms)
+✔ N4 a broken entry is NOT rescued by the reach-back (32.9662ms)
+✔ N4 an anchor that carries a reads-human but never approved this post does not answer (43.6842ms)
+✔ N7 a current record carrying neither field is answered by an earlier one (32.0056ms)
+✔ N7 the reach-back is a reach-back, not an unconditional pass (64.9782ms)
+✔ the launch check reports exactly the unanswered posts, in the bare-missing shape (648.0099ms)
+✔ N7 every post in the live corpus is answered — by its record, its entry or the reach-back (614.7773ms)
+ℹ tests 1734
+ℹ suites 0
+ℹ pass 1733
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 312798.1845
+
+✖ failing tests:
+
+test at pulse\tests\domain-seeds.test.mjs:210:1
+✖ 12 a signal that has LEFT the snapshot removes nothing and writes no change line (647.67ms)
+  Error: source `openrouter-models` lost its connection during `runPulse --no-build`: TypeError: fetch failed (bad port) (recorded 2026-09-08). This is a TRANSPORT failure, not a logic failure: no fixture here intends one, the source wrote no snapshot, and the Pulse still exited 0 because one dead source is degradation rather than a crash. Every assertion after this point would have been measuring a snapshot that was never written — which is how this class has presented four times as a content bug (addictedtoai-fpud). `connect EADDRINUSE` means the machine had no ephemeral port to spare: something else on it was making connections (addictedtoai-ar0), and the test is sound. Re-run it alone.
+      at assertNoTransportFailure (file:///D:/AddictedtoAI/pulse/tests/helpers.mjs:209:11)
+      at ChildProcess.<anonymous> (file:///D:/AddictedtoAI/pulse/tests/helpers.mjs:143:11)
+      at ChildProcess.emit (node:events:508:28)
+      at maybeClose (node:internal/child_process:1101:16)
+      at ChildProcess._handle.onexit (node:internal/child_process:305:5)
+1-test counts: 124 file(s), 1733 passed (floor 1700)
+=== 2-build starting 17:55:58 ===
+2-build EXIT=0 30s
+=== 3-launch starting 17:56:28 ===
+3-launch EXIT=0 32s
+=== 4-design starting 17:57:00 ===
+4-design EXIT=0 34s
+=== 5-surfaces starting 17:57:34 ===
+5-surfaces EXIT=0 4s
+=== 6-analytics starting 17:57:38 ===
+6-analytics EXIT=0 20s
+
+3-launch build path: running `npm run build`
+
+GATES RED at d8522ac: 1-test(exit 1)
+Nothing was pushed and nothing was reverted. The tree is exactly as it was handed to me.
