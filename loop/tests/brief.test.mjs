@@ -4,6 +4,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { assembleBrief, assembleRevisionBrief } from '../lib/brief.mjs';
@@ -163,6 +164,49 @@ test('a cited heading that cannot be found is named in a marker', () => {
     diffText: 'diff without a requirement heading',
   });
   assert.match(revision, /CITED REQUIREMENT HEADINGS NOT FOUND: "Missing fixture heading"/);
+  ctx.cleanup();
+});
+
+test('an unresolved cited heading with no live sources reports missing and truncated', () => {
+  const ctx = makeRepo();
+  const heading = 'Missing heading with no live source';
+  const excerpt = excerptsFor(ctx.repoRoot, TYPE, {
+    headings: [heading],
+    maxChars: BRIEF_EXCERPT_MAX_CHARS,
+  });
+  assert.equal(excerpt.text, '');
+  assert.equal(excerpt.chars, 0);
+  assert.equal(excerpt.truncated, true, 'an unresolved heading is reported as truncated');
+  assert.deepEqual(excerpt.missingHeadings, [heading]);
+  const revision = assembleRevisionBrief(ctx, {
+    jobId: 'j-20260910-no-live-source',
+    job: { type: TYPE, source: 'queue', title: 'repair the missing fixture', detail: 'name the absent requirement' },
+    branch: 'job/j-20260910-no-live-source',
+    capMinutes: 30,
+    verdict: { verdict: 'revise', reasons: ['not-worth-reading'], notes: 'Name the absent requirement.', cites: [heading] },
+    findings: 'not-worth-reading\n\nName the absent requirement.',
+    diffText: 'diff without a requirement heading',
+  });
+  assert.match(revision, /CITED REQUIREMENT HEADINGS NOT FOUND: "Missing heading with no live source"/);
+  ctx.cleanup();
+});
+
+test('heading-mode zero budget returns its empty truncated result for a delta-only source', () => {
+  const heading = 'Delta-only zero-budget heading';
+  const ctx = makeRepo({ files: { 'openspec/specs/loop/.keep': '' } });
+  ctx.pendingRoot = join(ctx.repoRoot, PENDING_ROOT);
+  const pendingPath = join(ctx.pendingRoot, 'one', 'specs', 'loop', 'spec.md');
+  mkdirSync(join(ctx.pendingRoot, 'one', 'specs', 'loop'), { recursive: true });
+  writeFileSync(pendingPath, `# pending loop\n\n${requirement(heading, 100)}`, 'utf8');
+  const excerpt = excerptsFor(ctx.repoRoot, TYPE, {
+    headings: [heading],
+    maxChars: 0,
+    pendingRoot: ctx.pendingRoot,
+  });
+  assert.equal(excerpt.text, '');
+  assert.equal(excerpt.chars, 0);
+  assert.equal(excerpt.truncated, true, 'a zero-budget cited plan still reports truncation');
+  assert.deepEqual(excerpt.missingHeadings, []);
   ctx.cleanup();
 });
 
