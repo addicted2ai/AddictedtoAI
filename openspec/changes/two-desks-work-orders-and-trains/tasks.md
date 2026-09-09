@@ -212,7 +212,15 @@ Files list that was the tasks' list, not the closure over the change — after
 the lint had passed: the lint checks shape (verbatim quotes, file reasons,
 the `cd` token), and the closure is a reading of the tree. The reviewer is
 OpenCode's plan agent (edits denied by the harness's own permission table)
-on `opencode-go/deepseek-v4-flash` at `--variant max`, given the brief and a
+on `opencode-go/deepseek-v4-flash` at `--variant max` — **since 2026-09-09
+12:07 on `opencode-go/muse-spark-1.3-contributor` at `--variant xhigh`, its
+top rung on that provider (the maintainer: "Lets switch to just using muse
+to review the briefs for now", after the tally on the four texts both models
+reviewed: DeepSeek caught one real defect Muse missed, E's dead read-back
+addresses, plus one non-blocking note; Muse ran in 1.6 to 4.3 minutes on
+45K to 65K tokens with no failed runs against DeepSeek's 7 to 20 minutes on
+90K to 115K with two no-verdict runs that morning — a server-side abort and
+a provider 400)** — given the brief and a
 fixed checklist of ten checks — verbatim quotes; the file list as the
 CLOSURE (grep for exact pins of everything the brief says changes);
 quantifiers resolved; cited line numbers true; contradictions between prose,
