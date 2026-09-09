@@ -1,0 +1,77 @@
+verify-surfaces: D:\AddictedtoAI\out
+
+sort criteria (specs/directory: ordering is stated, never sold)
+  PASS  /catalog states its sort criterion — provider, then model name, A to Z
+  PASS  /catalog/deprecations states its sort criterion — the date the row was first seen, newest first
+  PASS  /catalog/changed states its sort criterion — date, newest first
+  PASS  /tools states its sort criterion — category name, A to Z; then listing name, A to Z within each category
+  PASS  /impossible-routine states its sort criterion — the date it became routine, newest first
+  PASS  /catalog.json parses and matches /catalog — 428 row(s), sorted by provider, then model name, A to Z
+  PASS  /catalog/deprecations.json parses and matches /catalog/deprecations — 5 row(s), sorted by the date the row was first seen, newest first
+  PASS  /catalog/changed.json parses and matches /catalog/changed — 144 row(s), sorted by date, newest first
+
+colophon (specs/site: one page, out of primary navigation)
+  PASS  the colophon renders — How this is made
+  PASS  it states that an AI writes and maintains the site
+  PASS  it points at the public commit history as the record
+  PASS  the primary nav exists — /frontier /wiki /catalog /tools /learn /tutorials /blog /impossible-routine
+  PASS  no primary-nav link points at the colophon
+  PASS  it is reachable, from the footer
+  PASS  every sampled page keeps the colophon out of the nav
+
+citable assets (specs/site)
+  PASS  /feeds/blog.xml parses with rss-parser — title "AddictedtoAI — blog", 18 item(s)
+  PASS  /feeds/tutorials.xml parses with rss-parser — title "AddictedtoAI — tutorials", 4 item(s)
+  PASS  /feeds/changes.xml parses with rss-parser — title "AddictedtoAI — what changed", 100 item(s)
+  PASS  /dataset/addictedtoai.json names its licence in the payload — CC BY 4.0
+  PASS  the dataset carries the structured layer — 554 entries, 2428 facts, 287 timelines, 428 catalog, 5 deprecations, 27 deltas
+  PASS  /dataset/entries.csv states its licence in every row — 554 row(s)
+  PASS  /dataset/facts.csv states its licence in every row — 2428 row(s)
+  PASS  /dataset/timelines.csv states its licence in every row — 287 row(s)
+  PASS  /dataset/catalog.csv states its licence in every row — 428 row(s)
+  PASS  /dataset/deprecations.csv states its licence in every row — 5 row(s)
+  PASS  /dataset/deltas.csv states its licence in every row — 27 row(s)
+  PASS  /sitemap.xml lists URLs — 256 URL(s)
+  PASS  /search-index.json is served and covers the corpus — 676 page(s), 455 of them stubs
+  PASS  generic Open Graph metadata is present — AddictedtoAI — Everything about AI, kept dated and sourced.
+  PASS  and carries no social handles
+
+third-party origins (task 4.10 — the exported half)
+  PASS  690 exported page(s) reference no origin outside the allowlist
+
+published contract (specs/site — a contract you publish is one you keep)
+  PASS  /catalog.json states its schema version and points at the contract — schema_version 1, contract "https://www.addictedtoai.net/data#contract"
+  PASS  /catalog/deprecations.json states its schema version and points at the contract — schema_version 1, contract "https://www.addictedtoai.net/data#contract"
+  PASS  /catalog/changed.json states its schema version and points at the contract — schema_version 1, contract "https://www.addictedtoai.net/data#contract"
+  PASS  /dataset/addictedtoai.json states its schema version and points at the contract — schema_version 1, contract "https://www.addictedtoai.net/data#contract"
+  PASS  /data#contract resolves to exactly one anchor on /data — 1
+  PASS  /data states what is stable AND what is not
+  PASS  /data says what a version change means
+  PASS  vercel.json declares CORS for all 19 machine-readable route(s) — the DECLARATION only — the host applies it, and no exported byte records a response header
+
+crawler stance (specs/site — allowed by choice, not by default)
+  PASS  /robots.txt allows every crawler
+  PASS  /robots.txt carries no Disallow — a Disallow would stop a crawler reading the per-page noindex this site relies on
+  PASS  /robots.txt names every AI crawler a position was taken on — GPTBot Allow, ClaudeBot Allow, PerplexityBot Allow, Google-Extended Allow
+  PASS  /robots.txt points at the sitemap
+  PASS  /robots.txt carries its reasoning, in the served file — 27 comment line(s)
+  PASS  /llms.txt advertises 27 URL(s), all of which this export serves
+  PASS  /llms.txt states the same counts as /dataset/addictedtoai.json — 554 entries, 2428 facts, 287 timelines, 428 catalog, 5 deprecations, 27 deltas
+  PASS  /0f53367020cd11b3a49cebd8c5b4d382.txt serves the key and nothing else — 32 byte(s); the key is 32
+
+structured data (specs/site — the machine-readable surface)
+  PASS  116 JSON-LD block(s) parse and declare schema.org
+  PASS  every indexable page of a described kind carries its graph — 45 Article, 1 Dataset, 34 DefinedTerm, 1 DefinedTermSet, 35 SoftwareApplication
+  PASS  no noindex page carries structured data
+  PASS  every dateModified equals that URL's <lastmod> in sitemap.xml — one definition of "changed" (addictedtoai-8ho), two surfaces
+  PASS  every description is text the page itself carries
+  PASS  /data carries exactly one Dataset — 1
+  PASS  /wiki carries exactly one DefinedTermSet — 1
+
+build stamp (specs/site)
+  PASS  /status.json carries a UTC timestamp and a commit — 2026-09-09T01:02:56Z · 0ed344878ce8+dirty
+  PASS  / footer matches /status.json — 2026-09-09T01:02:56Z · 0ed344878ce8+dirty
+  PASS  /wiki footer matches /status.json — 2026-09-09T01:02:56Z · 0ed344878ce8+dirty
+  PASS  /catalog footer matches /status.json — 2026-09-09T01:02:56Z · 0ed344878ce8+dirty
+
+verify-surfaces: all checks passed

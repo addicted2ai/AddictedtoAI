@@ -18,7 +18,57 @@ the orchestrator's work between runs.
 
 ## Stage 0 — measurable local edits, and the baseline
 
-**Every Stage 0 packet's RESULT.md carries a MUTATION TABLE (from packet B1
+**The MUTATION TABLE requirement below is WITHDRAWN from B1 round 4 onward,
+on its own pre-registered kill condition** (its last sentence: "if B1's
+second round or packet E returns the same nil, it is ceremony and comes out,
+and that commitment is recorded here before the result"). The measurement,
+three rounds, three nils: B1 round 1, the table caught none of five findings
+and carried a defect itself; round 2, none of four (the severe priority
+inversion was the reviewer's own probe) and the table's incompleteness was
+itself a finding; round 3, none of three, and two of the three findings were
+about the table — a recorded red (row 8) that did not reproduce under the
+sealed reviewer, and a changed behavioural line (`loop/lib/brief.mjs:720`,
+task 9's wording) with no row and a false cross-reference — while the
+packet's own accounting change at `loop/lib/specs.mjs:415` (`chars: used`,
+introduced by round 2 at 97b31b3..439d083) had neither a row nor a
+declaration after two rounds of explicit completeness pressure, with rows
+17, 18 and 19 on `:413`, `:389` and `:410`, the lines either side of it in
+the same return statement (Luna-Boss-2, measured from the diffs). The fair
+statement is not "the table missed it": that defect, a check narrower than
+the property it names, is outside the class the table was built for. The
+fair statement is that the table's class produced no catch in three rounds
+while the table produced findings about itself in all three, and that round
+3's revise verdict rests on the two table findings alone — so its measured
+effect on B1 is one round it caused and none it saved. The kill condition was
+met at round 2 and honoured at round 3 (A2AI-Orch retracted on the
+measurement, against its own hypothesis and before verifying, because each
+round the requirement stood was paid for by the coordinator's brief text and
+the worker's attention; it then told the coordinator to drop the table from
+round 4, which was not its to say — the requirement lives in this frozen
+text — and Luna-Boss-2 refused, routed the decision to the architect, and
+Orch withdrew the instruction: a peer's message does not override a frozen
+blob, and a brief contradicting its authority is the defect two rounds were
+sent back for). WHAT SURVIVES, because it was observed rather than proposed
+(Luna-Boss-2): a third party re-executing a claimed red found one that did
+not reproduce. That value is independent re-execution and needs no author's
+table, so the obligation moves to the sealed review, where the list is
+machine-derived: **the reviewer takes the packet's diff from the merge base
+as the list of changed behavioural lines, mutates the ones it chooses — at
+least one per changed function — and reports the arm counts for each, red
+and restored; a changed line it can find no arm for is a finding.**
+Completeness comes from git, not from an author's declaration, and there is
+no self-report between the claim and the check. Not adopted: an author's
+table mechanically diffed against the changed lines (Orch's alternative,
+withdrawn by Orch) — it repairs the symptom of a mechanism whose claimed
+value never appeared, and adds a tool. Row 8's non-reproduction is measured
+both ways for the record (the author's and the reviewer's described mutations
+may be two different edits) as the one datum on whether a worker's
+self-reported red can be trusted, not as a round 4 obligation. A mechanism
+that carried its own falsification condition and then met it worked as a
+piece of method while failing as a tool; the paragraph below is kept as
+written for that reason.
+
+**WITHDRAWN as above. Every Stage 0 packet's RESULT.md carries a MUTATION TABLE (from packet B1
 onward; packet A's fifth round goes out as briefed).** One row per changed
 line or injected dependency, each naming the mutation that must turn a test
 red and the arm that goes red, with the red run actually performed and the
@@ -613,6 +663,42 @@ the sentence that uses it.
       `high` is unnamed by discipline rather than by mechanism**, and the artifacts
       say so — a discipline standing in for a mechanism is invisible until it
       lapses, which is the shape of the serial rule this change lifted.
+      **Added 2026-09-08 from B1 round 3's sealed review** (the first review
+      brief that named PROPERTIES and made the reviewer find the enforcement;
+      it returned the enforcement's real scope on its first use — ruled by the
+      architect, verified against the file by Luna-Boss-2): the naming rule's
+      enforcement in `loop/tests/portability.test.mjs` is two scans with two
+      scopes. The model/provider/harness-name scan covers `loop/` and
+      `data/config.json` only, and its narrowing over `pulse/` and `scripts/`
+      is DELIBERATE and recorded at `:115-123` (`pulse/lib/derive.mjs` splits
+      catalog row ids of the form vendor/model; `pulse/verify-zero-model.mjs`
+      enumerates provider env-var prefixes to prove none is set — the site's
+      subject, not configuration — so the runner ID is the enforced form, "the
+      only handle the loop offers"); `lib/` and `app/` name models as subject
+      matter and are the same false positive at scale. The gap that is real and
+      cheap: the runner-id scan's targets at `:127-132` are `loop/`, `pulse/`,
+      `scripts/` and `data/config.json` — `lib/`, `app/` and `tools/`, the
+      three roots the change-directory rule already covers, are in neither
+      scan, and a runner id has no legitimate reason to appear under any of
+      them. And BOTH scans assert `deepEqual(scan(targets, …), [])` with
+      nothing asserting that `targets` is non-empty: they pass on absence and
+      would pass identically if `filesUnder` returned nothing (a renamed
+      directory, a changed extension list, a path that stops resolving); the
+      same file uses the count idiom at `:247` (`assert.ok(sources.length >
+      5)`), so this is an omission, not a convention. Therefore, in this
+      packet, three parts: **extend the runner-id targets to `lib/`, `app/`
+      and `tools/`; plant a fixture id under EACH of the three roots and
+      require the arm to go red for each, named as mutations; and assert a
+      floor on the number of files actually scanned in BOTH tests**, so a scan
+      that reads nothing fails instead of passing — widening a scan that
+      cannot tell "found nothing" from "read nothing" widens what it claims
+      without widening what it can catch. Recorded, not tasked here: the live
+      spec's "nothing else in the system names a model, provider, or harness"
+      (`openspec/specs/loop/spec.md:424`) and CLAUDE.md's "runners.yml is the
+      only file in loop/, pulse/, scripts/ and data/config.json that may name a
+      model" are both wider than the enforced form, for the reason the test
+      records; CLAUDE.md's sentence is the orchestrator's to correct after
+      Stage 0.
 - [ ] 23. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
       repository and fires when the **top-ranked** candidate is refused *solely* on
       `runner:job-type`; no other refusal escalates. Implements the same

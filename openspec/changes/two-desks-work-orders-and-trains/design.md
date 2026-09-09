@@ -2221,3 +2221,87 @@ tests) against 393.0 s with one codex worker at medium running (124 files,
 1,730 tests) — so the 78.7 s test floor, 25.0% of the calibration run, is
 20.0% of this one, five points of detection power lost to load in one packet
 (Orch's bead `addictedtoai-kb9e`).
+
+**B1 round 3 — authority: two-desks-work-orders-and-trains@`047e9bf`; branch
+`cef399d` (18:24, three permitted files, `loop/run.mjs` untouched as task 5
+requires); worker 46 minutes at max, its own full suite 1,725 of 1,725 in
+450.5 s, `scripts/no-change-dir-refs.test.mjs` 3 of 3 against red at
+`439d083` (the fixture's pending corpus now under a synthetic root injected
+through a test-only option); sealed reviewer 19.2 minutes at max, exited
+18:54:45 by the process table; pre-registered hypotheses 0 of 6.** Verdict
+REVISE, three findings. (1) Mutation row 8's recorded output (`pass 20, fail
+1`) did not reproduce under the reviewer (`pass 19, fail 2`, both marker
+arms — the expected shape, the cut marker being shared by constitution and
+pending markers): an evidence defect, measured both ways for the record after
+the gate run, since the author's and the reviewer's described mutations may
+be two different edits. (2) `loop/lib/brief.mjs:720`, task 9's wording, had
+no mutation row and a false cross-reference to row 17 — table incompleteness,
+the class round 2 was sent back for; the wording itself is covered two-sided
+on one input path by `brief-excerpt-budget.test.mjs:368-378` (match the new
+wording, doesNotMatch the old; read by Luna-Boss-2, to be run after the
+gates). (3) Repository-wide and not B1's: the naming property's enforcement
+is narrower than the brief claimed — ruled into task 22 (packet F) as three
+parts, the reasoning recorded there. The withheld finding (`chars: used` at
+`specs.mjs:415` counting candidate text only, so the emitted text is 12,355
+at cap 12,000 and 1,155 at cap 800; the exclusion pre-existing at `fbe1306`
+and re-introduced by round 2) was NOT found; the review found the same
+class, a check narrower than its property, on a different instrument. Round
+3 was the first outing of the review brief that names properties rather than
+instruments, and finding 3 is what it was built to surface — the
+coordinator's own error class, which is the right direction for it to point.
+The architect's ruling on the withheld finding, made before the verdict: not
+a round 4 trigger on its own, because the requirement's bound is on the
+ASSEMBLED brief (`specs/loop/spec.md:990`) and the fixture arms at `:271`,
+`:280` and `:308` assert `brief.length <= 30000` on the emitted string
+(verified by Luna-Boss-2 in the file, since had that been `ex.chars` the
+argument would have inverted), while the allocator's under-count at the live
+cap is about 355 characters against 6,000 of fixture headroom; round 3's
+tight-cap arm at `:355` proves the allocation under pressure, which task
+6(d) asked for, and not the emitted length at 600. With a revise verdict,
+round 4 carries it alone: `chars` becomes the emitted text's length,
+headings and separators are charged against `maxChars`, the reserve counts
+marker plus heading plus separator and the loud-failure threshold is computed
+on that same quantity, the arms at `:337` and `:355` assert on emitted text
+with both numbers in the message. Medium worker, max reviewer — packet A
+round 6's shape for a fully specified edit. Paired numbers, as the standard
+requires: the fixture bound is 30,000 and the live tree's briefs at `cef399d`
+are scout 41,043 and post 35,564 (the worker's printed measurement, re-derived
+by Luna-Boss-2 before the handover), so the enforcement is on the fixture and
+the number it enforces is one the live tree exceeds; task 59 inherits the
+allocator's accounting and the live budget as one item if round 4 does not
+settle both.
+
+**The mutation table withdrawn (19:03), on its own pre-registered kill
+condition.** The Stage 0 preamble carries the measurement and the surviving
+rule (independent re-execution by the sealed reviewer over the merge-base
+diff). The sequence is recorded because it is the coordination working as
+designed: Orch retracted on Luna-Boss-2's measurement, against its own
+hypothesis and before verifying; it then told the coordinator to drop the
+table from round 4, which was not its to say; the coordinator refused because
+the authority is the frozen blob and routed the decision to the architect;
+Orch withdrew the instruction; the architect ruled on the condition the
+preamble had recorded before any result existed. The honest sentence, adopted
+by both peers over their own stronger framings: the class produced no catch
+in three rounds and the table produced its own defects in three — one round
+caused, none saved. A mechanism that carried its own falsification condition
+and then met it worked as a piece of method while failing as a tool.
+
+**Six green at `0ed3448` and the second push (Orch, 18:56 to 19:04).** The
+frozen tip rather than `d8522ac` (eleven commits from three lanes; Orch's
+pin refuses a sha that is not HEAD): test 0 (353 s, 124 files, 1,734 passed
+— the new count ratchet established its baseline at 1,734 and so checked
+nothing this run, stated because a baseline-establishing run is not a run
+the ratchet checked), build 0 (32 s), launch 0 (32 s, spawned: the merge and
+the Pulse had written inputs), design 0 (35 s), surfaces 0 (4 s), analytics
+0 (20 s); the first per-run evidence directory, banked at
+`evidence/gate-run-2026-09-08-0ed3448/`; a green on the sha minus the
+maintainer's `.agents/` deletions, measured immaterial. Pushed `0ed3448:main`
+(`b8fa5c1..0ed3448`, origin re-read as `0ed3448`) after HEAD equal to the
+gated sha, fast-forward, and a revert guard reporting 25 paths, 24 forward
+edits, 1 derived recomputation and 0 reverts — the recomputation category
+being the guard's own fix earning itself within the hour: before it, this
+push was refused over `data/derived/freshness.json`, where the only
+difference was a link-check count the 18:00 Pulse had recomputed. Publishing
+still false, re-read from the file after the push; it returns on Stage 0's
+last packet. With this push `fleet5/4lrp` is live, and the 18:00 EADDRINUSE
+red on `d8522ac` is closed by a green on a tree containing it, run alone.

@@ -1,0 +1,26 @@
+run directory: C:/Users/BadBitch/AppData/Local/Temp/claude/D--AddictedtoAI/b0a0272b-5058-41e7-ac66-431922257ff6/scratchpad/gate-runs/20260908-185622
+  (per-run since 2026-09-08; earlier runs shared fixed names and overwrote each other)
+pin OK: announced and HEAD agree at 0ed3448
+gating HEAD 0ed3448 at 18:56:23; publish=false; no loop running, no brake standing
+THIS SCRIPT NEVER PUSHES. A green result is a report, not a deploy.
+
+=== 1-test starting 18:56:24 ===
+1-test EXIT=0 353s
+1-test counts: 124 file(s), 1734 passed (floor 1700)
+1-test ratchet: no prior count recorded; establishing baseline at 1734.
+=== 2-build starting 19:02:18 ===
+2-build EXIT=0 32s
+=== 3-launch starting 19:02:49 ===
+3-launch EXIT=0 32s
+=== 4-design starting 19:03:21 ===
+4-design EXIT=0 35s
+=== 5-surfaces starting 19:03:56 ===
+5-surfaces EXIT=0 4s
+=== 6-analytics starting 19:04:00 ===
+6-analytics EXIT=0 20s
+
+3-launch build path: running `npm run build`
+
+ALL SIX GATES GREEN at 0ed3448
+evidence for this run is at C:/Users/BadBitch/AppData/Local/Temp/claude/D--AddictedtoAI/b0a0272b-5058-41e7-ac66-431922257ff6/scratchpad/gate-runs/20260908-185622 and NOTHING overwrites it
+Publishing is false. Turning it on and pushing are separate deliberate acts and are NOT done here.
