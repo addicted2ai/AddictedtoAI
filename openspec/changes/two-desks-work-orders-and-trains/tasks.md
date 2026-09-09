@@ -1229,8 +1229,17 @@ the brief under `evidence/reviews/`.
       SHALL state both limits and SHALL NOT name a model, provider or harness;
       no test pins its wording. And the MUTATION performed in the worktree and recorded in
       the report, not committed: `LEDGER_FIELDS` extended to require
-      `authority_sha` turns `issues.test.mjs:242-243` and
-      `portability.test.mjs:409` red. Files for F, the closure over the
+      `authority_sha` turns THREE assertions red, and a run that finds only
+      two has not found them all — `issues.test.mjs:242-243` (the field is
+      not in `LEDGER_FIELDS`), `portability.test.mjs:409` (a minimal line's
+      keys equal `LEDGER_FIELDS`), and
+      `gate-transport-retry.test.mjs:878-882`, which packet E left asserting
+      that the keys OUTSIDE `LEDGER_FIELDS` are exactly
+      `['authority_sha', 'brief_chars', 'phases']` — moving the field inside
+      makes that list `['brief_chars', 'phases']`. The third was missed by
+      this enumeration until the brief review found it; it is named here
+      because a mutation whose red list is short reads as a partial failure
+      to the worker who runs it. Files for F, the closure over the
       change: `loop/conformance.mjs`, `loop/lib/runners.mjs`,
       `loop/lib/select.mjs`, `loop/run.mjs`, `loop/lib/ledger.mjs` (the
       comment only), `loop/tests/conformance.test.mjs`,
