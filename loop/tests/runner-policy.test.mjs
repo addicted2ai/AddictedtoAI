@@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 
 import { loadConfig } from '../lib/config.mjs';
+import { NO_OUTPUT_SIGNAL } from '../lib/health.mjs';
 import { loadRunners } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
 import { escalationTarget, selectJob } from '../lib/select.mjs';
@@ -20,6 +21,7 @@ import {
   ledgerLine,
   makeRepo,
   mockCommand,
+  hoursAgo,
   writeLedger,
   writeQueue,
 } from './helpers.mjs';
@@ -82,6 +84,96 @@ function selection(ctx, runnerId = CHEAP) {
   const sel = selectJob(ctx, { cfg, ledger: readLedger(ctx), runner, dryRun: true });
   return { registry, cfg, runner, sel };
 }
+
+function malformedRegistry(escalationLine) {
+  const command = yamlCommand();
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: `version: 1
+default: mock-source
+runners:
+  - id: mock-source
+    provider: provider-a
+    tier: cheap
+    roles: [author]
+    command: '${command}'
+    escalates_to: ${escalationLine}
+  - id: mock-target
+    provider: provider-b
+    tier: frontier
+    roles: [author]
+    command: '${command}'
+`,
+  });
+  return ctx;
+}
+
+test('conformance refusal has no ranked candidate and no escalation target', () => {
+  const ctx = fixture({
+    queue: [{ type: 'scout', title: 'the queued scout', rank: 100 }],
+  });
+  writeFileSync(
+    ctx.conformancePath,
+    JSON.stringify({
+      [CHEAP]: {
+        date: NOW.toISOString(),
+        checks: [{ name: 'trivial-edit', result: 'FAIL' }],
+      },
+    }),
+    'utf8',
+  );
+  const { registry, runner, sel } = selection(ctx);
+  assert.equal(sel.topRanked, null);
+  assert.equal(sel.selected, null);
+  assert.ok(sel.blocked);
+  assert.equal(escalationTarget(registry, runner, sel), null);
+  ctx.cleanup();
+});
+
+test('health refusal has no ranked candidate and no escalation target', () => {
+  const ctx = fixture({
+    queue: [{ type: 'scout', title: 'the queued scout', rank: 100 }],
+    ledger: Array.from({ length: 3 }, (_, i) =>
+      ledgerLine({
+        id: `health-${i}`,
+        runner: CHEAP,
+        provider: 'provider-a',
+        tier: 'cheap',
+        outcome: 'interrupted',
+        signal: NO_OUTPUT_SIGNAL,
+        mm: 0,
+        ts: new Date(NOW.getTime() - i * 1000).toISOString(),
+      }),
+    ),
+  });
+  const { registry, runner, sel } = selection(ctx);
+  assert.equal(sel.topRanked, null);
+  assert.equal(sel.selected, null);
+  assert.ok(sel.blocked);
+  assert.equal(escalationTarget(registry, runner, sel), null);
+  ctx.cleanup();
+});
+
+test('paused lane has no ranked candidate and no escalation target', () => {
+  const ctx = fixture({
+    queue: [{ type: 'scout', title: 'the queued scout', rank: 100 }],
+    ledger: [
+      ledgerLine({
+        runner: CHEAP,
+        provider: 'provider-a',
+        tier: 'cheap',
+        outcome: 'capacity',
+        ts: hoursAgo(NOW, 0.5),
+      }),
+    ],
+  });
+  const { registry, runner, sel } = selection(ctx);
+  assert.equal(sel.topRanked, null);
+  assert.equal(sel.selected, null);
+  assert.ok(sel.blocked);
+  assert.equal(escalationTarget(registry, runner, sel), null);
+  ctx.cleanup();
+});
 
 test('a top-ranked clearance refusal escalates and selects the same scout', () => {
   const ctx = fixture({
@@ -233,6 +325,43 @@ runners:
     command: '${command}'
 `);
   assert.equal(loadRunners({ runnersPath: ctx.runnersPath }).byId.get('mock-source').escalates_to, undefined);
+
+  ctx.cleanup();
+});
+
+test('registry rejects an empty escalation string', () => {
+  const ctx = malformedRegistry("''");
+  assert.throws(
+    () => loadRunners({ runnersPath: ctx.runnersPath }),
+    /"escalates_to" must be a non-empty string when present/,
+  );
+  ctx.cleanup();
+});
+
+test('registry rejects a whitespace-only escalation string', () => {
+  const ctx = malformedRegistry("'   '");
+  assert.throws(
+    () => loadRunners({ runnersPath: ctx.runnersPath }),
+    /"escalates_to" must be a non-empty string when present/,
+  );
+  ctx.cleanup();
+});
+
+test('registry rejects a non-string escalation value', () => {
+  const ctx = malformedRegistry('1');
+  assert.throws(
+    () => loadRunners({ runnersPath: ctx.runnersPath }),
+    /"escalates_to" must be a non-empty string when present/,
+  );
+  ctx.cleanup();
+});
+
+test('registry rejects a bare escalation key', () => {
+  const ctx = malformedRegistry('');
+  assert.throws(
+    () => loadRunners({ runnersPath: ctx.runnersPath }),
+    /"escalates_to" must be a non-empty string when present/,
+  );
   ctx.cleanup();
 });
 
