@@ -38,6 +38,10 @@ import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, git, daysAgo } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
+const OUTSIDE_CONSTITUTION = 'Fixture outside constitution heading';
+const OUTSIDE_PENDING = 'Fixture outside pending heading';
+const CARRIED_FINDING = 'data/carried/j-seed-carry-1.md';
+const CARRIED_DIFF_SENTINEL = 'JUDGED_DIFF_SENTINEL: the page asserts an interval it never measured.';
 
 function repo(authorMode, reviewerMode, opts = {}) {
   const ctx = makeRepo({
@@ -379,6 +383,43 @@ test('C46 the revision brief supersedes the stale figures it inherits', async ()
   ctx.cleanup();
 });
 
+function carriedRevisionRepo() {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('retire-carried-only'),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+    files: {
+      [CARRIED_FINDING]:
+        `---\ntitle: "name the measurement on the fixture page"\n` +
+        `origin: review of job j-seed\ndate: 2026-09-05\n---\n\n` +
+        `${CARRIED_DIFF_SENTINEL}\n`,
+    },
+  });
+  writeQueue(ctx, [
+    {
+      type: 'repair',
+      title: 'Clear the carried finding on the fixture page',
+      detail: 'The page asserts an interval it never measured.',
+      subject: CARRIED_FINDING,
+      target: CARRIED_FINDING,
+    },
+  ]);
+  return ctx;
+}
+
+test('C46 the revision prompt carries the reviewer finding and the judged diff', async () => {
+  const ctx = carriedRevisionRepo();
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'discarded', ctx.output());
+  const prompt = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-revision-brief.md`), 'utf8');
+  assert.match(prompt, /\*\*Free-form notes\*\*\n\nmock reviewer notes/);
+  assert.match(prompt, /\*\*Diff-measured refusal reason\*[\s\S]*claims a fix it does not contain/);
+  assert.match(prompt, /JUDGED_DIFF_SENTINEL: the page asserts an interval it never measured\./);
+  ctx.cleanup();
+});
+
 test('a brief never claims a verification that did not happen', async () => {
   // The same plumbing, with the gates skipped. A brief that said "already
   // verified" here would be worse than one that said nothing at all.
@@ -654,7 +695,9 @@ function citesContext() {
     files: {
       'openspec/specs/loop/spec.md': '# loop\n\n### Requirement: Fixture constitution heading\n\nThe constitution.\n',
       'openspec/specs/review/spec.md': '# review\n\n### Requirement: Review fixture heading\n\nThe review rule.\n',
+      'openspec/specs/editorial/spec.md': `# editorial\n\n### Requirement: ${OUTSIDE_CONSTITUTION}\n\nThe outside constitution rule.\n`,
       'pending/one/specs/loop/spec.md': '# pending loop\n\n### Requirement: Fixture pending heading\n\nThe pending rule.\n',
+      'pending/one/specs/editorial/spec.md': `# pending editorial\n\n### Requirement: ${OUTSIDE_PENDING}\n\nThe outside pending rule.\n`,
     },
   });
   ctx.pendingRoot = join(ctx.repoRoot, 'pending');
@@ -670,6 +713,28 @@ test('a cites heading held by a pending amendment passes', () => {
   const valid = mergeGate(ctx, { jobId: 'j-cites-valid', type: 'machinery' });
   assert.equal(valid.ok, true, valid.reason);
   assert.deepEqual(valid.verdict.cites, ['Fixture pending heading']);
+  ctx.cleanup();
+});
+
+test('cites from an outside capability resolve on approve and revise', () => {
+  const ctx = citesContext();
+  const outsideCites = [OUTSIDE_CONSTITUTION, OUTSIDE_PENDING];
+  writeVerdictRecord(ctx, 'j-cites-outside-approve', {
+    verdict: 'approve',
+    cites: outsideCites,
+  });
+  const approve = mergeGate(ctx, { jobId: 'j-cites-outside-approve', type: 'machinery' });
+  assert.equal(approve.ok, true, approve.reason);
+
+  writeVerdictRecord(ctx, 'j-cites-outside-revise', {
+    verdict: 'revise',
+    reasons: ['not-worth-reading'],
+    cites: outsideCites,
+  });
+  const revise = mergeGate(ctx, { jobId: 'j-cites-outside-revise', type: 'machinery' });
+  assert.equal(revise.ok, false, 'a revise verdict is still non-approving');
+  assert.equal(revise.code, 'revise', revise.reason);
+  assert.deepEqual(revise.verdict.cites, outsideCites);
   ctx.cleanup();
 });
 

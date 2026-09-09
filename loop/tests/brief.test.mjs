@@ -8,6 +8,7 @@ import { join } from 'node:path';
 
 import { assembleBrief, assembleRevisionBrief } from '../lib/brief.mjs';
 import { excerptsFor, SPECS_FOR_TYPE } from '../lib/specs.mjs';
+import { BRIEF_EXCERPT_MAX_CHARS } from '../lib/config.mjs';
 import { DEFAULT_REPO_ROOT } from '../lib/paths.mjs';
 import { makeRepo } from './helpers.mjs';
 
@@ -28,9 +29,11 @@ const ALL_HEADINGS = new Set([
   'Editorial other requirement',
 ]);
 const CITES = [CITED_GOVERNING, CITED_OUTSIDE];
+const PENDING_SENTINEL = 'PENDING AMENDMENT SENTINEL: this body is not the constitution text.';
+const OVER_BUDGET_CITED = 'Over-budget cited requirement';
 
-function requirement(heading, chars) {
-  let body = `repair evidence for ${heading}. `;
+function requirement(heading, chars, prefix = `repair evidence for ${heading}. `) {
+  let body = prefix;
   while (body.length < chars) body += 'This is pinned fixture requirement material. ';
   return `### Requirement: ${heading}\n\n${body.slice(0, chars)}\n`;
 }
@@ -46,7 +49,7 @@ function fixtureFiles() {
     'openspec/specs/review/spec.md': constitution('review', [OTHER_GOVERNING, 'Review second requirement']),
     'openspec/specs/editorial/spec.md': constitution('editorial', [CITED_OUTSIDE, 'Editorial other requirement']),
     [`${PENDING_ROOT}/one/specs/pulse/spec.md`]:
-      `# pending pulse\n\n${requirement(CITED_GOVERNING, 2200)}`,
+      `# pending pulse\n\n${requirement(CITED_GOVERNING, 2200, `${PENDING_SENTINEL} `)}`,
   };
 }
 
@@ -130,6 +133,17 @@ test('a cited heading outside the governing capabilities is carried', () => {
   ctx.cleanup();
 });
 
+test('a cited pending amendment follows its constitution text and keeps its own body', () => {
+  const { ctx, revision } = buildPair();
+  const constitutionHeading = revision.indexOf(`### Requirement: ${CITED_GOVERNING}`);
+  const pendingMarker = revision.indexOf('### PENDING AMENDMENT to `specs/pulse`');
+  const pendingSentinel = revision.indexOf(PENDING_SENTINEL);
+  assert.ok(constitutionHeading >= 0, 'the cited constitution heading is present');
+  assert.ok(pendingMarker > constitutionHeading, 'the pending marker follows the constitution heading');
+  assert.ok(pendingSentinel > pendingMarker, 'the pending amendment carries its distinct sentinel body');
+  ctx.cleanup();
+});
+
 test('an uncited governing heading is not carried into the revision', () => {
   const { ctx, revision } = buildPair();
   assert.ok(!excerptHeadings(revision).has(UNCITED_GOVERNING));
@@ -172,6 +186,88 @@ test('an empty cites list uses the author brief requirement selection', () => {
   assert.equal(emptyRevisionCalls[0].options.maxChars, authorCall.options.maxChars);
   assert.equal(emptyRevisionCalls[0].options.pendingRoot, authorCall.options.pendingRoot);
   assert.deepEqual([...excerptHeadings(revision)].sort(), [...excerptHeadings(author)].sort());
+  ctx.cleanup();
+});
+
+test('heading excerpts charge the separator between cited sections in one constitution', () => {
+  const ctx = makeRepo({
+    files: {
+      'openspec/specs/pulse/spec.md': constitution('pulse', [CITED_GOVERNING, 'Pulse other requirement']),
+    },
+  });
+  const headings = [CITED_GOVERNING, 'Pulse other requirement'];
+  const sourcePath = join(ctx.repoRoot, 'openspec', 'specs', 'pulse', 'spec.md').replace(/\\/g, '/');
+  const chunkHeading = `### From \`specs/pulse\` (full text: \`${sourcePath}\`)`;
+  const cutMarkerLength = (heading) =>
+    `\n\n[... CUT: requirement ${JSON.stringify(heading)} from \`${sourcePath}\` ...]`.length;
+  const separatorLength = '\n\n'.length;
+  const maxChars =
+    chunkHeading.length +
+    separatorLength +
+    headings.reduce((total, heading) => total + cutMarkerLength(heading), 0) +
+    separatorLength;
+  const excerpt = excerptsFor(ctx.repoRoot, TYPE, { headings, maxChars });
+  assert.ok(
+    excerpt.text.length <= maxChars && excerpt.chars <= maxChars && excerpt.chars === excerpt.text.length,
+    `cap=${maxChars}; text.length=${excerpt.text.length}; chars=${excerpt.chars}`,
+  );
+  ctx.cleanup();
+});
+
+test('heading-mode truncation tells the revision reader to open the full files', () => {
+  const ctx = makeRepo({
+    files: {
+      'openspec/specs/loop/spec.md': requirement(OVER_BUDGET_CITED, BRIEF_EXCERPT_MAX_CHARS * 2),
+    },
+  });
+  const options = {
+    headings: [OVER_BUDGET_CITED],
+    maxChars: BRIEF_EXCERPT_MAX_CHARS,
+  };
+  const excerpt = excerptsFor(ctx.repoRoot, TYPE, options);
+  assert.equal(excerpt.truncated, true, 'the cited heading is cut at the excerpt budget');
+  const revision = assembleRevisionBrief(ctx, {
+    jobId: 'j-20260910-truncated-cite',
+    job: { type: TYPE, source: 'queue', title: 'repair the long fixture', detail: 'read the complete requirement' },
+    branch: 'job/j-20260910-truncated-cite',
+    capMinutes: 30,
+    verdict: {
+      verdict: 'revise',
+      reasons: ['not-worth-reading'],
+      notes: 'Read the complete cited requirement.',
+      cites: [OVER_BUDGET_CITED],
+    },
+    findings: 'not-worth-reading\n\nRead the complete cited requirement.',
+    diffText: 'diff without a requirement heading',
+  });
+  assert.match(revision, /relevant material was cut; the full files are in this worktree/);
+  ctx.cleanup();
+});
+
+test('revision verdict separates ordinary notes from diff-measured refusal findings', () => {
+  const { ctx, revision } = buildPair();
+  assert.match(
+    revision,
+    /\*\*Free-form notes\*\*\n\nAddress the two requirements the reviewer cited\./,
+  );
+  assert.doesNotMatch(revision, /\*\*Diff-measured refusal reason\*\*/);
+
+  const diffReason = 'DIFF_REFUSAL_SENTINEL: the measured refusal is separate from the note.';
+  const control = assembleRevisionBrief(ctx, {
+    jobId: 'j-20260910-diff-refusal',
+    job: { type: TYPE, source: 'queue', title: 'repair the pinned fixture', detail: 'fix the stated fixture issue' },
+    branch: 'job/j-20260910-diff-refusal',
+    capMinutes: 30,
+    verdict: {
+      verdict: 'revise',
+      reasons: ['not-worth-reading'],
+      notes: 'Address the two requirements the reviewer cited.',
+      cites: CITES,
+    },
+    findings: `not-worth-reading\n\nAddress the two requirements the reviewer cited.\n\n${diffReason}`,
+    diffText: 'diff without a requirement heading',
+  });
+  assert.match(control, new RegExp(`\\*\\*Diff-measured refusal reason\\*\\*\\n\\n${diffReason.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`));
   ctx.cleanup();
 });
 
