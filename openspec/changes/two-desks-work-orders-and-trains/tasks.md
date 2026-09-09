@@ -1017,8 +1017,11 @@ the brief under `evidence/reviews/`.
       stays the authority. Files: `loop/conformance.mjs`,
       `loop/lib/runners.mjs`, `loop/run.mjs` (the count line only),
       `loop/tests/conformance.test.mjs`.
-- [ ] 22. (MECHANISM MERGED 2026-09-09 at `f879ec9`; THE TICK WAITS ON THE
-      ORCHESTRATOR'S REGISTRY COMMIT, deliberately. `loop/lib/runners.mjs`
+- [x] 22. (DONE 2026-09-09: mechanism merged at `f879ec9`, registry half at
+      `28087f5` — the tick was deliberately WITHHELD between those two
+      commits rather than written when the mechanism landed, because an audit
+      the same day found merged packet E carrying two ticks written ahead of
+      the code. `loop/lib/runners.mjs`
       loads `enabled` with absent meaning enabled and rejects a non-boolean;
       `selectJob` refuses a disabled entry for both roles BEFORE every other
       gate at `select.mjs:151`; `pickRunner` skips disabled entries; and
