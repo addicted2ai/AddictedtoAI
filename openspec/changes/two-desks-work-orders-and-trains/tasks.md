@@ -201,6 +201,36 @@ the text frozen at 658625d: six gates, two spawners, six swept directories,
 three named seams, seven packets — every quantifier's domain is enumerated in
 the sentence that uses it.
 
+**Every brief is reviewed by a second model before it is dispatched (the
+maintainer, 2026-09-09 about 08:00: "Let's try adding a review step for the
+briefs, they seem to be causing a lot of issues. After you write a brief,
+spawn an OpenCode DeepSeek session on max reasoning to review the brief";
+and: "Make sure the review instructions are narrow scoped, DeepSeek has a
+habit of trying to do more than asked").** The trigger was packet E's
+round-1 brief turning two tests red exactly as B2's round-1 brief had — a
+Files list that was the tasks' list, not the closure over the change — after
+the lint had passed: the lint checks shape (verbatim quotes, file reasons,
+the `cd` token), and the closure is a reading of the tree. The reviewer is
+OpenCode's plan agent (edits denied by the harness's own permission table)
+on `opencode-go/deepseek-v4-flash` at `--variant max`, given the brief and a
+fixed checklist of ten checks — verbatim quotes; the file list as the
+CLOSURE (grep for exact pins of everything the brief says changes);
+quantifiers resolved; cited line numbers true; contradictions between prose,
+standard and code; instruments named; mutations realisable and red;
+ambiguity; the report contract; the ground rules — under an explicit scope
+that forbids implementing, rewriting the brief, reviewing the tasks, running
+the suite or spawning anything, with a budget of twenty commands and the
+review WRITTEN to the one file the agent may write. Measured the same
+morning: told only to "end with the review", the model twice ran about
+fifty commands, dumped whole files into its own context and ended with
+nothing; with the budget, range reads and a write target, its third run
+returned REVISE on the architect's round-2 brief with two evidenced
+defects — a read-back of a file the job removes before its merge, and a
+mandated edit to a file the brief forbade — in sixteen commands. A REVISE
+with evidence is fixed before dispatch and the brief reviewed again; a
+finding without evidence is recorded as a guess. Verdicts are banked beside
+the brief under `evidence/reviews/`.
+
 ### The gate floor and the launch build
 
 - [x] 1. `loop/lib/gates.mjs`: every gate declares a **floor duration**, derived
