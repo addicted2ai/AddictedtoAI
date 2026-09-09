@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 207650.
+Entries: 61. Characters of memory text: 212342.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -384,6 +384,38 @@ with those words. Not a shell-escaping fault at all -- a pattern written from an
 output format rather than an observed one. The family is wider than quoting: ANY FIXTURE OR
 PATTERN BUILT FROM WHAT YOU EXPECT THE TOOL TO EMIT, RATHER THAN FROM WHAT IT DID EMIT, CAN
 ONLY TEST YOUR EXPECTATION. Run the tool bare once and read it before matching against it.
+
+
+WHAT PRE-REGISTERED HYPOTHESES ARE ACTUALLY FOR, 2026-09-08, from A2AI-Luna-Boss-2 across
+seven review rounds. A mechanism, and it inverts the obvious reading of a bad score.
+
+Seven rounds of pre-registered defect hypotheses scored 1/5, 1/5, 0/6, 0/6, ~0.5/6, 0/6,
+0/6. THE USEFUL SIGNAL IS NOT THE SCORE. The sets kept predicting THE WORKER WILL DEGRADE
+UNDER PRESSURE; the defects kept being A MEASUREMENT THAT DOES NOT MEASURE THE PROPERTY IT
+NAMES -- this entry's own class, arrived at from the opposite direction by someone trying to
+predict something else.
+
+The day's instance is exact: `chars` returns the sum of ALLOCATED SECTION TEXT while the
+emitted excerpt also carries headings and separators, so at maxChars=800 the artefact is
+1155 characters and EVERY ASSERTION WRITTEN AGAINST `chars` IS GREEN. The budget is
+enforced against a number that is not the thing being budgeted.
+
+SO: PRE-REGISTRATION EARNS ITS COST BY REFUTING YOUR MODEL OF THE FAILURE MODE, NOT BY
+HITTING. A 0/6 that shows your predictions are systematically the wrong SHAPE is more
+durable than a 3/6 that confirms you are half right, because the shape transfers to every
+future round and the hits do not. A prediction set that keeps missing in the SAME DIRECTION
+is data about the predictor.
+
+AND A DISCRIMINATING EXPERIMENT THIS PROMPTED, worth recording because it checked the
+checker. That session grepped node's test output with `^# (tests|pass|fail)`, got nothing,
+and nearly booked "no summary" -- node's DEFAULT reporter prints `i tests 3`, not `# tests
+3`. A FILTER THAT DOES NOT MATCH AND A THING THAT IS NOT THERE PRODUCE IDENTICAL OUTPUT.
+This session had used the same filter shape all day to claim "guard 4 pass", so it re-ran
+the guard BARE under both reporters rather than assuming its own was safe: with
+`--test-reporter tap` the output really is `# tests 4`, and with the default it is
+`i tests 4`. The claims were sound -- BY A FLAG CHOSEN EARLY FOR UNRELATED REASONS, which is
+the same luck-of-implementation that saved the other session's trim script. A chain that is
+correct for a reason you did not choose is not yet a chain you can rely on.
 
 ```
 
@@ -1387,6 +1419,30 @@ of asking would have cost to write. The file-the-deferral rule says never let a 
 inside finished work; it does not say to file a mystery whose cheapest resolution is a
 question to the only person who knows. When an unexplained change names or excludes him, ask
 first, then file whatever is left over.
+
+LATER LESSON, 2026-09-08, from A2AI-Luna-Boss-2, self-reported after the error was pointed
+out. A mechanism.
+
+AN OWNER INFERRED FROM AN ADJACENT, GENUINELY-TRUE OWNERSHIP NAMES A SET NOBODY OWNS. One
+session is sole writer of FULL-MEM-LOG.md, data/mem-log-manifest.txt and the
+distilled-memory-index memory. From that, another session concluded "the beads corpus is
+yours" and filed issues for weeks-to-months of work while never thinking about closure,
+because closure belonged to someone else. It did not. THE MEMORY IS OWNED; THE ISSUE TRACKER
+IS NOT THE SAME OBJECT, and widening the true statement by one word produced a set with no
+owner that LOOKED owned.
+
+WHY IT IS INVISIBLE: nothing was lost, and nothing would have announced itself if something
+had been. Four issues -- addictedtoai-tbho, m22a, kb9e, fnsp -- were checked and found OPEN
+and owned by the maintainer, so the tracker held them. THE REASON NOTHING WAS LOST IS THAT
+BEADS PERSIST, NOT THAT THE MODEL WAS RIGHT. Had those four needed movement they would have
+waited indefinitely on a session that was never going to look at them, and the waiting would
+have produced no signal at all.
+
+THE DIAGNOSTIC: when you defer an action to another party, name the artefact they own, not
+the family it belongs to. "The memory" and "the beads corpus" differ by one word and by the
+entire set of things nobody is responsible for. An ownership claim you did not hear that
+party make is a hypothesis.
+
 ```
 
 ## measure-mechanism-before-extending
@@ -3449,5 +3505,22 @@ session's words: "attention is the thing that failed six times today; A HEADER T
 WRITE HAS TO PASS THROUGH IS NOT ATTENTION." That is this repository's own rule about
 guardrails being mechanisms rather than instructions, applied to a coordination file -- and
 it is the only fix in this whole sequence that does not depend on the next person caring.
+
+
+A SHARPENING OF WHY ATTENTION IS THE WRONG DEFENCE, 2026-09-08, from A2AI-Luna-Boss-2, and
+it is the answer to a self-report rather than a new instance.
+
+This session's curator, having just folded the clock arc, checked a peer's timestamp claim
+and reported honestly that it had checked FOR A BAD REASON -- the class was fresh -- and that
+the check came back clean. The reply is the finding: THE BAD REASON IS THE POINT. ATTENTION
+FIRES ON SALIENCE, NOT ON RISK. It will keep firing on whatever was last discussed and keep
+missing stale claims that are about anything else, which is precisely the distribution of
+claims that go wrong. A defence that triggers on recency is not a defence, it is a
+correlation with recency.
+
+That is why every fix in this entry that survives is structural -- the anchor stated in a log
+header the next write must pass through, the discriminating experiment run rather than
+reasoned about, the instrument reached for regardless of whether the calculation LOOKS cheap.
+Each of those fires on the ACTION, not on how interesting the risk currently feels.
 
 ```
