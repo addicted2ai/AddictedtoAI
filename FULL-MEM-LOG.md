@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 212342.
+Entries: 61. Characters of memory text: 216443.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -416,6 +416,39 @@ the guard BARE under both reporters rather than assuming its own was safe: with
 `i tests 4`. The claims were sound -- BY A FLAG CHOSEN EARLY FOR UNRELATED REASONS, which is
 the same luck-of-implementation that saved the other session's trim script. A chain that is
 correct for a reason you did not choose is not yet a chain you can rely on.
+
+
+LATER LESSON, 2026-09-08, from A2AI-Orch, filed as addictedtoai-yejx. A mechanism, and it
+belongs here because two of this entry's four original instances were already in the
+CHECKING APPARATUS.
+
+AN EVIDENCE-PRODUCING TOOL MUST NOT BE ABLE TO DESTROY EVIDENCE, AND A CONSTANT OUTPUT PATH
+IS EXACTLY THAT ABILITY. A gate harness wrote six FIXED log names and truncated one fixed
+summary at the start of every run, so each run destroyed the previous run's logs IN PLACE at
+the moment of producing new ones. The six green gates that justified the ONLY push of
+2026-09-08 were overwritten 70 minutes later. Measured: a search for every scratchpad file
+written between 16:20 and 16:50 returned exactly ONE, and it predated the run.
+
+THE FAILURE MODE IS THE PART THIS ENTRY DID NOT ALREADY CARRY. THE OUTPUT OF THE BROKEN
+INSTRUMENT IS INDISTINGUISHABLE FROM CORRECT OUTPUT. No gap, no truncation marker, no error.
+The summary looks complete BECAUSE IT IS COMPLETE -- for the wrong run. So this is the
+vacuous proof pointed at PROVENANCE rather than at a property: the artefact faithfully proves
+that A run happened and is STRUCTURALLY UNABLE TO SAY WHICH. Reading it harder can never find
+this; only asking for a specific EARLIER run does, which is exactly how it surfaced -- a peer
+asked for a file by name.
+
+IT PAIRS WITH THE bd-show PROBE ABOVE. That was a pattern written from an IMAGINED output
+format, returning empty and reading as "these beads do not exist". This is an artefact written
+to a CONSTANT PATH, returning a complete-looking file and reading as "here is the run you
+asked for". Both are instruments that answer confidently about the wrong thing and neither
+can fail loudly. The first says RUN THE TOOL BARE ONCE AND READ IT BEFORE MATCHING; the
+second says GIVE EVERY RUN ITS OWN PATH AND REFUSE TO REUSE ONE.
+
+AND THE DIRECTION THAT MAKES IT WORSE, completing the set: a wrong GREEN lets a defect
+through, a wrong RED invites you to break working code, and a wrong PROVENANCE INVITES YOU TO
+CITE A RUN THAT NEVER HAPPENED. Repaired the same hour -- per-run directories, a refusal when
+the directory already exists, the path printed on both exit paths, demonstrated with a bogus
+sha so no gate actually ran.
 
 ```
 
@@ -860,6 +893,37 @@ which the buggy toISOString path round-tripped exactly, so the bug cancelled its
 Pattern: pulse/tests/dates.test.mjs (Etc/GMT+6, Asia/Tokyo, America/Chicago), each
 verified to FAIL against unfixed code before being kept. Source check:
 local-dates-source-check.
+
+MEASURED 2026-09-08 at 18:40 local, and it is LIVE: found while verifying a peer's bead
+rather than while looking for it.
+
+BEADS STAMPS UTC WHILE THIS REPOSITORY'S CONVENTION IS THE LOCAL DATE, so every issue filed
+after 18:00 local is dated A DAY AHEAD of everything else written in the same session.
+Measured directly:
+
+    local  2026-09-08 18:40:23 -06:00        utc  2026-09-09 00:40:23
+    addictedtoai-tbho   Created: 2026-09-08     (filed before 18:00 local)
+    addictedtoai-fnsp   Created: 2026-09-08     (filed before 18:00 local)
+    addictedtoai-yejx   Created: 2026-09-09     (filed after)
+
+This is the SAME SPLIT this repository already paid for once, in a different artefact. The
+2026-08-28 instance put nine agents writing at one moment 104/24 across two dates, and
+nothing in the corpus could adjudicate because a bare ISO date carries no zone. Here the
+split is not between agents but BETWEEN TOOLS: git author dates and the content corpus are
+local, bd is UTC, and for six hours of every local day they agree, which is why it goes
+unnoticed.
+
+THE CONSEQUENCE IS A RECONSTRUCTION ERROR, NOT A DISPLAY ERROR. A later reader asking "what
+was filed on the 8th" gets everything before 18:00 and misses the evening's work entirely --
+and the miss is silent, because the beads that are absent are dated correctly BY THEIR OWN
+CONVENTION. Nothing is wrong; two things are right in different systems.
+
+WHAT TO DO: do not "fix" a bead's date, which is bd's field and not this repository's to
+rewrite. When a bead's date matters to a reconstruction, take the anchor from something local
+-- the git commit that accompanied it, or the session's own record -- exactly as the board
+now anchors to git author dates rather than to a clock reading. AND WHEN CITING A BEAD FILED
+IN THE EVENING, SAY WHICH LOCAL DAY THE WORK HAPPENED ON, because its own field will disagree.
+
 ```
 
 ## desk-chain-pause-procedure
