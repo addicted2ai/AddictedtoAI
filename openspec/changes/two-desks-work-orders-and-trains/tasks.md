@@ -414,7 +414,7 @@ the sentence that uses it.
 
 ### The brief diet
 
-- [ ] 5. `loop/lib/specs.mjs`: delete pass 2b (`:317-330`). Excerpts become the
+- [x] 5. `loop/lib/specs.mjs`: delete pass 2b (`:317-330`). Excerpts become the
       requirements the governing type and the declared subjects name plus the
       pending-amendment deltas for those requirements only — **and nothing
       else means nothing else**: the zero-score exception at `:281` (a section
@@ -442,7 +442,7 @@ the sentence that uses it.
       (the coordinator's own finding); this sentence is the resolution.
       Implements: *The brief carries the requirements the work order names, and
       nothing else*, bullet 1.
-- [ ] 6. `loop/lib/specs.mjs` (`:281`, `share = Math.floor(maxChars / plan.length)`,
+- [x] 6. `loop/lib/specs.mjs` (`:281`, `share = Math.floor(maxChars / plan.length)`,
       where `plan` holds one entry per source and `specSources` yields the
       constitution plus one delta per unarchived change): **the budget is not
       pre-divided by source at all.** As first written this task said only
@@ -484,7 +484,7 @@ the sentence that uses it.
       architect's disposition, never a raised ceiling. `loop/lib/config.mjs`
       holds only the constant and its rationale. Implements the same
       requirement's bullet 2 and its ceiling bullet together.
-- [ ] 7. `loop/lib/config.mjs`: **lower `BRIEF_EXCERPT_MAX_CHARS` from 88,000 to
+- [x] 7. `loop/lib/config.mjs`: **lower `BRIEF_EXCERPT_MAX_CHARS` from 88,000 to
       24,000**, its value before the four raises. Deleting pass 2b removes
       saturation; it does not lower a ceiling, and a ceiling four times the size of
       the material below it bounds nothing. The equality assertion at
@@ -492,7 +492,7 @@ the sentence that uses it.
       that file's header comment gains a dated line for this fifth move, down,
       keeping the four earlier re-measurements as history. Implements the same
       requirement's ceiling bullet.
-- [ ] 8. `loop/tests/brief-excerpt-budget.test.mjs` (extended — it is the one file
+- [x] 8. `loop/tests/brief-excerpt-budget.test.mjs` (extended — it is the one file
       that owns the ceiling's assertions and its header is the constant's
       history; no new `specs.test.mjs`): a PINNED fixture corpus **holding a
       spec for every capability any job type's checklist names** (B1's first
@@ -529,11 +529,34 @@ the sentence that uses it.
       one fixture cannot make both go red, use two and say why; a fixture on
       which a named mutation quietly does nothing is the vacuous proof this
       repository keeps finding in its own checking apparatus. Tests tasks 5–7.
-- [ ] 9. `loop/lib/specs.mjs` and `loop/lib/brief.mjs`: deleting pass 2b makes
+- [x] 9. `loop/lib/specs.mjs` and `loop/lib/brief.mjs`: deleting pass 2b makes
       `specs.mjs:335`'s `truncated` flag true far more often, which changes the
       brief's "read the full files" guidance. Update that guidance to say what
       truncation now means. Test: a brief whose excerpts are bounded carries the
       corrected wording. Implements the same requirement's bullet 1 rider.
+      **Tasks 5 to 9 DONE at `aa8bb3c` (2026-09-08 21:46; branch
+      `stage0/b1-brief-diet@676c40a`, seven rounds, approved at round 7 by a
+      delta review after five sealed max reviews; the worker's own full suite
+      on the final tip 1,727 of 1,727; Orch's diff read; record in design.md
+      round 15; evidence in `evidence/reviews/stage0-packet-B1/`).** Paired
+      numbers, as the standard requires: the fixture bound in task 8 is
+      30,000 and the live tree's assembled briefs at `cef399d` were scout
+      41,043 and post 35,564 (the round 3 worker's printed measurement, not
+      re-derived by a second party), so the bound is the fixture's and the
+      number it enforces is one the live tree exceeds — task 59 owns the live
+      budget. The loud failure below the marker sum is exact at 853
+      characters on the live tree and 833 in the fixture (three markers).
+      NOTES carried, not closed, inherited by task 59's next touch of
+      `specs.mjs` (Orch's diff read, none blocking): (a) the constitution's
+      copy of an amended requirement is now quoted beside its amendment
+      (`superseded` hardcoded 0) while the old comment argued against exactly
+      that — strike the old rationale or explain the reversal in the file;
+      (b) `ctx.pendingRoot` is never assigned in production (`brief.mjs:665`
+      passes it; nothing sets it) — an inert seam that needs a comment before
+      someone "fixes" it; (c) the empty-plan early return computes
+      `truncated` on an empty array, always false. And (d) the pre-existing
+      `chars: used` exclusion of headings and separators, re-introduced by
+      round 2 and fixed in round 4, is closed: `chars` is the rendered length.
 - [ ] 10. `loop/lib/verdict.mjs` and `loop/lib/review.mjs`: a verdict record MAY
       carry a structured `cites:` list of requirement headings, validated against
       the live specification's headings the way reasons are validated against the

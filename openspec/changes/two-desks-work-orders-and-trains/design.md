@@ -2405,3 +2405,49 @@ architect's rule that numbered reports stay in the reviewed tip and move to
 `evidence/reviews/` by one commit on main — so the defect was the brief's: a
 brief that scopes a diff owes the reason a file is in it. Round 7 dispatched
 21:13 at medium, class-scoped, with the census script for the reviewer.
+
+**B1 round 7 and the merge — branch `676c40a` (about 20 minutes at medium;
+the test file and `RESULT7.md`); delta review at medium, unsealed and
+declared so, APPROVE with no findings and nothing outside scope; the worker's
+own full suite on the final tip 1,727 of 1,727 in 426 s; MERGED onto local
+main as `aa8bb3c` at 21:46 on Orch's diff read.** The sweep, measured by
+Luna-Boss-2 before dispatching the reviewer: 52 assertions, 14 with a message
+→ 26, 6 passing a raw value as if it were one → 0, the 26 remaining bare ones
+each listed with a reason and checked 26 of 26 against the census; the four
+arms the packet built still redden (wrong shortfall 22/1, wrong minimum
+22/1, `chars: 0` 21/2, separator dropped 22/1; baseline 23/23/0, restorations
+by SHA-256); emitted length never exceeds its cap and `chars` never diverges
+from `text.length` across every integer cap 840 to 1,000 and about 430 more
+to 60,000; the loud failure is exact at the live tree's 853 in both
+directions (833 is the fixture's three-marker minimum). And the result that
+settles the line-versus-class finding: the withheld `:381` was fixed by a
+brief that never named it. Seven rounds against packet A's six; rounds 1 to 3
+were the code, rounds 4 to 7 whether the code was defended; Luna-Boss-2
+attributes at least three of the seven to its own briefs (the incomplete
+instrument list, the line scoping, the RESULT-file omission). Orch's diff
+read confirmed the round 3 defect gone (`chars` is now
+`renderExcerpt(plan, rendered).length`, the rendered length rather than a
+running counter) and left four notes, none blocking, each with its
+disposition: (1) the constitution's copy of an amended requirement is now
+quoted beside the amendment (`superseded` hardcoded 0 at both push sites),
+while the old comment argued that quoting both "hands the executor two
+versions of it with nothing but a heading to say which governs" — the
+heading is exactly what now distinguishes them, so the objection is answered
+by the thing the comment called insufficient; the old rationale is to be
+struck or the reversal explained in the file, a note carried by task 59's
+next touch of `specs.mjs`; (2) one requirement per capability (`named` takes
+the first scoring section and deltas contribute only that heading; pass 2b's
+round-robin is gone, so a capability with three relevant requirements quotes
+one and sets `truncated`) — INTENDED, task 5's own first sentence, stated
+here as the behavioural cut it is, wider than the cap change alone; (3)
+`ctx.pendingRoot` is never assigned in production (`brief.mjs:665` passes it
+and nothing sets it), so it always falls back to the repository's in-flight
+root — a correct, inert seam that needs a comment saying so before someone
+"fixes" the missing assignment; (4) the empty-plan early return computes
+`truncated: plan.some(...)` on an empty array, always false, a guard that
+reads as doing something. Notes 1, 3 and 4 are carried on tasks 5 to 9's
+completion note and inherited by task 59. `RESULT4` to `RESULT7` moved from
+the repository root to `evidence/reviews/stage0-packet-B1/` by the commit
+that records this; the seven reviews and the round 7 brief copied beside
+them. Orch gates the pinned tip when the experiment's workers and judges
+have exited the process table.
