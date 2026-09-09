@@ -1,6 +1,6 @@
 {
   "js_payload": {
-    "measured_on": "2026-09-08",
+    "measured_on": "2026-09-09",
     "budget_kb_gzipped": 150,
     "precision": "0.1 KB with hysteresis: retain each prior value unless the raw gzip measurement moves by more than 62 bytes; the floor is the conservative maximum of every page and field in a controlled build-ID simulation (n=16 same-length build-ID variants over one exported tree, observed maximum spread 10 gzip bytes, measured 2026-09-07; 10 + 51.2-byte half-step = 61.2, rounded up to the 62-byte floor), not repeated builds of unchanged content",
     "method": "gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every inline <script> body, measured on the exported build in out/; measured_on means the local date when a recorded value last advanced, not the date of every gate run",
@@ -8,9 +8,9 @@
       "/": {
         "label": "home",
         "chunks_kb_gzipped": 104.4,
-        "inline_kb_gzipped": 6.7,
-        "total_kb_gzipped": 110.9,
-        "html_kb_gzipped": 10.8
+        "inline_kb_gzipped": 6.5,
+        "total_kb_gzipped": 110.7,
+        "html_kb_gzipped": 10.5
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
@@ -24,12 +24,12 @@
         "chunks_kb_gzipped": 104.8,
         "inline_kb_gzipped": 18.8,
         "total_kb_gzipped": 123.6,
-        "html_kb_gzipped": 35.7
+        "html_kb_gzipped": 35.8
       }
     }
   },
   "design_verification": {
-    "date": "2026-09-08",
+    "date": "2026-09-09",
     "pass": true,
     "failures": 0,
     "checks": 46
