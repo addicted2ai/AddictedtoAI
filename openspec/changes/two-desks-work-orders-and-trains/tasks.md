@@ -143,7 +143,23 @@ previous review (it needs it), verifies each named finding fixed by mutation
 line, and runs the standing property checks. Any production change gets the
 full sealed max review; a delta reviewer's out-of-scope finding is a
 full-review trigger; and the completed full suite on the final tip backstops
-both kinds.
+both kinds. **Amended 2026-09-09 00:29 by the maintainer: every dispatch,
+delta reviews included, runs at max.** **The exit condition (the architect's
+ruling at B2 round 3, 2026-09-09 04:55).** Four consecutive reviews of one
+diff each found new green mutants — REVIEW1 two, REVIEW2 six, REVIEW3 four,
+none overlapping — every one an arm narrower than its property, none a
+production defect; the class "an arm could be stronger" has no floor, so a
+round count cannot end it and a ruling must. A delta review APPROVES when:
+every named mutation of every prior review of the packet goes red under it
+(re-run, not trusted), the round's diff is within its scope, the standing
+properties hold, and the author's completed full suite on the final tip is
+green. A further green mutant the delta reviewer finds is written into its
+review and CARRIED as a note on the task, non-blocking, unless it exposes a
+production defect (an arm that goes red against the unmutated code, or a
+wrong world the requirement forbids) — that remains a revise. The merge-base
+diff stays the list of changed lines; "at least one red arm per changed
+function" stays the bar; "no green mutant exists" was never the bar and is
+not reachable.
 
 **A revision brief names the CLASS and requires a sweep of the file; the
 reviewer verifies the sweep (adopted at B1 round 6, 21:05, from
