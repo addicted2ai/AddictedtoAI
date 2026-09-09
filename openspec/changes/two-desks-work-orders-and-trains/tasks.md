@@ -1034,6 +1034,9 @@ the brief under `evidence/reviews/`.
       `escalationTarget(registry, runner, sel)`, returns the registry entry
       named by the run's entry's `escalates_to` exactly when `sel.topRanked`'s
       rule is `runner:job-type` and the field is declared, else `null`.
+      `topRanked` is also `null` on the conformance, health and lane-paused
+      early returns (`select.mjs:154-195`), which gather no candidates
+      (added 2026-09-09 08:45 from the brief review's finding 3).
       `run.mjs`'s one call site (`:1223`) re-runs `selectJob` with that entry
       as `runner`. The re-run gathers the same list (gathering is deterministic
       within a run; the duplicate sweep already ran on the first pass), so the
@@ -1092,7 +1095,10 @@ the brief under `evidence/reviews/`.
       fixture is `makeRepo` with the test's OWN `runners.yml` (the
       `selector-rules.test.mjs:374-387` pattern; `helpers.mjs:69-98`'s default
       registry declares no clearance): a cheap entry with `job_types` and
-      `escalates_to` naming an unrestricted frontier entry, generic ids only.
+      `escalates_to` naming an unrestricted frontier entry, generic ids only,
+      plus a reviewer-cleared entry — `runLoop` resolves a reviewer before it
+      selects (`run.mjs:911`) and throws without one (added 2026-09-09 08:45
+      from the brief review's finding 1).
       "Overdue" is the Pulse's ranking, which the fixture expresses as queue
       ORDER (`writeQueue`): the scout first is the top-ranked candidate.
       (iii) Arms: (a) the queue holds ONE scout and nothing else, the run's
@@ -1113,7 +1119,11 @@ the brief under `evidence/reviews/`.
       helper's return, and at least (c) also runs `runLoop(ctx, { runner:
       '<cheap id>', dryRun: true })` and asserts the returned `job.type` and
       `runner.id` (`run.mjs:1303`), so a call-site mutation is caught and not
-      only a library one. (v) The registry arms, in the same file: an
+      only a library one; (a), (b) and (d) may also run the dry-run call
+      where their outcome is only observable there (the log naming both
+      refusals, the returned runner), and only (c)'s assertion set is what
+      the call-site mutation must turn red (added 2026-09-09 08:45 from the
+      brief review's finding 2). (v) The registry arms, in the same file: an
       `escalates_to` naming an unknown id, the entry itself, or an entry not
       cleared for `author` fails `loadRunners` at load; absent loads as
       `undefined`. (vi) The named mutation: key the escalation on
