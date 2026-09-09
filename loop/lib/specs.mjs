@@ -256,6 +256,18 @@ function floorMinimum(section, path) {
   return Math.min(section.text.length, cutMarker(section, path).length);
 }
 
+function renderExcerpt(plan, rendered) {
+  return plan
+    .map((item) => {
+      const picked = item.candidates.filter((candidate) => rendered.has(candidate));
+      return picked.length
+        ? `${chunkHeading(item.cap, item.src, item.superseded)}\n\n${picked.map((candidate) => rendered.get(candidate)).join('\n\n')}`
+        : null;
+    })
+    .filter(Boolean)
+    .join('\n\n---\n\n');
+}
+
 /**
  * Targeted excerpts for one job type, capped by one total budget.
  *
@@ -326,20 +338,23 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
       : [],
   );
   const floorMinimums = floors.map(({ item, candidate }) => floorMinimum(candidate, item.src.path));
-  const markerMinimum = floorMinimums.reduce((n, value) => n + value, 0);
-  if (maxChars < markerMinimum) {
-    const shortfall = markerMinimum - maxChars;
+  const floorItems = [...new Set(floors.map(({ item }) => item))];
+  const floorOverhead = floorItems.reduce((n, item) => n + chunkHeading(item.cap, item.src, item.superseded).length + 2, 0) +
+    Math.max(0, floorItems.length - 1) * '\n\n---\n\n'.length;
+  const floorMinimumTotal = floorMinimums.reduce((n, value) => n + value, 0) + floorOverhead;
+  if (maxChars < floorMinimumTotal) {
+    const shortfall = floorMinimumTotal - maxChars;
     const names = floors.map(({ candidate }) => JSON.stringify(candidate.heading)).join(', ');
     throw new Error(
       `excerpt configuration error: marker shortfall=${shortfall}; ` +
-        `maxChars=${maxChars} is below the ${markerMinimum}-character constitution ` +
-        `marker minimum for ${names}`,
+        `maxChars=${maxChars} is below the ${floorMinimumTotal}-character constitution ` +
+        `marker, heading, and separator minimum for ${names}`,
     );
   }
   if (maxChars === 0) {
     return { text: '', files: allFiles, truncated: plan.some((i) => i.candidates.length > 0), chars: 0 };
   }
-  let used = 0;
+  let contentUsed = 0;
   let floorIndex = 0;
   let stopped = false;
   const rendered = new Map();
@@ -350,11 +365,14 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
   // presentation order remain separate without weakening the floor.
   for (const { item, candidate } of floors) {
     const reserve = floorMinimums.slice(floorIndex + 1).reduce((n, value) => n + value, 0);
-    const budget = Math.min(candidate.text.length, Math.max(0, maxChars - used - reserve));
+    const budget = Math.min(
+      candidate.text.length,
+      Math.max(0, maxChars - floorOverhead - contentUsed - reserve),
+    );
     floorIndex += 1;
     const text = cutTo(candidate, budget, item.src.path);
     rendered.set(candidate, text);
-    used += text.length;
+    contentUsed += text.length;
     if (text.length < candidate.text.length) cutCandidates.add(candidate);
   }
 
@@ -363,7 +381,11 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
   for (const item of plan) {
     if (item.src.kind !== 'delta' || stopped) continue;
     for (const candidate of item.candidates) {
-      const budget = maxChars - used;
+      const before = renderExcerpt(plan, rendered);
+      rendered.set(candidate, '');
+      const overhead = renderExcerpt(plan, rendered).length - before.length;
+      rendered.delete(candidate);
+      const budget = maxChars - before.length - overhead;
       if (budget <= 0) {
         stopped = true;
         break;
@@ -372,14 +394,12 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
         const marker = cutTail(candidate, budget, item.src.path);
         if (marker) {
           rendered.set(candidate, marker);
-          used += marker.length;
         }
         stopped = true;
         break;
       }
       const text = candidate.text;
       rendered.set(candidate, text);
-      used += text.length;
     }
   }
 
@@ -401,17 +421,9 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
     );
 
   return {
-    text: plan
-      .map((item) => {
-        const picked = item.candidates.filter((candidate) => rendered.has(candidate));
-        return picked.length
-          ? `${chunkHeading(item.cap, item.src, item.superseded)}\n\n${picked.map((candidate) => rendered.get(candidate)).join('\n\n')}`
-          : null;
-      })
-      .filter(Boolean)
-      .join('\n\n---\n\n'),
+    text: renderExcerpt(plan, rendered),
     files: allFiles,
     truncated,
-    chars: used,
+    chars: renderExcerpt(plan, rendered).length,
   };
 }

@@ -334,7 +334,7 @@ test('the pinned corpus has a constitution source for every job type capability'
 test('the constitution floor survives three pending amendments', () => {
   const ctx = allocationCorpus();
   const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 24000, pendingRoot: ctx.pendingRoot });
-  assert.ok(ex.chars <= 24000);
+  assert.ok(ex.text.length <= 24000, `emitted length ${ex.text.length} exceeds cap 24000`);
   for (const cap of ['pulse', 'site', 'review']) {
     assert.match(ex.text, new RegExp(`END-${cap}`));
   }
@@ -343,7 +343,7 @@ test('the constitution floor survives three pending amendments', () => {
 
 test('a tight cap keeps every constitution marker in priority order', () => {
   const ctx = tightCapCorpus();
-  const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 600 });
+  const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 900 });
   assert.equal(countCuts(ex.text), 3, ex.text);
   const markers = ['pulse governing rule', 'site governing rule', 'review governing rule'];
   const positions = markers.map((heading) => ex.text.indexOf(`CUT: requirement "${heading}"`));
@@ -352,7 +352,7 @@ test('a tight cap keeps every constitution marker in priority order', () => {
   assert.match(ex.text.slice(0, positions[0]), /PULSE_FIRST_CONTENT/);
   assert.ok(ex.text.indexOf('### From `specs/pulse`') < ex.text.indexOf('### From `specs/site`'));
   assert.ok(ex.text.indexOf('### From `specs/site`') < ex.text.indexOf('### From `specs/review`'));
-  assert.ok(ex.chars <= 600);
+  assert.ok(ex.text.length <= 900, `emitted length ${ex.text.length} exceeds cap 900`);
   ctx.cleanup();
 });
 
