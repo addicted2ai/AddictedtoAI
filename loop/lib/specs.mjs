@@ -49,8 +49,8 @@ export function specPath(repoRoot, capability) {
  * nothing failing in between — briefs just get quieter. Sorted so a brief
  * assembled twice from one tree is byte-identical.
  */
-export function inFlightChanges(repoRoot) {
-  const dir = join(repoRoot, 'openspec', 'changes');
+export function inFlightChanges(repoRoot, pendingRoot = null) {
+  const dir = pendingRoot ?? join(repoRoot, 'openspec', 'changes');
   let entries;
   try {
     entries = readdirSync(dir, { withFileTypes: true });
@@ -69,10 +69,11 @@ export function inFlightChanges(repoRoot) {
  *
  * @returns {{change: string, path: string}[]}
  */
-export function deltaPaths(repoRoot, capability) {
+export function deltaPaths(repoRoot, capability, pendingRoot = null) {
   const out = [];
-  for (const change of inFlightChanges(repoRoot)) {
-    const p = join(repoRoot, 'openspec', 'changes', change, 'specs', capability, 'spec.md');
+  const root = pendingRoot ?? join(repoRoot, 'openspec', 'changes');
+  for (const change of inFlightChanges(repoRoot, root)) {
+    const p = join(root, change, 'specs', capability, 'spec.md');
     if (existsSync(p)) out.push({ change, path: p });
   }
   return out;
@@ -96,11 +97,11 @@ export function deltaPaths(repoRoot, capability) {
  *
  * @returns {{kind: 'spec'|'delta', change: string|null, path: string}[]}
  */
-export function specSources(repoRoot, capability) {
+export function specSources(repoRoot, capability, pendingRoot = null) {
   const sources = [];
   const spec = specPath(repoRoot, capability);
   if (spec) sources.push({ kind: 'spec', change: null, path: spec });
-  for (const d of deltaPaths(repoRoot, capability)) {
+  for (const d of deltaPaths(repoRoot, capability, pendingRoot)) {
     sources.push({ kind: 'delta', change: d.change, path: d.path });
   }
   return sources;
@@ -186,32 +187,27 @@ function chunkHeading(cap, src, superseded = 0) {
  *
  * A requirement that stops mid-sentence with no marker is worse than one left
  * out: an executor reading a truncated SHALL has no way to know it is holding a
- * fragment, and the fragment looks complete. The marker names the file the rest
- * is in, which is in the worktree, so the brief stays self-contained.
+ * fragment, and the fragment looks complete. The marker names the
+ * requirement and the file the rest is in, which is in the worktree, so the
+ * brief stays self-contained.
  */
-function cutNote(section, path) {
+function cutMarker(section, path) {
   return (
-    `\n\n[... CUT: this requirement is ${section.text.length} characters and only the ` +
-    `remaining total excerpt budget was available. What you are reading is the opening ` +
-    `of it, not the whole rule. Read \`${path.replace(/\\/g, '/')}\` in this worktree ` +
-    `before acting on it. ...]`
+    `\n\n[... CUT: requirement ${JSON.stringify(section.heading)} from ` +
+    `\`${path.replace(/\\/g, '/')}\` ...]`
   );
 }
 
 function cutTo(section, budget, path) {
   if (budget >= section.text.length) return section.text;
-  if (budget <= 0) return '';
-  const note = cutNote(section, path);
-  if (budget <= note.length) return note.slice(0, budget);
-  return section.text.slice(0, budget - note.length) + note;
+  const marker = cutMarker(section, path);
+  if (budget < marker.length) return '';
+  return section.text.slice(0, budget - marker.length) + marker;
 }
 
 function cutTail(section, budget, path) {
-  if (budget <= 0) return '';
-  const note =
-    `\n\n[... CUT: the ordered excerpt ends before requirement ${JSON.stringify(section.heading)} ` +
-    `from \`${path.replace(/\\/g, '/')}\`. Read that file for the omitted text. ...]`;
-  return note.slice(0, budget);
+  const marker = cutMarker(section, path);
+  return budget >= marker.length ? marker : '';
 }
 
 /**
@@ -257,7 +253,7 @@ function excerptOptions(subjectsOrOptions, maybeOptions) {
 }
 
 function floorMinimum(section, path) {
-  return Math.min(section.text.length, cutNote(section, path).length);
+  return Math.min(section.text.length, cutMarker(section, path).length);
 }
 
 /**
@@ -272,6 +268,8 @@ function floorMinimum(section, path) {
  * `subjects` accepts capability names or specification paths. Stage 0 callers
  * may pass an empty list; the later structured work-order field can pass its
  * declared subject capabilities without changing this contract.
+ * `pendingRoot` is an optional alternate pending-source root for isolated
+ * fixtures; production defaults to the repository's in-flight source root.
  *
  * @returns {{text: string, files: string[], truncated: boolean, chars: number}}
  */
@@ -289,7 +287,7 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
   const plan = [];
   const allFiles = [];
   for (const cap of caps) {
-    const sources = specSources(repoRoot, cap).map((src) => ({
+    const sources = specSources(repoRoot, cap, options.pendingRoot).map((src) => ({
       src,
       sections: scoredSections(src.path, keywords),
     }));
@@ -314,11 +312,11 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
       if (src.kind !== 'delta') continue;
       const candidates = namedHeadings.size
         ? sections.filter((s) => namedHeadings.has(s.heading)).slice(0, 1)
-        : sections.filter((s) => s.heading !== '(preamble)' && s.score > 0).slice(0, 1);
+        : [];
       plan.push({ cap, src, sections, candidates, superseded: 0 });
     }
   }
-  if (plan.length === 0 || maxChars === 0) {
+  if (plan.length === 0) {
     return { text: '', files: allFiles, truncated: plan.some((i) => i.candidates.length > 0), chars: 0 };
   }
 
@@ -328,6 +326,19 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
       : [],
   );
   const floorMinimums = floors.map(({ item, candidate }) => floorMinimum(candidate, item.src.path));
+  const markerMinimum = floorMinimums.reduce((n, value) => n + value, 0);
+  if (maxChars < markerMinimum) {
+    const shortfall = markerMinimum - maxChars;
+    const names = floors.map(({ candidate }) => JSON.stringify(candidate.heading)).join(', ');
+    throw new Error(
+      `excerpt configuration error: marker shortfall=${shortfall}; ` +
+        `maxChars=${maxChars} is below the ${markerMinimum}-character constitution ` +
+        `marker minimum for ${names}`,
+    );
+  }
+  if (maxChars === 0) {
+    return { text: '', files: allFiles, truncated: plan.some((i) => i.candidates.length > 0), chars: 0 };
+  }
   let used = 0;
   let floorIndex = 0;
   let stopped = false;
@@ -341,7 +352,6 @@ export function excerptsFor(repoRoot, type, subjectsOrOptions = {}, maybeOptions
     const reserve = floorMinimums.slice(floorIndex + 1).reduce((n, value) => n + value, 0);
     const budget = Math.min(candidate.text.length, Math.max(0, maxChars - used - reserve));
     floorIndex += 1;
-    if (budget <= 0) continue;
     const text = cutTo(candidate, budget, item.src.path);
     rendered.set(candidate, text);
     used += text.length;
