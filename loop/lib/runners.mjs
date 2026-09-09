@@ -74,6 +74,12 @@ export function loadRunners(ctx) {
         }
       }
     }
+    // OPTIONAL enablement: absent means enabled, so entries written before
+    // this field existed continue to be selectable. A present value is a
+    // policy declaration and therefore must not be accepted in a looser shape.
+    if (r.enabled !== undefined && typeof r.enabled !== 'boolean') {
+      throw new Error(`${where}: "enabled" must be a boolean when present`);
+    }
     // OPTIONAL effort rung: absent means this entry declares no rung. Keep the
     // value registry-owned and validate only its shape, so newly exposed
     // harness rungs do not require a machinery edit.
@@ -135,9 +141,17 @@ export function pickRunner(registry, { id, role }) {
     return r;
   }
   const def = registry.byId.get(registry.defaultId);
-  if (!role || def.roles.includes(role)) return def;
-  const alt = registry.runners.find((r) => r.roles.includes(role));
-  if (!alt) throw new Error(`no registered runner is cleared for role "${role}"`);
+  if (def.enabled !== false && (!role || def.roles.includes(role))) return def;
+  const alt = registry.runners.find(
+    (r) => r.enabled !== false && (!role || r.roles.includes(role)),
+  );
+  if (!alt) {
+    throw new Error(
+      role
+        ? `no registered runner is cleared for role "${role}"`
+        : 'no registered enabled runner',
+    );
+  }
   return alt;
 }
 
@@ -158,6 +172,15 @@ export function loadConformance(ctx) {
   }
 }
 
+/** Normalize the legacy single record and the append-only history to one read shape. */
+export function conformanceHistory(records, runnerId) {
+  const record = records?.[runnerId];
+  if (!record) return [];
+  if (Array.isArray(record)) return record;
+  if (typeof record === 'object' && record.checks !== undefined) return [record];
+  return [];
+}
+
 /**
  * The conformance gate (specs/loop): "A combination with any FAIL SHALL NOT be
  * used for `author` or `reviewer` roles."
@@ -167,21 +190,58 @@ export function loadConformance(ctx) {
  * clone has no records, and refusing to run at all would make the first run
  * after a clone impossible.
  *
- * @returns {{ok: true} | {ok: false, reason: string, failed: string[]}}
+ * @returns {{ok: true, entries: number, unrecorded?: boolean} | {ok: false, reason: string, failed: string[], entries: number}}
  */
-export function conformanceGate(records, runnerId) {
-  const rec = records?.[runnerId];
-  if (!rec) return { ok: true, unrecorded: true };
-  const failed = (rec.checks ?? [])
-    .filter((c) => String(c.result).toUpperCase() === 'FAIL')
-    .map((c) => c.name);
-  if (failed.length === 0) return { ok: true };
+export function conformanceGate(records, runnerId, { passesToSupersede = 3 } = {}) {
+  const history = conformanceHistory(records, runnerId);
+  const entries = history.length;
+  if (entries === 0) return { ok: true, unrecorded: true, entries };
+
+  const names = [];
+  const seen = new Set();
+  for (const entry of history) {
+    for (const check of entry?.checks ?? []) {
+      if (String(check?.result).toUpperCase() !== 'FAIL' || !check.name || seen.has(check.name)) {
+        continue;
+      }
+      seen.add(check.name);
+      names.push(check.name);
+    }
+  }
+
+  const standing = [];
+  for (const name of names) {
+    let failure = null;
+    let passes = 0;
+    for (const entry of history) {
+      const check = (entry?.checks ?? []).find((candidate) => candidate?.name === name);
+      const result = String(check?.result).toUpperCase();
+      if (result === 'FAIL') {
+        failure = { date: entry?.date || 'undated' };
+        passes = 0;
+      } else if (failure) {
+        if (result === 'PASS') passes += 1;
+        else passes = 0;
+        if (passes >= passesToSupersede) failure = null;
+      }
+    }
+    if (failure) standing.push({ name, date: failure.date, passes });
+  }
+
+  if (standing.length === 0) return { ok: true, entries };
+  const failed = standing.map((item) => item.name);
+  const details = standing.map(
+    (item) =>
+      `${item.name} (standing FAIL ${item.date}; ${item.passes} consecutive PASSes since; ` +
+      `requires ${passesToSupersede})`,
+  );
   return {
     ok: false,
     failed,
     reason:
-      `runner "${runnerId}" has recorded conformance FAIL(s): ${failed.join(', ')} ` +
-      `(recorded ${rec.date ?? 'undated'} in the conformance record). ` +
-      `It may not be used for author or reviewer roles until it passes.`,
+      `runner "${runnerId}" has unsuperseded conformance FAIL(s): ${details.join(', ')}. ` +
+      `It may not be used for author or reviewer roles until it passes ` +
+      `(read ${entries} conformance entr${entries === 1 ? 'y' : 'ies'}).`,
+    entries,
   };
 }

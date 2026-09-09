@@ -30,7 +30,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { makeContext } from './lib/paths.mjs';
-import { loadRunners, pickRunner } from './lib/runners.mjs';
+import { loadRunners, pickRunner, conformanceHistory } from './lib/runners.mjs';
 import { addWorktree, gitTry, removeWorktree, changedPathsWithStatus, diffAgainst } from './lib/git.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import { readResult, RESULT_PROTOCOL_INSTRUCTION } from './lib/result.mjs';
@@ -412,7 +412,7 @@ export function recordConformance(ctx, record) {
       all = {};
     }
   }
-  all[record.runner] = record;
+  all[record.runner] = [...conformanceHistory(all, record.runner), record];
   mkdirSync(join(ctx.conformancePath, '..'), { recursive: true });
   writeFileSync(ctx.conformancePath, JSON.stringify(all, null, 2) + '\n', 'utf8');
   return ctx.conformancePath;

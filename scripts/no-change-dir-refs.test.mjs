@@ -16,7 +16,7 @@ import fg from 'fast-glob';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SEARCH = ['lib', 'loop', 'pulse', 'scripts', 'app', 'tools'];
 const CHANGE_DIR = ['openspec', 'changes', ''].join('/');
-const BAD_REFERENCE = new RegExp(`${CHANGE_DIR}(?!archive/)`, 'g');
+const BAD_REFERENCE = new RegExp(`${CHANGE_DIR}(?!archive/)[^\\s/'"\\x60]+/?`, 'g');
 
 function sourceFiles() {
   return fg.sync(
@@ -41,11 +41,6 @@ const ALLOWED = [
     match: /openspec\/changes\/(?:\$\{name\}|live-one)\//,
     reason: 'creates and asserts temporary in-flight change trees to test the delta checker',
   },
-  {
-    file: 'loop/lib/specs.mjs',
-    match: /openspec\/changes\/\x60/,
-    reason: 'discovers and reads the repository directories that contain changes not yet archived',
-  },
 ];
 
 function relativeFile(abs) {
@@ -67,7 +62,7 @@ function violations() {
 }
 
 function isAllowed(v) {
-  return ALLOWED.some((entry) => entry.file === v.file && entry.match.test(v.text));
+  return ALLOWED.some((entry) => entry.file === v.file && entry.match.test(v.reference));
 }
 
 test('no source references an unarchived change directory', () => {
@@ -80,8 +75,44 @@ test('no source references an unarchived change directory', () => {
 });
 
 test('the check matches a bad literal and ignores an archived literal', () => {
-  assert.deepEqual([...(CHANGE_DIR + 'foo/bar.md').matchAll(BAD_REFERENCE)].map((m) => m[0]), [CHANGE_DIR]);
+  assert.deepEqual(
+    [...(CHANGE_DIR + 'foo').matchAll(BAD_REFERENCE)].map((m) => m[0]),
+    [CHANGE_DIR + 'foo'],
+  );
+  assert.deepEqual(
+    [...(CHANGE_DIR + 'foo/bar.md').matchAll(BAD_REFERENCE)].map((m) => m[0]),
+    [CHANGE_DIR + 'foo/'],
+  );
   assert.deepEqual([...(CHANGE_DIR + 'archive/2026-09-07-foo/bar.md').matchAll(BAD_REFERENCE)], []);
+  // A bare prefix followed by a backtick designates no change, so archiving
+  // never moves it and the detector deliberately ignores it.
+  assert.deepEqual([...(CHANGE_DIR + '`').matchAll(BAD_REFERENCE)], []);
+});
+
+test('an allow-list entry applies only to its matched reference span', () => {
+  const line = [
+    'join(CHANGE_ROOT,',
+    '`' + CHANGE_DIR + '${name}/specs/demo/spec.md`);',
+    CHANGE_DIR + 'build-initial-site/specs/demo/spec.md',
+  ].join(' ');
+  assert.equal(
+    isAllowed({
+      file: 'scripts/check-spec-deltas.test.mjs',
+      text: line,
+      reference: CHANGE_DIR + '${name}/',
+    }),
+    true,
+  );
+  // MUTATION: testing the allow-list against the whole line would let the
+  // named path inherit the generic template on the same line.
+  assert.equal(
+    isAllowed({
+      file: 'scripts/check-spec-deltas.test.mjs',
+      text: line,
+      reference: CHANGE_DIR + 'build-initial-site/',
+    }),
+    false,
+  );
 });
 
 test('every allow-list entry has a reason and is still live', () => {
@@ -89,7 +120,7 @@ test('every allow-list entry has a reason and is still live', () => {
   for (const entry of ALLOWED) {
     assert.ok(entry.reason, `${entry.file} needs a reason`);
     assert.ok(
-      found.some((v) => v.file === entry.file && entry.match.test(v.text)),
+      found.some((v) => v.file === entry.file && entry.match.test(v.reference)),
       `${entry.file}::${entry.match} is stale and must be removed`,
     );
   }

@@ -109,7 +109,7 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
  *
  * @returns {{selected: object|null, topRanked: object|null, refusals: Array,
  *            warnings: string[], notes: string[], shares: object, shed: object,
- *            lane: object}}
+ *            lane: object, conformanceEntries?: number}}
  */
 /**
  * A runner's own clearance for the KIND of work, the exact counterpart of
@@ -151,6 +151,22 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   const shares = tierShares(cfg, ledger, runner.tier, now);
   const shed = shedState(cfg, ledger, runner.tier, now);
 
+  if (runner?.enabled === false) {
+    const reason =
+      `runner "${runner.id}" is disabled (enabled: false) and cannot be used for author or reviewer roles`;
+    return {
+      selected: null,
+      topRanked: null,
+      refusals: [{ candidate: null, rule: 'runner:disabled', reason }],
+      warnings: [],
+      notes: [],
+      shares,
+      shed,
+      lane,
+      blocked: reason,
+    };
+  }
+
   const conformance = conformanceGate(loadConformance(ctx), runner.id);
   if (!conformance.ok) {
     return {
@@ -162,6 +178,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shares,
       shed,
       lane,
+      conformanceEntries: conformance.entries,
       blocked: conformance.reason,
     };
   }
@@ -180,6 +197,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shares,
       shed,
       lane,
+      conformanceEntries: conformance.entries,
       blocked: health.reason,
     };
   }
@@ -194,6 +212,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shares,
       shed,
       lane,
+      conformanceEntries: conformance.entries,
       blocked: lane.reason,
     };
   }
@@ -251,6 +270,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     shares,
     shed,
     lane,
+    conformanceEntries: conformance.entries,
     considered: candidates.length,
   };
 }
@@ -265,7 +285,8 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
 export function escalationTarget(registry, runner, sel) {
   if (sel?.topRanked?.rule !== 'runner:job-type') return null;
   if (runner?.escalates_to === undefined) return null;
-  return registry?.byId?.get(runner.escalates_to) ?? null;
+  const target = registry?.byId?.get(runner.escalates_to) ?? null;
+  return target?.enabled === false ? null : target;
 }
 
 /** One line per refusal, each naming its rule — what the selector prints. */
