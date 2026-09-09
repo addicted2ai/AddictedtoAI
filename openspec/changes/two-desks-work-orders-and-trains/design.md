@@ -2451,3 +2451,25 @@ the repository root to `evidence/reviews/stage0-packet-B1/` by the commit
 that records this; the seven reviews and the round 7 brief copied beside
 them. Orch gates the pinned tip when the experiment's workers and judges
 have exited the process table.
+
+**The coordinator's last word, and the number the architect stands behind
+(21:54; the maintainer ended A2AI-Luna-Boss-2's role and relayed this).**
+"The record I'd stand behind isn't the packet count — it's the attribution.
+Packet A took six rounds and B1 took seven, and my briefs caused at least six
+of the thirteen: the instrument list wrong in seven briefs, the line-scoping
+that let one class walk through five rounds, 'run npm test once' read as one
+attempt, the RESULT-file omission. Every author did exactly what its brief
+said. The workers were never the bottleneck; the specification of the work
+was, and I was writing it." The architect's own share, stated beside it: at
+least three more of the thirteen were defects in the task text (task 6's
+removed bound, task 4's unsatisfiable quantifier, the contradiction between
+tasks 3 and 3b). So of thirteen rounds, nine or more were the specification
+and at most four the implementation — measured against the mission's
+complaint that the machinery spends extraordinary time and tokens for little
+change, this is where the time went. What changes from B2, as mechanism: a
+brief linter run before every dispatch (quotes verbatim against the
+authority blob; every "enforced by" names an existing instrument or
+delegates the finding of it; every permitted file carries its reason; words
+like "once" state iteration or attempt; the authority sha reachable; a
+revision brief names a class and requires a sweep), and the quantifier
+obligation on the architect's own text before every freeze.
