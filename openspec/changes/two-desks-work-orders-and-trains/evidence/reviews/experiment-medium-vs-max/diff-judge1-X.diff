@@ -1,0 +1,185 @@
+diff --git a/loop/lib/specs.mjs b/loop/lib/specs.mjs
+index c5acb62..e2b7d35 100644
+--- a/loop/lib/specs.mjs
++++ b/loop/lib/specs.mjs
+@@ -20,8 +20,8 @@ import { join } from 'node:path';
+  * The constitution: one capability's whole spec, `openspec/specs/<cap>/spec.md`.
+  *
+  * This used to be the FIRST of two candidates, the second being a hardcoded
+- * `openspec/changes/build-initial-site/specs/<cap>/spec.md`, with the comment
+- * "the change's delta specs today, `openspec/specs/` after archive". Both
++ * `openspec/changes/archive/<YYYY-MM-DD>-<name>/specs/<cap>/spec.md`, with the
++ * comment "the archived change's delta specs". Both
+  * halves failed. The order was backwards for that intent — the moment
+  * `openspec/specs/` was populated, the first candidate always won and no change
+  * branch was ever reachable — and `build-initial-site` was archived on
+diff --git a/loop/tests/portability.test.mjs b/loop/tests/portability.test.mjs
+index 4d341c2..3da4ca2 100644
+--- a/loop/tests/portability.test.mjs
++++ b/loop/tests/portability.test.mjs
+@@ -13,9 +13,10 @@
+ 
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
++import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+ import { join, parse, relative, sep } from 'node:path';
+ import { spawnSync } from 'node:child_process';
++import { tmpdir } from 'node:os';
+ 
+ import { DEFAULT_REPO_ROOT, makeContext } from '../lib/paths.mjs';
+ import { loadRunners } from '../lib/runners.mjs';
+@@ -28,12 +29,13 @@ import { LEDGER_FIELDS } from '../lib/ledger.mjs';
+ const ROOT = DEFAULT_REPO_ROOT;
+ const ctx = makeContext({ log: () => {} });
+ 
+-function filesUnder(dir, exts, out = []) {
++function filesUnder(dir, exts, out = [], { skipTests = false } = {}) {
+   if (!existsSync(dir)) return out;
+   for (const e of readdirSync(dir, { withFileTypes: true })) {
+     if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+     const p = join(dir, e.name);
+-    if (e.isDirectory()) filesUnder(p, exts, out);
++    if (e.isDirectory()) filesUnder(p, exts, out, { skipTests });
++    else if (skipTests && e.name.endsWith('.test.mjs')) continue;
+     else if (exts.some((x) => e.name.endsWith(x))) out.push(p);
+   }
+   return out;
+@@ -72,14 +74,31 @@ test('runners.yml contains no credential', () => {
+ 
+ function scan(targets, names) {
+   const hits = [];
+-  for (const p of targets.filter((x) => existsSync(x) && statSync(x).isFile())) {
++  const files = targets.filter((x) => existsSync(x) && statSync(x).isFile());
++  for (const p of files) {
+     const text = readFileSync(p, 'utf8').toLowerCase();
+     for (const n of names) {
+       const re = new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+       if (re.test(text)) hits.push(`${relative(ROOT, p)} names "${n}"`);
+     }
+   }
+-  return hits;
++  return { hits, scanned: files.length };
++}
++
++function modelTargets(root = ROOT) {
++  return [...filesUnder(join(root, 'loop'), ['.mjs', '.md', '.json', '.yml']), join(root, 'data', 'config.json')];
++}
++
++function runnerTargets(root = ROOT) {
++  return [
++    ...filesUnder(join(root, 'loop'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
++    ...filesUnder(join(root, 'pulse'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
++    ...filesUnder(join(root, 'scripts'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
++    ...filesUnder(join(root, 'lib'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
++    ...filesUnder(join(root, 'app'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
++    ...filesUnder(join(root, 'tools'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
++    join(root, 'data', 'config.json'),
++  ];
+ }
+ 
+ test('the loop and the loop config name no model, provider or harness at all', () => {
+@@ -104,11 +123,12 @@ test('the loop and the loop config name no model, provider or harness at all', (
+       if (parts.length) names.add(parts[parts.length - 1].toLowerCase());
+     }
+   }
+-  const hits = scan(
+-    [...filesUnder(join(ROOT, 'loop'), ['.mjs', '.md', '.json', '.yml']), join(ROOT, 'data', 'config.json')],
++  const result = scan(
++    modelTargets(),
+     names,
+   );
+-  assert.deepEqual(hits, [], 'the swap is only real while runners.yml is the single point of change:\n' + hits.join('\n'));
++  assert.ok(result.scanned > 0, 'the model/provider/harness scan must read at least one file');
++  assert.deepEqual(result.hits, [], 'the swap is only real while runners.yml is the single point of change:\n' + result.hits.join('\n'));
+ });
+ 
+ test('no machinery path references a runner by id', () => {
+@@ -124,13 +144,10 @@ test('no machinery path references a runner by id', () => {
+   const reg = loadRunners(ctx);
+   const ids = reg.runners.map((r) => r.id.toLowerCase());
+   const commands = reg.runners.map((r) => r.command);
+-  const targets = [
+-    ...filesUnder(join(ROOT, 'loop'), ['.mjs', '.md', '.json', '.yml']),
+-    ...filesUnder(join(ROOT, 'pulse'), ['.mjs', '.md', '.json', '.yml']),
+-    ...filesUnder(join(ROOT, 'scripts'), ['.mjs', '.md', '.json', '.yml']),
+-    join(ROOT, 'data', 'config.json'),
+-  ];
+-  assert.deepEqual(scan(targets, ids), []);
++  const targets = runnerTargets();
++  const result = scan(targets, ids);
++  assert.ok(result.scanned > 0, 'the runner-id scan must read at least one file');
++  assert.deepEqual(result.hits, []);
+   for (const p of targets.filter((x) => existsSync(x) && statSync(x).isFile())) {
+     const text = readFileSync(p, 'utf8');
+     for (const c of commands) {
+@@ -139,6 +156,26 @@ test('no machinery path references a runner by id', () => {
+   }
+ });
+ 
++test('the runner-id scan catches a fixture under each covered root', () => {
++  const fixtureRoot = mkdtempSync(join(tmpdir(), 'portability-runner-'));
++  try {
++    const id = loadRunners(ctx).runners[0].id.toLowerCase();
++    for (const root of ['lib', 'app', 'tools']) {
++      const dir = join(fixtureRoot, root);
++      mkdirSync(dir, { recursive: true });
++      writeFileSync(join(dir, 'fixture.mjs'), `const runner = '${id}';\n`);
++    }
++    const result = scan(runnerTargets(fixtureRoot), [id]);
++    assert.deepEqual(
++      result.hits.sort(),
++      ['lib', 'app', 'tools'].map((root) => `${relative(ROOT, join(fixtureRoot, root, 'fixture.mjs'))} names "${id}"`).sort(),
++    );
++    assert.ok(result.scanned >= 3);
++  } finally {
++    rmSync(fixtureRoot, { recursive: true, force: true });
++  }
++});
++
+ /**
+  * Import specifiers, read from STATEMENTS rather than from the whole file text
+  * (beads addictedtoai-5tq5).
+diff --git a/scripts/no-change-dir-refs.test.mjs b/scripts/no-change-dir-refs.test.mjs
+index 075494c..33a9a99 100644
+--- a/scripts/no-change-dir-refs.test.mjs
++++ b/scripts/no-change-dir-refs.test.mjs
+@@ -33,17 +33,17 @@ function sourceFiles() {
+ const ALLOWED = [
+   {
+     file: 'scripts/check-spec-deltas.mjs',
+-    match: CHANGE_DIR,
++    match: /join\(openspecRoot, 'changes'\)|join\(changesDir, e\.name|openspec\/changes\/\$\{e\.name\}/,
+     reason: 'builds paths for delta files while scanning every in-flight change before archive',
+   },
+   {
+     file: 'scripts/check-spec-deltas.test.mjs',
+-    match: CHANGE_DIR,
++    match: /openspec\/changes\/(?:\$\{name\}|live-one)\//,
+     reason: 'creates and asserts temporary in-flight change trees to test the delta checker',
+   },
+   {
+     file: 'loop/lib/specs.mjs',
+-    match: CHANGE_DIR,
++    match: /`openspec\/changes\/`|join\(repoRoot, 'openspec', 'changes'(?:, change)?/,
+     reason: 'discovers and reads the repository directories that contain changes not yet archived',
+   },
+ ];
+@@ -67,7 +67,7 @@ function violations() {
+ }
+ 
+ function isAllowed(v) {
+-  return ALLOWED.some((entry) => entry.file === v.file && v.text.includes(entry.match));
++  return ALLOWED.some((entry) => entry.file === v.file && entry.match.test(v.text));
+ }
+ 
+ test('no source references an unarchived change directory', () => {
+@@ -89,7 +89,7 @@ test('every allow-list entry has a reason and is still live', () => {
+   for (const entry of ALLOWED) {
+     assert.ok(entry.reason, `${entry.file} needs a reason`);
+     assert.ok(
+-      found.some((v) => v.file === entry.file && v.text.includes(entry.match)),
++      found.some((v) => v.file === entry.file && entry.match.test(v.text)),
+       `${entry.file}::${entry.match} is stale and must be removed`,
+     );
+   }

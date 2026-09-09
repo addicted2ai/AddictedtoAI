@@ -165,6 +165,119 @@ judges are the instrument for quality and are not told which is which. The
 make-judges script prints the mapping, so the architect knew it before the
 verdicts; the judges did not, and the decision rule is mechanical.
 
-### The judges
+### The judges (appended between 23:52 and 23:56, both verdicts in; sources named)
 
-(pending — judge 1 dispatched 22:22 at max; judge 2 after it exits)
+Two sealed codex Luna max reviewers, each given the brief, two diffs labelled
+X and Y against `96e15fa`, and read-only access to both worktrees; neither
+told the rungs, that effort was the question, or that both came from one
+model. Mapping, sealed at 20:16:15 before any dispatch
+(`evidence/reviews/experiment-medium-vs-max/sealed-key.md`): judge 1 X =
+medium, Y = max; judge 2 X = max, Y = medium. The mirrored diffs are
+byte-identical pairs (`cmp` at 23:55: judge 2's X equals judge 1's Y, judge
+2's Y equals judge 1's X). The architect knew the mapping; the judges did
+not; the decision rule was pre-registered above.
+
+| | judge 1 | judge 2 |
+|---|---|---|
+| dispatched → exited | 22:52:13 → 23:19:57, **27.7 min** | 23:20:19 → 23:51:37, **31.3 min** |
+| tests run | TAP 13/13 and 3/3 per tree; 22 armed mutations per tree, hash-restored | TAP 13/13 and 3/3 per tree; 16 armed mutations per tree, hash-restored |
+| total_tokens / reasoning | 8,972,569 / 46,771 | 23,056,487 / 44,431 |
+| verdict | **Y** | **X** |
+| verdict decoded | **max** | **max** |
+
+Sources: `evidence/reviews/experiment-medium-vs-max/JUDGE1.md` and
+`JUDGE2.md` (verbatim copies of the judges' reports), `judge1.runner.txt`
+and `judge2.runner.txt` (the launcher's clock lines), the token figures from
+the rollouts `rollout-2026-09-08T22-52-16-…` and `rollout-2026-09-08T23-20-21-…`
+under `~/.codex/sessions/2026/09/08/` read by `f6-exp-tokens.mjs` (captured
+in `tokens.txt`; the judges' rollouts name BOTH worktrees, so the tool now
+reports four matches per worktree and attribution is by dispatch timestamp,
+exact because every run was sequential). Judge 1's FIRST run (22:22:12 →
+22:39, `rollout-…T22-22-12-…`, 3,137,734 tokens) is VOID and excluded: the
+maintainer had accidentally moved the worktree directories, so it executed
+zero tests and read the diffs statically; its report is kept as
+`JUDGE1-void-static-trees-absent.md` with its runner file, and it too
+preferred Y = max. The trees were restored, `git worktree repair` run, the
+`node_modules` junctions re-created, both trees re-verified green (13/13 and
+3/3), and judge 1 re-dispatched from scratch.
+
+**Decision rule applied: same CANDIDATE from OPPOSITE POSITIONS.** Judge 1
+chose its second-listed diff, judge 2 its first-listed; both chose the max
+tree. This is the pre-registered quality signal; the position effect measured
+earlier today is excluded by construction.
+
+**On what the judges agreed, independently, sealed from each other** (the
+architect verified each claim below in the raw files of both trees at 23:21
+and 23:53, not from the reports):
+
+- The scanned-files floor: max asserts `MIN_SCANNED_FILES = 2`
+  (`loop/tests/portability.test.mjs:31`); medium asserts `> 0`. A mutant that
+  reduces the model scan to one file passes medium (13/13) and fails max
+  (13/12/1) — judge 1's row "modelTargets() returns only data/config.json",
+  judge 2's finding Y.4.
+- The per-root fixture assertions: max asserts each of `lib/`, `app/`,
+  `tools/` independently with the exact fixture count; medium asserts an
+  aggregate. Both went red on each root's removal (13/12/1 each), so this
+  is a strength difference, not a correctness one.
+- Judge 2 alone: medium's allow-list keeps join-expression alternatives
+  (`no-change-dir-refs.test.mjs:36`, `:46`: `join(openspecRoot, 'changes')`,
+  `join(repoRoot, 'openspec', 'changes'…)`), so a named change path appended
+  to those generic join lines passes medium (3/3) and fails max (3/2/1) —
+  judge 2's finding Y.2, two arms. Max narrowed each entry to the literal
+  template form. This is "a narrowing that is looser than its reason", the
+  hazard task 22's bullet names.
+
+**What both trees share, found by both judges** (carried to task 22 for
+packet F; neither branch fixes them):
+
+- `scripts/no-change-dir-refs.test.mjs:70` decides per LINE: a named path on
+  the same line as an allowed generic template passes in both (3/3). The
+  brief's planted-path proof was written as a separate line, so it goes red
+  in both and does not reach this case.
+- The scan's extension list is `.mjs .md .json .yml` in both, so `app/`'s
+  `.tsx` source is unscanned; a planted runner id in a `.tsx` file passes
+  both (judge 1). **Sharpened by A2AI-Orch's diff read (diff read received before 23:56; Orch's board row carries its send time), measured on
+  the live tree: `app/` holds 32 files and 0 of them are scannable — the
+  root is LISTED AND CONTRIBUTES ZERO FILES until `.tsx`/`.ts` join the
+  extensions; `tools/` contributes 11 and `lib/` 227.** The per-root fixture
+  test passes for `app/` only because it plants a `.mjs` fixture under a
+  temporary `app/`: it proves the target LIST names `app/`, not that any
+  `app/` file is ever scanned — a check narrower than the property it names,
+  in the shape where a green reads as coverage that does not exist. Recorded
+  as listed-not-covered, never as covered.
+- The floor VALUE has no arm in either: mutating the floor assertion to
+  `>= 0` stays green in both (judge 2, rows 8-9); the recursive `skipTests`
+  propagation has no arm in either (judge 2, row 1). And the floor itself,
+  in max's stronger form, is a COLLAPSE detector, not a coverage one
+  (Orch, 23:58): `MIN_SCANNED_FILES = 2` catches "the walk returned
+  nothing" and cannot catch "the walk returned 3 of 238". The mechanical
+  stronger form is per root — each listed root contributes at least one
+  file — which would have failed `app/` today without anyone measuring.
+
+**Scored against the pre-registration.** H3 is FALSIFIED in its first clause
+(the judges did not report the two indistinguishable; they agreed max is
+stronger) and HOLDS in its second (every reported difference is in the test
+arms and the allow-list's breadth, never in the production edit — the one
+production line, `loop/lib/specs.mjs:23`, is identical in both trees, hash
+`BB082B83…` in both judges' tables). H4 holds: both trees pass
+`portability` 13/13 and `no-change-dir-refs` 3/3 on the live tree (every
+judge run, and the architect's own run at 22:50 after the trees were
+restored). The pre-registered outcome for "the judge prefers max on a
+finding that matters" applies — a floor that should go red and does not, a
+narrowing looser than its reason: **max stays for anything that touches
+enforcement; medium elsewhere.** n = 1 task shape, two judges, stated as
+such.
+
+**Cost of the verdict.** The two judges together spent 32.0M tokens and 59
+minutes to distinguish a 7-minute, 2.8M-token run from a 28-minute,
+18.4M-token one; the void run added 3.1M and 17 minutes. The experiment's
+own cost, workers and judges, is about 53M tokens and two hours of wall
+clock, against a ~15M-token, ~21-minute difference between the rungs on
+this one task.
+
+**Handover.** The max branch `exp/max-d75275c` at `8abe800` goes through the
+normal handover: the full suite on `8abe800` (started 23:53:09 by the
+architect, the machine quiet), A2AI-Orch's diff read, `merge --no-ff` under a
+hold, the record, then Orch's gates on the pinned tip. The medium branch
+`exp/medium-d75275c` at `f05cfb6` stays unmerged for the record and its
+worktree is torn down by the refusing form only.

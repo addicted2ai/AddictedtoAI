@@ -1,0 +1,5 @@
+launch 23:20:19
+note: no Desk (no node process matching loop/run.mjs). MEASURED, not inferred from a codex count.
+=== exp judge2 review starting (effort=max) ===
+exp judge2 review finished: exit=0 31.3m commits=0
+done 23:51:37

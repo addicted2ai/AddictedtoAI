@@ -1,0 +1,85 @@
+# f6-exp-tokens.mjs output, captured 2026-09-08 23:54 local, after both judges exited.
+# The judges' rollouts name BOTH worktrees, so each worktree query matches four rollouts; attribution is by dispatch timestamp (all runs sequential):
+#   21:44:06 medium worker | 21:51:20 max worker | 22:22:12 judge 1 VOID run | 22:52:16 judge 1 | 23:20:21 judge 2
+
+## query fleet6-exp-medium
+rollouts mentioning fleet6-exp-medium: 4
+
+  rollout-2026-09-08T21-44-06-01a08444-07de-7fc3-a660-a59974824c7a.jsonl
+  last write: 2026-09-08 21:44:06
+  input_tokens             2809319
+  cached_input_tokens      2674432
+  cache_write_input_tokens 0
+  output_tokens            16231
+  reasoning_output_tokens  6281
+  total_tokens             2825550
+
+  rollout-2026-09-08T22-22-12-01a08466-ea29-7b11-a38e-16823171041e.jsonl
+  last write: 2026-09-08 22:22:13
+  input_tokens             3094409
+  cached_input_tokens      2913792
+  cache_write_input_tokens 0
+  output_tokens            43325
+  reasoning_output_tokens  34495
+  total_tokens             3137734
+
+  rollout-2026-09-08T22-52-16-01a08482-70ed-7763-a271-b38756876928.jsonl
+  last write: 2026-09-08 22:52:16
+  input_tokens             8898733
+  cached_input_tokens      8676864
+  cache_write_input_tokens 0
+  output_tokens            73836
+  reasoning_output_tokens  46771
+  total_tokens             8972569
+
+  rollout-2026-09-08T23-20-21-01a0849c-25ea-7860-a179-255a2cda99b3.jsonl
+  last write: 2026-09-08 23:20:21
+  input_tokens             22987034
+  cached_input_tokens      22702592
+  cache_write_input_tokens 0
+  output_tokens            69453
+  reasoning_output_tokens  44431
+  total_tokens             23056487
+
+*** MORE THAN ONE ROLLOUT MATCHED — attribution is ambiguous, reported not resolved. ***
+
+## query fleet6-exp-max
+rollouts mentioning fleet6-exp-max: 4
+
+  rollout-2026-09-08T21-51-20-01a0844a-a8f6-74f2-83a8-3b2059a2fbd3.jsonl
+  last write: 2026-09-08 21:51:20
+  input_tokens             18332786
+  cached_input_tokens      17855232
+  cache_write_input_tokens 0
+  output_tokens            70102
+  reasoning_output_tokens  43023
+  total_tokens             18402888
+
+  rollout-2026-09-08T22-22-12-01a08466-ea29-7b11-a38e-16823171041e.jsonl
+  last write: 2026-09-08 22:22:13
+  input_tokens             3094409
+  cached_input_tokens      2913792
+  cache_write_input_tokens 0
+  output_tokens            43325
+  reasoning_output_tokens  34495
+  total_tokens             3137734
+
+  rollout-2026-09-08T22-52-16-01a08482-70ed-7763-a271-b38756876928.jsonl
+  last write: 2026-09-08 22:52:16
+  input_tokens             8898733
+  cached_input_tokens      8676864
+  cache_write_input_tokens 0
+  output_tokens            73836
+  reasoning_output_tokens  46771
+  total_tokens             8972569
+
+  rollout-2026-09-08T23-20-21-01a0849c-25ea-7860-a179-255a2cda99b3.jsonl
+  last write: 2026-09-08 23:20:21
+  input_tokens             22987034
+  cached_input_tokens      22702592
+  cache_write_input_tokens 0
+  output_tokens            69453
+  reasoning_output_tokens  44431
+  total_tokens             23056487
+
+*** MORE THAN ONE ROLLOUT MATCHED — attribution is ambiguous, reported not resolved. ***
