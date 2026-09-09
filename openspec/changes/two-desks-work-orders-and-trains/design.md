@@ -2060,7 +2060,39 @@ not by any of its six reviews. Adopted in the Stage 0 preamble: a review is
 scoped by its brief and the suite is not, so no packet merges without a
 completed suite on its final tip, and review briefs name properties and make
 the reviewer find and run their enforcement. B1 round 3 carries the red suite
-as item 0. Round count: A six, B1 heading for four. The reviewer also faulted the
+as item 0. Round count: A six, B1 heading for four.
+
+**`fleet5/4lrp` merged alone at `d8522ac` (Orch, 17:5x local) and NOT pushed
+on an inferred green.** The narrow reading of the morning's sequencing ("after
+the Stage 0 batch is green and pushed" meaning packet A's batch, now on
+origin) was adopted because the isolation argument runs the other way from
+4i2: gated alone on a known-good main, a green 4lrp joins the baseline and the
+next packet's run stays attributable, while waiting moves the same merge into
+a window that will hold a packet. Merge-tree showed zero conflict markers, two
+files, +98/−6 in `pulse/lib/mint.mjs` and its test. Six gates pinned to
+`d8522ac`: test EXIT 1 (314 s, 1,733 passed, 1 failed), build 0, launch 0,
+design 0, surfaces 0, analytics 0. The one failure named itself environmental
+in its own message — `pulse/tests/domain-seeds.test.mjs:210`, `openrouter-models`
+lost its connection during `runPulse --no-build` with `connect EADDRINUSE`, no
+ephemeral port to spare, three codex processes on the machine including round
+3's worker (`addictedtoai-ar0`, and statement 27's rule not to run the suite
+beside fetching agents) — and re-run alone passed 10 of 10 in five seconds;
+4lrp's own arms are green, 18 of 18. Orch still did not push: the bar is "the
+gates pass", one gate did not, and an inferred green is not a green — the
+moment of being certain is the moment a guardrail must not be loosened, at a
+cost of six minutes in a quiet window. Plan: round 3's suite first, then the
+six re-run pinned to `d8522ac` on a quiet machine, or the combined tip if
+round 3 lands first, reported as such. The reusable finding, Orch's own:
+its hand harness `orch-gates-only.sh` reimplements the gate SEQUENCE and not
+the loop's judgement — `gates.mjs` classifies a transport or lock failure as
+environmental (`gatesHitEnvironmentalFailure`) and books it `interrupted` and
+resumable, the harness books it as a defect — so it is strictly cruder than
+the machinery it stands in for and will one day block a good push or teach
+its operator to override it. The durable answer is Stage 1's train, which
+runs the suite once through `gates.mjs` with that classification; the hand
+harness retires with it. This is also the day's cleanest instance of why the
+train runs the full suite once and alone: three model processes and a suite
+on one machine, and the suite lost a port. The reviewer also faulted the
 brief, the third reviewer of the day to find a coordinator defect and the most
 substantive; its own near-miss mutation (`s.score === 0 && item.picked.length
 > 0` to `s.score === 0`) reddened three arms.
