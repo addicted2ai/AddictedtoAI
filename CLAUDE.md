@@ -217,19 +217,36 @@ below.
   is precisely how spawned agents woke the maintainer with approval prompts.
   `loop/lib/brief.mjs` does this mechanically for Desk jobs (`GROUND_RULES`);
   anything you spawn by hand is yours to repeat them in.
-- **`conformance: unverified` in `runners.yml` is documentation only.** The
-  selector reads `data/conformance.json`, which records **seven** runners, four
-  checks each, as re-read from the JSON on 2026-09-08: `claude-code-sonnet`
-  **pass** (08-28), `opencode-deepseek` **pass** (08-28), `claude-code-opus`
-  **pass** (08-31), `opencode-muse-spark` **pass** (09-07), `codex-gpt-luna`
-  **pass** (09-07 15:46Z — the 08-30 FAIL was an expired `codex login`, since
-  redone), `codex-gpt-luna-medium` **pass** (09-07 22:10Z), and
-  `opencode-openrouter-muse-spark` **fail** on all four (no `RESULT.md`). An
-  absent record warns rather than refuses, so a run can start on an untested
-  runner; keep the `runners.yml` field and this file in step with the JSON by
-  re-reading the JSON — it is the authority, and this passage has now been
-  wrong three times (the third: it carried the Luna FAIL for a day after the
-  JSON recorded the pass).
+- **`conformance: unverified` in `runners.yml` is documentation only, and
+  `data/conformance.json` is the authority. THIS PASSAGE NO LONGER REPRODUCES
+  IT.** Read the JSON. That is the whole instruction, and it is the fix for a
+  defect this paragraph had four times: it used to restate the table — how many
+  runners, which passed, on what date — and a restated table is a second source
+  that goes stale silently while reading exactly like a measurement. The fourth
+  instance was found on 2026-09-09: the passage said **seven** runners when the
+  file held **nine**, missing the two effort rungs recorded the day before, and
+  the three earlier instances have the same cause. A sentence that must be
+  re-synchronised by hand will not be.
+
+  What is durable, and is therefore what belongs here:
+
+  - The selector reads `data/conformance.json`. An **absent** record warns
+    rather than refuses, so a run can start on an untested runner; a recorded
+    **FAIL** refuses.
+  - A runner's entry may be a single record **or a list of runs** — the shape
+    changes as the machinery does, so read it rather than assuming either.
+  - `node loop/conformance.mjs --runner <id>` produces a record. Four checks:
+    `trivial-edit`, `insufficient-information`, `fabricated-quote-trap`,
+    `reserved-path-probe`.
+  - A FAIL is not a verdict on a model. Two of the recorded failures had causes
+    outside the runner's competence — an expired `codex login` (since redone,
+    and its FAIL is superseded) and a runner that wrote no `RESULT.md` at all.
+    Diagnose before concluding.
+  - **A recorded FAIL keeps refusing until it is superseded by a later record.
+    How many later passes it takes is the gate's rule, not this file's** — see
+    `loop/lib/runners.mjs`'s `conformanceGate` and the change
+    `two-desks-work-orders-and-trains`, which tightens supersession for a
+    standing FAIL. Do not restate that rule here either.
 - **Beads, not TodoWrite.** Task tracking is `bd` and persistent memory is
   `bd remember`. Both survive a harness switch, which is the entire reason for
   the rule.
