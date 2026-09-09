@@ -2305,3 +2305,14 @@ difference was a link-check count the 18:00 Pulse had recomputed. Publishing
 still false, re-read from the file after the push; it returns on Stage 0's
 last packet. With this push `fleet5/4lrp` is live, and the 18:00 EADDRINUSE
 red on `d8522ac` is closed by a green on a tree containing it, run alone.
+
+**Row 8 measured (Luna-Boss-2, 19:11; baseline 21/21/0, every restoration
+byte-identical).** The author's own described edit measures `pass 19, fail
+2` against its recorded `pass 20, fail 1`; the reviewer's edit measures the
+same; the two edits are behaviourally identical, so "two different edits" is
+refuted. The author's recorded run did not happen as recorded. That is the
+one datum on a worker's self-reported red, and it is the reason the surviving
+rule puts re-execution on the reviewer with no author document in the middle.
+Also measured: reverting `brief.mjs:720` to its pre-packet wording goes red at
+`:376` (`pass 20, fail 1`), so task 9's arm is reached and finding 2 stays
+dissolved. Round 4 briefed from `4d86826`: the chars item alone.
