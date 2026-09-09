@@ -2190,7 +2190,21 @@ local date, so every bead filed after 18:00 local reads a day ahead (yejx
 reads 2026-09-09; tbho, fnsp, m22a and kb9e read 2026-09-08; all filed the
 same local day). Nobody rewrote bd's field, which is another tool's record;
 this document cites beads by id and by the local clock, never by that
-field, and a grep for the UTC date across the four documents finds nothing. Orch first declined to push until Stage 0's last packet,
+field, and a grep for the UTC date across the four documents finds nothing.
+The plan for the re-run changed at 18:46 from gating `d8522ac` to gating the
+frozen tip: HEAD was eleven commits past it, Orch's pin refuses a sha that is
+not HEAD, and the range carried gate-relevant files from three lanes — the
+architect's six (openspec plus the `.gitignore` line), mem-cond's four to
+`FULL-MEM-LOG.md` (read by `mem-log-integrity.test.mjs`), and the Pulse's
+`de6405c` (three `data/` files) — found by enumerating the range by author
+rather than assuming it was one lane plus the Pulse. The Pulse's schedule,
+measured by Orch from the Windows task rather than stopped defensively: four
+daily triggers at 00:00, 06:00, 12:00 and 18:00 local, the 18:00 firing being
+`de6405c` and the next more than five hours out. So tonight's run cannot be
+tripped from that direction, and any gate run or train that straddles one of
+those four moments has a third mover committing gate-relevant data mid-run —
+a fact with a number for the train's timing in Stage 1, not a reason to
+disable the task. Orch first declined to push until Stage 0's last packet,
 naming the cost (81 commits and today's visitor-facing repairs invisible, the
 mission's complaint made literal); the architect recommended pushing the
 verified sha with publishing left off, the two being separate switches — the
