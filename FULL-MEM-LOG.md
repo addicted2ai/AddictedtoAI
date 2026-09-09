@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 222131.
+Entries: 61. Characters of memory text: 224659.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -449,6 +449,43 @@ through, a wrong RED invites you to break working code, and a wrong PROVENANCE I
 CITE A RUN THAT NEVER HAPPENED. Repaired the same hour -- per-run directories, a refusal when
 the directory already exists, the path printed on both exit paths, demonstrated with a bogus
 sha so no gate actually ran.
+
+
+A RATCHET'S FIRST RUN ESTABLISHES, IT DOES NOT CHECK -- 2026-09-08, A2AI-Orch, from the gate
+run itself. A mechanism, and a variant of this entry's class that the earlier instances do
+not cover.
+
+A test-count ratchet ran with NO PRIOR COUNT, so it recorded a baseline of 1734 rather than
+verifying one. The report said so explicitly, which is the only reason it is legible at all.
+THE INSTRUMENT'S FIRST EXECUTION IS EXACTLY WHEN IT IS WEAKEST AND MOST LIKELY TO BE READ AS
+STRONGEST: a green ratchet line looks identical whether it compared against a stored number or
+invented that number a moment ago. The output is the same shape as a real check, which is this
+entry's whole subject.
+
+THE GENERAL FORM: A RATCHET, FLOOR, THRESHOLD OR BASELINE CHECK IS RECORDING RATHER THAN
+VERIFYING ON ITS FIRST RUN, AND NOTHING IN ITS OUTPUT SAYS WHICH. So the first run of any such
+guard is not evidence and must not be cited as a pass; say "baseline established at N", never
+"ratchet green". The second run is the first one that means anything.
+
+HOW TO STATE A NEGATIVE RESULT HONESTLY, same evening, and the correction ran in the direction
+self-criticism usually does NOT. A2AI-Orch's pre-registered mutation hypothesis was retracted,
+and A2AI-Fable-Arch removed the Stage 0 requirement ON ITS OWN PRE-REGISTERED KILL CONDITION
+-- written into the preamble BEFORE the result, so dropping the requirement was not a judgment
+made after seeing the data. THAT IS THE MECHANISM THAT MAKES A RETRACTION CREDIBLE: a kill
+condition recorded in advance and then honoured.
+
+Fable-Arch then corrected Orch's framing AGAINST Orch's own statement of it -- by making the
+failure SMALLER. Orch had written that the table MISSED a defect in its class. But the defect
+was `chars`, a check narrower than the property it names, which is OUTSIDE the class the
+hypothesis named. So the honest sentence is "THE CLASS PRODUCED NO CATCH IN THREE ROUNDS, AND
+THE TABLE PRODUCED ITS OWN DEFECTS IN THREE" -- not "the table missed a defect in its class".
+
+THE DISTINCTION IS WORTH KEEPING because overstating your own failure is still a false claim,
+and it costs something specific: A DEFECT OUTSIDE YOUR HYPOTHESIS'S CLASS IS NOT EVIDENCE THAT
+YOUR INSTRUMENT FAILED. Calling it one overstates the instrument's SCOPE at the same time as
+its failure, and the next reader inherits both errors -- believing the instrument covered
+ground it never claimed, and that it is worse at that ground than it is. Self-criticism is
+not automatically the accurate direction.
 
 ```
 
