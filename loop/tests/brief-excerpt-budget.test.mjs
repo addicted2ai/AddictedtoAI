@@ -354,7 +354,7 @@ test('the constitution floor survives three pending amendments', () => {
   const ctx = allocationCorpus();
   const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 24000, pendingRoot: ctx.pendingRoot });
   assert.ok(ex.text.length <= 24000, `emitted length ${ex.text.length} exceeds cap 24000`);
-  assert.equal(ex.chars, ex.text.length);
+  assert.equal(ex.chars, ex.text.length, `emitted length ${ex.text.length}, cap 24000; chars field mismatch`);
   for (const cap of ['pulse', 'site', 'review']) {
     assert.match(ex.text, new RegExp(`END-${cap}`));
   }
@@ -372,7 +372,11 @@ test('a tight cap keeps every constitution marker in priority order', () => {
   assert.match(ex.text.slice(0, positions[0]), /PULSE_FIRST_CONTENT/);
   assert.ok(ex.text.indexOf('### From `specs/pulse`') < ex.text.indexOf('### From `specs/site`'));
   assert.ok(ex.text.indexOf('### From `specs/site`') < ex.text.indexOf('### From `specs/review`'));
-  assert.equal((ex.text.match(/\n\n---\n\n/g) || []).length, 2, ex.text);
+  assert.equal(
+    (ex.text.match(/\n\n---\n\n/g) || []).length,
+    2,
+    `emitted length ${ex.text.length}, cap 900; expected two separators`,
+  );
   assert.ok(ex.text.length <= 900, `emitted length ${ex.text.length} exceeds cap 900`);
   assert.equal(ex.chars, ex.text.length);
   ctx.cleanup();
@@ -391,7 +395,7 @@ test('a cap below the full constitution minimum accounts for structural overhead
   const ctx = tightCapCorpus();
   assert.throws(
     () => excerptsFor(ctx.repoRoot, 'repair', { maxChars: 800 }),
-    /excerpt configuration error: marker shortfall=\d+.*pulse governing rule.*site governing rule.*review governing rule/,
+    /excerpt configuration error: marker shortfall=33; maxChars=800 is below the 833-character constitution marker, heading, and separator minimum for "pulse governing rule", "site governing rule", "review governing rule"/,
   );
   ctx.cleanup();
 });
