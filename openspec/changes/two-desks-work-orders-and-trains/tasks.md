@@ -967,12 +967,18 @@ the brief under `evidence/reviews/`.
       file; (d) FAIL, PASS, PASS, FAIL, PASS — refused (the run of passes
       reset); (e) the legacy single-object record gives `entries 1`, and a
       legacy FAIL still refuses; (f) `recordConformance` twice gives two
-      entries, the first byte-equal to what it was. MUTATIONS (perform, red,
-      restore): the overwrite restored (`all[record.runner] = record`) turns
-      (c)'s "still present" and (f) red, and the fail-then-one-pass fixture is
+      entries, the first byte-equal to what it was; (g) ABSENCE IS NOT A PASS,
+      which needs its own fixture because no other arm contains an absent
+      check: FAIL, PASS, an entry whose `checks` omits that check entirely,
+      PASS, PASS — refused, because the omission breaks the run and only two
+      consecutive passes follow the FAIL. MUTATIONS (perform, red, restore):
+      the overwrite restored (`all[record.runner] = record`) turns (c)'s
+      "still present" and (f) red, and the fail-then-one-pass fixture is
       wrongly allowed under a re-run — today's behaviour, task 21's named
       mutation; the default threshold 3 to 1 turns (a)'s refusal at the
-      default red; an absent check treated as PASS turns (d) red.
+      default red; an absent check treated as PASS turns (g) red and ONLY
+      (g) — it leaves (d) green, since (d) carries no absent entry, which is
+      why (g) exists.
       (vii) CLOSURE (grepped at `dc54da0`): readers of the record are
       `select.mjs:154` and `run.mjs:970` only; tests that WRITE the legacy
       shape and must stay green through normalisation, UNEDITED —
@@ -1187,11 +1193,21 @@ the brief under `evidence/reviews/`.
       without (mutation: the flag not propagated at `:39` turns it red).
       (vii) FROM BEAD `addictedtoai-tbho` (the orchestrator's; its criteria 3
       and 4 are cheap and homeless): a comment beside `authority_sha` in
-      `loop/lib/ledger.mjs` stating the two limits in the bead's words — it
-      buys auditability, not prevention (a freeze holds the text; the field
-      records which text that was), and the fleet has no ledger line, so its
-      form until Stage 3 is the `authority:` line in RESULT.md and the
-      handover; and the MUTATION performed in the worktree and recorded in
+      `loop/lib/ledger.mjs` stating the two limits, which the bead words as
+      follows and which are quoted here so the brief carries them and no
+      worker has to invent the wording — **"1. IT BUYS AUDITABILITY, NOT
+      PREVENTION. Nothing about recording a sha stops the text moving under a
+      run. What caught the churn on 2026-09-08 was a HABIT — re-reading the
+      committed blob immediately before dispatch — and that habit stays and is
+      not replaced by this field. A freeze agreed between sessions is what
+      holds the text for the duration of a run; this records which text that
+      was. 2. THE FLEET HAS NO LEDGER LINE. The hand-driven codex worker
+      pipeline that is implementing Stage 0 writes no ledger entry at all, so
+      until Stage 3 retires the fleet its form of this field is a line in
+      RESULT.md and in the handover: `authority: <change>@<sha>`, adopted from
+      packet A round 3 onward."** The comment may compress that prose but
+      SHALL state both limits and SHALL NOT name a model, provider or harness;
+      no test pins its wording. And the MUTATION performed in the worktree and recorded in
       the report, not committed: `LEDGER_FIELDS` extended to require
       `authority_sha` turns `issues.test.mjs:242-243` and
       `portability.test.mjs:409` red. Files for F, the closure over the
