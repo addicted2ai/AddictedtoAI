@@ -2367,3 +2367,22 @@ lines the previous review named gets a delta review at medium; any
 production change gets the full sealed max review; a delta reviewer's
 out-of-scope finding is a full-review trigger; the full suite on the final
 tip backstops both.
+
+**B1 round 6 — branch `8930036`; worker about 14 minutes at medium; test
+file and `RESULT6.md` only, `portability.test.mjs` untouched as the
+experiment requires; all four of REVIEW5's items pinned (shortfall and
+minimum mutated separately by Luna-Boss-2, each red and restored); delta
+reviewer dispatched 21:04 at medium, declaring itself unsealed.**
+Luna-Boss-2's withheld finding: the fix for "an assertion with no failure
+message" added a bare `assert.equal(ex.chars, ex.text.length)` at `:381`,
+four lines below the one it fixed, in the same arm, in the same commit — the
+fifth consecutive round in which fixing the named instance relocated the
+class. Its finding about its own briefs is adopted in the Stage 0 preamble:
+a revision brief names the class and requires a file sweep, and the reviewer
+verifies the sweep. Ruling: round 7 is class-scoped either way (every
+assertion in the file carries the numbers it compares; sweep; list), medium
+worker and medium delta review; if the delta reviewer misses `:381` that is
+new scope in the same round. Luna-Boss-2's defect-location hypotheses come
+out of its procedure from B2 onward on their own kill condition (round 4 at
+0, round 5 no-data, round 6 at 0 of 5), honoured as written; the withheld
+finding stays, productive in three of three outings.

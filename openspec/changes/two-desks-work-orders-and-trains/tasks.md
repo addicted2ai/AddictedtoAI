@@ -145,6 +145,22 @@ full sealed max review; a delta reviewer's out-of-scope finding is a
 full-review trigger; and the completed full suite on the final tip backstops
 both kinds.
 
+**A revision brief names the CLASS and requires a sweep of the file; the
+reviewer verifies the sweep (adopted at B1 round 6, 21:05, from
+Luna-Boss-2's finding about its own briefs).** Five consecutive B1 rounds
+fixed the instance a review named and relocated its class to the next line:
+round 3's `chars` did not measure what the ceiling bounds; round 4 left four
+mutations to correct code unnoticed; round 5's shortfall arm accepted any
+digits; round 6's fix for an assertion without a failure message added a bare
+assertion four lines below it, in the same arm, in the same commit. Each
+author did exactly what its brief said and each brief said exactly what the
+previous review found: a brief that names LINES gets the lines fixed and the
+class walks. So a revision brief states the class ("every assertion in this
+file carries the numbers it compares", "every arm added to pin a value must
+fail when that value is wrong"), requires the worker to sweep the file for
+every instance and list each one changed, and the reviewer's check is the
+sweep — it searches the file for the class itself — not the named lines.
+
 **And the architect's own obligation before every freeze: when a task says
 "every X", enumerate the X's and confirm each one can satisfy it.** Two of
 packet A's five revisions were defects in the STANDARD, not the implementation
