@@ -786,7 +786,7 @@ export function assembleRevisionBrief(ctx, {
     : '';
   const diff = String(diffText ?? '');
 
-  return `# Revision pass — job ${jobId}, type \`${job.type}\`, branch \`${branch}\`
+  return `# Revision pass (one only) — job ${jobId}, type \`${job.type}\`, branch \`${branch}\`
 
 This is a continuing invocation in the same worktree. There is no prior
 conversation and no session to resume.
