@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { runConformance, recordConformance, removeThrowawayDir } from '../conformance.mjs';
 import { gitTry } from '../lib/git.mjs';
-import { conformanceGate } from '../lib/runners.mjs';
+import { conformanceGate, conformanceHistory } from '../lib/runners.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { runLoop } from '../run.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml } from './helpers.mjs';
@@ -27,6 +27,17 @@ const NOW = new Date('2026-09-10T12:00:00.000Z');
 function repoFor(mode) {
   const ctx = makeRepo({ now: () => NOW, runners: runnersYaml({ command: mockCommand(mode) }) });
   return ctx;
+}
+
+function historyEntry(date, result, { pass = result === 'PASS', includeCheck = true } = {}) {
+  return {
+    runner: 'mock-frontier',
+    date,
+    pass,
+    checks: includeCheck
+      ? [{ name: 'fabricated-quote-trap', result, evidence: 'history fixture' }]
+      : [],
+  };
 }
 
 test('a conforming runner passes all four checks', async () => {
@@ -100,6 +111,135 @@ test('the conformance record gates selection, and the refusal names the failed c
   assert.match(refused.refused, /fabricated-quote-trap/);
   assert.match(refused.refused, /may not be used for author or reviewer roles/);
   ctx.cleanup();
+});
+
+test('one pass does not supersede a failure unless the threshold is one', () => {
+  const ctx = repoFor('conform-good');
+  recordConformance(ctx, historyEntry('2026-09-08', 'FAIL', { pass: false }));
+  recordConformance(ctx, historyEntry('2026-09-09', 'PASS'));
+  const records = JSON.parse(readFileSync(ctx.conformancePath, 'utf8'));
+  const defaultGate = conformanceGate(records, 'mock-frontier');
+  assert.equal(defaultGate.ok, false);
+  assert.equal(defaultGate.entries, 2);
+  assert.deepEqual(defaultGate.failed, ['fabricated-quote-trap']);
+  assert.match(defaultGate.reason, /standing FAIL 2026-09-08/);
+  assert.match(defaultGate.reason, /1 consecutive PASSes since/);
+  assert.match(defaultGate.reason, /read 2 conformance entries/);
+
+  assert.equal(conformanceGate(records, 'mock-frontier', { passesToSupersede: 2 }).ok, false);
+  const onePassThreshold = conformanceGate(records, 'mock-frontier', { passesToSupersede: 1 });
+  assert.equal(onePassThreshold.ok, true);
+  assert.equal(onePassThreshold.entries, 2);
+  ctx.cleanup();
+});
+
+test('the gate reads each check result rather than the entry pass flag', () => {
+  const records = {
+    'mock-frontier': [historyEntry('2026-09-09', 'PASS', { pass: false })],
+  };
+  const gate = conformanceGate(records, 'mock-frontier');
+  assert.equal(gate.ok, true);
+  assert.equal(gate.entries, 1);
+});
+
+test('an absent record warns with zero entries, and a present history reports its count', async () => {
+  const ctx = repoFor('conform-good');
+  const absent = conformanceGate({}, 'mock-frontier');
+  assert.deepEqual(absent, { ok: true, unrecorded: true, entries: 0 });
+  const result = await runLoop(ctx, {
+    runner: 'mock-frontier',
+    reviewer: 'mock-reviewer',
+    dryRun: true,
+    noGates: true,
+  });
+  assert.match(ctx.output(), /loaded 0 conformance entries/);
+  assert.match(ctx.output(), /has no recorded conformance result/);
+
+  const records = {
+    'mock-frontier': [historyEntry('2026-09-08', 'PASS'), historyEntry('2026-09-09', 'PASS')],
+  };
+  const twoEntries = conformanceGate(records, 'mock-frontier');
+  assert.equal(twoEntries.entries, 2);
+  assert.equal(twoEntries.ok, true);
+  assert.equal(result.started, true);
+  ctx.cleanup();
+});
+
+test('three consecutive passes supersede a failure while the failure remains readable', () => {
+  const ctx = repoFor('conform-good');
+  for (const [date, result, pass] of [
+    ['2026-09-06', 'FAIL', false],
+    ['2026-09-07', 'PASS', true],
+    ['2026-09-08', 'PASS', true],
+    ['2026-09-09', 'PASS', true],
+  ]) {
+    recordConformance(ctx, historyEntry(date, result, { pass }));
+  }
+  const records = JSON.parse(readFileSync(ctx.conformancePath, 'utf8'));
+  const gate = conformanceGate(records, 'mock-frontier');
+  assert.equal(gate.ok, true);
+  assert.equal(gate.entries, 4);
+  assert.equal(conformanceHistory(records, 'mock-frontier')[0].checks[0].result, 'FAIL');
+  ctx.cleanup();
+});
+
+test('a later failure resets the consecutive-pass run', () => {
+  const records = {
+    'mock-frontier': [
+      historyEntry('2026-09-06', 'FAIL', { pass: false }),
+      historyEntry('2026-09-07', 'PASS'),
+      historyEntry('2026-09-08', 'PASS'),
+      historyEntry('2026-09-09', 'FAIL', { pass: false }),
+      historyEntry('2026-09-10', 'PASS'),
+    ],
+  };
+  const gate = conformanceGate(records, 'mock-frontier');
+  assert.equal(gate.ok, false);
+  assert.equal(gate.entries, 5);
+  assert.match(gate.reason, /standing FAIL 2026-09-09/);
+  assert.match(gate.reason, /1 consecutive PASSes since/);
+});
+
+test('the legacy single-object record normalizes to one entry and still refuses', () => {
+  const legacy = {
+    'mock-frontier': historyEntry('2026-09-06', 'FAIL', { pass: false }),
+  };
+  assert.deepEqual(conformanceHistory(legacy, 'mock-frontier'), [legacy['mock-frontier']]);
+  const gate = conformanceGate(legacy, 'mock-frontier');
+  assert.equal(gate.ok, false);
+  assert.equal(gate.entries, 1);
+});
+
+test('recordConformance appends entries and preserves the first entry', () => {
+  const ctx = repoFor('conform-good');
+  const first = historyEntry('2026-09-08', 'FAIL', { pass: false });
+  const second = historyEntry('2026-09-09', 'PASS');
+  recordConformance(ctx, first);
+  const afterFirst = JSON.parse(readFileSync(ctx.conformancePath, 'utf8'));
+  const firstBytes = JSON.stringify(afterFirst['mock-frontier'][0]);
+  recordConformance(ctx, second);
+  const afterSecond = JSON.parse(readFileSync(ctx.conformancePath, 'utf8'));
+  assert.equal(afterSecond['mock-frontier'].length, 2);
+  assert.equal(JSON.stringify(afterSecond['mock-frontier'][0]), firstBytes);
+  assert.equal(afterSecond['mock-frontier'][1].checks[0].result, 'PASS');
+  ctx.cleanup();
+});
+
+test('an absent check breaks the pass run and is not treated as PASS', () => {
+  const records = {
+    'mock-frontier': [
+      historyEntry('2026-09-06', 'FAIL', { pass: false }),
+      historyEntry('2026-09-07', 'PASS'),
+      historyEntry('2026-09-08', 'PASS', { includeCheck: false }),
+      historyEntry('2026-09-09', 'PASS'),
+      historyEntry('2026-09-10', 'PASS'),
+    ],
+  };
+  const gate = conformanceGate(records, 'mock-frontier');
+  assert.equal(gate.ok, false);
+  assert.equal(gate.entries, 5);
+  assert.match(gate.reason, /standing FAIL 2026-09-06/);
+  assert.match(gate.reason, /2 consecutive PASSes since/);
 });
 
 test('a check completed without a well-formed RESULT.md FAILs regardless of the diff', async () => {

@@ -85,6 +85,12 @@ export function appendLedger(ctx, line) {
  * `brief_chars`, `gate_seconds` and `authority_sha` are optional, additive
  * measurements: the author brief length, the last timing recorded for each
  * gate, and the commit the brief was assembled against.
+ * `authority_sha` buys auditability, not prevention: recording it cannot stop
+ * the text moving under a run, so re-reading the committed blob immediately
+ * before dispatch and the freeze agreed between sessions remain; this records
+ * which text that freeze held. The hand-driven worker pipeline has no ledger
+ * line; until Stage 3 retires it, its authority is written as
+ * `authority: <change>@<sha>` in `RESULT.md` and the handover.
  */
 export function makeLedgerLine({
   id,

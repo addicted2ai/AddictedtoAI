@@ -13,7 +13,7 @@ import { writeFileSync } from 'node:fs';
 
 import { loadConfig } from '../lib/config.mjs';
 import { NO_OUTPUT_SIGNAL } from '../lib/health.mjs';
-import { loadRunners } from '../lib/runners.mjs';
+import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
 import { escalationTarget, selectJob } from '../lib/select.mjs';
 import { runLoop } from '../run.mjs';
@@ -35,37 +35,62 @@ function yamlCommand() {
   return mockCommand('noop').replace(/'/g, "''");
 }
 
-function policyRegistry({ cheapTypes = ['repair'], frontierTypes = null, escalatesTo = FRONTIER } = {}) {
+function policyRegistry({
+  cheapTypes = ['repair'],
+  frontierTypes = null,
+  escalatesTo = FRONTIER,
+  defaultId = FRONTIER,
+  cheapEnabled,
+  frontierEnabled,
+  reviewerEnabled,
+} = {}) {
   const command = yamlCommand();
   const cheapClearance = cheapTypes.join(', ');
   const frontierClearance = frontierTypes ? `    job_types: [${frontierTypes.join(', ')}]\n` : '';
   const escalation = escalatesTo === undefined ? '' : `    escalates_to: ${escalatesTo}\n`;
+  const enabled = (value) => (value === undefined ? '' : `    enabled: ${value}\n`);
   return `version: 1
-default: ${FRONTIER}
+default: ${defaultId}
 runners:
   - id: ${CHEAP}
     provider: provider-a
     tier: cheap
     roles: [author]
     command: '${command}'
-    job_types: [${cheapClearance}]
+${enabled(cheapEnabled)}    job_types: [${cheapClearance}]
 ${escalation}  - id: ${FRONTIER}
     provider: provider-b
     tier: frontier
     roles: [author, reviewer]
-${frontierClearance}    command: '${command}'
+${enabled(frontierEnabled)}${frontierClearance}    command: '${command}'
   - id: ${REVIEWER}
     provider: provider-a
     tier: frontier
     roles: [reviewer]
-    command: '${command}'
+${enabled(reviewerEnabled)}    command: '${command}'
 `;
 }
 
-function fixture({ queue, ledger = [], cheapTypes = ['repair'], frontierTypes = null } = {}) {
+function fixture({
+  queue,
+  ledger = [],
+  cheapTypes = ['repair'],
+  frontierTypes = null,
+  defaultId = FRONTIER,
+  cheapEnabled,
+  frontierEnabled,
+  reviewerEnabled,
+} = {}) {
   const ctx = makeRepo({
     now: () => NOW,
-    runners: policyRegistry({ cheapTypes, frontierTypes }),
+    runners: policyRegistry({
+      cheapTypes,
+      frontierTypes,
+      defaultId,
+      cheapEnabled,
+      frontierEnabled,
+      reviewerEnabled,
+    }),
   });
   writeQueue(ctx, queue);
   writeLedger(ctx, ledger);
@@ -172,6 +197,119 @@ test('paused lane has no ranked candidate and no escalation target', () => {
   assert.equal(sel.selected, null);
   assert.ok(sel.blocked);
   assert.equal(escalationTarget(registry, runner, sel), null);
+  ctx.cleanup();
+});
+
+test('a disabled explicit runner refuses selection and reports runner:disabled', async () => {
+  const ctx = fixture({
+    queue: [{ type: 'repair', title: 'a repair that would otherwise qualify', rank: 100 }],
+    cheapEnabled: false,
+  });
+  const first = selection(ctx);
+  assert.equal(first.runner.enabled, false);
+  assert.equal(first.sel.selected, null);
+  assert.equal(first.sel.topRanked, null);
+  assert.equal(first.sel.refusals[0].rule, 'runner:disabled');
+  assert.ok(first.sel.blocked);
+
+  const result = await runLoop(ctx, {
+    runner: CHEAP,
+    reviewer: REVIEWER,
+    dryRun: true,
+    noGates: true,
+  });
+  assert.equal(result.selected, null);
+  assert.equal(result.rule, 'runner:disabled');
+  assert.match(result.refused, new RegExp(CHEAP));
+  assert.match(ctx.output(), /runner:disabled/);
+  assert.match(ctx.output(), new RegExp(CHEAP));
+  ctx.cleanup();
+});
+
+test('omitting enabled keeps an entry enabled and selectable', () => {
+  const ctx = fixture({
+    queue: [{ type: 'repair', title: 'a repair that qualifies', rank: 100 }],
+  });
+  const { runner, sel } = selection(ctx);
+  assert.equal(runner.enabled, undefined);
+  assert.equal(sel.selected.type, 'repair');
+  ctx.cleanup();
+});
+
+test('a disabled reviewer is refused before its health gate', async () => {
+  const ctx = fixture({
+    queue: [{ type: 'repair', title: 'a repair that would otherwise qualify', rank: 100 }],
+    reviewerEnabled: false,
+    ledger: Array.from({ length: 3 }, (_, i) =>
+      ledgerLine({
+        id: `reviewer-health-${i}`,
+        runner: REVIEWER,
+        provider: 'provider-a',
+        tier: 'frontier',
+        outcome: 'interrupted',
+        signal: NO_OUTPUT_SIGNAL,
+        mm: 0,
+        ts: new Date(NOW.getTime() - i * 1000).toISOString(),
+      }),
+    ),
+  });
+  const result = await runLoop(ctx, {
+    runner: CHEAP,
+    reviewer: REVIEWER,
+    dryRun: true,
+    noGates: true,
+  });
+  assert.equal(result.rule, 'runner:disabled');
+  assert.match(result.refused, /reviewer role/);
+  assert.match(ctx.output(), /runner:disabled/);
+  assert.doesNotMatch(ctx.output(), /runner:health/);
+  ctx.cleanup();
+});
+
+test('a disabled escalation target is not returned or adopted', async () => {
+  const ctx = fixture({
+    queue: [{ type: 'scout', title: 'the daily outward sweep', rank: 100 }],
+    frontierEnabled: false,
+  });
+  const first = selection(ctx);
+  assert.equal(first.sel.topRanked.rule, 'runner:job-type');
+  assert.equal(escalationTarget(first.registry, first.runner, first.sel), null);
+  const disabledTarget = first.registry.byId.get(FRONTIER);
+  const targetSelection = selectJob(ctx, {
+    cfg: first.cfg,
+    ledger: readLedger(ctx),
+    runner: disabledTarget,
+    dryRun: true,
+  });
+  assert.equal(targetSelection.refusals[0].rule, 'runner:disabled');
+
+  const result = await runLoop(ctx, {
+    runner: CHEAP,
+    reviewer: REVIEWER,
+    dryRun: true,
+    noGates: true,
+  });
+  assert.equal(result.selected, null);
+  assert.equal(result.nothingQualified, true);
+  assert.match(ctx.output(), new RegExp(`${FRONTIER}.*disabled`));
+  ctx.cleanup();
+});
+
+test('enabled must be boolean when present', () => {
+  const ctx = fixture({ queue: [], cheapEnabled: 'yes' });
+  assert.throws(
+    () => loadRunners({ runnersPath: ctx.runnersPath }),
+    (error) =>
+      error.message ===
+      `${ctx.runnersPath} runner "${CHEAP}": "enabled" must be a boolean when present`,
+  );
+  ctx.cleanup();
+});
+
+test('a disabled default is skipped in favor of the first enabled author runner', () => {
+  const ctx = fixture({ queue: [], defaultId: CHEAP, cheapEnabled: false });
+  const registry = loadRunners({ runnersPath: ctx.runnersPath });
+  assert.equal(pickRunner(registry, { role: 'author' }).id, FRONTIER);
   ctx.cleanup();
 });
 

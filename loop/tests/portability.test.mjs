@@ -23,13 +23,14 @@ import { loadRunners } from '../lib/runners.mjs';
 import { renderCommand } from '../lib/exec.mjs';
 import { assembleBrief } from '../lib/brief.mjs';
 import { RESULT_PROTOCOL_INSTRUCTION } from '../lib/result.mjs';
-import { ledgerSchemaLine } from '../run.mjs';
-import { LEDGER_FIELDS } from '../lib/ledger.mjs';
+import { LEDGER_FIELDS, makeLedgerLine } from '../lib/ledger.mjs';
 
 const ROOT = DEFAULT_REPO_ROOT;
 const ctx = makeContext({ log: () => {} });
 const MIN_SCANNED_FILES = 2;
 const RUNNER_FIXTURE_ROOTS = ['lib', 'app', 'tools'];
+const RUNNER_SCAN_ROOTS = ['loop', 'pulse', 'scripts', 'lib', 'app', 'tools'];
+const RUNNER_SCAN_EXTENSIONS = ['.mjs', '.md', '.json', '.yml', '.ts', '.tsx'];
 
 function filesUnder(dir, exts, out = [], { skipTests = false } = {}) {
   if (!existsSync(dir)) return out;
@@ -87,6 +88,10 @@ function scan(targets, names) {
   return { hits, scanned: files.length };
 }
 
+export function meetsScanFloor(result) {
+  return result.scanned >= MIN_SCANNED_FILES;
+}
+
 function modelTargets(root = ROOT) {
   return [...filesUnder(join(root, 'loop'), ['.mjs', '.md', '.json', '.yml']), join(root, 'data', 'config.json')];
 }
@@ -96,12 +101,9 @@ function runnerTargets(root = ROOT) {
   // such fixture), so the policy scan covers machinery files and its own
   // non-test fixtures, not test sources.
   return [
-    ...filesUnder(join(root, 'loop'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
-    ...filesUnder(join(root, 'pulse'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
-    ...filesUnder(join(root, 'scripts'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
-    ...filesUnder(join(root, 'lib'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
-    ...filesUnder(join(root, 'app'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
-    ...filesUnder(join(root, 'tools'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    ...RUNNER_SCAN_ROOTS.flatMap((dir) =>
+      filesUnder(join(root, dir), RUNNER_SCAN_EXTENSIONS, [], { skipTests: true }),
+    ),
     join(root, 'data', 'config.json'),
   ];
 }
@@ -130,7 +132,7 @@ test('the loop and the loop config name no model, provider or harness at all', (
   }
   const result = scan(modelTargets(), names);
   assert.ok(
-    result.scanned >= MIN_SCANNED_FILES,
+    meetsScanFloor(result),
     'the model/provider/harness scan must read at least ' +
       MIN_SCANNED_FILES +
       ' files; read ' +
@@ -157,9 +159,13 @@ test('no machinery path references a runner by id', () => {
   const ids = reg.runners.map((r) => r.id.toLowerCase());
   const commands = reg.runners.map((r) => r.command);
   const targets = runnerTargets();
+  for (const root of RUNNER_SCAN_ROOTS) {
+    const files = filesUnder(join(ROOT, root), RUNNER_SCAN_EXTENSIONS, [], { skipTests: true });
+    assert.ok(files.length > 0, `runner-id scan root ${root}/ contributed no files`);
+  }
   const result = scan(targets, ids);
   assert.ok(
-    result.scanned >= MIN_SCANNED_FILES,
+    meetsScanFloor(result),
     'the runner-id scan must read at least ' + MIN_SCANNED_FILES + ' files; read ' + result.scanned,
   );
   assert.deepEqual(result.hits, []);
@@ -197,6 +203,23 @@ test('the runner-id scan catches a fixture under each newly covered root', () =>
     assert.equal(result.scanned, RUNNER_FIXTURE_ROOTS.length);
   } finally {
     rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test('the scan floor rejects a one-file result', () => {
+  assert.equal(meetsScanFloor({ scanned: 1 }), false);
+});
+
+test('filesUnder propagates skipTests through nested directories', () => {
+  const root = mkdtempSync(join(tmpdir(), 'portability-skip-tests-'));
+  try {
+    mkdirSync(join(root, 'nested'), { recursive: true });
+    writeFileSync(join(root, 'ordinary.mjs'), 'export {}\n');
+    writeFileSync(join(root, 'nested', 'nested.test.mjs'), 'export {}\n');
+    assert.equal(filesUnder(root, ['.mjs'], [], { skipTests: true }).length, 1);
+    assert.equal(filesUnder(root, ['.mjs']).length, 2);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });
 
@@ -403,9 +426,16 @@ test('a brief is self-contained plain markdown carrying the RESULT.md instructio
 
 test('the ledger line schema includes provider', () => {
   assert.ok(LEDGER_FIELDS.includes('provider'));
-  const line = JSON.parse(
-    ledgerSchemaLine({ type: 'entry' }, { id: 'r', provider: 'p', tier: 'frontier' }, 'j-20260910-01'),
-  );
+  const line = makeLedgerLine({
+    ts: '2026-09-10T12:00:00.000Z',
+    id: 'j-20260910-01',
+    type: 'entry',
+    runner: 'r',
+    provider: 'p',
+    tier: 'frontier',
+    mm: 0,
+    outcome: 'done',
+  });
   assert.deepEqual(Object.keys(line), [...LEDGER_FIELDS]);
   assert.equal(line.provider, 'p');
 });

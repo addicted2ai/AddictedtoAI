@@ -942,10 +942,19 @@ export async function runLoop(ctx, opts = {}) {
   const registry = loadRunners(ctx);
   let runner = pickRunner(registry, { id: opts.runner, role: 'author' });
   const reviewer = pickRunner(registry, { id: opts.reviewer, role: 'reviewer' });
+  for (const [role, who] of [['author', runner], ['reviewer', reviewer]]) {
+    if (who.enabled !== false) continue;
+    const reason =
+      `runner "${who.id}" is disabled (enabled: false) and cannot be used for the ${role} role`;
+    ctx.log(`REFUSED [runner:disabled]: ${reason}`);
+    return { started: true, selected: null, refused: reason, rule: 'runner:disabled' };
+  }
   const ledger = readLedger(ctx);
   const now = ctx.now();
 
-  // The expiry sweep, before anything can refuse the run.
+  // The expiry sweep, before selection can refuse a candidate. Enablement is
+  // checked immediately after runner resolution because it outranks this
+  // housekeeping refusal by policy.
   //
   // Placed here for the same reason the 14-day abandon sweep sits ahead of the
   // health gate: housekeeping that stops when a runner is refused is
@@ -968,6 +977,10 @@ export async function runLoop(ctx, opts = {}) {
 
   ctx.log(`runner: ${runner.id} (provider ${runner.provider}, tier ${runner.tier}) — the only file naming a model, provider or harness is runners.yml`);
   const conf = conformanceGate(loadConformance(ctx), runner.id);
+  ctx.log(
+    `conformance: runner "${runner.id}" — loaded ${conf.entries} conformance ` +
+      `${conf.entries === 1 ? 'entry' : 'entries'}`,
+  );
   if (!conf.ok) {
     ctx.log(`REFUSED: ${conf.reason}`);
     return { started: true, selected: null, refused: conf.reason };
@@ -1283,6 +1296,15 @@ export async function runLoop(ctx, opts = {}) {
     }
     if (sel.refusals.length) for (const l of formatRefusals(sel.refusals)) ctx.log(l);
     const escalation = escalationTarget(registry, runner, sel);
+    if (!escalation && sel.topRanked?.rule === 'runner:job-type') {
+      const target = registry.byId.get(runner.escalates_to);
+      if (target?.enabled === false) {
+        ctx.log(
+          `escalation refused: runner "${target.id}" is disabled (enabled: false); ` +
+            `keeping the original selection outcome`,
+        );
+      }
+    }
     if (escalation) {
       const top = sel.topRanked.candidate;
       ctx.log(
