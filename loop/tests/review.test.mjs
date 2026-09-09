@@ -190,6 +190,8 @@ test('the reviewer brief carries the closed reason list, the checklist, and no a
   assert.match(brief, /Choose from every capability under `openspec\/specs\/`, using its/);
   assert.match(brief, /constitution and every unarchived change's delta; this feeds the/);
   assert.match(brief, /revision brief's requirement excerpts/);
+  assert.match(brief, /Omit the field when no/);
+  assert.match(brief, /requirement was relied on/);
   ctx.cleanup();
 });
 
