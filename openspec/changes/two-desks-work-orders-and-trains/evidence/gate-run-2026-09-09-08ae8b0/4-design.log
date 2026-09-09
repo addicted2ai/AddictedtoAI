@@ -1,0 +1,77 @@
+
+unsampled-route coverage (static, every exported route)
+  PASS  every exported route's focusable element types are covered by the 4-route sample — 696 route(s) checked
+
+first-load JavaScript (specs/site: at most 150 KB gzipped)
+/
+  chunks   104.4 KB gzipped (6 file(s), 356.9 KB raw)
+  inline   6.5 KB gzipped (37.6 KB raw)
+  total    110.7 KB gzipped  — budget 150.0 KB — OK
+  html     10.5 KB gzipped (61.2 KB raw)
+  PASS  first-load JS within budget / — 110.7 KB gzipped of 150 KB
+/wiki/concept/ai-winter
+  chunks   104.4 KB gzipped (6 file(s), 356.9 KB raw)
+  inline   6.3 KB gzipped (23.6 KB raw)
+  total    110.4 KB gzipped  — budget 150.0 KB — OK
+  html     8.6 KB gzipped (36.3 KB raw)
+  PASS  first-load JS within budget /wiki/concept/ai-winter — 110.4 KB gzipped of 150 KB
+/catalog
+  chunks   104.8 KB gzipped (7 file(s), 358.2 KB raw)
+  inline   18.8 KB gzipped (380.3 KB raw)
+  total    123.6 KB gzipped  — budget 150.0 KB — OK
+  html     35.8 KB gzipped (642.6 KB raw)
+  PASS  first-load JS within budget /catalog — 123.6 KB gzipped of 150 KB
+
+contrast and accessibility (axe-core, both themes)
+  PASS  axe light / — 45 rule(s) passed
+  PASS  axe dark  / — 45 rule(s) passed
+  PASS  axe light /wiki/concept/ai-winter — 47 rule(s) passed
+  PASS  axe dark  /wiki/concept/ai-winter — 47 rule(s) passed
+  PASS  axe light /catalog — 52 rule(s) passed
+  PASS  axe dark  /catalog — 52 rule(s) passed
+  PASS  axe light /tools — 45 rule(s) passed
+  PASS  axe dark  /tools — 45 rule(s) passed
+
+reflow at 320px
+  PASS  no horizontal scroll at 320px / — scrollWidth 320 vs clientWidth 320
+  PASS  no horizontal scroll at 320px /wiki/concept/ai-winter — scrollWidth 320 vs clientWidth 320
+  PASS  no horizontal scroll at 320px /catalog — scrollWidth 320 vs clientWidth 320
+  PASS  no horizontal scroll at 320px /tools — scrollWidth 320 vs clientWidth 320
+
+keyboard traversal
+  PASS  keyboard reaches every nav link / — 8 of 8 in 12 tab stops
+  PASS  keyboard reaches the search box / — tab stop 11
+  PASS  keyboard reaches the theme toggle / — tab stop 12
+  PASS  keyboard activates the theme toggle / — null → light
+  PASS  keyboard-only search returns results / — 12 result row(s)
+  PASS  Enter opens the selected result / — selected /tools/aider, landed on /tools/aider
+  PASS  keyboard reaches every nav link /wiki/concept/ai-winter — 8 of 8 in 12 tab stops
+  PASS  keyboard reaches the search box /wiki/concept/ai-winter — tab stop 11
+  PASS  keyboard reaches the theme toggle /wiki/concept/ai-winter — tab stop 12
+  PASS  keyboard activates the theme toggle /wiki/concept/ai-winter — light → dark
+  PASS  keyboard-only search returns results /wiki/concept/ai-winter — 12 result row(s)
+  PASS  Enter opens the selected result /wiki/concept/ai-winter — selected /tools/aider, landed on /tools/aider
+  PASS  keyboard reaches every nav link /catalog — 8 of 8 in 12 tab stops
+  PASS  keyboard reaches the search box /catalog — tab stop 11
+  PASS  keyboard reaches the theme toggle /catalog — tab stop 12
+  PASS  keyboard activates the theme toggle /catalog — dark → null
+  PASS  keyboard-only search returns results /catalog — 12 result row(s)
+  PASS  Enter opens the selected result /catalog — selected /tools/aider, landed on /tools/aider
+  PASS  keyboard reaches every nav link /tools — 8 of 8 in 12 tab stops
+  PASS  keyboard reaches the search box /tools — tab stop 11
+  PASS  keyboard reaches the theme toggle /tools — tab stop 12
+  PASS  keyboard activates the theme toggle /tools — null → light
+  PASS  keyboard-only search returns results /tools — 12 result row(s)
+  PASS  Enter opens the selected result /tools — selected /tools/aider, landed on /tools/aider
+
+focus indicators, past the header (addictedtoai-9jj)
+  PASS  every tab stop shows a focus indicator / — the complete tab order, 89 stop(s); 90 focusable element(s) in the DOM, 1 of them not currently tabbable (a closed <details> hides its links); element types a, button, input
+  PASS  every tab stop shows a focus indicator /wiki/concept/ai-winter — the complete tab order, 28 stop(s); 29 focusable element(s) in the DOM, 1 of them not currently tabbable (a closed <details> hides its links); element types a, button, input
+  PASS  every tab stop shows a focus indicator /catalog — the complete tab order, 458 stop(s); 459 focusable element(s) in the DOM, 1 of them not currently tabbable (a closed <details> hides its links); element types a, button, input, select, summary
+  PASS  every tab stop shows a focus indicator /tools — the complete tab order, 99 stop(s); 135 focusable element(s) in the DOM, 36 of them not currently tabbable (a closed <details> hides its links); element types a, button, input, summary
+
+content above the fold (task 4.7)
+  PASS  content above the fold at 1440x900 — 16 of 24 changed-feed lines fully visible; first line starts 107px down
+  PASS  content above the fold at 390x844 — 9 of 24 changed-feed lines fully visible; first line starts 139px down
+
+verify-design: 46 check(s), 0 failure(s); recorded in data/launch.json
