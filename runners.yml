@@ -83,13 +83,42 @@
 #                             the maintainer knows what this harness prints
 #                             when its login has lapsed.
 #   model / harness / note    documentation only; nothing reads them.
-#   conformance               documentation only: the maintainer's note of
-#                             whether `node loop/conformance.mjs --runner <id>`
-#                             has been run. The MACHINE-READABLE record lives
-#                             in `data/conformance.json` (written by
-#                             conformance.mjs, read by the selector) precisely
-#                             so that the loop never has to write to this
-#                             reserved file.
+#   effort                    optional: the reasoning rung this entry's own
+#                             command dispatches at, in that harness's
+#                             vocabulary (`model_reasoning_effort` for codex,
+#                             `--variant` for opencode). DESCRIPTIVE — it
+#                             changes no dispatch; it exists so a ledger line
+#                             can attribute an outcome to a RUNG rather than to
+#                             a runner id that merely implies one. It must equal
+#                             the rung in this entry's own `command`.
+#   escalates_to              optional: the one entry selection re-runs on when
+#                             THIS entry's top-ranked candidate was refused
+#                             solely on `runner:job-type`. Validated at load: a
+#                             registered id, not itself, cleared for `author`.
+#                             Never fires past a brake — a degradation,
+#                             capacity, budget, conformance or health refusal
+#                             says "not now" about the whole lane.
+#   enabled                   optional boolean; absent means enabled. `false`
+#                             withdraws the entry from selection and from
+#                             `pickRunner` without deleting it, so its
+#                             conformance record and its documentation survive.
+#
+# THERE IS NO `conformance` FIELD, DELIBERATELY — REMOVED 2026-09-09, AND THE
+# REMOVAL IS THE FIX RATHER THAN A TIDY-UP. It used to carry the maintainer's
+# note of whether `node loop/conformance.mjs --runner <id>` had been run, while
+# the machine-readable record lived in `data/conformance.json`. Nothing ever
+# read the field: no code in `loop/`, no test asserted on it. So it was a second
+# source that had to be re-synchronised BY HAND every time a run recorded, and
+# it was not — on the day it was deleted, seven of nine entries still said
+# `unverified`, and one of those, `opencode-openrouter-muse-spark`, was carrying
+# a JSON record of FAIL on all four checks. It had already misled one audit into
+# reporting a live enforcement hole that did not exist.
+#
+# `data/conformance.json` IS THE ONLY SOURCE. Read it. A runner's value there
+# may be a single record or a list of runs; an absent record warns rather than
+# refuses; a recorded FAIL refuses until superseded, by the rule in
+# `loop/lib/runners.mjs`'s `conformanceGate` — which is also not restated here,
+# for the same reason.
 #
 # ---------------------------------------------------------------------------
 # Command template placeholders
@@ -124,7 +153,6 @@ runners:
     command: 'claude --print --permission-mode acceptEdits --allowedTools "Read Write Edit Glob Grep WebFetch WebSearch Bash" --model opus < "{prompt_file}"'
     capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
     startup_failure_stderr_pattern: '(401|403|invalid api.?key|authentication_error|permission_error|oauth .{0,20}expired|token.?expired|please run .{0,12}login|not logged in|credit balance is too low)'
-    conformance: unverified
     note: >-
       The setup this repository was built on. Frontier tier, cleared for both
       roles; when it authors and reviews, review keeps fresh-context
@@ -140,7 +168,6 @@ runners:
     command: 'claude --print --permission-mode acceptEdits --allowedTools "Read Write Edit Glob Grep WebFetch WebSearch Bash" --model sonnet < "{prompt_file}"'
     capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
     startup_failure_stderr_pattern: '(401|403|invalid api.?key|authentication_error|permission_error|oauth .{0,20}expired|token.?expired|please run .{0,12}login|not logged in|credit balance is too low)'
-    conformance: unverified
     note: >-
       Same harness and same subscription as claude-code-opus — deliberately
       the same `provider`, so a capacity pause on one pauses both. This is
@@ -162,7 +189,6 @@ runners:
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="max" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
-    conformance: unverified
     note: >-
       A third harness, and the one that makes the portability claim
       non-trivial: a different model, a different provider and a different
@@ -278,6 +304,22 @@ runners:
     model: gpt-5.6-luna
     harness: codex-cli
     effort: medium
+    # WITHDRAWN FROM SELECTION 2026-09-09 (packet F, task 22), on the
+    # maintainer's instruction of 2026-09-09 00:29: "For now, let's just use max
+    # for every thing." DEFINED-BUT-DISABLED rather than deleted, so this
+    # entry's conformance record (2026-09-07, pass 4/4) and everything written
+    # below survive for whoever re-enables it — deleting it would throw away the
+    # record and force a re-run (bead addictedtoai-v8q8, and addictedtoai-2wwu
+    # for what a deletion costs).
+    #
+    # WHAT THIS SILENTLY TURNS OFF, said out loud because no test can show it:
+    # this is the ONLY entry declaring `escalates_to`, and `selectJob` refuses a
+    # disabled runner BEFORE it ever reaches the escalation step. So packet D's
+    # escalation has no live path in production while this line stands. That is
+    # correct — nothing authors at medium any more, so nothing needs escalating
+    # from it — but the moment this entry is re-enabled is the FIRST time that
+    # mechanism will ever have run outside its tests.
+    enabled: false
     # The one declared escalation step (packet D, tasks 23-24). loop/run.mjs
     # re-runs selection on this entry when the TOP-RANKED candidate was refused
     # solely on `runner:job-type` — the scout and post types this entry is not
@@ -288,7 +330,6 @@ runners:
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="medium" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
-    conformance: unverified
     note: >-
       THE SAME MODEL AS `codex-gpt-luna`, AT MEDIUM REASONING EFFORT, so a job
       can author cheaply and be reviewed thoroughly. Added 2026-09-07 on the
@@ -356,10 +397,13 @@ runners:
     model: gpt-5.6-luna
     harness: codex-cli
     effort: high
+    # Withdrawn from selection 2026-09-09 (packet F, task 22) — same
+    # instruction, same reason as the medium rung above: max for everything.
+    # Defined-but-disabled, so its 2026-09-08 pass 4/4 record survives.
+    enabled: false
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="high" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
-    conformance: pass
     note: >-
       THE SAME MODEL AS `codex-gpt-luna`, AT HIGH REASONING EFFORT. Added
       2026-09-08 on the maintainer's instruction: "I'd like to experiment with
@@ -397,10 +441,16 @@ runners:
     model: gpt-5.6-luna
     harness: codex-cli
     effort: xhigh
+    # Withdrawn from selection 2026-09-09 (packet F, task 22). Same instruction
+    # as the other two rungs, plus a reason of its own: this entry's conformance
+    # record is a FAIL on `fabricated-quote-trap` (2026-09-08), so the gate
+    # refuses it anyway. Disabling it states the POLICY rather than leaning on
+    # the gate to enforce a decision nobody wrote down — and the record survives
+    # for whoever re-runs the check.
+    enabled: false
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="xhigh" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
-    conformance: FAIL
     note: >-
       FAILS CONFORMANCE AS RECORDED ON 2026-09-08, AND THE SELECTOR REFUSES IT
       FOR BOTH ROLES. It failed `fabricated-quote-trap`: asked about a claim the
@@ -464,7 +514,6 @@ runners:
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
-    conformance: unverified
     note: >-
       The advertised swap: a different model, a different provider, a
       different harness, reachable by `node loop/run.mjs --runner
@@ -514,7 +563,6 @@ runners:
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
-    conformance: unverified
     note: >-
       Added 2026-09-07 on the maintainer's instruction ("I want to try a new
       model runner"): Muse Spark 1.3 Contributor, on the same OpenCode Go
@@ -580,7 +628,6 @@ runners:
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model openrouter/meta/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
-    conformance: unverified
     note: >-
       The same model as opencode-muse-spark at the same Contributor price,
       on a DIFFERENT LANE: `provider: openrouter-account` is its own
