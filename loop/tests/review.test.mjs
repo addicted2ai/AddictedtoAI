@@ -376,6 +376,11 @@ test('C46 the revision brief supersedes the stale figures it inherits', async ()
   assert.match(brief, /## Verdict/);
   assert.match(brief, /## Acceptance checks/);
   assert.match(brief, /## Diff under revision/);
+  assert.match(brief, /^# Revision pass \(one only\) — job /);
+  assert.match(brief, /This is a continuing invocation in the same worktree\. There is no prior/);
+  const excerptsAt = brief.indexOf('## Relevant spec excerpts');
+  assert.ok(brief.lastIndexOf('## Ground rules (non-negotiable)') > excerptsAt, 'revision tail carries ground rules after excerpts');
+  assert.ok(brief.lastIndexOf('## How to end (required)') > excerptsAt, 'revision tail carries the result protocol after excerpts');
   assert.doesNotMatch(brief.slice(0, brief.indexOf('## Diff under revision')), /## The outcome/);
   for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
     assert.ok(!re.test(brief), `the revision brief still carries the removed phrasing ${was}`);
@@ -415,7 +420,7 @@ test('C46 the revision prompt carries the reviewer finding and the judged diff',
   assert.equal(res.outcome, 'discarded', ctx.output());
   const prompt = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-revision-brief.md`), 'utf8');
   assert.match(prompt, /\*\*Free-form notes\*\*\n\nmock reviewer notes/);
-  assert.match(prompt, /\*\*Diff-measured refusal reason\*[\s\S]*claims a fix it does not contain/);
+  assert.match(prompt, /\*\*Diff-measured refusal reason\*\*[\s\S]*claims a fix it does not contain/);
   assert.match(prompt, /JUDGED_DIFF_SENTINEL: the page asserts an interval it never measured\./);
   ctx.cleanup();
 });
