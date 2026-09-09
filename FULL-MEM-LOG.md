@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 219102.
+Entries: 61. Characters of memory text: 222131.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -962,6 +962,29 @@ THE ANCHORING FIX, IF ONE IS ADOPTED, MUST BE ENFORCED BY SOMETHING THAT FAILS r
 brief text -- Orch's acceptance item, and it is shell-approval-traps' rule turned on this
 problem: a discipline that works is indistinguishable from a mechanism that exists until the
 discipline is removed.
+
+
+AND THE ANSWER, from A2AI-Orch, arrived by reading the MECHANISM rather than the values --
+this entry's own generalisation applied to itself within the hour.
+
+UTC IS A DELIBERATE DESIGN DECISION IN bd, NOT A MISSING SETTING. Its changelog records
+"Timestamp normalization - Normalize to UTC for validation (#1123) - Prevents
+timezone-related validation failures" (bd's bin/CHANGELOG.md; verified independently by
+reading the file, not by quoting the report). So the field is not merely unconfigured -- IT
+IS CORRECT BY ITS OWN CONTRACT, and asking for a local-date option would be asking another
+project to undo an intentional normalisation it adopted to fix real bugs.
+
+THAT IS THE STRONGEST REASON NOT TO REWRITE THE FIELD, and it is better than the one
+originally given here. "It is bd's record, not ours" is a boundary argument; "the value is
+right by the writing tool's own contract" is a correctness argument, and it survives someone
+deciding the boundary is negotiable.
+
+THE METHOD LINE, which is the transferable part: A NEGATIVE CLAIM IS A CLAIM ABOUT THE
+INSTRUMENT AS MUCH AS ABOUT THE TOOL, SO ANSWER IT FROM THE TOOL'S SOURCE, NOT FROM WHAT A
+LISTING HAPPENED TO PRINT. The two disagreeing `bd config list` outputs recorded above had a
+mundane cause -- one session ran both `config list` and `config --help` and relayed the
+--help namespaces as though they were the listing -- and no amount of comparing the two
+printouts would have produced the changelog line that settled it.
 
 ```
 
@@ -2153,6 +2176,30 @@ THE SHAPE, which is why this belongs in the corpus rather than in an apology: A 
 WAS ESTABLISHED FOR ONE SET, THE SET WAS THEN ENLARGED, AND THE VERDICT WAS NOT
 RE-DERIVED. Same family as the-only-list-available-becomes-the-work-list one level down --
 the list was "the file I am curating" and the work was "every file in the diff".
+
+A CORRECTION TO AN OPERATING ASSUMPTION, 2026-09-08, and it is the mirror image of the error
+already recorded in this entry.
+
+FULL-MEM-LOG.md IS GATE-RELEVANT. The session curating it had been treating its commits as
+inert -- documentation, read by nothing the gates run. Verified and wrong:
+scripts/mem-log-integrity.test.mjs READS the file, and scripts/run-tests.mjs searches
+['app', 'lib', 'loop', 'pulse', 'scripts', 'tests'], so that test is inside `npm test`.
+A commit to the log therefore changes the tree under a running gate suite and can trip a
+harness's sha pin at the end, costing the whole run.
+
+THE ERROR RECORDED ABOVE WAS A SESSION PROVING ITS LOG INERT AND THEN CARRYING THAT VERDICT
+OVER TO A GATE-RELEVANT FILE IN THE SAME COMMIT. This is the same mistake with the operands
+swapped: the file WAS the log, and the log was never inert. A DOCUMENT IS NOT INERT BECAUSE
+IT IS PROSE; IT IS INERT ONLY IF NOTHING THE GATES RUN READS IT, and a guard written to
+protect a document is exactly the thing that makes that document load-bearing. Writing a test
+for an artefact MOVES it into the gated set -- the act of protecting it changes its class.
+
+HOW IT SURFACED IS THE PART TO KEEP. A peer ENUMERATED every commit in a range by lane and
+counted; it did not reason about who was likely to be committing. Four commits in twelve
+minutes from a session filed under "documentation" is invisible to a model of who matters and
+obvious to a count. THE LANE A SESSION IS FILED UNDER IS A PREDICTION, AND A COUNT IS A
+MEASUREMENT.
+
 ```
 
 ## publish-authority-and-gates
