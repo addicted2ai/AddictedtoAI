@@ -879,7 +879,31 @@ the brief under `evidence/reviews/`.
       indistinguishable from a permissive gate. **The `CLAUDE.md` half is done at
       `301f537`;** the `runners.yml` `conformance:` fields are set to pass / FAIL at
       `10be428`. **[orchestrator]**
-- [ ] 21. **The conformance record appends; the gate reads the history.**
+- [x] 21. (DONE 2026-09-09 at merge `f879ec9`, packet F, authority `ddbfd52`:
+      round 1 `df44897` made `recordConformance` append via `conformanceHistory`
+      and added `conformanceGate(records, runnerId, { passesToSupersede = 3 })`
+      at `runners.mjs:195-247`, refusing while any recorded FAIL of a check
+      stands unsuperseded by three consecutive PASSes of THAT check, with an
+      absent record still warning rather than refusing. Round 2 `952de9f`
+      closed the sealed review's coverage findings: `selectJob` now carries
+      `conformanceEntries` on each of its four post-gate returns — the
+      `loadConformance` trap, where a reader that loaded zero records is
+      otherwise indistinguishable from a permissive gate — while the
+      `enabled: false` early return, which fires BEFORE the gate is consulted
+      and so loaded nothing, deliberately carries no count; plus a fixture
+      with two divergent failed-check histories and one omitting a failed
+      check while another check is present. The reviewer re-ran all five prior
+      mutations red, mutated three further changed lines the author's sweep
+      did not name (`conformance.mjs:415`, `runners.mjs:179`,
+      `select.mjs:289`) and found all three red and no green mutant. Its one
+      finding was a wrong count in the uncommitted report, corrected in
+      `ADDENDUM2.md`. CARRIED, non-blocking, from the orchestrator's diff
+      read: an entry that omits a check entirely resets that check's pass
+      streak, because a missing check reads as not-PASS. That strictness is
+      the intended direction and is now armed, but it never explains itself —
+      a partial re-run would make supersession unreachable and the reason
+      string would not say why. One sentence in that string would close it.)
+      **The conformance record appends; the gate reads the history.**
       `loop/conformance.mjs` and `data/conformance.json`: each run is its own entry
       — date, per-check result, model-minutes — and never replaces an earlier one.
       Each entry is written **from the checks' verdicts after they complete**,
@@ -993,7 +1017,35 @@ the brief under `evidence/reviews/`.
       stays the authority. Files: `loop/conformance.mjs`,
       `loop/lib/runners.mjs`, `loop/run.mjs` (the count line only),
       `loop/tests/conformance.test.mjs`.
-- [ ] 22. **A registered runner that policy names for nothing needs a way to say
+- [ ] 22. (MECHANISM MERGED 2026-09-09 at `f879ec9`; THE TICK WAITS ON THE
+      ORCHESTRATOR'S REGISTRY COMMIT, deliberately. `loop/lib/runners.mjs`
+      loads `enabled` with absent meaning enabled and rejects a non-boolean;
+      `selectJob` refuses a disabled entry for both roles BEFORE every other
+      gate at `select.mjs:151`; `pickRunner` skips disabled entries; and
+      `escalationTarget` declines a disabled target. Both arms are tested and
+      both mutations are red. What is NOT done is the `runners.yml` half —
+      the three `enabled: false` lines — which is the orchestrator's and lands
+      in its own commit after this one. THIS TASK STAYS UNTICKED UNTIL THEN,
+      and the reason is a defect found the same day: an audit of merged
+      packet E showed task 19 ticked `[x]` while its own body said "Second
+      half, open", and task 20 ticked for a requirement no commit it named
+      implemented. Both were ticks written ahead of the code. Ticking this one
+      now would repeat that error in the packet that fixes it.
+      **CONSEQUENCE OF THE REGISTRY HALF, recorded because no test on either
+      side can show it** (the orchestrator's finding at its diff read):
+      once `codex-gpt-luna-medium` is disabled, PACKET D'S ESCALATION HAS NO
+      LIVE PATH. `-medium` is the only entry declaring `escalates_to`
+      (`runners.yml:287`, verified as the sole occurrence), and the disabled
+      return fires first and yields `topRanked: null`, so `escalationTarget`
+      can never resolve in production. That is correct by design — nothing
+      authors at medium any more, so nothing needs escalating from it — but it
+      means Stage 0 shipped a mechanism whose first live firing cannot occur
+      in the stage that added it, and the orchestrator's handed-forward watch
+      item for that firing is VOID. Neither packet's tests can reveal this:
+      D's fixtures enable their runners and F's test disabling. The moment the
+      medium rung is re-enabled is the moment D's mechanism goes live for the
+      first time.)
+      **A registered runner that policy names for nothing needs a way to say
       so.** An absent `job_types` means **cleared for every type**
       (`select.mjs:132-134` returns ok on `!Array.isArray`; the comment at `:122`
       says so outright) and an empty list is a load-time error, so the registry

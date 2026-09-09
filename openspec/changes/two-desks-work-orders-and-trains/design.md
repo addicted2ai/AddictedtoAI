@@ -2906,3 +2906,91 @@ grepped for the pins before the file list was written — and the one revise
 round was the residual-coverage class, which the brief review cannot see
 either (it reads the brief against the code, not the tests against the
 diff). Recorded, not scored.
+
+## Revision record — round 20
+
+**Packet F (tasks 21 and 22 — the appending conformance record, the
+history-reading gate, and runner enablement) — authority
+two-desks-work-orders-and-trains@`ddbfd52`, every dispatch at codex Luna
+max.** The authority moved three times before dispatch (`68dfa43` → `f1d33d9`
+→ `443b540` → `ddbfd52`), each superseded by a brief-review finding and never
+amended, because an amended commit leaves a dangling object carrying the
+previous message.
+
+**Round 1 (`df44897`, nine files, +486/−49).** `recordConformance` appends via
+`conformanceHistory`; `conformanceGate(records, runnerId, { passesToSupersede
+= 3 })` refuses a runner for a role while any recorded FAIL of a check stands
+unsuperseded by three consecutive PASSes of that same check, with an absent
+record still warning rather than refusing; `enabled: false` loads with absent
+meaning enabled, and the selector refuses a disabled entry for both roles
+before every other gate. Suite 1,814/1,814. The sealed review returned
+`revise` on five findings, and FOUR WERE ONE CLASS — an expectation derived
+from the thing it is supposed to check, which makes the arm pass no matter
+what the code does.
+
+**The fifth finding was the architect's, not the author's, and the account of
+it was wrong twice before it was right.** The review reported that the
+change-directory detector had been WEAKENED: the new `BAD_REFERENCE` required
+the change-name segment to end in `/`, so a terminal reference
+`openspec/changes/<name>` was newly permitted. The architect then made two
+errors of its own on top of it. First, it attributed the requirement to task
+22; the governing text is task 21(vi)(b), which prescribes in as many words
+what the author shipped — "F widens the capture to run through the segment
+that follows and its closing `/`" — so the author implemented the standard and
+the gap was in the standard. Second, it reported the weakening as LIVE on the
+strength of a scan that compared old-versus-new match COUNTS per file, which
+cannot distinguish two different cases: re-measured with the cases separated,
+terminal-form references the shipped pattern misses number ZERO across 302
+tracked machinery files, and the single differing line is the BARE PREFIX
+`openspec/changes/` in a doc comment, which names no change and which
+archiving never moves. The revision brief's first draft then told the author
+to restore the deleted allow-list entry — which is impossible, not merely
+unnecessary: the entry's regex tests for a backtick and `isAllowed` now tests
+the matched SPAN, which never contains one. A brief review caught that
+contradiction; verifying it produced the other two corrections. The fix that
+shipped is one character, `/` → `/?`, measured to leave the violation set
+identical on today's tree (3 raw hits before and after) and therefore
+forward-looking only.
+
+**Round 2 (`952de9f`, five files, +156/−8).** The count is carried on
+`selectJob`'s four post-gate returns — the `loadConformance` trap, where a
+reader that loaded zero records because the file was unreadable is otherwise
+indistinguishable from one that loaded many and found no FAIL — while the
+`enabled: false` early return, which fires before the gate is consulted,
+deliberately carries none. Plus a fixture with two divergent failed-check
+histories, one omitting a failed check while another check is present, an
+independently written six-root portability expectation, and the detector fix
+with four arms including one asserting the bare prefix is deliberately
+ignored, its reason now living as an assertion rather than as the comment the
+deleted allow-list entry took with it.
+
+**THE ROUND'S OWN LESSON, and it is about mutations rather than code.** The
+brief's third review found that round 1's named mutation for finding 1 — swap
+the refusal string for a generic one — WOULD STILL STAY GREEN after a correct
+fix, because once the count lives in its own field the string no longer has to
+carry it. A worker reporting that swap would have put a row in the mutation
+table that the fix does not make red: the same defect the mutation table
+exists to catch, one level up. The brief was corrected to name the post-fix
+red mutation outright (drop the count field, or return it as `0`), the author
+followed it, and its report says in as many words that the string swap "is not
+claimed as a red mutation". The reviewer then confirmed both halves
+independently.
+
+**The review (`REVIEW2.md`) returned `revise` on ONE finding: a wrong count in
+the uncommitted report** — 56/56/0 recorded where the four affected files run
+55/55/0. The architect had measured the same discrepancy before dispatching
+and deliberately did not declare it, requiring instead that every count in the
+report be re-derived with both figures quoted "however small the gap"; the
+reviewer found it unprompted and its four per-file numbers matched. Closed by
+`ADDENDUM2.md` rather than a round 3, on packet D's precedent: the defect is
+in the prose of a file that is never committed. All four exit-condition
+clauses held, and the reviewer's sweep mutated three changed lines the
+author's had not named — `conformance.mjs:415`, `runners.mjs:179`,
+`select.mjs:289` — finding all three red and NO GREEN MUTANT, the first round
+in this packet's history where a sweep probe found none.
+
+**Merged `f879ec9`.** `runners.yml` is the orchestrator's and is not in this
+merge; task 22 stays UNTICKED until its registry commit lands, because an
+audit the same day found merged packet E carrying two ticks written ahead of
+the code, and ticking here would repeat that error in the packet that fixes
+it.
