@@ -563,11 +563,80 @@ the sentence that uses it.
       closed reason list; a heading resolving to no requirement is refused.
       Implements: *The reviewer judges quality with full standing, from a named
       reason list*, the `cites:` bullet.
+      **Resolved before B2's freeze (the architect's quantifier enumeration,
+      2026-09-08 23:05, from the code at the tip):** (i) `cites:` is read by
+      `parseVerdict` from front matter only, on `carry:`'s terms — a scalar is a
+      one-entry list, each entry is trimmed, duplicates collapse, absent or
+      empty is `[]` (the ordinary case, not a warning) — returned as `cites`,
+      never altering the verdict value. (ii) A "requirement heading" is the text
+      after `### Requirement:` on its heading line, trimmed, exactly as
+      `requirementSections` (`specs.mjs:139`) reads it; `(preamble)` is not a
+      heading; membership is exact after trimming with no case folding, the way
+      `REASONS.includes` is exact. (iii) "The live specification's headings" is
+      the union over EVERY capability under `openspec/specs/` — not only the
+      governing type's — of the headings in its constitution and in every
+      unarchived change's delta for it, read through `specSources` under the
+      same `pendingRoot` seam `excerptsFor` uses so a fixture can pin it; the
+      enumeration is ONE exported function in `loop/lib/specs.mjs` beside
+      `requirementSections` (a second `### Requirement:` parser in `review.mjs`
+      is the two-parsers drift `verdict.mjs`'s header warns against). Measured
+      at the tip: 116 constitution headings across 11 files, none duplicated;
+      31 in this change's deltas. (iv) "Refused" means `mergeGate`
+      (`review.mjs:830`) checks `cites` BEFORE the verdict branch, on all three
+      verdict values — reasons are checked only on non-approve, and that
+      asymmetry is not copied: a `revise` citing nothing that exists would send
+      the author a brief built on a missing heading, and an `approve` carrying
+      one names a requirement the specification does not hold — with a new code
+      `cites-unresolved` naming every unresolved entry, and that code joins
+      `REISSUE_CODES` (the record is unusable, not the work; the job ends
+      `failed` and no revision is invoked, as for a blank `would-cite`). (v) The
+      reviewer is told: the record template in `assembleReviewBrief`
+      (`review.mjs:711-730`) gains a commented `cites:` line stating (ii)–(iii)
+      and what the field feeds (task 11); the heading list is not printed (116
+      lines) — the spec files are in the review worktree. (vi) The arm, in
+      `loop/tests/review.test.mjs` beside the other `mergeGate` refusals: a
+      record citing a heading the fixture holds passes; one citing a heading it
+      does not is refused with `cites-unresolved` on `approve` AND on `revise`;
+      named mutation — drop the resolution check and confirm both refusals go
+      green. This task's files are therefore `verdict.mjs`, `review.mjs`,
+      `specs.mjs` (the enumeration) and `review.test.mjs` (the arm).
 - [ ] 11. `loop/lib/brief.mjs`: `assembleRevisionBrief` carries the verdict, the
       acceptance checks, the diff and the excerpts **for exactly the headings
       `cites:` names** — and not `briefText` whole (`run.mjs:734`). An empty
       `cites:` yields the checklist's requirements for the governing type and
       nothing else. Implements: *The brief carries…*, revision bullets.
+      **Resolved before B2's freeze (2026-09-08 23:05):** (i)
+      `assembleRevisionBrief` is a NEW export of `brief.mjs`, and
+      `run.mjs:733-738`'s inline concatenation becomes its one call — `run.mjs`
+      is in B2's files for that call site only, because a function nothing
+      calls is the mechanism the memory index's statement 5 warns about:
+      passing tests say a path works, never that it runs. (ii) It carries, in
+      this order: a header naming the job, type and branch with the
+      continuing-invocation sentence (same worktree, no prior conversation);
+      the accounting block as now (`invocationAccounting`; the "supersede the
+      figures above" sentence goes, since the original figures are no longer
+      sent); the VERDICT — value, reasons, the free-form notes, and the
+      diff-measured refusal reason when `isDiffRefusal` holds (the `findings`
+      composition at `run.mjs:709-715` becomes the assembler's input); the
+      ACCEPTANCE CHECKS — the author brief's "## Acceptance checks" section
+      (`acceptanceChecksFor(type)` plus the generated gates line) rendered by
+      ONE shared helper both assemblers call, so they cannot differ; the DIFF
+      under revision — `diffText` as passed to `runReview` (`run.mjs:587`, the
+      string the reviewer judged); the EXCERPTS per (iii); then `GROUND_RULES`
+      and `RESULT_PROTOCOL_INSTRUCTION` (a revision is an unattended invocation
+      that must end in RESULT.md, and the ground rules are repeated in every
+      brief by rule). Not `briefText`, not the outcome section, not the "what
+      happens next" prose. (iii) `excerptsFor` gains a `headings` option: when
+      it names one or more headings the plan is exactly the sections whose
+      heading is in that set — in every capability that holds it (unique across
+      constitutions today; a duplicate would be carried for each), constitution
+      first then that heading's pending amendments — under
+      `BRIEF_EXCERPT_MAX_CHARS` with the same floors, markers and cut, keyword
+      scoring bypassed. When `cites` is empty the call is byte-identical to the
+      author's (`{subjects: [], maxChars, pendingRoot}`), task 5's Stage 0
+      reading. (iv) A cited heading is resolvable here because task 10's gate
+      refused the record otherwise; the assembler still names, in a one-line
+      marker, any heading it could not find — never silently.
 - [ ] 12. `loop/tests/brief.test.mjs`: a revision brief is strictly smaller than its
       author brief, contains the excerpt for each cited heading, and contains no
       section for an uncited one. **Mutation A**: prepend the whole original brief
@@ -575,6 +644,29 @@ the sentence that uses it.
       send the governing type's whole checklist, and confirm the
       no-uncited-section assertion fails — omission and padding must both be
       caught. Tests tasks 10–11.
+      **Resolved before B2's freeze (2026-09-08 23:05):** (i)
+      `loop/tests/brief.test.mjs` is NEW — no file of that name exists; four
+      `brief-*.test.mjs` siblings do. (ii) The fixture is a pinned corpus under
+      the OS temp directory via `makeRepo` with the `pendingRoot` seam
+      (`brief-excerpt-budget.test.mjs:59-80` is the pattern): a governing type
+      whose `SPECS_FOR_TYPE` lists two or more capabilities, each constitution
+      holding two or more `### Requirement:` sections, with enough text that
+      the author brief's excerpts outweigh the revision's diff and notes; the
+      fixture's diff and notes contain no `### Requirement:` line. (iii) The
+      fixture's `cites` names exactly two headings — one governing capability's
+      named section and one section of a capability OUTSIDE the governing list
+      — and omits the other governing capability's named section, so Mutation
+      B both admits an uncited section and drops the outside one. (iv) A
+      "section" is a `### Requirement: <H>` line in the brief's excerpt part;
+      "contains the excerpt for each cited heading" and "no section for an
+      uncited one" are asserted on that line set against the corpus's WHOLE
+      heading set, unfiltered (task 8's lesson). (v) A third assertion, for
+      task 11's empty-list clause: with `cites: []` the revision brief's
+      heading set equals the author brief's. (vi) Sizes are asserted on the
+      fixture only; the live tree's author and revision sizes for one type are
+      measured and printed, never asserted (task 8). (vii) The
+      `cites-unresolved` arm lives in `review.test.mjs` (task 10(vi)), not
+      here.
 
 ### The carry channel and the filing lint
 
