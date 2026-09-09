@@ -74,6 +74,12 @@ export function loadRunners(ctx) {
         }
       }
     }
+    // OPTIONAL effort rung: absent means this entry declares no rung. Keep the
+    // value registry-owned and validate only its shape, so newly exposed
+    // harness rungs do not require a machinery edit.
+    if (r.effort !== undefined && (typeof r.effort !== 'string' || !r.effort.trim())) {
+      throw new Error(`${where}: "effort" must be a non-empty string when present`);
+    }
     for (const key of ['capacity_stderr_pattern', 'startup_failure_stderr_pattern']) {
       if (!r[key]) continue;
       try {

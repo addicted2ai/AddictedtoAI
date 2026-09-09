@@ -3,7 +3,7 @@
  *
  * One JSON object per line:
  *   { ts, id, type, runner, provider, tier, mm, outcome,
- *     note?, signal?, phases?, issues? }
+ *     note?, signal?, phases?, issues?, brief_chars?, gate_seconds?, authority_sha? }
  *
  * The first eight are LEDGER_FIELDS and are required. The rest are additive and
  * optional: a reader that does not know them is unaffected, and a line written
@@ -81,8 +81,28 @@ export function appendLedger(ctx, line) {
  * nothing here alters what it means. A line with no `phases` (the 14-day
  * abandon sweep writes one: no process ran, so there is nothing to record) is
  * as valid as it ever was, and LEDGER_FIELDS is deliberately not extended.
+ *
+ * `brief_chars`, `gate_seconds` and `authority_sha` are optional, additive
+ * measurements: the author brief length, the last timing recorded for each
+ * gate, and the commit the brief was assembled against.
  */
-export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts, signal, phases, issues }) {
+export function makeLedgerLine({
+  id,
+  type,
+  runner,
+  provider,
+  tier,
+  mm,
+  outcome,
+  note,
+  ts,
+  signal,
+  phases,
+  issues,
+  brief_chars,
+  gate_seconds,
+  authority_sha,
+}) {
   const line = {
     ts: ts ?? new Date().toISOString(),
     id,
@@ -110,6 +130,9 @@ export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, 
   // routine upkeep with nothing behind it, and the requirement belongs where
   // work would otherwise be lost, not everywhere.
   if (Array.isArray(issues) && issues.length) line.issues = issues;
+  if (brief_chars !== undefined) line.brief_chars = brief_chars;
+  if (gate_seconds !== undefined) line.gate_seconds = gate_seconds;
+  if (authority_sha !== undefined) line.authority_sha = authority_sha;
   return line;
 }
 

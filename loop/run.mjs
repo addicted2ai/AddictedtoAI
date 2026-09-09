@@ -258,10 +258,21 @@ async function executeJob(ctx, opts) {
   // reader that does not know the key is unaffected.
   // -------------------------------------------------------------------------
   const phases = [];
+  let gateReport = { ran: false, why: 'the loop was run with --no-gates' };
+  const gateSecondsForLedger = () => {
+    if (!gateReport.ran) return undefined;
+    const seconds = Object.fromEntries(
+      (gateReport.results ?? [])
+        .filter((result) => Number.isFinite(result.durationMs))
+        .map((result) => [result.script, Math.round((result.durationMs / 1000) * 10) / 10]),
+    );
+    return Object.keys(seconds).length ? seconds : undefined;
+  };
   const phase = (role, who, r, outcome, signal) => {
     const entry = {
       role,
       runner: who.id,
+      effort: who.effort ?? null,
       mm: Math.round(r.mm * 100) / 100,
       killed: Boolean(r.killed),
       code: r.code ?? null,
@@ -272,7 +283,12 @@ async function executeJob(ctx, opts) {
     return entry;
   };
   /** Every exit from this function carries the phases recorded up to it. */
-  const finish = (o) => ({ ...o, phases });
+  const finish = (o) => {
+    const result = { ...o, phases };
+    const gate_seconds = gateSecondsForLedger();
+    if (gate_seconds) result.gate_seconds = gate_seconds;
+    return result;
+  };
 
   // Defence in depth, and it is not decorative: `runLoop` sweeps an exhausted
   // resumable branch before it ever gets here, and a NEW job has spent nothing,
@@ -396,7 +412,6 @@ async function executeJob(ctx, opts) {
   // measurement of what ran on this branch, never a reassurance (see
   // review.mjs gatesSection, beads addictedtoai-5z9).
   let gateResult = { ok: true, output: 'gates skipped (--no-gates)' };
-  let gateReport = { ran: false, why: 'the loop was run with --no-gates' };
   if (gates !== false) {
     const gateTimeoutMs = capMinutes * 60 * 1000;
     const runTheGates = () => (typeof gates === 'function'
@@ -653,7 +668,14 @@ async function executeJob(ctx, opts) {
           `Recording signal \`${NO_OUTPUT_SIGNAL}\` on this phase.`,
       );
     }
-    phase(`review${pass}`, reviewer, rev.run, gate.ok ? 'approve' : gate.code, reviewerProducedNothing ? NO_OUTPUT_SIGNAL : undefined);
+    const reviewPhase = phase(
+      `review${pass}`,
+      reviewer,
+      rev.run,
+      gate.ok ? 'approve' : gate.code,
+      reviewerProducedNothing ? NO_OUTPUT_SIGNAL : undefined,
+    );
+    if (gate.verdict) reviewPhase.carried = Array.isArray(gate.verdict.carry) ? gate.verdict.carry.length : 0;
     if (gate.ok) {
       ctx.log(`review: approve (would-cite recorded)`);
       return finish({ outcome: 'approve', mm, changed, verdict: gate.verdict, pass, diffText });
@@ -812,12 +834,10 @@ async function executeJob(ctx, opts) {
  * work; it is the RECORD of the work. That is the wrong thing to lose to a
  * failed `rm`.
  *
- * So every step is guarded SEPARATELY and the run continues. Separately,
- * because the prune is the step that matters most when the removal fails: it is
- * the only one that can see what the `rmSync` did, and one failure must not
- * skip it. A left-behind directory costs nothing that is not retried — the
- * `rmSync(worktree)` before `addWorktree` (this file, ~line 1090) clears a
- * stale directory, and `addWorktree` prunes a stale admin entry before it adds.
+  * So every step is guarded SEPARATELY and the run continues. A refusal from
+  * git leaves the directory and its files standing; `rmSync` is not a fallback
+  * for that refusal. When git succeeds but leaves an empty directory behind,
+  * `rmSync` clears that residue and prune then cleans any stale registration.
  *
  * `deps` is a seam, and it is reached end to end through `ctx.worktreeCleanup`,
  * which nothing in production sets — `makeContext` does not create the field, so
@@ -827,7 +847,7 @@ async function executeJob(ctx, opts) {
  * condition, and a guard measured only where it happens to reproduce is a guard
  * measured nowhere.
  *
- * @returns {{removed: boolean, failures: string[]}}
+  * @returns {{removed: boolean, failures: string[], refused?: boolean}}
  */
 export function removeJobWorktree(ctx, worktree, deps = {}) {
   const remove = deps.remove ?? removeWorktree;
@@ -838,7 +858,7 @@ export function removeJobWorktree(ctx, worktree, deps = {}) {
   const failures = [];
 
   // A `node_modules` junction that is still linked is a STOP, not a cleanup
-  // failure to continue past. `git worktree remove --force` FOLLOWS a junction
+  // failure to continue past. A forced worktree removal FOLLOWS a junction
   // into its target, and the target is the repository's one shared install —
   // measured 2026-09-07 on job j-20260907-03, when a scratch worktree's forced
   // removal emptied D:/AddictedtoAI/node_modules under every running suite on
@@ -880,7 +900,7 @@ export function removeJobWorktree(ctx, worktree, deps = {}) {
   }
   const step = (what, fn) => {
     try {
-      fn();
+      return fn() !== false;
     } catch (e) {
       failures.push(what);
       const code = e && e.code ? ` (${e.code})` : '';
@@ -890,10 +910,23 @@ export function removeJobWorktree(ctx, worktree, deps = {}) {
           `the outcome, and the next run clears a stale directory before it adds one ` +
           `(addictedtoai-osru)`,
       );
+      return false;
     }
   };
-  step('git worktree remove', () => remove(ctx.repoRoot, worktree));
-  step('rmSync', () => rm(worktree, { recursive: true, force: true }));
+  const removed = step('git worktree remove', () => {
+    const result = remove(ctx.repoRoot, worktree);
+    if (!result || result.ok !== true) {
+      failures.push('git worktree remove');
+      ctx.log(
+        `WORKTREE CLEANUP REFUSED: git worktree remove on ${worktree}: ` +
+          `${result?.reason ?? 'the removal did not return ok'} — the directory is left standing ` +
+          `and the run CONTINUES to its ledger line and its records commit (addictedtoai-osru).`,
+      );
+      return false;
+    }
+    return true;
+  });
+  if (removed) step('rmSync', () => rm(worktree, { recursive: true, force: true }));
   step('git worktree prune', () => prune(ctx.repoRoot));
   return { removed: failures.length === 0, failures };
 }
@@ -1448,6 +1481,9 @@ export async function runLoop(ctx, opts = {}) {
         // (`addictedtoai-occ0`). Omitted when the job serves no issue, which is
         // the common and healthy case.
         issues: jobIssues,
+        brief_chars: briefText.length,
+        gate_seconds: result.gate_seconds,
+        authority_sha: mergeBaseSha,
         ts: ctx.now().toISOString(),
       }),
     );
@@ -1879,31 +1915,12 @@ export async function runLoop(ctx, opts = {}) {
     }
   }
 
-  // `removeWorktree` runs `worktree remove --force` and then `worktree prune`;
-  // the `rmSync` is the fallback for when the remove is not believed. On Windows
-  // the remove can fail on a file still held open, and then the ORDER defeats
-  // the prune: the prune runs while the directory is still present, finds
-  // nothing prunable, and the `rmSync` deletes the directory a moment later. The
-  // admin entry under `.git/worktrees/` is now stale and nothing ever prunes it
-  // again — and git reads that entry, not the filesystem, when asked to delete a
-  // branch. Measured in a throwaway repository on git 2.40.0.windows.1: with the
-  // directory gone and the entry unpruned, `git branch -D` answers
-  //     error: Cannot delete branch 'job/probe' checked out at '<gone dir>'
-  // and one `worktree prune` at that point makes the identical call succeed. So
-  // the prune belongs AFTER the `rmSync` as well: it is the only one that can
-  // see what the `rmSync` did. Cheap and idempotent when the remove worked.
-  //
-  // The one case it does not close, said out loud rather than claimed away: a
-  // worktree under `git worktree lock` refuses `remove --force` AND is skipped by
-  // prune, so both prunes leave it. That is not this failure mode — nothing in
-  // the Desk locks a worktree — but a stale entry surviving here means look for a
-  // lock, not for a missing prune.
-  //
-  // GUARDED, and the guard is the whole point (addictedtoai-osru): every step
-  // below is cleanup, and a throw here used to escape before the ledger line and
-  // the records commit. `removeJobWorktree` logs each failure and continues. The
-  // seam it takes for its own test is documented at its definition; production
-  // passes two arguments.
+  // `removeWorktree` asks git to remove the worktree without forcing it and
+  // returns the refusal reason when git cannot complete. `removeJobWorktree`
+  // leaves that directory standing on refusal; its recursive `rmSync` step is
+  // permitted only after an `{ok: true}` result. The final prune still runs in
+  // every case, and each cleanup failure is logged without escaping before the
+  // ledger line or the records commit (addictedtoai-osru).
   removeJobWorktree(ctx, worktree, ctx.worktreeCleanup ?? {});
 
   // -------------------------------------------------------------------------

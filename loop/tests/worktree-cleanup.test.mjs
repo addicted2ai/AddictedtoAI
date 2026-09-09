@@ -35,8 +35,8 @@
  * `removeJobWorktree`. A genuinely undeletable directory is a Windows-only,
  * timing-dependent condition that depends on a stray process; a guard measured
  * only where it happens to reproduce is a guard measured nowhere. The injection
- * reproduces production's shape exactly — `git worktree remove` does not take
- * the directory, and the `rmSync` then throws an `EPERM` carrying the path.
+ * reproduces production's shape exactly — `git worktree remove` refuses with
+ * a reason, and the `rmSync` seam would throw an `EPERM` if the guard failed.
  *
  * The positive control below runs the identical fixture with NO seam and
  * asserts the worktree is really gone and no failure line was printed, so a
@@ -46,7 +46,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { runLoop, removeJobWorktree } from '../run.mjs';
@@ -63,12 +63,12 @@ function eperm(path) {
 }
 
 /**
- * The production shape: `git worktree remove --force` does not take the
- * directory (it never throws — `removeWorktree` is built on `gitTry`), and the
- * `rmSync` fallback throws.
+ * The production shape: git refuses to remove the directory without forcing,
+ * and the refusal is returned by `removeWorktree` rather than followed by a
+ * recursive fallback.
  */
 const REFUSES_TO_DELETE = {
-  remove: () => {},
+  remove: (_repo, dir) => ({ ok: false, reason: `EPERM: operation not permitted, rmdir '${dir}'` }),
   rm: (dir) => {
     throw eperm(dir);
   },
@@ -76,6 +76,7 @@ const REFUSES_TO_DELETE = {
 
 function fixture({ command, seam } = {}) {
   const ctx = makeRepo({
+    gitignore: 'node_modules/\n*.log\n/HOLD.md\n/STOP\n/RESULT.md\n',
     runners: runnersYaml({
       command: command ?? mockCommand('done-edit'),
       reviewerCommand: mockCommand('review-approve'),
@@ -96,7 +97,7 @@ function ledgerLines(ctx) {
     .map((l) => JSON.parse(l));
 }
 
-test('A REMOVAL THAT THROWS STILL LEAVES THE LEDGER LINE AND THE RECORDS COMMIT', async (t) => {
+test('A REMOVAL REFUSAL STILL LEAVES THE LEDGER LINE AND THE RECORDS COMMIT', async (t) => {
   const ctx = fixture({ seam: REFUSES_TO_DELETE });
   t.after(() => ctx.cleanup());
 
@@ -122,7 +123,7 @@ test('A REMOVAL THAT THROWS STILL LEAVES THE LEDGER LINE AND THE RECORDS COMMIT'
 
   // And the failure was said out loud, naming the path and the errno.
   const out = ctx.output();
-  assert.match(out, /WORKTREE CLEANUP FAILED/, 'a failed cleanup must not be silent');
+  assert.match(out, /WORKTREE CLEANUP REFUSED/, 'a refused cleanup must not be silent');
   assert.match(out, /EPERM/, 'and must carry the errno');
   assert.match(out, /addictedtoai-osru/, 'and point at the finding');
 });
@@ -149,7 +150,10 @@ test('A JUNCTION THAT WILL NOT UNLINK REFUSES THE REMOVAL — nothing recursive 
       calls.push('unlink');
       throw eperm(p);
     },
-    remove: () => calls.push('remove'),
+    remove: () => {
+      calls.push('remove');
+      return { ok: true };
+    },
     rm: () => calls.push('rm'),
     prune: () => calls.push('prune'),
   });
@@ -173,7 +177,10 @@ test('a junction that DOES unlink lets the removal proceed (positive control)', 
       calls.push('unlink');
       linked = false;
     },
-    remove: () => calls.push('remove'),
+    remove: () => {
+      calls.push('remove');
+      return { ok: true };
+    },
     rm: () => calls.push('rm'),
     prune: () => calls.push('prune'),
   });
@@ -249,7 +256,7 @@ test('POSITIVE CONTROL — with no seam the worktree is really removed and nothi
 // The unit: each step is guarded on its own, so one failure never skips the next.
 // ---------------------------------------------------------------------------
 
-test('the prune STILL RUNS when the remove throws — the steps are guarded separately', (t) => {
+test('the prune STILL RUNS when the remove throws, while rmSync stays guarded', (t) => {
   const ctx = makeRepo();
   t.after(() => ctx.cleanup());
   const ran = [];
@@ -261,7 +268,7 @@ test('the prune STILL RUNS when the remove throws — the steps are guarded sepa
     prune: () => ran.push('prune'),
   });
 
-  assert.deepEqual(ran, ['rm', 'prune'], 'a throw in one step must not skip the two after it');
+  assert.deepEqual(ran, ['prune'], 'a refusal must not trigger recursive deletion, but prune still runs');
   assert.equal(r.removed, false);
   assert.deepEqual(r.failures, ['git worktree remove']);
 });
@@ -272,21 +279,65 @@ test('every step failing is reported once each, and the function still returns',
   const boom = () => {
     throw new Error('no');
   };
-  const r = removeJobWorktree(ctx, '/nowhere', { remove: boom, rm: boom, prune: boom });
+  const r = removeJobWorktree(ctx, '/nowhere', {
+    remove: () => ({ ok: true }),
+    rm: boom,
+    prune: boom,
+  });
 
-  assert.deepEqual(r.failures, ['git worktree remove', 'rmSync', 'git worktree prune']);
-  assert.equal(ctx.output().match(/WORKTREE CLEANUP FAILED/g).length, 3, 'one line per failed step');
+  assert.deepEqual(r.failures, ['rmSync', 'git worktree prune']);
+  assert.equal(ctx.output().match(/WORKTREE CLEANUP FAILED/g).length, 2, 'one line per failed step');
 });
 
-test('the happy path reports nothing and really deletes', (t) => {
+test('a dirty git worktree refuses removal, leaves its file, and never calls rmSync', (t) => {
   const ctx = makeRepo();
   t.after(() => ctx.cleanup());
+  mkdirSync(ctx.worktreeRoot, { recursive: true });
+  const dir = join(ctx.worktreeRoot, 'dirty-worktree');
+  git(ctx.repoRoot, ['worktree', 'add', '-b', 'cleanup-dirty', dir, 'HEAD']);
+  const tracked = join(dir, 'README.md');
+  writeFileSync(tracked, '# modified by the refusal arm\n', 'utf8');
+
+  const calls = [];
+  const refused = removeJobWorktree(ctx, dir, {
+    rm: () => calls.push('rm'),
+    prune: () => calls.push('prune'),
+  });
+
+  assert.equal(refused.removed, false);
+  assert.deepEqual(refused.failures, ['git worktree remove']);
+  assert.deepEqual(calls, ['prune'], 'prune runs, but rmSync is not called after git refuses');
+  assert.equal(existsSync(tracked), true, 'the refused worktree and its modified file remain');
+  assert.match(ctx.output(), /WORKTREE CLEANUP REFUSED/);
+  assert.match(ctx.output(), /modified|untracked/i, 'the git refusal explains why deletion was denied');
+
+  git(dir, ['reset', '--hard', 'HEAD']);
+  assert.equal(removeJobWorktree(ctx, dir).removed, true, 'the clean worktree can be removed afterward');
+});
+
+test('the happy path reports nothing and really deletes a clean worktree', (t) => {
+  const ctx = makeRepo();
+  t.after(() => ctx.cleanup());
+  mkdirSync(ctx.worktreeRoot, { recursive: true });
   const dir = join(ctx.worktreeRoot, 'plain-dir');
-  mkdirSync(dir, { recursive: true });
+  git(ctx.repoRoot, ['worktree', 'add', '-b', 'cleanup-happy', dir, 'HEAD']);
 
   const r = removeJobWorktree(ctx, dir);
 
   assert.equal(r.removed, true);
   assert.equal(existsSync(dir), false);
   assert.equal(ctx.output(), '', 'a successful cleanup says nothing');
+});
+
+test('review and conformance callers guard recursive cleanup on a refusal', () => {
+  const review = readFileSync(new URL('../lib/review.mjs', import.meta.url), 'utf8');
+  assert.match(review, /const removed = removeWorktree\(ctx\.repoRoot, reviewDir\);/);
+  assert.match(
+    review,
+    /if \(removed\.ok\) \{\s*rmSync\(reviewDir, \{ recursive: true, force: true \}\);\s*\} else \{\s*ctx\.log\(/s,
+  );
+
+  const conformance = readFileSync(new URL('../conformance.mjs', import.meta.url), 'utf8');
+  assert.match(conformance, /const teardownRemoval = removeWorktree\(ctx\.repoRoot, dir\);/);
+  assert.match(conformance, /if \(!teardownRemoval\.ok\) \{\s*ctx\.log\(/s);
 });
