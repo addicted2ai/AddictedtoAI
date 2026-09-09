@@ -910,6 +910,83 @@ the brief under `evidence/reviews/`.
       confirm the fail-then-one-pass case is wrongly allowed — which is today's
       behaviour, and today's instance survives only because the record happened to
       be committed between the two runs.
+      **Resolved before F's freeze (the architect's quantifier enumeration,
+      2026-09-09 13:35, from the code at `dc54da0`):** (i) THE RECORD TODAY:
+      `data/conformance.json` is `{ [runnerId]: { runner, date, pass,
+      checks: [{ name, result, evidence, mm, condition }] } }`, one object
+      per runner, nine runners recorded, OVERWRITTEN by `recordConformance`
+      (`loop/conformance.mjs:406-419`: `all[record.runner] = record`); the
+      four check names are fixed by `CHECKS` in the same file; each check
+      already carries its `mm`. (ii) THE SHAPE AFTER F: `records[runnerId]`
+      is an ARRAY of run entries, oldest first, each entry today's record
+      object unchanged (`{ runner, date, pass, checks }`); `recordConformance`
+      APPENDS and rewrites nothing else in the file. MIGRATION IS BY
+      NORMALISATION, NOT BY EDIT: a new exported
+      `conformanceHistory(records, runnerId)` in `loop/lib/runners.mjs`
+      returns `[]` for an absent runner, `[record]` for today's single-object
+      form (the object has `checks`) and the array as-is for the new form —
+      so the committed `data/conformance.json` (reserved: no job edits
+      `data/`) needs no hand migration, the first F-era run appends to a
+      one-entry history, and every earlier failure stays readable. Both
+      `recordConformance` and `conformanceGate` go through it. (iii) THE GATE:
+      `conformanceGate(records, runnerId, { passesToSupersede = 3 } = {})`
+      (`runners.mjs:172-187` today) reads the history per CHECK NAME: walking
+      the entries oldest to newest, a FAIL of a check stands until that same
+      check records PASS in `passesToSupersede` CONSECUTIVE later entries; an
+      entry in which the check is absent or not `PASS` breaks the run of
+      passes (absence is not a pass), so FAIL, PASS, PASS, FAIL, PASS refuses
+      and FAIL, PASS, PASS, PASS allows. The entry-level `pass` boolean is no
+      longer read by the gate (it stays on the entry as the run's own
+      verdict). The threshold is a PARAMETER because the spec calls three "a
+      value rather than a principle" and because task 21(a) needs the gate
+      called at 1 to show N = 1 reproduces today's defect; the default is 3
+      and nothing in the tree passes another value. The refusal `reason`
+      names each unsuperseded check, the date of its standing FAIL and the
+      passes since, and ends with the count of entries read. (iv) THE COUNT —
+      task 21(b) and the requirement's "confirm how many records it loaded
+      before trusting any verdict": the gate's return carries `entries: <n>`
+      (0 with `unrecorded: true` for no record), and BOTH programmatic
+      readers print it before acting — `run.mjs:969-977` logs the record
+      count for the runner on the line before the refusal or the unrecorded
+      note, and the selector's early-return reason (`select.mjs:154-167`) is
+      the gate's reason, which already ends with the count. `loadConformance`'s
+      return shape does not change. (v) WRITTEN FROM THE VERDICTS: already
+      true by construction — `main` (`conformance.mjs:437-470`) records only
+      after `runConformance` has resolved with all four results and the exit
+      code is computed from the record; F adds no mechanism for it and the
+      brief says so; the existing arm at `conformance.test.mjs:147-166` (a run
+      killed mid-check) is the evidence and stays. (vi) TESTS, in
+      `loop/tests/conformance.test.mjs` (which already owns the gate arm at
+      `:73-103` and imports `recordConformance`): (a) a history of FAIL then
+      PASS on the fabrication check — refused at the default (3) AND at 2,
+      allowed at `passesToSupersede: 1`, the second assertion existing to show
+      N = 1 is today's defect; (b) an absent runner gives `ok`, `unrecorded`,
+      `entries 0`, and a dry-run `runLoop` on it logs the note and the count
+      0; a two-entry history gives `entries 2` before any verdict; (c) FAIL
+      then three PASSes — allowed, `entries 4`, the FAIL still present in the
+      file; (d) FAIL, PASS, PASS, FAIL, PASS — refused (the run of passes
+      reset); (e) the legacy single-object record gives `entries 1`, and a
+      legacy FAIL still refuses; (f) `recordConformance` twice gives two
+      entries, the first byte-equal to what it was. MUTATIONS (perform, red,
+      restore): the overwrite restored (`all[record.runner] = record`) turns
+      (c)'s "still present" and (f) red, and the fail-then-one-pass fixture is
+      wrongly allowed under a re-run — today's behaviour, task 21's named
+      mutation; the default threshold 3 to 1 turns (a)'s refusal at the
+      default red; an absent check treated as PASS turns (d) red.
+      (vii) CLOSURE (grepped at `dc54da0`): readers of the record are
+      `select.mjs:154` and `run.mjs:970` only; tests that WRITE the legacy
+      shape and must stay green through normalisation, UNEDITED —
+      `exit-code-refusal.test.mjs:81-95` (a legacy FAIL exits 2) and
+      `runner-policy.test.mjs:111-131` (packet D's conformance arm);
+      `conformance.test.mjs:94` parses the file and hands it to the gate, so
+      the gate must accept the file's array form;
+      `pulse/tests/publish.test.mjs:731` names the path only; no test pins the
+      file's whole shape by `deepEqual`. Documentation that reads the record —
+      `CLAUDE.md`'s conformance paragraph and `runners.yml`'s `conformance:`
+      fields — is the orchestrator's and says "record" per runner; the JSON
+      stays the authority. Files: `loop/conformance.mjs`,
+      `loop/lib/runners.mjs`, `loop/run.mjs` (the count line only),
+      `loop/tests/conformance.test.mjs`.
 - [ ] 22. **A registered runner that policy names for nothing needs a way to say
       so.** An absent `job_types` means **cleared for every type**
       (`select.mjs:132-134` returns ok on `!Array.isArray`; the comment at `:122`
@@ -1024,6 +1101,108 @@ the brief under `evidence/reviews/`.
       it goes on `codex-gpt-luna-medium` as well as `-high` and `-xhigh` —
       the entry stays defined (its conformance record survives; "for now"
       is reversible) and unselected by mechanism rather than by discipline.
+      **Resolved before F's freeze (the architect's quantifier enumeration,
+      2026-09-09 13:35, from the code at `dc54da0`; the registry at
+      `08ae8b0`):** (i) THE FIELD: `loadRunners` (`runners.mjs:34-97`, which
+      validates known keys and ignores unknown ones, so the field is purely
+      additive) accepts an optional `enabled`; when present it must be a
+      boolean (a load-time error otherwise, the `effort` pattern at
+      `:80-82`); absent means enabled. (ii) WHERE THE REFUSAL LIVES — "both
+      roles, before every other gate" — is three places with one rule: (1)
+      `run.mjs`, immediately after the two `pickRunner` calls (`:943-944`)
+      and before the conformance gate at `:970` and the health loop at
+      `:1125-1136`, a loop over both roles that on `who.enabled === false`
+      logs a `runner:disabled` refusal and returns `{ started: true,
+      selected: null, refused, rule: 'runner:disabled' }` — the shape the
+      health loop returns; (2) `selectJob` (`select.mjs:146-256`), a FOURTH
+      early return placed BEFORE the conformance return at `:154`, in the
+      shape of the three at `:156-198` (`selected: null, topRanked: null`, one
+      refusal with rule `runner:disabled`, `blocked`), so the pure selector
+      refuses a disabled entry on its own, the escalation re-run refuses one,
+      and packet D's early-return contract (`topRanked` null) gains its fourth
+      member; (3) `escalationTarget` (`select.mjs:265-269`) returns `null`
+      when the declared target has `enabled === false` — "never escalates onto
+      one" decided by the pure helper and confirmed by (2). (iii) `pickRunner`
+      (`runners.mjs:124-142`) does NOT throw on a disabled explicit id — it
+      returns the entry so the run can REPORT the refusal (task 22's arm says
+      "selects nothing and reports `runner:disabled`", not "crashes") — and
+      its default and alternate searches (`:137-141`) skip disabled entries,
+      so a disabled default cannot make every unflagged run refuse; the
+      shipped default is enabled, so this is a rule with no live case.
+      (iv) TESTS, in `loop/tests/runner-policy.test.mjs` (packet D's file,
+      which owns the policy registry and the escalation fixtures): (a) the
+      cheap entry with `enabled: false` named as `--runner`: `selection()`
+      returns `selected` null, `topRanked` null, the first refusal's rule
+      `runner:disabled`, `blocked` set; and the dry-run `runLoop` on it
+      returns `refused` with that rule and the log names it; (b) an entry
+      OMITTING the field loads with `enabled === undefined` and is selectable
+      — asserted explicitly, not left to the other arms; (c) a disabled
+      REVIEWER whose ledger also makes it produce nothing: the run is refused
+      for the reviewer role with rule `runner:disabled`, not the health rule —
+      the proof of "before every other gate"; (d) the scout fixture of arm (a)
+      with the FRONTIER entry `enabled: false`: `escalationTarget` returns
+      `null`, the run keeps the original outcome and the log names the
+      disabled target; (e) a non-boolean `enabled` fails `loadRunners` with
+      the exact message; (f) a registry whose `default:` is disabled and no
+      `--runner`: `pickRunner` returns the first enabled author-capable entry.
+      MUTATIONS, task 22's two by name: ignore the field (drop (ii)(1) and
+      (ii)(2)) turns (a), (c) and (d) red; default it to disabled (`enabled
+      !== true`) turns (b) red and every pre-existing selection arm in the
+      file red; plus, per changed function: the `escalationTarget` check
+      dropped turns (d) red, and `pickRunner`'s skip dropped turns (f) red.
+      (v) THE REGISTRY HALF, **[orchestrator]** (`runners.yml`): `enabled:
+      false` on the three Luna rungs the 00:36 paragraph names; at `08ae8b0`
+      the medium entry also carries `escalates_to`, which is inert on a
+      disabled entry and stays. CLOSURE:
+      `selector-rules.test.mjs:415-448` loads the REAL registry and exercises
+      `runnerJobTypeGate` per entry — a pure call, unaffected by `enabled`;
+      `runner-policy.test.mjs:184-237` and packet D's arms use their own
+      registries; `data/conformance.json` keeps the three entries' records,
+      untouched. (vi) THE CARRIED GAPS (a)–(c): (a)
+      `loop/tests/portability.test.mjs:97-105` `runnerTargets()`: the
+      extension list of the RUNNER-ID scan gains `.ts` and `.tsx` on every
+      root, and the runner-id test asserts PER ROOT that each listed root
+      contributed at least one scanned file, which is the mechanical form that
+      would have failed `app/` at 32 files and 0 scanned; `MIN_SCANNED_FILES`
+      stays as the collapse floor; the model-name scan (`:91`) is NOT widened
+      — its narrowing is deliberate (`:115-123`). Mutation: `.tsx` dropped
+      from the list turns the `app/` per-root assertion red. (b)
+      `scripts/no-change-dir-refs.test.mjs:69-71` `isAllowed` tests the
+      allow-list regex against the whole LINE (`entry.match.test(v.text)`);
+      F tests it against the matched SPAN. `BAD_REFERENCE` (`:19`) captures
+      only the prefix today, so the recorded `v.reference` is the bare
+      `openspec/changes/` for every hit and carries nothing the allow-list
+      regexes could test; F widens the capture to run through the segment that
+      follows and its closing `/`, and `isAllowed` tests the entry's regex
+      against that span — so a named path on the same line as an allowed
+      template fails on the named one, and the allow-list's own "still live"
+      test at `:87` keeps passing. Mutation: plant a named change path on the
+      same line as an allowed template in an allow-listed file and the test
+      goes red; remove the plant. (c) the floor VALUE and `skipTests`: extract
+      the floor into an exported helper used at `:133` and `:162`, with an arm
+      that hands it a one-file result and asserts false (mutation: the minimum
+      compared as `>= 0` turns it red); and an arm on `filesUnder(dir, exts,
+      [], { skipTests: true })` over a throwaway tree whose test file sits one
+      directory down, asserting it is excluded with the flag and included
+      without (mutation: the flag not propagated at `:39` turns it red).
+      (vii) FROM BEAD `addictedtoai-tbho` (the orchestrator's; its criteria 3
+      and 4 are cheap and homeless): a comment beside `authority_sha` in
+      `loop/lib/ledger.mjs` stating the two limits in the bead's words — it
+      buys auditability, not prevention (a freeze holds the text; the field
+      records which text that was), and the fleet has no ledger line, so its
+      form until Stage 3 is the `authority:` line in RESULT.md and the
+      handover; and the MUTATION performed in the worktree and recorded in
+      the report, not committed: `LEDGER_FIELDS` extended to require
+      `authority_sha` turns `issues.test.mjs:242-243` and
+      `portability.test.mjs:409` red. Files for F, the closure over the
+      change: `loop/conformance.mjs`, `loop/lib/runners.mjs`,
+      `loop/lib/select.mjs`, `loop/run.mjs`, `loop/lib/ledger.mjs` (the
+      comment only), `loop/tests/conformance.test.mjs`,
+      `loop/tests/runner-policy.test.mjs`, `loop/tests/portability.test.mjs`,
+      `scripts/no-change-dir-refs.test.mjs`. Read-only:
+      `loop/tests/helpers.mjs`, `loop/tests/exit-code-refusal.test.mjs`,
+      `loop/tests/selector-rules.test.mjs`, `loop/tests/issues.test.mjs`.
+      Reserved: `runners.yml`, `data/`.
 - [x] 23. (DONE 2026-09-09 at merge `dc54da0`, packet D, authority `5414899`:
       round 1 `8f5e14f` — `loadRunners` validates the optional `escalates_to`
       at `runners.mjs:86-88` and `:104-119`; `selectJob` returns `topRanked`

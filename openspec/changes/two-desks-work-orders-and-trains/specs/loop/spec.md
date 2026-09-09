@@ -1220,6 +1220,14 @@ script outside the repository.
   suite's own trap has demonstrated the failure the trap exists to detect —
   whatever it does on other checks, and whatever the rungs on either side of it do
   on that one.
+- **A registered entry SHALL be able to say it is named for nothing.** The registry
+  MAY mark an entry disabled; the loop SHALL refuse a disabled entry for the
+  `author` and `reviewer` roles before any other gate has an opinion about it,
+  SHALL NOT escalate onto one, and SHALL treat an entry without the field as
+  enabled, so that every entry written before the field keeps its behaviour. A rung
+  that is registered and conformance-passing but named for nothing is then
+  unselected by mechanism rather than by discipline — and a discipline standing in
+  for a mechanism is invisible until it lapses.
 - Where a conformance result is read to decide this, the reading SHALL confirm how
   many records it loaded before trusting any verdict. A reader given the wrong
   input can return an empty set, and an empty set is indistinguishable at that
