@@ -28,7 +28,9 @@ import { LEDGER_FIELDS, makeLedgerLine } from '../lib/ledger.mjs';
 const ROOT = DEFAULT_REPO_ROOT;
 const ctx = makeContext({ log: () => {} });
 const MIN_SCANNED_FILES = 2;
-const RUNNER_FIXTURE_ROOTS = ['lib', 'app', 'tools'];
+// Independent contract list: dropping a scan target must leave an expectation
+// behind, rather than removing the root from both sides of the assertion.
+const RUNNER_EXPECTED_ROOTS = ['loop', 'pulse', 'scripts', 'lib', 'app', 'tools'];
 const RUNNER_SCAN_ROOTS = ['loop', 'pulse', 'scripts', 'lib', 'app', 'tools'];
 const RUNNER_SCAN_EXTENSIONS = ['.mjs', '.md', '.json', '.yml', '.ts', '.tsx'];
 
@@ -159,7 +161,7 @@ test('no machinery path references a runner by id', () => {
   const ids = reg.runners.map((r) => r.id.toLowerCase());
   const commands = reg.runners.map((r) => r.command);
   const targets = runnerTargets();
-  for (const root of RUNNER_SCAN_ROOTS) {
+  for (const root of RUNNER_EXPECTED_ROOTS) {
     const files = filesUnder(join(ROOT, root), RUNNER_SCAN_EXTENSIONS, [], { skipTests: true });
     assert.ok(files.length > 0, `runner-id scan root ${root}/ contributed no files`);
   }
@@ -177,12 +179,12 @@ test('no machinery path references a runner by id', () => {
   }
 });
 
-test('the runner-id scan catches a fixture under each newly covered root', () => {
+test('the runner-id scan catches a fixture under every required root', () => {
   const fixtureRoot = mkdtempSync(join(tmpdir(), 'portability-runner-'));
   try {
     const id = loadRunners(ctx).runners[0].id.toLowerCase();
     const expected = new Map();
-    for (const root of RUNNER_FIXTURE_ROOTS) {
+    for (const root of RUNNER_EXPECTED_ROOTS) {
       const dir = join(fixtureRoot, root);
       mkdirSync(dir, { recursive: true });
       const file = join(dir, 'fixture.mjs');
@@ -191,7 +193,7 @@ test('the runner-id scan catches a fixture under each newly covered root', () =>
     }
 
     const result = scan(runnerTargets(fixtureRoot), [id]);
-    for (const root of RUNNER_FIXTURE_ROOTS) {
+    for (const root of RUNNER_EXPECTED_ROOTS) {
       // MUTATION: remove this root from runnerTargets. The named fixture arm
       // must go red independently; another root's hit is not a substitute.
       assert.deepEqual(
@@ -200,7 +202,7 @@ test('the runner-id scan catches a fixture under each newly covered root', () =>
         'mutation runner-id target ' + root + '/ must be scanned and rejected',
       );
     }
-    assert.equal(result.scanned, RUNNER_FIXTURE_ROOTS.length);
+    assert.equal(result.scanned, RUNNER_EXPECTED_ROOTS.length);
   } finally {
     rmSync(fixtureRoot, { recursive: true, force: true });
   }

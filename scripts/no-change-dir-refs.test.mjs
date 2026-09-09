@@ -16,7 +16,7 @@ import fg from 'fast-glob';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SEARCH = ['lib', 'loop', 'pulse', 'scripts', 'app', 'tools'];
 const CHANGE_DIR = ['openspec', 'changes', ''].join('/');
-const BAD_REFERENCE = new RegExp(`${CHANGE_DIR}(?!archive/)[^\\s/'"\\x60]+/`, 'g');
+const BAD_REFERENCE = new RegExp(`${CHANGE_DIR}(?!archive/)[^\\s/'"\\x60]+/?`, 'g');
 
 function sourceFiles() {
   return fg.sync(
@@ -76,10 +76,17 @@ test('no source references an unarchived change directory', () => {
 
 test('the check matches a bad literal and ignores an archived literal', () => {
   assert.deepEqual(
+    [...(CHANGE_DIR + 'foo').matchAll(BAD_REFERENCE)].map((m) => m[0]),
+    [CHANGE_DIR + 'foo'],
+  );
+  assert.deepEqual(
     [...(CHANGE_DIR + 'foo/bar.md').matchAll(BAD_REFERENCE)].map((m) => m[0]),
     [CHANGE_DIR + 'foo/'],
   );
   assert.deepEqual([...(CHANGE_DIR + 'archive/2026-09-07-foo/bar.md').matchAll(BAD_REFERENCE)], []);
+  // A bare prefix followed by a backtick designates no change, so archiving
+  // never moves it and the detector deliberately ignores it.
+  assert.deepEqual([...(CHANGE_DIR + '`').matchAll(BAD_REFERENCE)], []);
 });
 
 test('an allow-list entry applies only to its matched reference span', () => {

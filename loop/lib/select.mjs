@@ -109,7 +109,7 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
  *
  * @returns {{selected: object|null, topRanked: object|null, refusals: Array,
  *            warnings: string[], notes: string[], shares: object, shed: object,
- *            lane: object}}
+ *            lane: object, conformanceEntries?: number}}
  */
 /**
  * A runner's own clearance for the KIND of work, the exact counterpart of
@@ -178,6 +178,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shares,
       shed,
       lane,
+      conformanceEntries: conformance.entries,
       blocked: conformance.reason,
     };
   }
@@ -196,6 +197,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shares,
       shed,
       lane,
+      conformanceEntries: conformance.entries,
       blocked: health.reason,
     };
   }
@@ -210,6 +212,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shares,
       shed,
       lane,
+      conformanceEntries: conformance.entries,
       blocked: lane.reason,
     };
   }
@@ -267,6 +270,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     shares,
     shed,
     lane,
+    conformanceEntries: conformance.entries,
     considered: candidates.length,
   };
 }

@@ -200,6 +200,56 @@ test('a later failure resets the consecutive-pass run', () => {
   assert.match(gate.reason, /1 consecutive PASSes since/);
 });
 
+test('tracks distinct failed checks through divergent later histories', () => {
+  const records = {
+    'mock-frontier': [
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-06',
+        pass: false,
+        checks: [
+          { name: 'check-a', result: 'FAIL' },
+          { name: 'check-b', result: 'FAIL' },
+        ],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-07',
+        pass: true,
+        checks: [
+          { name: 'check-a', result: 'PASS' },
+          { name: 'check-b', result: 'PASS' },
+        ],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-08',
+        pass: false,
+        checks: [
+          { name: 'check-a', result: 'PASS' },
+          { name: 'check-b', result: 'FAIL' },
+        ],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-09',
+        pass: true,
+        checks: [
+          { name: 'check-a', result: 'PASS' },
+          { name: 'check-b', result: 'PASS' },
+        ],
+      },
+    ],
+  };
+  const gate = conformanceGate(records, 'mock-frontier');
+  // MUTATION: collecting only the first failed name lets check-b disappear
+  // after check-a is superseded.
+  assert.equal(gate.ok, false);
+  assert.deepEqual(gate.failed, ['check-b']);
+  assert.match(gate.reason, /check-b/);
+  assert.doesNotMatch(gate.reason, /check-a/);
+});
+
 test('the legacy single-object record normalizes to one entry and still refuses', () => {
   const legacy = {
     'mock-frontier': historyEntry('2026-09-06', 'FAIL', { pass: false }),
@@ -239,6 +289,62 @@ test('an absent check breaks the pass run and is not treated as PASS', () => {
   assert.equal(gate.ok, false);
   assert.equal(gate.entries, 5);
   assert.match(gate.reason, /standing FAIL 2026-09-06/);
+  assert.match(gate.reason, /2 consecutive PASSes since/);
+});
+
+test('an absent named check does not borrow a different check result', () => {
+  const records = {
+    'mock-frontier': [
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-06',
+        pass: false,
+        checks: [
+          { name: 'check-a', result: 'FAIL' },
+          { name: 'check-b', result: 'PASS' },
+        ],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-07',
+        pass: true,
+        checks: [
+          { name: 'check-a', result: 'PASS' },
+          { name: 'check-b', result: 'PASS' },
+        ],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-08',
+        pass: true,
+        checks: [{ name: 'check-b', result: 'PASS' }],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-09',
+        pass: true,
+        checks: [
+          { name: 'check-a', result: 'PASS' },
+          { name: 'check-b', result: 'PASS' },
+        ],
+      },
+      {
+        runner: 'mock-frontier',
+        date: '2026-09-10',
+        pass: true,
+        checks: [
+          { name: 'check-a', result: 'PASS' },
+          { name: 'check-b', result: 'PASS' },
+        ],
+      },
+    ],
+  };
+  const gate = conformanceGate(records, 'mock-frontier');
+  // MUTATION: falling back to check-b at the omitted entry would create three
+  // consecutive PASSes for check-a and incorrectly allow the runner.
+  assert.equal(gate.ok, false);
+  assert.deepEqual(gate.failed, ['check-a']);
+  assert.equal(gate.entries, 5);
   assert.match(gate.reason, /2 consecutive PASSes since/);
 });
 

@@ -150,6 +150,7 @@ test('conformance refusal has no ranked candidate and no escalation target', () 
   const { registry, runner, sel } = selection(ctx);
   assert.equal(sel.topRanked, null);
   assert.equal(sel.selected, null);
+  assert.equal(sel.conformanceEntries, 1);
   assert.ok(sel.blocked);
   assert.equal(escalationTarget(registry, runner, sel), null);
   ctx.cleanup();
@@ -174,6 +175,7 @@ test('health refusal has no ranked candidate and no escalation target', () => {
   const { registry, runner, sel } = selection(ctx);
   assert.equal(sel.topRanked, null);
   assert.equal(sel.selected, null);
+  assert.equal(sel.conformanceEntries, 0);
   assert.ok(sel.blocked);
   assert.equal(escalationTarget(registry, runner, sel), null);
   ctx.cleanup();
@@ -195,9 +197,36 @@ test('paused lane has no ranked candidate and no escalation target', () => {
   const { registry, runner, sel } = selection(ctx);
   assert.equal(sel.topRanked, null);
   assert.equal(sel.selected, null);
+  assert.equal(sel.conformanceEntries, 0);
   assert.ok(sel.blocked);
   assert.equal(escalationTarget(registry, runner, sel), null);
   ctx.cleanup();
+});
+
+test('selection reports conformance counts on unrecorded and allowed paths', () => {
+  const absent = fixture({
+    queue: [{ type: 'repair', title: 'an unrecorded repair', rank: 100 }],
+  });
+  assert.equal(selection(absent).sel.conformanceEntries, 0);
+  absent.cleanup();
+
+  const allowed = fixture({
+    queue: [{ type: 'repair', title: 'a recorded repair', rank: 100 }],
+  });
+  writeFileSync(
+    allowed.conformancePath,
+    JSON.stringify({
+      [CHEAP]: [
+        { checks: [{ name: 'trivial-edit', result: 'PASS' }] },
+        { checks: [{ name: 'trivial-edit', result: 'PASS' }] },
+      ],
+    }),
+    'utf8',
+  );
+  const allowedSelection = selection(allowed).sel;
+  assert.equal(allowedSelection.selected.type, 'repair');
+  assert.equal(allowedSelection.conformanceEntries, 2);
+  allowed.cleanup();
 });
 
 test('a disabled explicit runner refuses selection and reports runner:disabled', async () => {
