@@ -659,7 +659,11 @@ export function assembleBrief(ctx, {
   // source count, and 14,000 measurably cut a normative requirement
   // mid-sentence for three job types on the live tree. 20,000 did not, for
   // any of them.
-  const ex = excerptsFor(ctx.repoRoot, job.type, { maxChars: BRIEF_EXCERPT_MAX_CHARS });
+  const ex = excerptsFor(ctx.repoRoot, job.type, {
+    maxChars: BRIEF_EXCERPT_MAX_CHARS,
+    subjects: [],
+    pendingRoot: ctx.pendingRoot,
+  });
   const checks = acceptanceChecksFor(job.type);
   const prose = PROSE_TYPES.includes(job.type);
   // The scout's alone (beads addictedtoai-wg78). The rows exist to widen the
@@ -713,7 +717,7 @@ ${RESULT_PROTOCOL_INSTRUCTION}
 ## Relevant spec excerpts
 
 These are the rules this work is judged against. They are excerpts targeted at
-this job type${ex.truncated ? ' (targeted and truncated — the full files are in this worktree at the paths named below, read them if you need more)' : ''}.
+this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut — the full files are in this worktree at the paths named below, read them if you need the omitted or complete text)' : ''}.
 
 ${ex.text || '_No spec files found in this worktree._'}
 `;
