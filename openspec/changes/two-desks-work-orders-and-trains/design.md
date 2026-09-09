@@ -2710,3 +2710,109 @@ minutes and 8,332,204 tokens where the max author took 63.9 minutes and
 107M (not compared for quality: the maintainer had decided, and the medium
 commit was never reviewed). Recorded, not scored: one packet, one shape,
 the rungs no longer under experiment.
+
+## Revision record — round 18
+
+**Packet E (tasks 25, 26, 27 and 3b — ledger telemetry, the refusing
+worktree removal, the `.beads` reuse exclusion) — authority
+two-desks-work-orders-and-trains@`9c1d980`, every dispatch at codex Luna
+max.** The architect's quantifier enumeration (`c64c51a`, 02:48, from the
+code at `de400f7`) preceded the brief; the author brief was built from the
+task blob and linted; the packet waited for B2's push and was dispatched at
+06:20:52.
+
+**Round 1 (`2808f42` + `db10eac`, 81.7 minutes at max; ten files,
++481/−69).** The implementation as enumerated: the optional `effort` on a
+registry entry; `effort`, `carried`, `brief_chars`, `gate_seconds` and
+`authority_sha` on the ledger line, `LEDGER_FIELDS` unchanged; `removeWorktree`
+refusing instead of forcing, with `removeJobWorktree`'s `rmSync` gated on the
+refusal and the review and conformance callers inspecting the return; the
+protocol file cleared before a job worktree's removal; `.beads` excluded from
+the reuse walk. Twelve mutation rows, all red and restored. The author's
+full suite on `db10eac`: 1,782 tests, 1,780 passed, TWO red — the
+field-for-field ledger comparison in `breakers.test.mjs` and the
+additive-key pin in `gate-transport-retry.test.mjs`, both outside the brief's
+file list, both reported rather than hidden. THE DEFECT WAS THE BRIEF'S
+AGAIN: the file list was the tasks' file list, not the closure over the
+change — the same class B2's round 1 instantiated (statement 59), by the
+same author of the brief, one packet later, after the class had been named
+in this record. REVIEW1 (sealed, 30.2 minutes): revise, three findings, all
+test gaps in the new `ledger.test.mjs` — `authority_sha` checked by length
+only, `brief_chars` by positivity only, the carry count exercised only at
+zero and never through the production parser — with the two closure pins
+recorded and explicitly not charged to the author; sixteen mutations, the
+three green ones being the findings.
+
+**The second-model brief review, born between the rounds.** The maintainer,
+about 08:00, on the briefs: "they seem to be causing a lot of issues" —
+every brief now goes to a second model before dispatch (OpenCode DeepSeek
+in the `plan` agent at `--variant max`, edits denied by mechanism, a
+narrow-scoped ten-check prompt, a twenty-command budget; the Stage 0
+preamble, `75e4a4e`). E's round-2 revision brief was the first through it,
+and it earned its keep on the first text: DeepSeek's run 1 found that the
+brief's read-back recipe named `.job/brief.md` on the merged branch, where
+the file is removed before the merge and the branch deleted after — two
+dead addresses the architect had written from memory of the layout — plus a
+wrong `run.mjs` citation and a fixture mode the brief required in a file
+its list forbade. Run 3, on the repaired text, measured on the real
+repository that `git log -1 --diff-filter=A` without `--full-history`
+follows the TREESAME first parent and returns an older, main-line brief;
+the recipe became `--full-history --diff-filter=A <mergedSha>^2`. Four
+runs on the revision brief (revise, dispatch, revise, dispatch), two on the
+delta-review brief. Its own defect, diagnosed on the maintainer's
+insistence ("You need to diagnose the silent runs!") rather than explained
+away: five runs ended with no verdict anywhere, and three hypotheses in a
+row were partly wrong before a one-line probe showed the attached
+`opencode run` client dropping the final assistant text that the server
+held (`addictedtoai-hbm4`); the review now runs `--format json` and pulls
+the verdict from the server by session id. Orch's first reading — that the
+Desk's own no-output detector was blinded by the same defect — was measured
+false on the captured files and withdrawn by Orch: in the shipped default
+format a dead attached run writes nothing to stdout, so the detector still
+fires; only the final text is lost.
+
+**The Muse Spark experiment (the maintainer's).** The same texts to
+`opencode-go/muse-spark-1.3-contributor` at `xhigh`, its top rung on that
+provider (no `max` declared; verified). On the dispatched round-2 text: Muse
+DISPATCH in 2.5 minutes, 20 tool calls, 49,873 tokens, against DeepSeek's
+DISPATCH in 9 minutes and 115,423 tokens — the same verdict. On draft 1, the
+discriminating case: Muse REVISE in 4.3 minutes, finding three of DeepSeek's
+four defects and one fresh true observation (the tip had moved during the
+review), and missing the deepest — the dead read-back addresses. The
+30-minute rate wall did not bite. Ruling: DeepSeek at max stays the gate;
+Muse at xhigh is a cheap first pass.
+
+**Round 2 (`ce59b3a`, 31.6 minutes at max; tests only, four files,
++87/−7).** Each finding's arm built against an independent source — the
+fixture's HEAD read before `runLoop`, the committed brief read back by the
+repaired recipe, a `review-approve-carry` mock mode through the real parser —
+plus a no-verdict arm; both closure pins fixed to admit the additive keys
+without losing exactness; the suite 1,784 of 1,784 in 599 s. The delta-review
+brief was reviewed by Muse (dispatch, 09:25) and by DeepSeek, whose first
+session aborted server-side (one reasoning-only message, no verdict) and
+whose retry said dispatch at 09:45 with one stale-citation note; the
+reviewer was dispatched at 09:38:56 on Muse's verdict under the rule "one
+retry on a no-verdict, then dispatch and record". REVIEW2 (delta at max,
+given REVIEW1 and declared unsealed; 26.4 minutes): APPROVE under the exit
+condition — the three named mutations red, both pins red when reverted, the
+sweep over `loop/tests`, `scripts` and `loop/lib` finding no omitted pin, the
+diff exactly the four test files, the standing checks green, 244 real ledger
+lines round-tripped, the author's completed suite quoted; two green mutants
+of residual coverage carried non-blocking on task 26 (`effort ?? null`
+unexercised for an un-rung runner; carry lengths other than 0 and 2). Orch's
+diff read: MERGE, with one carried note on task 27 — the git-refusal path
+returns no `refused` flag although the JSDoc documents one — and the
+operational trade stated and taken: refused worktrees accumulate and are
+cleared by hand. Merged as `c3aa5c7` at 10:11:04.
+
+**The cost.** Two author rounds and two reviews, 06:20:52 to 10:05:18 —
+3 hours 44 minutes of wall clock, the brief-writing gaps and the new
+brief-review step included — and, from the four codex rollouts naming the
+worktree (`arch-tokens.mjs`), 113,917,823 total tokens (61.5M the round-1
+author, 23.5M the sealed review, 17.9M the round-2 author, 11.0M the delta
+review; 96 to 99 percent cached input, as before) and 139,078 reasoning
+tokens, for 13 files and +565/−73 lines. Beside B2's 291M for +836/−55: the
+closure defect cost one round in each packet, and the brief review, which
+cannot see that class either (it checks the brief against the code, not the
+list against the closure), caught three specification defects before any
+worker saw them. Recorded, not scored.

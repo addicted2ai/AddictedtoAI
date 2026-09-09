@@ -432,7 +432,7 @@ the brief under `evidence/reviews/`.
       `enforceGateFloor` answers "cannot evaluate" in opposite directions (an
       unknown gate name fails closed, a non-finite duration passes unchecked)
       and is now exported, so its inputs are no longer two visible call sites.
-- [ ] 3b. `scripts/verify-launch.mjs` (`hasCurrentBuild`'s input walk) and its
+- [x] 3b. `scripts/verify-launch.mjs` (`hasCurrentBuild`'s input walk) and its
       test: **the combined rule, which supersedes task 3's writer-only
       sentence** — a path is an INPUT only if some build step READS it
       (membership by readers), and a read path is EXCLUDED only if every writer
@@ -477,6 +477,12 @@ the brief under `evidence/reviews/`.
       false. Named mutation: remove `.beads` from the exclusion set and confirm
       (a) fails while (b) still passes. (iv) Files: `scripts/verify-launch.mjs`
       (the set and its comment only) and the new test.
+      **DONE at merge `c3aa5c7` (rode with packet E).** `.beads` joins
+      `BUILD_INPUT_EXCLUSIONS` with the combined rule and its reason in the
+      comment beside the set; `scripts/verify-launch-build-reuse.test.mjs`
+      (new, two tests) proves a `.beads/` write leaves `hasCurrentBuild` true
+      and a `content/` write makes it false; the named mutation fails (a)
+      while (b) passes — 1 of 2 red at round 1 and under REVIEW1.
 
 ### The brief diet
 
@@ -1147,7 +1153,7 @@ the brief under `evidence/reviews/`.
 
 ### The ledger fields, and the baseline
 
-- [ ] 25. `loop/lib/ledger.mjs`: every phase entry records the runner and the effort
+- [x] 25. `loop/lib/ledger.mjs`: every phase entry records the runner and the effort
       it ran at; every line records `brief_chars`, a `gate_seconds` map, the
       count of findings each review carried, and **`authority_sha`** — the commit
       the brief was assembled against (main at brief time; for work on this
@@ -1201,7 +1207,22 @@ the brief under `evidence/reviews/`.
       `loop/run.mjs` (the phase entry gains `effort`, a review phase gains
       `carried`, the outcome line passes `brief_chars`, `gate_seconds`,
       `authority_sha`), and task 26's new test.
-- [ ] 26. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
+      **DONE at merge `c3aa5c7` (branch `stage0/e-ledger-teardown` at
+      `ce59b3a`, two rounds at max, tasks 25, 26, 27 and 3b together;
+      authority `9c1d980`).** As enumerated: `loadRunners` accepts the optional
+      `effort` (a non-empty string or a load-time error); every phase entry
+      records `effort: who.effort ?? null`, a review phase `carried: <n>` from
+      the parsed `carry:` list (absent when there was no record); the outcome
+      line carries `brief_chars` (the text the author received),
+      `gate_seconds` (the last run per gate, one decimal, absent when no gate
+      ran) and the 40-character `authority_sha` (`mergeBaseSha` at brief time
+      — what `addictedtoai-tbho` asks for; Orch closes it after the push).
+      `LEDGER_FIELDS` unchanged; the reviewer round-tripped the 244
+      pre-existing ledger lines. The registry half (`effort:` on the four
+      codex entries) is Orch's edit at E's handover, before the gates. The
+      line numbers in the paragraph above are `de400f7`'s and have drifted
+      (`:1431` is `:1484` at the merge; `:979`/`:1050` are `:1017`/`:1088`).
+- [x] 26. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
       `brief_chars`, `gate_seconds`, a carried-entry count and `authority_sha`; a
       pre-existing line without any of them still validates. **Mutation**: extend `LEDGER_FIELDS` to
       require `gate_seconds` and confirm the old-line test fails — the additive
@@ -1220,7 +1241,28 @@ the brief under `evidence/reviews/`.
       each carries `runner` and `effort`; `carried` appears on review entries
       only. (iv) The named mutation: extend `LEDGER_FIELDS` with
       `gate_seconds` and confirm the old-line arm fails; restore.
-- [ ] 27. `loop/lib/git.mjs:116`: `worktree remove --force` becomes a removal that
+      **DONE at merge `c3aa5c7` (`loop/tests/ledger.test.mjs`, new, seven
+      tests).** Round 1's arms checked `authority_sha` by length and
+      `brief_chars` by positivity and exercised only a zero-carry review, so
+      REVIEW1's three mutations — an unrelated 40-character sha at
+      `run.mjs:1486`, `brief_chars: 1` at `:1484`, `carried: 0` for every
+      parsed verdict at `:678` — stayed green. Round 2 built each arm against
+      an independent source: the fixture's HEAD read before `runLoop`; the
+      committed brief read back with `git log -1 --full-history
+      --diff-filter=A <mergedSha>^2` (the brief's first recipe, without
+      `--full-history`, followed the TREESAME first parent and returned an
+      OLDER brief on the real repository — measured by the second-model brief
+      review before dispatch); a `review-approve-carry` mock mode through the
+      real parser; plus a no-verdict arm (`carried` absent). All three red,
+      and both closure pins (`breakers.test.mjs`, `gate-transport-retry.test.mjs`)
+      red when reverted (REVIEW2). The named mutation (`gate_seconds` into
+      `LEDGER_FIELDS`) fails the old-line arm: 2 of 4 red at round 1.
+      CARRIED, non-blocking (REVIEW2's green mutants of residual coverage, not
+      production defects): the fixture gives both production runners an
+      `effort`, so `?? null` at `run.mjs:275` is not exercised for an un-rung
+      runner; only carry lengths 0 and 2 are exercised, so a cap at 2 stays
+      green.
+- [x] 27. `loop/lib/git.mjs:116`: `worktree remove --force` becomes a removal that
       **refuses** rather than forcing when it cannot complete. Implements: *The
       chain from intake to train lives in the repository*, the teardown bullet —
       a requirement that had a scenario and no task, and whose absence deleted 177
@@ -1256,6 +1298,21 @@ the brief under `evidence/reviews/`.
       refusal reported, and `rmSync` was not called (observe it through the
       existing `deps.rm` seam); positive control: a clean worktree is removed.
       Named mutation: restore `--force` and confirm the refusal arm fails.
+      **DONE at merge `c3aa5c7`.** `removeWorktree` runs `git worktree remove
+      <dir>` without `--force` and returns `{ ok, reason }`;
+      `removeJobWorktree` runs `rmSync` only after `ok`, leaves a refused
+      directory standing with the reason logged, still prunes, and the run
+      reaches its ledger line; `review.mjs` and both `conformance.mjs` callers
+      inspect the return. Named mutation (restore `--force`): 10 of 11 red at
+      round 1 and again under REVIEW1; `rmSync` unconditional after a refusal:
+      9 of 11. CARRIED, non-blocking (Orch's diff read): the JSDoc promises
+      `{ removed, failures, refused? }` and the junction stop sets `refused:
+      true`, but the new git-refusal path returns only `{ removed: false,
+      failures }` — a caller testing `.refused` would read a git refusal as an
+      ordinary partial failure; no production caller reads the return today.
+      The operational consequence, taken knowingly by Orch: refused worktrees
+      accumulate under `D:/addictedtoai-worktrees` and are cleared by hand;
+      `prune` cannot deregister a directory that is still present.
 - [x] 28. **Measure `bd` before anything mocks it.** Against a throwaway store:
       whether `--claim` keys the actor; whether a second claim under a different
       actor fails; whether `close` on an already-closed issue no-ops; whether
