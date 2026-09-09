@@ -593,7 +593,7 @@ the sentence that uses it.
       `truncated` on an empty array, always false. And (d) the pre-existing
       `chars: used` exclusion of headings and separators, re-introduced by
       round 2 and fixed in round 4, is closed: `chars` is the rendered length.
-- [ ] 10. `loop/lib/verdict.mjs` and `loop/lib/review.mjs`: a verdict record MAY
+- [x] 10. `loop/lib/verdict.mjs` and `loop/lib/review.mjs`: a verdict record MAY
       carry a structured `cites:` list of requirement headings, validated against
       the live specification's headings the way reasons are validated against the
       closed reason list; a heading resolving to no requirement is refused.
@@ -636,7 +636,7 @@ the sentence that uses it.
       named mutation — drop the resolution check and confirm both refusals go
       green. This task's files are therefore `verdict.mjs`, `review.mjs`,
       `specs.mjs` (the enumeration) and `review.test.mjs` (the arm).
-- [ ] 11. `loop/lib/brief.mjs`: `assembleRevisionBrief` carries the verdict, the
+- [x] 11. `loop/lib/brief.mjs`: `assembleRevisionBrief` carries the verdict, the
       acceptance checks, the diff and the excerpts **for exactly the headings
       `cites:` names** — and not `briefText` whole (`run.mjs:734`). An empty
       `cites:` yields the checklist's requirements for the governing type and
@@ -673,7 +673,7 @@ the sentence that uses it.
       reading. (iv) A cited heading is resolvable here because task 10's gate
       refused the record otherwise; the assembler still names, in a one-line
       marker, any heading it could not find — never silently.
-- [ ] 12. `loop/tests/brief.test.mjs`: a revision brief is strictly smaller than its
+- [x] 12. `loop/tests/brief.test.mjs`: a revision brief is strictly smaller than its
       author brief, contains the excerpt for each cited heading, and contains no
       section for an uncited one. **Mutation A**: prepend the whole original brief
       and confirm the size assertion fails. **Mutation B**: ignore `cites:` and
@@ -703,6 +703,44 @@ the sentence that uses it.
       measured and printed, never asserted (task 8). (vii) The
       `cites-unresolved` arm lives in `review.test.mjs` (task 10(vi)), not
       here.
+      **Tasks 10 to 12 DONE at `0273c82` (2026-09-09 06:08 local; branch
+      `stage0/b2-cited-revision@5bc12ee`, merge base `de400f7`, eight
+      commits, eight files, +836/−55; six author dispatches and four
+      reviews, every one at codex Luna max on the maintainer's instruction;
+      the author's own full suite on the final tip 1,773 of 1,773 in 421 s;
+      Orch's diff read; record in design.md round 17; evidence in
+      `evidence/reviews/stage0-packet-B2/`).** What landed: `cites:` parsed
+      from front matter on `carry:`'s terms and returned as `cites`;
+      `requirementHeadings(repoRoot, pendingRoot)` exported from `specs.mjs`
+      as the one heading enumeration over every capability's constitution
+      and unarchived deltas, `(preamble)` excluded; `cites-unresolved` at
+      `mergeGate` before the verdict branch on all three verdicts, in
+      `REISSUE_CODES`, the record template's `cites:` line documenting the
+      rule and the feed; `assembleRevisionBrief` new, with one shared
+      `acceptanceChecksSection` both assemblers call, `excerptsFor`'s
+      `headings` option (exact match across every live capability,
+      constitution then pending, the same cap, floors, markers and cut, a
+      `missingHeadings` return and a one-line marker in the brief), the
+      empty list byte-identical to the author's call through one optional
+      injection seam a test observes; `run.mjs`'s one call site; the
+      pinned-fixture tests in `brief.test.mjs`; the arms in
+      `review.test.mjs`; the exact `REISSUE_CODES` pin updated. Paired
+      numbers, as the standard requires: on the pinned fixture the author
+      brief is 34,483 characters and the cited revision 24,306 (asserted:
+      strictly smaller); on the live tree, `repair`, 27,146 and 23,162
+      (measured and printed, never asserted). NOTES carried, not closed:
+      (a) REVIEW6's one green mutant — `resolvedHeadings` emptied leaves
+      the cited-revision arm green, because it never asserts a valid cited
+      heading is ABSENT from the NOT FOUND marker (the arm checks the
+      heading set and the size); owed by the next touch of
+      `brief.test.mjs`. (b) Orch's diff-read observation: `cites:` is
+      OPTIONAL and ships COMMENTED OUT in the verdict template, so the
+      narrowing happens only when a reviewer fills it and an empty list
+      falls back to the governing type's requirements — the packet's saving
+      is adoption-contingent; MEASURE it from the first real Desk verdicts
+      (how many carry `cites:`, and the revision brief's `brief_chars`
+      against the author's, once task 25 records them) before crediting it,
+      the mutation table's trap named in advance.
 
 ### The carry channel and the filing lint
 

@@ -2572,3 +2572,141 @@ The linter now exempts quoted `>` lines from the report-name check and
 checks REVIEW<n>.md for review briefs. B2 dispatches from the tip Orch
 gates, after its green, so the worker's final suite and the gates do not
 share the machine.
+
+## Revision record — round 17
+
+**Packet B2 (tasks 10–12, the cited revision brief) — authority
+two-desks-work-orders-and-trains@`de400f7`, every dispatch at codex Luna max
+on the maintainer's instruction of 2026-09-09 00:29 ("Interesting results
+with the max/med. For now, let's just use max for every thing"), the first
+packet briefed by the architect as Luna coordinator through the brief
+linter.** The architect's quantifier enumeration (`dd148ae`) preceded the
+brief; the author brief and both review templates are built from the task
+blob by a script, so the quoted standard is never hand-typed, and the linter
+refused the architect's own first drafts five times before any worker saw
+them (split enforcement lines, a "(new)" marker in the wrong place, a bare
+report name, "once" without "iteration", a path that exists only on the
+branch). A medium-effort author had been dispatched at 00:15 and had
+COMMITTED a complete implementation (`7ba7333`, 13.5 minutes, seven files)
+when the maintainer's instruction arrived; it was stopped, its commit kept on
+`b2/medium-aborted-7ba7333` unmerged for the record, and the packet restarted
+at max from the same brief.
+
+**Round 1 (`a4c3a8c` + `5fb9b2b`, 63.9 minutes at max; seven files,
++523/−53).** The implementation as enumerated: `cites:` parsed on `carry:`'s
+terms; `requirementHeadings` as one exported enumeration over every
+capability's constitution and unarchived deltas via `specSources`;
+`cites-unresolved` at `mergeGate` before the verdict branch on all three
+verdicts, joining `REISSUE_CODES`; `assembleRevisionBrief` new, with one
+shared acceptance-checks helper both assemblers call and the `headings`
+option of `excerptsFor`; `run.mjs`'s inline concatenation replaced by the one
+call; `brief.test.mjs` on a pinned fixture; the refusal arms in
+`review.test.mjs`. Nine mutation rows, all red and restored. The author's
+full suite: 1,763 tests, 1,762 passed, ONE red — `review-blog-bar.test.mjs`
+pins `REISSUE_CODES` exactly and the eighth code broke the pin; the file was
+outside the brief's list, so the author left it and reported it. THE DEFECT
+WAS THE BRIEF'S: its file list was the tasks' file list, not the closure over
+the change — statement 59 of the memory index (the only list available
+becomes the work list), instantiated by the session that had just built the
+linter to catch specification defects. The linter cannot see this class: it
+checks that every listed file has a reason, not that every file the change
+must touch is listed; the reviewer's "was the brief faithful" section is
+what caught it. REVIEW1 (sealed, 25.4 minutes): revise, three findings, all
+in the tests and the report — the record template's `cites:` line had no
+arm; the empty-list test compared heading sets, so a redundant subject
+passed (the property is the ARGUMENTS); the paired numbers were eleven
+characters stale. Twelve arms red; the implementation judged to match the
+requirements; the pin attributed to the brief, not the author.
+
+**Round 2 (`9630614` + `6502b98`, 35.7 minutes at max; four files,
++44/−10).** The template's contract armed; ONE injection seam
+(`excerptFn = excerptsFor`, both assemblers, every production caller
+passing nothing) so the empty-`cites` call's arguments are observed and
+compared with the author's; the pin kept exact with the eighth code; paired
+numbers re-measured on the final tip; the suite 1,763 of 1,763. REVIEW2
+(sealed from round 1 by MOVING `REVIEW1.md` and `RESULT1.md` out of the
+worktree — a mechanism, where a sentence in the brief is an instruction;
+37.4 minutes): revise, SIX findings, every one a green mutant on a changed
+behavioural line and none a production defect: the all-capability loop had
+no positive case outside the governing type; a cited pending amendment
+could vanish while its constitution heading kept the set green; the
+separator charge between two cited headings was unexercised; the
+heading-mode `truncated` signal was unarmed; the verdict section's
+notes-versus-refusal classification was unarmed; the run-site forwarding of
+findings and the judged diff was unarmed at the integration boundary.
+Twenty-one arms, fifteen red.
+
+**Round 3 (`a5de24b` + `7999203` + `e413ebe`, 65.6 minutes at max; tests
+only, +213/−3).** The six arms, each red then green by hash; a sweep that
+enumerates every changed production line of the merge-base diff with its
+arm, plus three arms of the author's own; one test-expectation slip
+(expecting `mergeGate` to return ok on a valid `revise`) caught and
+corrected before evidence; the suite 1,769 of 1,769 in 434 s. REVIEW3
+(delta at max, given REVIEW2 and declared unsealed; 22.1 minutes): revise,
+FOUR findings, all arms narrower than their property — both cited headings
+not asserted present, the cap invariant not asserted, section order not
+asserted, no `(preamble)` refusal arm — with all six round-3 arms confirmed
+red and four of seven extra mutants green.
+
+**The datum, and the ruling it forced.** Three sealed or delta reviews of
+one production diff found 2, then 6, then 4 new green mutants, none
+overlapping, none a production defect. "An arm could be stronger" has no
+floor: each reviewer at max invents mutants the last did not, and a round
+count cannot end it. The architect's ruling, now in the Stage 0 preamble
+(`369f0c4`): a delta review approves when every named mutation of every
+prior review goes red under it, the diff is in scope, the properties hold
+and the author's completed suite on the final tip is green; a further green
+mutant is carried as a non-blocking note on the task unless it exposes a
+production defect; "no green mutant exists" was never the bar and is not
+reachable. Round 4 built REVIEW3's four arms under that rule.
+
+**Rounds 4 and 5 — two stops, both the architect's.** Round 4 (7.9 minutes)
+wrote all four arms and stopped, as briefed, when finding 1's arm went red
+against the unmutated code: it asserted `### Requirement:` heading lines at
+a cap the test had set to exactly the marker-only sum, where task 6(d)'s
+design guarantees the cut MARKERS and nothing more — an arm expecting
+content where the design guarantees markers, and a design the B2 brief
+never quoted (tasks 5–9 are B1's). Round 5 (9.7 minutes) corrected that
+arm to read the markers, added an ample-cap arm for the sections, ran
+findings 1 and 2 red and green by hash, and stopped again on finding 3:
+the ordering arm used `indexOf`, and the revision brief's fenced diff
+carries the mock job's own brief text, so "Ground rules" matched first
+INSIDE the diff (offset 8,737) before the real tail (17,469). The author
+diagnosed exactly that and stopped because the brief said "keep the
+round-4 arms, do not rewrite them" and made any current-code red a stop —
+right for a production defect, wrong for a defective arm. The refined
+rule, from round 6: a red against unmutated code is first DIAGNOSED; a
+wrong arm is fixed and said so; only a red whose cause is the production
+code is a stop. Two rounds, 17.6 minutes, one instruction of the
+architect's.
+
+**Round 6 (`5bc12ee`, 19.2 minutes at max; tests only, +68/−1).** Finding
+3's arm strips fenced blocks before indexing and goes red under its named
+mutation ("index 2122 must follow 2273"); finding 4's `(preamble)` refusal
+arm goes red under its mutation (approve returned true); both restored by
+hash; the suite 1,773 of 1,773 in 421 s. REVIEW6 (delta at max, given
+REVIEW3, under the exit condition; 30.8 minutes): APPROVE. It re-ran every
+named mutation of REVIEW1 (four, recovered from RESULT2's table because
+REVIEW1 was out of the tree), REVIEW2 (seven) and REVIEW3 (four) — all red,
+all restored green by hash; ran four sweep mutants of its own, three red
+and ONE green, carried non-blocking as the rule says (`resolvedHeadings` →
+empty set: the cited-revision arm does not assert that a valid cited
+heading is absent from the NOT FOUND marker), a note on task 12; the
+round's diff exactly the two test files; 114 of 114 targeted, 16 of 16
+properties, the author's 1,773 quoted. Merged as `0273c82` on Orch's
+diff read.
+
+**The maintainer's instruction and its first cost.** Max for every dispatch:
+B2's six author dispatches and four reviews ran 5 hours 50 minutes of wall
+clock (00:15:27, the first dispatch, to 06:05:41, REVIEW6's exit, the
+architect's brief-writing gaps included) and, from the eleven codex
+rollouts naming the worktree (`arch-tokens.mjs`, the day's sessions
+directory), 291,090,787 total tokens — 96 to 99 percent cached input, which
+bills far below fresh, so the figure overstates cost the way the
+codex-spend capture warned — and 307,780 reasoning tokens, for 8 files and
++836/−55 lines. Round 1's max author alone was 107,356,520 total. Beside it:
+the aborted medium author reached a complete first implementation in 13.5
+minutes and 8,332,204 tokens where the max author took 63.9 minutes and
+107M (not compared for quality: the maintainer had decided, and the medium
+commit was never reviewed). Recorded, not scored: one packet, one shape,
+the rungs no longer under experiment.
