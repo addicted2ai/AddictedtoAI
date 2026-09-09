@@ -127,6 +127,14 @@ function tightCapCorpus() {
   });
 }
 
+function pendingChunkCorpus() {
+  return fixtureRepo({
+    'openspec/specs/pulse/spec.md': specText('pulse', { mainChars: 6500 }),
+    [`${PENDING_ROOT}/one/specs/pulse/spec.md`]:
+      `# pending pulse\n\n${bigRequirement('pulse governing rule', 1800)}`,
+  });
+}
+
 function assembled(ctx, type, extraJob = {}) {
   return assembleBrief(ctx, {
     jobId: 'j-20260908-99',
@@ -278,6 +286,17 @@ test('the binding fixture is the artifact bound, not a live-tree assertion', () 
   assert.match(brief, /PENDING AMENDMENT/);
   assert.match(brief, /CUT: requirement "pulse governing rule"/);
   assert.ok(brief.length <= 30000, `fixture brief is ${brief.length} characters`);
+  const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 24000, pendingRoot: ctx.pendingRoot });
+  assert.ok(ex.text.length <= 24000, `pending excerpt emitted length ${ex.text.length} exceeds cap 24000`);
+  ctx.cleanup();
+});
+
+test('a pending chunk is charged its heading overhead within the excerpt cap', () => {
+  const ctx = pendingChunkCorpus();
+  const cap = 8600;
+  const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: cap, pendingRoot: ctx.pendingRoot });
+  assert.ok(ex.text.includes('PENDING AMENDMENT'));
+  assert.ok(ex.text.length <= cap, `pending excerpt emitted length ${ex.text.length} exceeds cap ${cap}`);
   ctx.cleanup();
 });
 
@@ -335,6 +354,7 @@ test('the constitution floor survives three pending amendments', () => {
   const ctx = allocationCorpus();
   const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 24000, pendingRoot: ctx.pendingRoot });
   assert.ok(ex.text.length <= 24000, `emitted length ${ex.text.length} exceeds cap 24000`);
+  assert.equal(ex.chars, ex.text.length);
   for (const cap of ['pulse', 'site', 'review']) {
     assert.match(ex.text, new RegExp(`END-${cap}`));
   }
@@ -352,7 +372,9 @@ test('a tight cap keeps every constitution marker in priority order', () => {
   assert.match(ex.text.slice(0, positions[0]), /PULSE_FIRST_CONTENT/);
   assert.ok(ex.text.indexOf('### From `specs/pulse`') < ex.text.indexOf('### From `specs/site`'));
   assert.ok(ex.text.indexOf('### From `specs/site`') < ex.text.indexOf('### From `specs/review`'));
+  assert.equal((ex.text.match(/\n\n---\n\n/g) || []).length, 2, ex.text);
   assert.ok(ex.text.length <= 900, `emitted length ${ex.text.length} exceeds cap 900`);
+  assert.equal(ex.chars, ex.text.length);
   ctx.cleanup();
 });
 
@@ -360,6 +382,15 @@ test('a cap below the constitution marker minimum fails with its shortfall', () 
   const ctx = tightCapCorpus();
   assert.throws(
     () => excerptsFor(ctx.repoRoot, 'repair', { maxChars: 1 }),
+    /excerpt configuration error: marker shortfall=\d+.*pulse governing rule.*site governing rule.*review governing rule/,
+  );
+  ctx.cleanup();
+});
+
+test('a cap below the full constitution minimum accounts for structural overhead', () => {
+  const ctx = tightCapCorpus();
+  assert.throws(
+    () => excerptsFor(ctx.repoRoot, 'repair', { maxChars: 800 }),
     /excerpt configuration error: marker shortfall=\d+.*pulse governing rule.*site governing rule.*review governing rule/,
   );
   ctx.cleanup();
