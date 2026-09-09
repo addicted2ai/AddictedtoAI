@@ -80,6 +80,12 @@ export function loadRunners(ctx) {
     if (r.effort !== undefined && (typeof r.effort !== 'string' || !r.effort.trim())) {
       throw new Error(`${where}: "effort" must be a non-empty string when present`);
     }
+    // OPTIONAL escalation: the destination is checked after every entry has
+    // been indexed, because it must name another registered author-capable
+    // entry. Absent means this entry has no escalation step.
+    if (r.escalates_to !== undefined && (typeof r.escalates_to !== 'string' || !r.escalates_to.trim())) {
+      throw new Error(`${where}: "escalates_to" must be a non-empty string when present`);
+    }
     for (const key of ['capacity_stderr_pattern', 'startup_failure_stderr_pattern']) {
       if (!r[key]) continue;
       try {
@@ -94,6 +100,22 @@ export function loadRunners(ctx) {
   const defaultId = doc.default ?? doc.runners[0].id;
   if (!byId.has(defaultId)) {
     throw new Error(`${ctx.runnersPath}: default "${defaultId}" is not a registered runner id`);
+  }
+  for (const r of doc.runners) {
+    if (r.escalates_to === undefined) continue;
+    const where = `${ctx.runnersPath} runner "${r.id}"`;
+    const target = byId.get(r.escalates_to);
+    if (!target) {
+      throw new Error(`${where}: "escalates_to" names unknown runner "${r.escalates_to}"`);
+    }
+    if (target.id === r.id) {
+      throw new Error(`${where}: "escalates_to" must name a different runner than itself`);
+    }
+    if (!target.roles.includes('author')) {
+      throw new Error(
+        `${where}: "escalates_to" target "${target.id}" is not cleared for the author role`,
+      );
+    }
   }
   return { runners: doc.runners, byId, defaultId };
 }

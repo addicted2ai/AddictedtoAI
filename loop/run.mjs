@@ -24,7 +24,7 @@ import { loadConfig, JOB_TYPES } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
-import { selectJob, formatRefusals } from './lib/select.mjs';
+import { selectJob, escalationTarget, formatRefusals } from './lib/select.mjs';
 import { assembleBrief, assembleRevisionBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import { readResult, classifyRun, reviewProducedNothing, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
@@ -940,7 +940,7 @@ export async function runLoop(ctx, opts = {}) {
 
   const cfg = loadConfig(ctx);
   const registry = loadRunners(ctx);
-  const runner = pickRunner(registry, { id: opts.runner, role: 'author' });
+  let runner = pickRunner(registry, { id: opts.runner, role: 'author' });
   const reviewer = pickRunner(registry, { id: opts.reviewer, role: 'reviewer' });
   const ledger = readLedger(ctx);
   const now = ctx.now();
@@ -1253,7 +1253,7 @@ export async function runLoop(ctx, opts = {}) {
       ctx.log(`this branch records that it was selected from proposal \`${origin.slug}\` (${origin.path})`);
     }
   } else {
-    const sel = selectJob(ctx, { cfg, ledger, runner, dryRun: opts.dryRun });
+    let sel = selectJob(ctx, { cfg, ledger, runner, dryRun: opts.dryRun });
     for (const w of sel.warnings) ctx.log(`WARNING ${w}`);
     for (const n of sel.notes) ctx.log(`note: ${n}`);
     ctx.log(
@@ -1282,6 +1282,37 @@ export async function runLoop(ctx, opts = {}) {
       ctx.log(`capacity shed level ${sel.shed.level} (${sel.shed.events} capacity event(s) in the trailing ${cfg.degradation.window_hours}h)`);
     }
     if (sel.refusals.length) for (const l of formatRefusals(sel.refusals)) ctx.log(l);
+    const escalation = escalationTarget(registry, runner, sel);
+    if (escalation) {
+      const top = sel.topRanked.candidate;
+      ctx.log(
+        `escalation: top-ranked ${top.type} candidate refused [${sel.topRanked.rule}] on ` +
+          `runner "${runner.id}"; re-running selection on declared runner "${escalation.id}"`,
+      );
+      const escalated = selectJob(ctx, { cfg, ledger, runner: escalation, dryRun: opts.dryRun });
+      if (escalated.topRanked === null && escalated.selected !== null) {
+        runner = escalation;
+        sel = escalated;
+        ctx.log(`escalation adopted: top-ranked ${top.type} candidate selected on runner "${runner.id}"`);
+      } else {
+        const refused = escalated.topRanked
+          ? escalated.refusals.find(
+              (r) =>
+                r.rule === escalated.topRanked.rule &&
+                r.candidate?.type === escalated.topRanked.candidate.type,
+            )
+          : escalated.refusals[0];
+        const detail = refused
+          ? `refused [${refused.rule}] ${refused.reason}`
+          : escalated.selected
+            ? `selected ${escalated.selected.type} instead of the top-ranked candidate`
+            : 'did not select the top-ranked candidate';
+        ctx.log(
+          `escalation refused: runner "${escalation.id}" ${detail}; keeping the original ` +
+            `${sel.selected ? `selection ${sel.selected.type}` : 'selection outcome'}`,
+        );
+      }
+    }
     if (!sel.selected) {
       ctx.log('nothing qualified — the run ends here, and that is a normal, healthy outcome');
       return { started: true, selected: null, refusals: sel.refusals, nothingQualified: true };
