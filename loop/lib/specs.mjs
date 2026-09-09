@@ -20,8 +20,8 @@ import { join } from 'node:path';
  * The constitution: one capability's whole spec, `openspec/specs/<cap>/spec.md`.
  *
  * This used to be the FIRST of two candidates, the second being a hardcoded
- * `openspec/changes/build-initial-site/specs/<cap>/spec.md`, with the comment
- * "the change's delta specs today, `openspec/specs/` after archive". Both
+ * `openspec/changes/archive/<YYYY-MM-DD>-<name>/specs/<cap>/spec.md`, with the
+ * comment "the archived change's delta specs". Both
  * halves failed. The order was backwards for that intent — the moment
  * `openspec/specs/` was populated, the first candidate always won and no change
  * branch was ever reachable — and `build-initial-site` was archived on
