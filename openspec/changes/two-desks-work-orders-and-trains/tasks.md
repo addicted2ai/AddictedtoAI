@@ -1091,6 +1091,15 @@ the brief under `evidence/reviews/`.
       `loop/tests/selector-rules.test.mjs:415-448` loads the REAL registry
       through `loadRunners`, so the shipped file must still load, and no test
       pins the exact key set of `selectJob`'s result (grepped at `9c1d980`).
+      (ix) The `run.mjs` line numbers above are `9c1d980`'s; packet E
+      (`c3aa5c7`) moved that file and nothing else this task reads — at
+      `f74f606` read `:264`, `:287`, `:305`, `:757`, `:910`, `:911`,
+      `:1160-1221`, `:1223`, `:1303`, `:1439-1441` as `:274`, `:303`, `:321`,
+      `:779`, `:943`, `:944`, `:1193-1254`, `:1256`, `:1336`, `:1472-1474`;
+      `select.mjs`, `runners.mjs:16-76` and `budget.mjs` did not move
+      (measured by `git diff 9c1d980..f74f606`, 2026-09-09 10:29). The
+      registry now also carries `effort:` on the four codex entries
+      (`f74f606`), which `loadRunners` validates at `runners.mjs:77-81`.
 - [ ] 24. `loop/tests/runner-policy.test.mjs`: a top-ranked clearance-only refusal
       escalates and authors the top-ranked candidate; a budget-ceiling refusal does
       not escalate; **and the control that matters** — an overdue scout top-ranked
@@ -1222,6 +1231,20 @@ the brief under `evidence/reviews/`.
       codex entries) is Orch's edit at E's handover, before the gates. The
       line numbers in the paragraph above are `de400f7`'s and have drifted
       (`:1431` is `:1484` at the merge; `:979`/`:1050` are `:1017`/`:1088`).
+      The registry half landed as `f74f606` (Orch, 2026-09-09 10:19: `effort:
+      max` / `medium` / `high` / `xhigh` on the four codex entries, each
+      checked against the `model_reasoning_effort` in its own command).
+      CARRIED, found by Orch at that edit and an error of enumeration (i):
+      it said the Claude and opencode entries declare no rung "until their
+      harnesses expose a rung", but the opencode harness already does — the
+      three opencode commands dispatch at `--variant max`
+      (`opencode-deepseek`) and `--variant high` (`opencode-muse-spark`,
+      `opencode-openrouter-muse-spark`) — so their phase entries record
+      `effort: null` while running at a rung, and the ledger evidence is
+      incomplete for exactly the comparison the field exists for. The three
+      `effort:` lines ride with packet D's registry edit, where the file is
+      open anyway. The Claude entries genuinely declare none (`--model`
+      only, no rung flag).
 - [x] 26. `loop/tests/ledger.test.mjs`: a line carries runner and effort per phase,
       `brief_chars`, `gate_seconds`, a carried-entry count and `authority_sha`; a
       pre-existing line without any of them still validates. **Mutation**: extend `LEDGER_FIELDS` to
