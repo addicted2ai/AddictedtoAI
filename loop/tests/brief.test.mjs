@@ -58,6 +58,11 @@ function headingSet(text) {
   return new Set([...text.matchAll(/^### Requirement:\s*(.+)$/gm)].map((match) => match[1].trim()));
 }
 
+function cutHeadings(text) {
+  return [...text.matchAll(/\[\.\.\. CUT: requirement ("(?:[^"\\]|\\.)*") from /g)]
+    .map((match) => JSON.parse(match[1]));
+}
+
 function excerptRecorder(calls, label) {
   return (repoRoot, type, options) => {
     calls.push({
@@ -251,6 +256,7 @@ test('heading excerpts charge the separator between cited sections in one consti
     headings.reduce((total, heading) => total + cutMarkerLength(heading), 0) +
     separatorLength;
   const excerpt = excerptsFor(ctx.repoRoot, TYPE, { headings, maxChars });
+  assert.deepEqual(cutHeadings(excerpt.text), headings, 'the cited cut-marker headings are complete and ordered');
   assert.ok(
     excerpt.text.length <= maxChars && excerpt.chars <= maxChars && excerpt.chars === excerpt.text.length,
     `cap=${maxChars}; text.length=${excerpt.text.length}; chars=${excerpt.chars}`,
@@ -258,10 +264,23 @@ test('heading excerpts charge the separator between cited sections in one consti
   ctx.cleanup();
 });
 
-test('heading-mode truncation tells the revision reader to open the full files', () => {
+test('heading-mode carries all cited constitution sections at an ample cap', () => {
   const ctx = makeRepo({
     files: {
-      'openspec/specs/loop/spec.md': requirement(OVER_BUDGET_CITED, BRIEF_EXCERPT_MAX_CHARS * 2),
+      'openspec/specs/pulse/spec.md': constitution('pulse', [CITED_GOVERNING, 'Pulse other requirement']),
+    },
+  });
+  const headings = [CITED_GOVERNING, 'Pulse other requirement'];
+  const excerpt = excerptsFor(ctx.repoRoot, TYPE, { headings, maxChars: 20000 });
+  assert.deepEqual([...headingSet(excerpt.text)], headings, 'the cited requirement sections are complete and ordered');
+  ctx.cleanup();
+});
+
+test('heading-mode truncation tells the revision reader to open the full files', () => {
+  const source = requirement(OVER_BUDGET_CITED, BRIEF_EXCERPT_MAX_CHARS * 2);
+  const ctx = makeRepo({
+    files: {
+      'openspec/specs/loop/spec.md': source,
     },
   });
   const options = {
@@ -269,6 +288,19 @@ test('heading-mode truncation tells the revision reader to open the full files',
     maxChars: BRIEF_EXCERPT_MAX_CHARS,
   };
   const excerpt = excerptsFor(ctx.repoRoot, TYPE, options);
+  assert.ok(
+    source.length > options.maxChars,
+    `full fixture length ${source.length} must exceed maxChars ${options.maxChars}`,
+  );
+  assert.equal(
+    excerpt.text.length,
+    excerpt.chars,
+    `excerpt text.length ${excerpt.text.length} must equal chars ${excerpt.chars}`,
+  );
+  assert.ok(
+    excerpt.chars <= options.maxChars,
+    `excerpt chars ${excerpt.chars} must be <= maxChars ${options.maxChars}`,
+  );
   assert.equal(excerpt.truncated, true, 'the cited heading is cut at the excerpt budget');
   const revision = assembleRevisionBrief(ctx, {
     jobId: 'j-20260910-truncated-cite',

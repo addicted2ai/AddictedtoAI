@@ -376,6 +376,26 @@ test('C46 the revision brief supersedes the stale figures it inherits', async ()
   assert.match(brief, /## Verdict/);
   assert.match(brief, /## Acceptance checks/);
   assert.match(brief, /## Diff under revision/);
+  const sectionHeadings = [
+    '## Verdict',
+    '## Acceptance checks',
+    '## Diff under revision',
+    '## Relevant spec excerpts',
+    '## Ground rules (non-negotiable)',
+    '## How to end (required)',
+  ];
+  // The judged diff is fenced and may quote the brief that produced it. Strip
+  // every fenced block before locating section headings so copied headings do
+  // not become false section boundaries.
+  const briefOutsideFences = brief.replace(/```[\s\S]*?```/g, '');
+  const sectionIndexes = sectionHeadings.map((heading) => briefOutsideFences.indexOf(heading));
+  for (let i = 1; i < sectionIndexes.length; i += 1) {
+    assert.ok(sectionIndexes[i] >= 0, `${sectionHeadings[i]} must be present outside fenced blocks`);
+    assert.ok(
+      sectionIndexes[i] > sectionIndexes[i - 1],
+      `${sectionHeadings[i]} index ${sectionIndexes[i]} must follow ${sectionHeadings[i - 1]} index ${sectionIndexes[i - 1]}`,
+    );
+  }
   assert.match(brief, /^# Revision pass \(one only\) — job /);
   assert.match(brief, /This is a continuing invocation in the same worktree\. There is no prior/);
   const excerptsAt = brief.indexOf('## Relevant spec excerpts');
@@ -768,6 +788,21 @@ test('merge refuses unresolved cites on revise', () => {
   assert.equal(revise.ok, false);
   assert.equal(revise.code, 'cites-unresolved');
   assert.match(revise.reason, /Missing revise heading/);
+  ctx.cleanup();
+});
+
+test('merge refuses `(preamble)` cites on approve and revise', () => {
+  const ctx = citesContext();
+  for (const [jobId, verdict, reasons] of [
+    ['j-cites-preamble-approve', 'approve', []],
+    ['j-cites-preamble-revise', 'revise', ['not-worth-reading']],
+  ]) {
+    writeVerdictRecord(ctx, jobId, { verdict, reasons, cites: ['(preamble)'] });
+    const gate = mergeGate(ctx, { jobId, type: 'machinery' });
+    assert.equal(gate.ok, false);
+    assert.equal(gate.code, 'cites-unresolved');
+    assert.match(gate.reason, /\(preamble\)/);
+  }
   ctx.cleanup();
 });
 
