@@ -33,17 +33,17 @@ function sourceFiles() {
 const ALLOWED = [
   {
     file: 'scripts/check-spec-deltas.mjs',
-    match: CHANGE_DIR,
+    match: /openspec\/changes\/\$\{e\.name\}\//,
     reason: 'builds paths for delta files while scanning every in-flight change before archive',
   },
   {
     file: 'scripts/check-spec-deltas.test.mjs',
-    match: CHANGE_DIR,
+    match: /openspec\/changes\/(?:\$\{name\}|live-one)\//,
     reason: 'creates and asserts temporary in-flight change trees to test the delta checker',
   },
   {
     file: 'loop/lib/specs.mjs',
-    match: CHANGE_DIR,
+    match: /openspec\/changes\/\x60/,
     reason: 'discovers and reads the repository directories that contain changes not yet archived',
   },
 ];
@@ -67,7 +67,7 @@ function violations() {
 }
 
 function isAllowed(v) {
-  return ALLOWED.some((entry) => entry.file === v.file && v.text.includes(entry.match));
+  return ALLOWED.some((entry) => entry.file === v.file && entry.match.test(v.text));
 }
 
 test('no source references an unarchived change directory', () => {
@@ -89,7 +89,7 @@ test('every allow-list entry has a reason and is still live', () => {
   for (const entry of ALLOWED) {
     assert.ok(entry.reason, `${entry.file} needs a reason`);
     assert.ok(
-      found.some((v) => v.file === entry.file && v.text.includes(entry.match)),
+      found.some((v) => v.file === entry.file && entry.match.test(v.text)),
       `${entry.file}::${entry.match} is stale and must be removed`,
     );
   }

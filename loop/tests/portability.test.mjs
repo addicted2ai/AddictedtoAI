@@ -13,9 +13,10 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, parse, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 
 import { DEFAULT_REPO_ROOT, makeContext } from '../lib/paths.mjs';
 import { loadRunners } from '../lib/runners.mjs';
@@ -27,13 +28,16 @@ import { LEDGER_FIELDS } from '../lib/ledger.mjs';
 
 const ROOT = DEFAULT_REPO_ROOT;
 const ctx = makeContext({ log: () => {} });
+const MIN_SCANNED_FILES = 2;
+const RUNNER_FIXTURE_ROOTS = ['lib', 'app', 'tools'];
 
-function filesUnder(dir, exts, out = []) {
+function filesUnder(dir, exts, out = [], { skipTests = false } = {}) {
   if (!existsSync(dir)) return out;
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (e.name.startsWith('.') || e.name === 'node_modules') continue;
     const p = join(dir, e.name);
-    if (e.isDirectory()) filesUnder(p, exts, out);
+    if (e.isDirectory()) filesUnder(p, exts, out, { skipTests });
+    else if (skipTests && e.name.endsWith('.test.mjs')) continue;
     else if (exts.some((x) => e.name.endsWith(x))) out.push(p);
   }
   return out;
@@ -72,14 +76,34 @@ test('runners.yml contains no credential', () => {
 
 function scan(targets, names) {
   const hits = [];
-  for (const p of targets.filter((x) => existsSync(x) && statSync(x).isFile())) {
+  const files = targets.filter((x) => existsSync(x) && statSync(x).isFile());
+  for (const p of files) {
     const text = readFileSync(p, 'utf8').toLowerCase();
     for (const n of names) {
       const re = new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
       if (re.test(text)) hits.push(`${relative(ROOT, p)} names "${n}"`);
     }
   }
-  return hits;
+  return { hits, scanned: files.length };
+}
+
+function modelTargets(root = ROOT) {
+  return [...filesUnder(join(root, 'loop'), ['.mjs', '.md', '.json', '.yml']), join(root, 'data', 'config.json')];
+}
+
+function runnerTargets(root = ROOT) {
+  // Test data may legitimately carry a runner id (lib/stamp.test.mjs is one
+  // such fixture), so the policy scan covers machinery files and its own
+  // non-test fixtures, not test sources.
+  return [
+    ...filesUnder(join(root, 'loop'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    ...filesUnder(join(root, 'pulse'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    ...filesUnder(join(root, 'scripts'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    ...filesUnder(join(root, 'lib'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    ...filesUnder(join(root, 'app'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    ...filesUnder(join(root, 'tools'), ['.mjs', '.md', '.json', '.yml'], [], { skipTests: true }),
+    join(root, 'data', 'config.json'),
+  ];
 }
 
 test('the loop and the loop config name no model, provider or harness at all', () => {
@@ -104,11 +128,19 @@ test('the loop and the loop config name no model, provider or harness at all', (
       if (parts.length) names.add(parts[parts.length - 1].toLowerCase());
     }
   }
-  const hits = scan(
-    [...filesUnder(join(ROOT, 'loop'), ['.mjs', '.md', '.json', '.yml']), join(ROOT, 'data', 'config.json')],
-    names,
+  const result = scan(modelTargets(), names);
+  assert.ok(
+    result.scanned >= MIN_SCANNED_FILES,
+    'the model/provider/harness scan must read at least ' +
+      MIN_SCANNED_FILES +
+      ' files; read ' +
+      result.scanned,
   );
-  assert.deepEqual(hits, [], 'the swap is only real while runners.yml is the single point of change:\n' + hits.join('\n'));
+  assert.deepEqual(
+    result.hits,
+    [],
+    'the swap is only real while runners.yml is the single point of change:\n' + result.hits.join('\n'),
+  );
 });
 
 test('no machinery path references a runner by id', () => {
@@ -124,18 +156,47 @@ test('no machinery path references a runner by id', () => {
   const reg = loadRunners(ctx);
   const ids = reg.runners.map((r) => r.id.toLowerCase());
   const commands = reg.runners.map((r) => r.command);
-  const targets = [
-    ...filesUnder(join(ROOT, 'loop'), ['.mjs', '.md', '.json', '.yml']),
-    ...filesUnder(join(ROOT, 'pulse'), ['.mjs', '.md', '.json', '.yml']),
-    ...filesUnder(join(ROOT, 'scripts'), ['.mjs', '.md', '.json', '.yml']),
-    join(ROOT, 'data', 'config.json'),
-  ];
-  assert.deepEqual(scan(targets, ids), []);
+  const targets = runnerTargets();
+  const result = scan(targets, ids);
+  assert.ok(
+    result.scanned >= MIN_SCANNED_FILES,
+    'the runner-id scan must read at least ' + MIN_SCANNED_FILES + ' files; read ' + result.scanned,
+  );
+  assert.deepEqual(result.hits, []);
   for (const p of targets.filter((x) => existsSync(x) && statSync(x).isFile())) {
     const text = readFileSync(p, 'utf8');
     for (const c of commands) {
       assert.ok(!text.includes(c), `${relative(ROOT, p)} embeds a runner command template`);
     }
+  }
+});
+
+test('the runner-id scan catches a fixture under each newly covered root', () => {
+  const fixtureRoot = mkdtempSync(join(tmpdir(), 'portability-runner-'));
+  try {
+    const id = loadRunners(ctx).runners[0].id.toLowerCase();
+    const expected = new Map();
+    for (const root of RUNNER_FIXTURE_ROOTS) {
+      const dir = join(fixtureRoot, root);
+      mkdirSync(dir, { recursive: true });
+      const file = join(dir, 'fixture.mjs');
+      writeFileSync(file, "const runner = '" + id + "';\n");
+      expected.set(root, relative(ROOT, file) + ' names "' + id + '"');
+    }
+
+    const result = scan(runnerTargets(fixtureRoot), [id]);
+    for (const root of RUNNER_FIXTURE_ROOTS) {
+      // MUTATION: remove this root from runnerTargets. The named fixture arm
+      // must go red independently; another root's hit is not a substitute.
+      assert.deepEqual(
+        result.hits.filter((hit) => hit === expected.get(root)),
+        [expected.get(root)],
+        'mutation runner-id target ' + root + '/ must be scanned and rejected',
+      );
+    }
+    assert.equal(result.scanned, RUNNER_FIXTURE_ROOTS.length);
+  } finally {
+    rmSync(fixtureRoot, { recursive: true, force: true });
   }
 });
 
