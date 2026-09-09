@@ -159,7 +159,16 @@ class walks. So a revision brief states the class ("every assertion in this
 file carries the numbers it compares", "every arm added to pin a value must
 fail when that value is wrong"), requires the worker to sweep the file for
 every instance and list each one changed, and the reviewer's check is the
-sweep — it searches the file for the class itself — not the named lines.
+sweep — it searches the file for the class itself — not the named lines. The
+class is defined by its PURPOSE, not its grammar: Luna-Boss-2's census of
+`brief-excerpt-budget.test.mjs` at round 6 found 52 assertion calls, 14 with
+a message, 32 with none and 6 passing a raw value as if it were one — about
+38 instances of a class five sealed reviews had named three of. Round 7's
+reading: every length, count, cap and `chars` comparison carries both
+numbers; the six raw-value arguments become real messages; assertions whose
+failure is already legible (a regex match, a heading-order comparison) are
+listed as deliberately unchanged with one reason each; the reviewer runs the
+same census script, so the sweep check is mechanical.
 
 **And the architect's own obligation before every freeze: when a task says
 "every X", enumerate the X's and confirm each one can satisfy it.** Two of
