@@ -2473,3 +2473,102 @@ delegates the finding of it; every permitted file carries its reason; words
 like "once" state iteration or attempt; the authority sha reachable; a
 revision brief names a class and requires a sweep), and the quantifier
 obligation on the architect's own text before every freeze.
+
+## Revision record — round 16
+
+**The medium-vs-max experiment, judged and merged (2026-09-08 22:52 to
+2026-09-09 00:02 local; the architect as Luna coordinator since 21:55).**
+The pre-registration, the runs, the verdicts and the scoring are in
+`evidence/experiments/medium-vs-max-2026-09-08.md` and are not repeated
+here; the artefacts are banked in `evidence/reviews/experiment-medium-vs-max/`
+(README rows for both). What this record adds is the sequence and the
+decisions. Two sealed codex Luna max judges, X and Y swapped between them by
+a key sealed at 20:16:15, both chose the MAX tree from opposite positions
+(judge 1: Y, 27.7 min, 8.97M tokens, 22 hash-restored mutation arms per
+tree; judge 2: X, 31.3 min, 23.06M tokens, 16 per tree; both ran the two
+targeted files at 13/13 and 3/3 per tree with TAP counts asserted). Same
+candidate, opposite positions, is the pre-registered quality signal. The
+findings both judges reached independently, each verified by the architect
+in the raw files of both trees before the decision: medium's scanned-files
+floor is `> 0` and passes a one-file scan that max's `MIN_SCANNED_FILES = 2`
+rejects; medium's allow-list keeps join-expression alternatives that pass a
+named path appended to a generic join line, which max's literal-template
+form rejects (judge 2, two arms). Pre-registered outcome applied: max stays
+for anything that touches enforcement, medium elsewhere; n = 1 task shape,
+stated as such. H1 falsified as written (4.0x clock, not 1.0–2.0), H2 holds
+in direction (6.5x tokens, 6.9x reasoning) and fails its "output close"
+clause, H3 falsified in its first clause (the judges did not report them
+indistinguishable) and holds in its second (every difference is in the test
+arms and the allow-list's breadth; the one production line is byte-identical
+in both trees), H4 holds. Judge 1's first run is VOID and kept labelled: it
+executed zero tests because the maintainer had accidentally moved the
+worktree directories at about 22:23 (his own words: "I accidentally moved
+them, and am in the process of moving them back"); the trees returned at
+about 22:50, `git worktree repair` re-registered them, the `node_modules`
+junctions had come back as empty real directories and were re-created,
+both trees re-verified green, and judge 1 was re-dispatched from scratch at
+22:52:13. Orch's warning stands in the working rules: never `git worktree
+prune` while moved worktrees are registered — about twenty were.
+
+**Orch's diff read (received before 23:56): merge, with two corrections the
+record adopts.** `app/` is LISTED AND CONTRIBUTES ZERO FILES — the scan's
+extension list is `.mjs .md .json .yml` and `app/` holds 32 files, all
+`.tsx`/`.ts` (`tools/` contributes 11, `lib/` 227) — so the per-root
+fixture test proves the target list names `app/`, not that any `app/` file
+is scanned: a check narrower than the property it names, in the shape where
+a green reads as coverage that does not exist. And `MIN_SCANNED_FILES = 2`
+is a collapse detector, not a coverage one; the mechanical stronger form is
+per root (each listed root contributes at least one file), which would have
+failed `app/` today without anyone measuring. Both are carried on task 22
+for packet F together with the judges' shared findings (the per-line
+allow-list decision at `no-change-dir-refs.test.mjs:70`; the floor value
+and the recursive `skipTests` line unarmed), and packet F's brief drops the
+two enforcement paragraphs as written and carries those in their place.
+
+**The full suite on `8abe800` (the architect, 23:53:09 → 00:00:34): 1,735
+of 1,735, 0 failed, 438.1 s, stderr empty; the log banked whole.** The
+machine was quiet — no codex process, no Desk — until 00:00:00, when the
+scheduled Pulse fired in the main checkout during the suite's last 34
+seconds: the straddled trigger this record predicted at round 15 as the
+third mover, now observed. It did not touch the suite's inputs (the suite
+read the worktree's own tree; the Pulse writes `data/` and
+`content/wiki/model/` in the main checkout), it committed `84a6649` on main
+at about 00:01, and no `pulse/run.mjs` process remained at 00:01:16. The
+merge `e8a2da7` (`--no-ff`, 00:01:41; 3 files, +84/−23; `specs.mjs`
+auto-merged cleanly over B1's changes to the same file) sits on top of it,
+so the tip Orch gates carries the Pulse's midnight output as well as the
+experiment's — enumerated here rather than assumed to be one lane. The two
+targeted files on the merged main: 16 of 16 (13 + 3) at 00:02:31. Timings
+by condition: the suite's 438.1 s here is 1,735 tests on a quiet machine;
+B1's worker measured 426 s (1,727) under the same condition, and Orch's
+gate runs 353 s (1,734) quiet and 393 s (1,730) with one codex worker
+alongside.
+
+**The architect's own clock defect, corrected in place.** The board line
+for Orch's diff read was first stamped "00:01" with the read at "23:58",
+both estimated while writing; the clock read 23:56. Corrected at 23:56 in
+the board and in the experiment file, with the correction stated rather
+than overwritten — key 61's lesson, repeated by the session that wrote it.
+
+**Packet B2 prepared while the judges ran.** The quantifier enumeration for
+tasks 10–12 was written from the code at the tip and committed as
+`dd148ae` (+92 lines): the heading set is the union over every capability's
+constitution and unarchived deltas via `specSources` (116 constitution
+headings, none duplicated; 31 in this change's deltas); `cites:` is parsed
+on `carry:`'s terms; refusal is `cites-unresolved` at `mergeGate` before
+the verdict branch on all three verdicts, joining `REISSUE_CODES`;
+`assembleRevisionBrief` is new with `run.mjs:733-738` its one call site;
+`excerptsFor` gains a `headings` option; `loop/tests/brief.test.mjs` is
+new, with the fixture's shape fixed (two cited headings, one outside the
+governing list, one governing omitted) and a third assertion for the
+empty list. The author brief and the sealed review brief are templates that
+a builder fills from the blob at the authority sha (the task quotes are
+never hand-typed), and both passed the brief linter — after it refused the
+first draft on three of its own checks (enforcement claims split across
+lines, "(new)" placed before the dash, a bare RESULT.md mention) and the
+review template once (the word "once" without "iteration" or "attempt"),
+all the author's defects, caught mechanically before any worker saw them.
+The linter now exempts quoted `>` lines from the report-name check and
+checks REVIEW<n>.md for review briefs. B2 dispatches from the tip Orch
+gates, after its green, so the worker's final suite and the gates do not
+share the machine.

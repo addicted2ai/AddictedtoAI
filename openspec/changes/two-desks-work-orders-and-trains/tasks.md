@@ -867,6 +867,40 @@ the sentence that uses it.
       fixture file and require the test red, named as a mutation. Same rule
       as the floor above: an allow-list wider than its reason is an
       expectation file whose unlisted case is permitted but unguarded.
+      **Both enforcement items DONE at `e8a2da7` (2026-09-09 00:01 local):
+      the medium-vs-max experiment's max branch `exp/max-d75275c@8abe800`
+      (base `96e15fa`, brief authority `d75275c`), chosen by two sealed,
+      mirrored blind reviewers from opposite positions, read by Orch, its full
+      suite on `8abe800` 1,735 of 1,735 in 438 s; record in design.md round
+      16; evidence in `evidence/experiments/medium-vs-max-2026-09-08.md` and
+      `evidence/reviews/experiment-medium-vs-max/`.** What landed: runner-id
+      targets `lib/`, `app/` and `tools/`; a fixture id under each root
+      asserted independently with its mutation named in a comment;
+      `MIN_SCANNED_FILES = 2` asserted in both scans; every allow-list entry
+      narrowed to the literal template form its reason describes;
+      `specs.mjs:23` in the archive form; a planted named path on a separate
+      line goes red. The `enabled: false` half of this task stays open for
+      packet F. **CARRIED TO PACKET F on this task — the measured gaps in what
+      landed, from the judges and the diff read, none a reason to withhold the
+      merge:** (a) `app/` is LISTED AND CONTRIBUTES ZERO FILES: the runner-id
+      scan's extensions are `.mjs .md .json .yml` and `app/` holds 32 files,
+      all `.tsx`/`.ts` (Orch, live tree; `tools/` contributes 11, `lib/` 227),
+      so the per-root fixture proves the target list names `app/`, not that
+      any `app/` file is ever scanned — F adds `.tsx`/`.ts` to the RUNNER-ID
+      scan's extensions (the `:115-123` false-positive argument is about the
+      model-name scan, not this one) and asserts per root that each listed
+      root contributes at least one file, the mechanical form that would have
+      failed `app/` today and turns the collapse-detecting floor into a
+      coverage one; (b) `scripts/no-change-dir-refs.test.mjs:70` decides per
+      LINE, so a named path on the same line as an allowed generic template
+      passes in the merged tree (both judges, 3 of 3 green) — F makes the
+      allowance apply to the matched span rather than the line, with a
+      same-line planted path as the named mutation; (c) the floor VALUE
+      (`portability.test.mjs:133`, `:162`: `>= MIN_SCANNED_FILES` mutated to
+      `>= 0` stays green) and the recursive `skipTests` propagation (`:39`)
+      have no arm (judge 2) — F adds one each or records why an arm cannot
+      reach it. Packet F's brief drops the two enforcement paragraphs above
+      as written and carries (a)–(c) in their place.
 - [ ] 23. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
       repository and fires when the **top-ranked** candidate is refused *solely* on
       `runner:job-type`; no other refusal escalates. Implements the same

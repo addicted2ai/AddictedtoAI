@@ -1,0 +1,4 @@
+start 2026-09-08 23:53:09 tip 8abe800
+exit: npm pid 33004 gone from the process table at 00:00:34 (monitor); stderr empty (0 bytes)
+counts: tests 1735 pass 1735 fail 0 cancelled 0 skipped 0 todo 0 duration_ms 438107.9942
+condition: machine quiet (no codex, no Desk) until 00:00:00, when the scheduled Pulse fired and ran to about 00:01 in the main checkout — the suite ran in the worktree's own tree, which the Pulse does not write
