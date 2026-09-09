@@ -1167,12 +1167,32 @@ the brief under `evidence/reviews/`.
       untouched. (vi) THE CARRIED GAPS (a)–(c): (a)
       `loop/tests/portability.test.mjs:97-105` `runnerTargets()`: the
       extension list of the RUNNER-ID scan gains `.ts` and `.tsx` on every
-      root, and the runner-id test asserts PER ROOT that each listed root
-      contributed at least one scanned file, which is the mechanical form that
+      root, and the runner-id test asserts PER ROOT that each of the SIX
+      directories `runnerTargets()` lists (`loop/`, `pulse/`, `scripts/`,
+      `lib/`, `app/`, `tools/` — NOT the three of `RUNNER_FIXTURE_ROOTS` at
+      `:32`, which is a different, fixture-planting test) contributed at least
+      one scanned file, obtained by calling `filesUnder(<root>, <the extension
+      list>, [], { skipTests: true })` per root rather than by changing what
+      `scan` returns; that is the mechanical form that
       would have failed `app/` at 32 files and 0 scanned; `MIN_SCANNED_FILES`
-      stays as the collapse floor; the model-name scan (`:91`) is NOT widened
-      — its narrowing is deliberate (`:115-123`). Mutation: `.tsx` dropped
-      from the list turns the `app/` per-root assertion red. (b)
+      stays as the collapse floor. TWO MEASURED CORRECTIONS to the carried
+      paragraph above, made here because the brief quotes it verbatim and a
+      worker must not act on a wrong count (counted in the worktree,
+      2026-09-09 13:58): `app/` holds 32 files but NOT "all `.tsx`/`.ts`" — it
+      is 27 `.tsx`, ONE `.ts` (`app/sitemap.ts`, a real source), three `.mjs`
+      and one `.css`; and the scan contributes ZERO not because `app/` holds
+      no `.mjs` but because all three of its `.mjs` files are `*.test.mjs`
+      (`app/frontier/page.test.mjs`, `app/index-route-jsonld.test.mjs`,
+      `app/sitemap.test.mjs`) and `runnerTargets()` passes
+      `{ skipTests: true }`, which `filesUnder` applies at `:40`. The carried
+      paragraph's `:115-123` citation has also drifted: the deliberate-narrowing
+      comment now reads at `:146-155`, and `:115-123` is the model scan's name
+      collection. The model-name scan (`:91`) is NOT widened
+      — its narrowing is deliberate (`:146-155`). Mutation: `.tsx` dropped
+      from the list leaves `app/sitemap.ts` scanned and the assertion GREEN,
+      so the one-extension mutation measures nothing: BOTH `.ts` and `.tsx`
+      must be dropped for the `app/` per-root assertion to go red, and that is
+      the mutation. (b)
       `scripts/no-change-dir-refs.test.mjs:69-71` `isAllowed` tests the
       allow-list regex against the whole LINE (`entry.match.test(v.text)`);
       F tests it against the matched SPAN. `BAD_REFERENCE` (`:19`) captures
