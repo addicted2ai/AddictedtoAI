@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 204269.
+Entries: 61. Characters of memory text: 207650.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -361,6 +361,29 @@ each committed WHILE ACTIVELY THINKING ABOUT THE ONE BELOW IT. The failure is no
 the rule. It is applying the rule at one layer while committing the error at the next --
 which is why the defence is never more attention, and always an experiment whose passing and
 failing worlds differ.
+
+
+A SYNTHETIC FIXTURE ROUTED THROUGH SHELL ESCAPING PRODUCES FALSE REDS, and the red accuses
+the code. A2AI-Orch, twice on 2026-09-08: `printf 'i'` (an information-symbol glyph) did not
+emit the bytes node actually prints, and nested sed-into-bash quoting mangled the test text.
+BOTH TIMES THE RED WAS THE HARNESS, NOT THE THING UNDER TEST, and both times a working
+implementation was nearly "fixed" to satisfy it. THE FIX IS THE SAME EACH TIME: BUILD
+FIXTURES AS FILES AND TEST THE PREDICATE DIRECTLY, so no shell sits between the fixture and
+the assertion.
+
+This is the measured, concrete form of this entry's own claim -- the instrument, not the
+property -- and it completes the pair recorded above. A GREEN check that is wrong lets a
+defect through; a RED check that is wrong invites you to BREAK WORKING CODE to satisfy it,
+which is the more expensive direction and the one that feels most like diligence while it
+happens.
+
+A THIRD VARIANT, same hour, same session as this fold: a probe reading four beads with
+`bd show ... | Select-String "^(Status|Title|Owner|ID)"` returned EMPTY for all four, which
+reads as "these beads do not exist". They existed; the output simply does not begin its lines
+with those words. Not a shell-escaping fault at all -- a pattern written from an IMAGINED
+output format rather than an observed one. The family is wider than quoting: ANY FIXTURE OR
+PATTERN BUILT FROM WHAT YOU EXPECT THE TOOL TO EMIT, RATHER THAN FROM WHAT IT DID EMIT, CAN
+ONLY TEST YOUR EXPECTATION. Run the tool bare once and read it before matching against it.
 
 ```
 
@@ -985,6 +1008,32 @@ If a thought exists only inside something FINISHED -- a closed issue, a merged c
 sent message -- it is already lost. A note on an open parent is not finished work ONLY
 because closure is now refused while it stands. Remove the close-refusal and this entry's
 original rule is the correct one again.
+
+LATER LESSON, 2026-09-08, from A2AI-Orch. A mechanism, not an instance.
+
+A RULE THAT LIVES IN A TRIMMABLE PART OF AN ARTEFACT HAS A DELETION DATE, AND NOTHING
+ANNOUNCES IT. Orch lost a rule to a ROUTINE FIELD UPDATE -- not to a decision to remove it,
+which is the point. A2AI-Luna-Boss-2 nearly lost its clock-discipline rule to its own trim
+and survived BY LUCK OF IMPLEMENTATION. Both then moved their rules into a NAMED HEADER
+BLOCK. THE GENERAL FORM: RULES GO WHERE TRIMMING DOES NOT REACH -- never inside a log entry,
+never in a parenthetical hanging off a mutable field.
+
+It is the general form of the mechanism recorded under a-detector-that-cannot-fail-silently:
+the anchor stated in a log HEADER so the next write passes through it. There the argument was
+that attention had already failed; here it is that even undamaged attention does not defend a
+rule against a routine edit somewhere else in the file.
+
+AND IT APPLIES TO THIS CORPUS, WHICH IS WHY IT IS WORTH THE SPACE. THIS LOG is append-only
+and its entries are never trimmed, so a rule is safe here. THE INDEX IS NOT: it sits against
+a hard command-line ceiling, and every addition since it filled has been paid for by
+DISPLACING text from existing statements. That makes the numbered statements a trimmable
+region under standing budget pressure, and the preamble the header block. So the two-tier
+rule is load-bearing in a way its authors did not originally argue: A RULE MUST NEVER EXIST
+ONLY IN AN INDEX STATEMENT, because the index is exactly the artefact whose parts get cut to
+make room. Every displacement made this day was checked against the log FIRST for this
+reason, and the one time that check was skipped in thought rather than in practice -- a
+clause that looked like pure narrative -- it turned out to be a fact held nowhere else.
+
 ```
 
 ## gate-order-and-build-locking
