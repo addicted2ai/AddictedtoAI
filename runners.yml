@@ -231,15 +231,33 @@ runners:
       can only ever be authored here, at `model_reasoning_effort="max"`.
 
       THE CLEARANCE ALONE ONLY GUARANTEES THE FLOOR, NOT THE ROUTING, and the
-      difference matters. The Desk picks its runner BEFORE the selector chooses
-      a candidate and cannot switch mid-run, so a chain authoring on the medium
-      entry refuses a scout candidate and moves on — the job is skipped, not
-      escalated. Routing is therefore the caller's job: the chain re-runs an
-      iteration on this entry when a run selected nothing and the ONLY refusal
-      was `runner:job-type`. It deliberately does not escalate past a
-      `degradation:`, `capacity:` or `budget` refusal, because those say "not
-      now" about the whole lane, and a second entry on the same subscription is
-      not a way around them.
+      difference matters. The clearance says this entry MAY author a scout job;
+      it says nothing about how a scout job that arrived at the medium entry
+      reaches it.
+
+      THE REPOSITORY ROUTES, AND THE CHAIN PASSES `--runner` ONLY. Rewritten
+      2026-09-09 (two-desks-work-orders-and-trains, packet D, tasks 23-24),
+      and the paragraph it replaces had become FALSE: it said routing was the
+      caller's job and described a chain re-running an iteration on this entry
+      when a run selected nothing and the only refusal was `runner:job-type`.
+      That escalation now lives in the loop. `loop/run.mjs`, at its ONE
+      selection call site, re-runs `selectJob` on the entry named by the
+      authoring runner's `escalates_to` when the TOP-RANKED candidate was
+      refused solely on `runner:job-type`, and adopts the result only if that
+      entry clears the same candidate — otherwise it logs the refusal and keeps
+      the original outcome. `escalationTarget` in `loop/lib/select.mjs` is pure:
+      the selector owns the refusal rule, this file owns the destination.
+
+      WHAT DID NOT CHANGE, because it was the load-bearing half: escalation
+      fires on `runner:job-type` and on nothing else. A `degradation:`,
+      `capacity:`, `budget` or conformance/health refusal says "not now" about
+      the whole lane, and a second entry on the same subscription is not a way
+      around it — the escalated selection re-runs those gates for the target and
+      declines to adopt when any of them refuses.
+
+      A CHAIN THAT STILL RE-RUNS ON THIS ENTRY WOULD NOW DOUBLE-ESCALATE. The
+      grep-based escalation in the scratchpad chain script was retired in the
+      same change.
 
       VERIFIED 2026-09-07 09:47 MDT with this template: `node
       loop/conformance.mjs --runner codex-gpt-luna` recorded four PASSes
@@ -260,6 +278,13 @@ runners:
     model: gpt-5.6-luna
     harness: codex-cli
     effort: medium
+    # The one declared escalation step (packet D, tasks 23-24). loop/run.mjs
+    # re-runs selection on this entry when the TOP-RANKED candidate was refused
+    # solely on `runner:job-type` — the scout and post types this entry is not
+    # cleared for — and adopts it only if the target clears the same candidate.
+    # Validated at load: a registered id, not this entry itself, cleared for the
+    # author role.
+    escalates_to: codex-gpt-luna
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="medium" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
@@ -430,6 +455,12 @@ runners:
     roles: [author, reviewer]
     model: opencode-go/deepseek-v4-flash
     harness: opencode
+    # The rung this entry dispatches at, in opencode's own vocabulary: the
+    # `--variant` below, not a `model_reasoning_effort`. Declared for the same
+    # reason as the codex entries — without it a phase entry records
+    # `effort: null` for a run that did have a rung, which is the one comparison
+    # the field exists to make.
+    effort: max
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
@@ -479,6 +510,7 @@ runners:
     roles: [author, reviewer]
     model: opencode-go/muse-spark-1.3-contributor
     harness: opencode
+    effort: high
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
@@ -544,6 +576,7 @@ runners:
     roles: [author, reviewer]
     model: openrouter/meta/muse-spark-1.3-contributor
     harness: opencode
+    effort: high
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model openrouter/meta/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
