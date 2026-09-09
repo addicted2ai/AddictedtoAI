@@ -6272,6 +6272,17 @@
       "ok": true,
       "status": 200
     },
+    "https://web.archive.org/web/20221130211011/https://openai.com/blog/chatgpt/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://web.archive.org/web/20221130211011/https://openai.com/blog/chatgpt/",
+      "last_checked": "2026-09-08",
+      "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://web.archive.org/web/20260906234809/https://openai.com/index/an-alien-mind/": {
       "bytes": null,
       "consecutive_failures": 0,
