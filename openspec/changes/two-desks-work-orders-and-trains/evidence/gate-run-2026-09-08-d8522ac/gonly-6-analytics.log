@@ -1,0 +1,35 @@
+serve-static pid 61811
+server answering after 1 attempt(s)
+verify-analytics: http://127.0.0.1:3000
+  property under test: G-KJPHKYL3XL (a GA measurement ID is public by design)
+
+direct load /
+  PASS  / renders the gtag loader and bootstrap — loader id G-KJPHKYL3XL, bootstrap present (markup only — not evidence of delivery)
+  PASS  no Content-Security-Policy on / — specs/analytics: none at launch
+  PASS  / sends exactly one page_view — 1 collect hit — POST HTTP 204 [transport: net::ERR_ABORTED], path /, title "AddictedtoAI — what changed in AI, dated and sourced"
+  PASS  / page_view reports the configured tid — tid G-KJPHKYL3XL vs configured G-KJPHKYL3XL
+  PASS  / collect response is 2xx — POST HTTP 204 [transport: net::ERR_ABORTED]
+  PASS  / page_view carries this page's path — reported /
+  PASS  / page_view came from this site's route tracker — atai_nav=load
+
+direct load /wiki/concept/ai-winter
+  PASS  /wiki/concept/ai-winter renders the gtag loader and bootstrap — loader id G-KJPHKYL3XL, bootstrap present (markup only — not evidence of delivery)
+  PASS  no Content-Security-Policy on /wiki/concept/ai-winter — specs/analytics: none at launch
+  PASS  /wiki/concept/ai-winter sends exactly one page_view — 1 collect hit — POST HTTP 204 [transport: net::ERR_ABORTED], path /wiki/concept/ai-winter, title "AI winter · AddictedtoAI"
+  PASS  /wiki/concept/ai-winter page_view reports the configured tid — tid G-KJPHKYL3XL vs configured G-KJPHKYL3XL
+  PASS  /wiki/concept/ai-winter collect response is 2xx — POST HTTP 204 [transport: net::ERR_ABORTED]
+  PASS  /wiki/concept/ai-winter page_view carries this page's path — reported /wiki/concept/ai-winter
+  PASS  /wiki/concept/ai-winter page_view came from this site's route tracker — atai_nav=load
+
+client-side navigation (click an internal link from the home page)
+        clicking "frontier" → /frontier
+  PASS  click-through: the click navigated — / → /frontier
+  PASS  click-through: the navigation was client-side (no document load) — the JS context survived the navigation
+  PASS  click-through: a further page_view arrives carrying the new path — 1 collect hit(s) for /frontier from the route tracker (atai_nav=route) — POST HTTP 204 [transport: net::ERR_ABORTED], title "The Frontier · AddictedtoAI"
+  PASS  click-through: the navigation is counted exactly once — 1 page_view hit(s) for /frontier [atai_nav=route]
+  PASS  click-through: the page_view reports the configured tid — tid G-KJPHKYL3XL vs configured G-KJPHKYL3XL
+  PASS  click-through: the collect response is 2xx — POST HTTP 204 [transport: net::ERR_ABORTED]
+
+verify-analytics: 20 assertion(s), 0 failure(s)
+verify-analytics exit 0
+server stopped

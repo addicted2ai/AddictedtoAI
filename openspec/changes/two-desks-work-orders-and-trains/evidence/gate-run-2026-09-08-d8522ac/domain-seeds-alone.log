@@ -1,0 +1,18 @@
+✔ 12 the modality table maps every token it knows, in both directions (1.387ms)
+✔ 12 presence is a NUMBER, not a key — a null index seeds nothing (0.2192ms)
+✔ 12 the domain is read from the CONTENTS of a named field, never from a field name (0.158ms)
+✔ 12 a rule that produced a value outside the vocabulary stops the engine (0.3856ms)
+✔ 12 a first run seeds from named feed fields and a second run appends nothing (1115.511ms)
+✔ 12 a signal that has LEFT the snapshot removes nothing and writes no change line (1104.8603ms)
+✔ 12 a snapshot that GAINS a signal appends exactly one value, and never a duplicate (1172.3824ms)
+✔ 12 an undeclared row seeds nothing — the join is the feeds map, never a name (593.4102ms)
+✔ 13 a seeding run leaves a bound review record reporting the entry as matched (585.6683ms)
+✔ 13 an EDITORIAL domain on the same entry does move the reviewed surface (6.2723ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5000.0586

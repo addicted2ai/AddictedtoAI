@@ -1,0 +1,84 @@
+verify-launch — the launch minimums for build-initial-site (task 6.6)
+  content D:\AddictedtoAI\content
+  data    D:\AddictedtoAI\data
+
+CORPUS
+------
+  554 entry, 38 learn, 4 tutorial, 18 post, 35 tool, 27 delta = 676 page(s), plus 0 claim record(s), which are content and not pages
+  PASS  every content file is valid        no errors  (no errors)
+        Schema, ids, kinds, duplicates and cross-file references all resolve.
+
+CONTENT FLOORS (task 6.6)
+-------------------------
+  PASS  wiki entries                       554  (floor 40)
+        TRIVIALLY MET — 445 of these are mechanically minted stubs (openrouter-models: 445); the floor clears on minting alone.
+        109 entries are hand-authored (not in any mint ledger).
+        This count measures corpus size, not curation. The prose floors below do that.
+  PASS  entries with a prose body          99  (floor 12)
+        LOAD-BEARING — every one is hand-authored; no mechanical process produces a body. Margin over the floor: 87.
+        Measured as >= 60 words of running prose (code fences, headings, transclusions, list markers and link targets removed).
+        The build's looser test (any non-whitespace body) counts 99. The two agree on every file.
+  PASS  themed prose bodies                34  (floor 3)
+        LOAD-BEARING — this is the floor that keeps the site from being a price sheet. Margin over the floor: 31.
+        themes: must contain one of history / culture / argument — history: 17, culture: 6, argument: 26.
+        Counted only among entries that passed the prose bar above, never among stubs.
+        e.g. concept/ai-winter, concept/chain-of-thought, concept/distillation
+  PASS  learn pages                        38  (floor 4)
+        LOAD-BEARING — all hand-authored. Margin over the floor: 34.
+  PASS  tutorials                          4  (floor 2)
+        LOAD-BEARING — all hand-authored. Margin over the floor: 2.
+  PASS  blog posts                         18  (floor 0)
+        NO FLOOR — this surface is quality-gated, not quota-driven; 18 is a valid count.
+  PASS  Impossible -> Routine deltas       27  (floor 12)
+        LOAD-BEARING — all hand-authored. Margin over the floor: 15.
+
+CURATED TOOLS — count AND resolution (task 6.6, 6.7)
+----------------------------------------------------
+  PASS  curated tool listings              35  (floor 20)
+        LOAD-BEARING — all hand-curated.
+  PASS  each links a resolvable entry      35/35 resolve, 35 distinct  (all resolve, >= 20 distinct)
+        LOAD-BEARING — a count of listing files is not a check that the links work. Every `entry:` id is resolved against the loaded entry corpus, and the distinct-target count is required too, because 20 listings pointing at one entry would pass a count.
+        Every listing resolves to an entry that exists.
+
+DERIVED DATA (the Pulse and the build must have run)
+----------------------------------------------------
+  PASS  model catalog rows                 428  (> 0)
+        data/derived/catalog.json — written by the Pulse from the source snapshots.
+  PASS  changed feed (seeded)              193 line(s), 60 seeded  (non-empty, >= 1 seeded)
+        The home page renders this feed. An empty feed at launch is the failure task 3.8 seeding exists to prevent, so the seeded count is checked separately from the total.
+  PASS  search index                       676 doc(s) for 676 page(s)  (present and covering every page)
+        specs/site: the index covers every page including stubs. "Present" is not enough — an index that is stale by 400 pages exists and finds nothing, so the row count is required to equal the loaded corpus.
+
+REVIEW RECORDS (specs/review — every seed prose piece, approved)
+----------------------------------------------------------------
+  FAIL  seed prose pieces reviewed         185/186 approved with a non-empty would-cite  (all, none blank, none duplicated)
+        LOAD-BEARING — matched piece by piece, never counted. A file count in data/reviews/ would pass with every record attached to the same piece.
+        Pieces: 99 entry bodies, 38 learn, 4 tutorial, 18 post, 27 delta.
+        407 record(s) in data/reviews/. 133 claimed by no piece: j-20260829-01.md, j-20260829-02.md, j-20260829-03.md, j-20260830-02.md, j-20260831-01.md, j-20260831-03.md, j-20260831-04.md, j-20260831-05.md, j-20260831-07.md, j-20260831-08.md, j-20260831-12.md, j-20260901-05.md, j-20260901-07.md, j-20260901-08.md, j-20260901-09.md, j-20260901-12.md, j-20260901-13.md, j-20260901-16.md, j-20260901-20.md, j-20260901-23.md, j-20260902-01.md, j-20260902-02.md, j-20260902-02.pass2.md, j-20260902-03.md, j-20260902-04.md, j-20260902-07.md, j-20260902-08.md, j-20260902-11.md, j-20260902-12.md, j-20260902-13.md, j-20260902-14.md, j-20260902-15.md, j-20260902-15.pass2.md, j-20260902-16.md, j-20260902-16.pass2.md, j-20260902-17.md, j-20260902-18.md, j-20260902-19.md, j-20260902-20.md, j-20260902-21.md, j-20260902-24.md, j-20260902-25.md, j-20260903-03.md, j-20260903-03.pass2.md, j-20260903-06.md, j-20260903-07.md, j-20260903-08.md, j-20260903-09.md, j-20260903-11.md, j-20260903-12.md, j-20260903-14.md, j-20260904-02.md, j-20260904-06.md, j-20260904-07.md, j-20260904-08.md, j-20260904-17.md, j-20260904-22.md, j-20260904-25.md, j-20260904-27.md, j-20260904-30.md, j-20260904-30.pass2.md, j-20260904-32.md, j-20260904-33.md, j-20260904-34.md, j-20260904-35.md, j-20260904-36.md, j-20260904-37.md, j-20260904-39.md, j-20260904-40.md, j-20260904-41.md, j-20260904-42.md, j-20260904-43.md, j-20260904-44.md, j-20260904-45.md, j-20260904-46.md, j-20260904-48.md, j-20260904-49.md, j-20260904-50.md, j-20260904-51.md, j-20260904-52.md, j-20260904-53.md, j-20260904-54.md, j-20260904-55.md, j-20260904-56.md, j-20260905-03.md, j-20260905-05.md, j-20260905-13.md, j-20260905-15.md, j-20260905-16.md, j-20260905-16.pass2.md, j-20260905-18.md, j-20260905-19.md, j-20260905-21.md, j-20260905-22.md, j-20260905-24.md, j-20260905-25.md, j-20260906-05.md, j-20260906-06.md, j-20260906-07.md, j-20260906-11.md, j-20260906-12.md, j-20260906-18.md, j-20260907-02.md, j-20260907-05.md, j-20260907-06.md, j-20260907-15.md, j-20260907-16.md, j-20260907-16.pass2.md, j-20260907-17.md, j-20260907-25.md, j-20260907-30.md, j-20260907-31.md, j-20260907-31.pass2.md, j-20260907-32.md, j-20260907-33.md, j-20260907-33.pass2.md, j-20260907-34.md, j-20260908-01.md, j-20260908-01.pass2.md, j-20260908-02.md, j-20260908-02.pass2.md, j-20260908-09.md, j-20260908-11.md, j-20260908-12.md, j-20260908-12.pass2.md, j-20260908-13.md, j-20260908-13.pass2.md, j-20260908-14.md, j-20260908-14.pass2.md, seed-impossible-routine-face-verification.md, seed-impossible-routine-price-of-a-million-tokens.md, seed-superhuman-go.md, seed-tutorials-tokenizer-tax-measured.md — an orphan beside a missing piece means the naming does not match, not that a review is absent.
+        Binding, over all 641 reviewable piece(s): recorded 69, mismatched 0, unbound 129, missing 443. A record names the bytes it judged (`reviewed:`), so `mismatched` — reviewed and then changed — is a different finding from `missing`, which is unreviewed. `mismatched` fails this check and never changes a page's indexability. `unbound` is a record written before that key existed: it is counted, it fails nothing, and the only thing to watch is that the number falls.
+        Verdict parsing and the duplicate rule come from loop/lib/verdict.mjs, so this check and the loop's merge gate agree on what a valid record is. The piece -> record lookup comes from lib/reviews.mjs, so this check and the build's indexability rule agree on which record belongs to which piece.
+        The voice bar — a non-empty, non-duplicated `reads-human` — is applied to 18 piece(s): the post type(s) loop/lib/review.mjs scopes it to, imported rather than restated. Its duplicate sweep reads all 34 distinct `reads-human` value(s) across every record, not just the post ones, because the merge gate does. A post whose current record carries a `reads-human-from` entry for it is answered by the record that entry names, resolved ONE hop and required to approve this same piece with a `reads-human` of its own; a post whose current record carries neither field is answered by any earlier approving record naming it, which is the state records written before the carry-forward existed are in and which the merge now refuses to write.
+        93 record(s) matched by an accepted alternate name rather than the canonical one: seed-ai-winter.md, j-20260907-19.md (matched by front matter, not by name), seed-concept-effective-context-length.md, seed-concept-kv-cache.md, seed-concept-model-context-protocol.md, j-20260904-15.md (matched by front matter, not by name), +87 more
+        3 record(s) in data/reviews/ carry a well-formed `corrections:` entry — front matter is append-only history (addictedtoai-4fo): a stale `would-cite` is corrected by appending a dated `{date, text}` entry, never by editing the field, and a malformed entry fails this check by name.
+        SHORTFALL: 1 of 186 piece(s) are not cleared to launch
+
+        Every uncleared piece is listed — none is elided, because a review check that
+        shows the first ten is a review check nobody can act on. A record is looked up
+        by the canonical name shown, then by these alternates, then by a front-matter
+        field naming the file (subject / piece / file / path / target / slug / entry / id / job):
+          seed-<kind>-<slug>.md, seed-<type>-<slug>.md, seed-<slug>.md
+
+          - content/wiki/event/chatgpt-launch.md: NO RECORD — expected data/reviews/seed-wiki-event-chatgpt-launch.md (or seed-chatgpt-launch.md)
+
+BUILD
+-----
+  running `npm run build` ...
+  PASS  npm run build                      exit 0 in 46s  (exit 0)
+        Every content gate in lib/build-content.mjs ran, and the static export succeeded.
+        copied out/status.json into .build-stamp.json after exit 0
+
+RESULT
+------
+  1 of 15 check(s) FAILED:
+    - seed prose pieces reviewed: 1 of 186 piece(s) are not cleared to launch
+  The launch minimums are NOT met.

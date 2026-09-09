@@ -2151,9 +2151,30 @@ archive; the learn page rendering the inbound link) — which attests the
 DEPLOY, not the gate run, and does not stand in for the logs. The class, in
 Orch's words: the evidence-producing tool destroyed the evidence for the only
 push of the day, silently, at the moment of producing new evidence, and
-nothing warned. Orch is giving the harness a per-run directory and filing the
-bead; the `d8522ac` run is banked whole at
-`evidence/gate-run-2026-09-08-d8522ac/`. Orch first declined to push until Stage 0's last packet,
+nothing warned. Orch gave the harness a per-run directory that refuses to
+reuse one, proved it with a bogus sha, and filed `addictedtoai-yejx`, whose
+acceptance is a sweep of every gate script writing constant names rather than
+the one fix, and whose first item requires naming a member of the work that a
+grep for the fixed names would not return. The `d8522ac` run is banked whole
+at `evidence/gate-run-2026-09-08-d8522ac/`. AND THE ARCHITECT'S OWN INSTANCE
+OF THE SAME CLASS, found by reading that commit's diffstat (`2aea346` carried
+three files where eight had been added — statement 6's cheapest alarm):
+`.gitignore:89` ignores `*.log`, so the `a2eec9f` directory committed at
+`9dcaf70` (15:50) held only its summary in the repository, and the six gate
+logs and `reuse-attempt-4.log` that this record and `evidence/README.md`
+described as captured from 15:50 onward existed in one working tree and in
+no commit for two hours and forty-seven minutes; a clone had none of them.
+The instrument that had "verified" the copy was a directory listing of the
+working tree, which cannot see an ignore rule — a check narrower than the
+property "in the repository", and the second time today the architect's
+check was the working tree where the property was the blob (the first was
+`3f748af`). Repaired in the commit carrying this sentence: a negation scoped
+to `openspec/changes/**/evidence/**/*.log` (the archive path included) and
+all fourteen logs added; `git ls-files` is now the check, and the README
+rows say which commit first held each log. That is also the member of
+yejx's sweep that a grep for its fixed names would not return: the
+consuming side, where a copy to a repository path was dropped by the
+repository itself. Orch first declined to push until Stage 0's last packet,
 naming the cost (81 commits and today's visitor-facing repairs invisible, the
 mission's complaint made literal); the architect recommended pushing the
 verified sha with publishing left off, the two being separate switches — the

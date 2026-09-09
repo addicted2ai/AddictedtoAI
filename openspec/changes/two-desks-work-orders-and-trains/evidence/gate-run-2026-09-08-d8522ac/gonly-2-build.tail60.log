@@ -1,0 +1,60 @@
+   Finalizing page optimization ...
+   Collecting build traces ...
+   Exporting (0/2) ...
+ ✓ Exporting (2/2)
+
+Route (app)                                              Size  First Load JS
+┌ ○ /                                                   171 B         103 kB
+├ ○ /_not-found                                         171 B         103 kB
+├ ○ /blog                                               171 B         103 kB
+├ ● /blog/[slug]                                        171 B         103 kB
+├   ├ /blog/pachocki-an-alien-mind-monitorability
+├   ├ /blog/same-weights-two-access-envelopes
+├   ├ /blog/anthropic-enterprise-frontier-safeguards
+├   └ [+15 more paths]
+├ ○ /catalog                                            743 B         103 kB
+├ ○ /catalog/changed                                    171 B         103 kB
+├ ○ /catalog/deprecations                               171 B         103 kB
+├ ○ /colophon                                           171 B         103 kB
+├ ○ /data                                               171 B         103 kB
+├ ○ /frontier                                           171 B         103 kB
+├ ○ /impossible-routine                                 171 B         103 kB
+├ ● /impossible-routine/[slug]                          171 B         103 kB
+├   ├ /impossible-routine/using-a-computer
+├   ├ /impossible-routine/video-with-sound
+├   ├ /impossible-routine/machine-checked-proofs
+├   └ [+24 more paths]
+├ ○ /learn                                              171 B         103 kB
+├ ● /learn/[slug]                                       171 B         103 kB
+├   ├ /learn/ai-and-the-law
+├   ├ /learn/ai-and-work
+├   ├ /learn/getting-good-answers
+├   └ [+35 more paths]
+├ ○ /sitemap.xml                                        171 B         103 kB
+├ ○ /tools                                              171 B         103 kB
+├ ● /tools/[slug]                                       171 B         103 kB
+├   ├ /tools/aider
+├   ├ /tools/argilla
+├   ├ /tools/axolotl
+├   └ [+32 more paths]
+├ ○ /tutorials                                          171 B         103 kB
+├ ● /tutorials/[slug]                                   171 B         103 kB
+├   ├ /tutorials/browser-embeddings-no-server
+├   ├ /tutorials/chat-template-is-not-the-model
+├   ├ /tutorials/model-file-header-range-requests
+├   └ /tutorials/openrouter-catalog-watch
+├ ○ /wiki                                               171 B         103 kB
+└ ● /wiki/[kind]/[slug]                                 171 B         103 kB
+    ├ /wiki/concept/ai-winter
+    ├ /wiki/tool/aider
+    ├ /wiki/org/aion-labs
+    └ [+551 more paths]
++ First Load JS shared by all                          103 kB
+  ├ chunks/255-cf15ac3efcf391d6.js                    46.5 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js               54.2 kB
+  └ other shared chunks (total)                       1.99 kB
+
+
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses generateStaticParams)
+
