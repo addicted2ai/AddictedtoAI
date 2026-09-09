@@ -123,4 +123,48 @@ merges), and independent of B1's files except one comment line in
 
 ## Results (appended after both runs; sources named)
 
-(pending)
+### The two runs (appended 22:23, before either judge reported)
+
+Same brief (sha256 `4DCBAD94625827CD3679DA08D76D397C7EFFF3B3B7C03E7C1435B8B147EA8197`,
+quote verifier 4 of 4 verbatim against `d75275c`), same base `96e15fa`,
+sequential, machine measured quiet before each dispatch (zero codex exec
+processes; the only other codex.exe was the wedged 2026-09-07 app-server pid
+38088, not an exec session). Times are the launcher's clock reads; tokens are
+the last `token_count` event of the one rollout naming each worktree.
+
+| | medium | max | max ÷ medium |
+|---|---|---|---|
+| dispatched → exited | 21:44:08 → ~21:51:08, **7 min** | 21:51:22 → ~22:19:13, **28 min** | **4.0x** |
+| commit | `f05cfb6` (21:50) | `8abe800` (22:20:25) | |
+| files / lines | 3 files, +59 −22 | 3 files, +84 −23 | |
+| `portability.test.mjs` lines changed | 67 | 93 | |
+| input_tokens | 2,809,319 | 18,332,786 | 6.5x |
+| cached_input_tokens | 2,674,432 | 17,855,232 | 6.7x |
+| cache_write_input_tokens | 0 | 0 | |
+| output_tokens | 16,231 | 70,102 | 4.3x |
+| reasoning_output_tokens | 6,281 | 43,023 | **6.9x** |
+| total_tokens | 2,825,550 | 18,402,888 | 6.5x |
+
+Sources: `rollout-2026-09-08T21-44-06-01a08444-….jsonl` (medium) and
+`rollout-2026-09-08T21-51-20-01a0844a-….jsonl` (max) under
+`~/.codex/sessions/2026/09/08/`, read by Luna-Boss-2's `f6-exp-tokens.mjs`
+(one match each, so attribution is unambiguous); transcripts
+`f6-exp-medium.log` and `f6-exp-max.log` in its scratchpad. Both workers
+touched only the three permitted files and left task 22's `enabled: false`
+half alone; both report their five mutation proofs red — the workers' own
+claims, which the judges verify.
+
+Scored against the pre-registration, by the coordinator before the judges
+were dispatched and adopted here as written: **H1 is FALSIFIED as written**
+(predicted a wall-clock ratio between 1.0 and 2.0; measured 4.0). **H2 holds
+in direction** (total tokens 6.5x exceed the 4.0x clock ratio; reasoning
+6.9x) **and fails on its "output tokens close" clause** (4.3x is not close).
+n = 1, one task shape. Caution recorded before any verdict: the diffs differ
+in size (93 against 67 changed test lines) and more is not better; the
+judges are the instrument for quality and are not told which is which. The
+make-judges script prints the mapping, so the architect knew it before the
+verdicts; the judges did not, and the decision rule is mechanical.
+
+### The judges
+
+(pending — judge 1 dispatched 22:22 at max; judge 2 after it exits)
