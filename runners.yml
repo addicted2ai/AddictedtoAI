@@ -152,6 +152,13 @@ runners:
     roles: [author, reviewer]
     model: gpt-5.6-luna
     harness: codex-cli
+    # The effort rung this entry dispatches at, declared so the ledger can
+    # attribute an outcome to a rung instead of to a runner id that merely
+    # implies one. It is DESCRIPTIVE: the value below must match the
+    # `model_reasoning_effort` in this entry's own command, and changing it
+    # changes no dispatch. Which entry the Desk SELECTS is a separate decision
+    # and lives in `job_types`/`enabled`, not here.
+    effort: max
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="max" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
@@ -252,6 +259,7 @@ runners:
     job_types: [repair, interpret]
     model: gpt-5.6-luna
     harness: codex-cli
+    effort: medium
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="medium" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
@@ -322,6 +330,7 @@ runners:
     roles: [author, reviewer]
     model: gpt-5.6-luna
     harness: codex-cli
+    effort: high
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="high" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
@@ -362,6 +371,7 @@ runners:
     roles: [author, reviewer]
     model: gpt-5.6-luna
     harness: codex-cli
+    effort: xhigh
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="xhigh" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
     startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
