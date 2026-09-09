@@ -1379,6 +1379,16 @@
       ]
     },
     {
+      "name": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-vision-exp-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "DeepSeek: DeepSeek V4 Pro 0423",
       "linkable": false,
       "claimed_by": [
@@ -2444,6 +2454,16 @@
       "claimed_by": [
         {
           "id": "model/inception-mercury-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Inception: Mercury 2.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inception-mercury-2-5",
           "class": "manual"
         }
       ]
@@ -3834,6 +3854,26 @@
       "claimed_by": [
         {
           "id": "model/nex-agi-nex-n2-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nex AGI: Nex-N2.5-Mini (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nex-agi-nex-n2-5-mini-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nex AGI: Nex-N2.5-Pro (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nex-agi-nex-n2-5-pro-free",
           "class": "manual"
         }
       ]
@@ -6909,6 +6949,16 @@
       ]
     },
     {
+      "name": "Z.ai: GLM 5.2 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-2-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Z.ai: GLM 5.2 (free)",
       "linkable": false,
       "claimed_by": [
@@ -6924,6 +6974,16 @@
       "claimed_by": [
         {
           "id": "model/z-ai-glm-5-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.3 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-3-batch",
           "class": "manual"
         }
       ]

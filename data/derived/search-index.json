@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 676,
+  "count": 682,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -2399,6 +2399,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/deepseek-deepseek-v4-flash-vision-exp-batch",
+      "t": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-flash-vision-exp-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/deepseek-deepseek-v4-pro",
       "t": "DeepSeek: DeepSeek V4 Pro 0423",
       "k": "entry",
@@ -2941,6 +2951,16 @@
       "d": "model",
       "s": "active",
       "i": "model/inception-mercury-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inception-mercury-2-5",
+      "t": "Inception: Mercury 2.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inception-mercury-2-5",
       "a": [],
       "b": true
     },
@@ -3714,11 +3734,31 @@
       "b": true
     },
     {
+      "u": "/wiki/model/nex-agi-nex-n2-5-mini-free",
+      "t": "Nex AGI: Nex-N2.5-Mini (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nex-agi-nex-n2-5-mini-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nex-agi-nex-n2-5-pro-free",
+      "t": "Nex AGI: Nex-N2.5-Pro (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nex-agi-nex-n2-5-pro-free",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/nex-agi-nex-n2-mini",
       "t": "Nex AGI: Nex-N2-Mini",
       "k": "entry",
       "d": "model",
-      "s": "deprecated",
+      "s": "active",
       "i": "model/nex-agi-nex-n2-mini",
       "a": [],
       "b": true
@@ -3728,7 +3768,7 @@
       "t": "Nex AGI: Nex-N2-Pro",
       "k": "entry",
       "d": "model",
-      "s": "deprecated",
+      "s": "active",
       "i": "model/nex-agi-nex-n2-pro",
       "a": [],
       "b": true
@@ -5979,7 +6019,7 @@
       "t": "Z.ai: GLM 4.5V",
       "k": "entry",
       "d": "model",
-      "s": "deprecated",
+      "s": "active",
       "i": "model/z-ai-glm-4-5v",
       "a": [],
       "b": true
@@ -6055,6 +6095,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/z-ai-glm-5-2-batch",
+      "t": "Z.ai: GLM 5.2 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-2-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/z-ai-glm-5-2-free",
       "t": "Z.ai: GLM 5.2 (free)",
       "k": "entry",
@@ -6071,6 +6121,16 @@
       "d": "model",
       "s": "active",
       "i": "model/z-ai-glm-5-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-3-batch",
+      "t": "Z.ai: GLM 5.3 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-3-batch",
       "a": [],
       "b": true
     },

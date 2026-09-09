@@ -30,7 +30,7 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-01", event: deprecated, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: [ { date: "2026-09-01", event: deprecated, source_url: https://openrouter.ai/api/v1/models }, { date: "2026-09-09", event: retired, source_url: https://openrouter.ai/api/v1/models } ]
 mentions: []
 domains_seeded:
   - image

@@ -349,6 +349,11 @@
     "entry_id": "model/deepseek-deepseek-v4-flash-vision-exp",
     "path": "content/wiki/model/deepseek-deepseek-v4-flash-vision-exp.md"
   },
+  "deepseek/deepseek-v4-flash-vision-exp:batch": {
+    "date": "2026-09-09",
+    "entry_id": "model/deepseek-deepseek-v4-flash-vision-exp-batch",
+    "path": "content/wiki/model/deepseek-deepseek-v4-flash-vision-exp-batch.md"
+  },
   "deepseek/deepseek-v4-pro": {
     "date": "2026-08-28",
     "entry_id": "model/deepseek-deepseek-v4-pro",
@@ -608,6 +613,11 @@
     "date": "2026-08-28",
     "entry_id": "model/inception-mercury-2",
     "path": "content/wiki/model/inception-mercury-2.md"
+  },
+  "inception/mercury-2.5": {
+    "date": "2026-09-09",
+    "entry_id": "model/inception-mercury-2-5",
+    "path": "content/wiki/model/inception-mercury-2-5.md"
   },
   "inception/mercury-2.5-preview": {
     "date": "2026-09-02",
@@ -988,6 +998,16 @@
     "date": "2026-08-28",
     "entry_id": "model/nex-agi-nex-n2-pro",
     "path": "content/wiki/model/nex-agi-nex-n2-pro.md"
+  },
+  "nex-agi/nex-n2.5-mini:free": {
+    "date": "2026-09-09",
+    "entry_id": "model/nex-agi-nex-n2-5-mini-free",
+    "path": "content/wiki/model/nex-agi-nex-n2-5-mini-free.md"
+  },
+  "nex-agi/nex-n2.5-pro:free": {
+    "date": "2026-09-09",
+    "entry_id": "model/nex-agi-nex-n2-5-pro-free",
+    "path": "content/wiki/model/nex-agi-nex-n2-5-pro-free.md"
   },
   "nousresearch/hermes-3-llama-3.1-405b": {
     "date": "2026-08-28",
@@ -2134,6 +2154,11 @@
     "entry_id": "model/z-ai-glm-5-2",
     "path": "content/wiki/model/z-ai-glm-5-2.md"
   },
+  "z-ai/glm-5.2:batch": {
+    "date": "2026-09-09",
+    "entry_id": "model/z-ai-glm-5-2-batch",
+    "path": "content/wiki/model/z-ai-glm-5-2-batch.md"
+  },
   "z-ai/glm-5.2:free": {
     "date": "2026-08-28",
     "entry_id": "model/z-ai-glm-5-2-free",
@@ -2153,6 +2178,11 @@
     "date": "2026-08-29",
     "entry_id": "model/z-ai-glm-5-3-flash-batch",
     "path": "content/wiki/model/z-ai-glm-5-3-flash-batch.md"
+  },
+  "z-ai/glm-5.3:batch": {
+    "date": "2026-09-09",
+    "entry_id": "model/z-ai-glm-5-3-batch",
+    "path": "content/wiki/model/z-ai-glm-5-3-batch.md"
   },
   "z-ai/glm-5v-turbo": {
     "date": "2026-08-28",

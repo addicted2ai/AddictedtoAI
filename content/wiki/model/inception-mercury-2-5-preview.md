@@ -95,6 +95,9 @@ timeline:
   - date: "2026-09-02"
     event: "the OpenRouter change feed records the row's arrival"
     source_url: "https://openrouter.ai/api/v1/models"
+  - date: "2026-09-09"
+    event: retired
+    source_url: https://openrouter.ai/api/v1/models
 mentions:
   - model/inception-mercury-2
   - model/openai-gpt-5-6-luna

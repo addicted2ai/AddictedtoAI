@@ -1,14 +1,14 @@
 ---
-id: model/z-ai-glm-4-5v
+id: model/nex-agi-nex-n2-5-mini-free
 kind: model
-display_name: "Z.ai: GLM 4.5V"
+display_name: "Nex AGI: Nex-N2.5-Mini (free)"
 status: active
 maintenance: living
 aliases:
-  - name: "Z.ai: GLM 4.5V"
+  - name: "Nex AGI: Nex-N2.5-Mini (free)"
     class: manual
 feeds:
-  openrouter-models: z-ai/glm-4.5v
+  openrouter-models: nex-agi/nex-n2.5-mini:free
 facts:
   - field: price_input
     source: feed
@@ -30,17 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline:
-  - date: "2026-08-29"
-    event: active
-    source_url: "https://openrouter.ai/api/v1/models"
-  - date: "2026-09-02"
-    event: deprecated
-    source_url: https://openrouter.ai/api/v1/models
-  - date: "2026-09-09"
-    event: active
-    source_url: https://openrouter.ai/api/v1/models
+timeline: [ { date: "2026-09-09", event: arrived, source_url: https://openrouter.ai/api/v1/models } ]
 mentions: []
-domains_seeded:
-  - image
 ---

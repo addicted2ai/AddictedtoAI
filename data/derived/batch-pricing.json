@@ -1,5 +1,5 @@
 {
-  "generated_on": "2026-09-08",
+  "generated_on": "2026-09-09",
   "provider_count": 12,
   "providers": [
     {
@@ -7,7 +7,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Anthropic: Claude Fable 5 (batch)",
             "prompt": "0.000005",
@@ -24,7 +24,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00005",
             "display_name": "Anthropic: Claude Fable 5",
             "prompt": "0.00001",
@@ -33,7 +33,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Anthropic: Claude Fable 5.1 (batch)",
             "prompt": "0.000005",
@@ -50,7 +50,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00005",
             "display_name": "Anthropic: Claude Fable 5.1",
             "prompt": "0.00001",
@@ -59,7 +59,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000025",
             "display_name": "Anthropic: Claude Haiku 4.5 (batch)",
             "prompt": "0.0000005",
@@ -76,7 +76,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "Anthropic: Claude Haiku 4.5",
             "prompt": "0.000001",
@@ -85,7 +85,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000375",
             "display_name": "Anthropic: Claude Opus 4.1 (batch)",
             "prompt": "0.0000075",
@@ -102,7 +102,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000075",
             "display_name": "Anthropic: Claude Opus 4.1",
             "prompt": "0.000015",
@@ -111,7 +111,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000125",
             "display_name": "Anthropic: Claude Opus 4.5 (batch)",
             "prompt": "0.0000025",
@@ -128,7 +128,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Anthropic: Claude Opus 4.5",
             "prompt": "0.000005",
@@ -137,7 +137,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000125",
             "display_name": "Anthropic: Claude Opus 4.6 (batch)",
             "prompt": "0.0000025",
@@ -154,7 +154,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Anthropic: Claude Opus 4.6",
             "prompt": "0.000005",
@@ -163,7 +163,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000125",
             "display_name": "Anthropic: Claude Opus 4.7 (batch)",
             "prompt": "0.0000025",
@@ -180,7 +180,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Anthropic: Claude Opus 4.7",
             "prompt": "0.000005",
@@ -189,7 +189,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000125",
             "display_name": "Anthropic: Claude Opus 4.8 (batch)",
             "prompt": "0.0000025",
@@ -206,7 +206,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Anthropic: Claude Opus 4.8",
             "prompt": "0.000005",
@@ -215,7 +215,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000125",
             "display_name": "Claude Opus 5 (batch)",
             "prompt": "0.0000025",
@@ -232,7 +232,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "Claude Opus 5",
             "prompt": "0.000005",
@@ -241,7 +241,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000075",
             "display_name": "Anthropic: Claude Sonnet 4.5 (batch)",
             "prompt": "0.0000015",
@@ -258,7 +258,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "Anthropic: Claude Sonnet 4.5",
             "prompt": "0.000003",
@@ -267,7 +267,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000075",
             "display_name": "Anthropic: Claude Sonnet 4.6 (batch)",
             "prompt": "0.0000015",
@@ -284,7 +284,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "Anthropic: Claude Sonnet 4.6",
             "prompt": "0.000003",
@@ -293,7 +293,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "Anthropic: Claude Sonnet 5 (batch)",
             "prompt": "0.000001",
@@ -310,7 +310,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "Anthropic: Claude Sonnet 5",
             "prompt": "0.000002",
@@ -321,28 +321,28 @@
       "provider": "anthropic"
     },
     {
-      "model_count": 2,
+      "model_count": 3,
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
-            "completion": "0.00000028",
+            "as_of": "2026-09-09",
+            "completion": "0.00000033",
             "display_name": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
-            "prompt": "0.00000014",
+            "prompt": "0.00000011",
             "row_id": "deepseek/deepseek-v4-flash-0731:batch"
           },
           "model_id": "deepseek/deepseek-v4-flash-0731",
           "provider": "deepseek",
           "ratios": {
-            "completion": 1.55555555555556,
-            "prompt": 2.15384615384615
+            "completion": 1.83333333333333,
+            "prompt": 1.69230769230769
           },
           "savings": {
-            "completion": -0.55555555555556,
-            "prompt": -1.15384615384615
+            "completion": -0.83333333333333,
+            "prompt": -0.69230769230769
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000018",
             "display_name": "DeepSeek: DeepSeek V4 Flash 0731",
             "prompt": "0.000000065",
@@ -351,27 +351,53 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
-            "completion": "0.00000396",
+            "as_of": "2026-09-09",
+            "completion": "0.00000033",
+            "display_name": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
+            "prompt": "0.00000011",
+            "row_id": "deepseek/deepseek-v4-flash-vision-exp:batch"
+          },
+          "model_id": "deepseek/deepseek-v4-flash-vision-exp",
+          "provider": "deepseek",
+          "ratios": {
+            "completion": 0.5,
+            "prompt": 0.5
+          },
+          "savings": {
+            "completion": 0.5,
+            "prompt": 0.5
+          },
+          "synchronous": {
+            "as_of": "2026-09-09",
+            "completion": "0.00000066",
+            "display_name": "DeepSeek: DeepSeek V4 Flash Vision Exp",
+            "prompt": "0.00000022",
+            "row_id": "deepseek/deepseek-v4-flash-vision-exp"
+          }
+        },
+        {
+          "batch": {
+            "as_of": "2026-09-09",
+            "completion": "0.00000198",
             "display_name": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
-            "prompt": "0.00000132",
+            "prompt": "0.00000066",
             "row_id": "deepseek/deepseek-v4-pro-0813:batch"
           },
           "model_id": "deepseek/deepseek-v4-pro-0813",
           "provider": "deepseek",
           "ratios": {
-            "completion": 1.25786163522013,
-            "prompt": 1.25786163522013
+            "completion": 1.13895216400911,
+            "prompt": 1.13895216400911
           },
           "savings": {
-            "completion": -0.25786163522013,
-            "prompt": -0.25786163522013
+            "completion": -0.13895216400911,
+            "prompt": -0.13895216400911
           },
           "synchronous": {
-            "as_of": "2026-09-08",
-            "completion": "0.0000031482",
+            "as_of": "2026-09-09",
+            "completion": "0.00000173844",
             "display_name": "DeepSeek: DeepSeek V4 Pro 0813",
-            "prompt": "0.0000010494",
+            "prompt": "0.00000057948",
             "row_id": "deepseek/deepseek-v4-pro-0813"
           }
         }
@@ -383,7 +409,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000125",
             "display_name": "Google: Gemini 2.5 Flash (batch)",
             "prompt": "0.00000015",
@@ -400,7 +426,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000025",
             "display_name": "Google: Gemini 2.5 Flash",
             "prompt": "0.0000003",
@@ -409,7 +435,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000002",
             "display_name": "Google: Gemini 2.5 Flash Lite (batch)",
             "prompt": "0.00000005",
@@ -426,7 +452,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000004",
             "display_name": "Google: Gemini 2.5 Flash Lite",
             "prompt": "0.0000001",
@@ -435,7 +461,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "Google: Gemini 2.5 Pro (batch)",
             "prompt": "0.000000625",
@@ -452,7 +478,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "Google: Gemini 2.5 Pro",
             "prompt": "0.00000125",
@@ -461,7 +487,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000015",
             "display_name": "Google: Gemini 3 Flash Preview (batch)",
             "prompt": "0.00000025",
@@ -478,7 +504,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000003",
             "display_name": "Google: Gemini 3 Flash Preview",
             "prompt": "0.0000005",
@@ -487,7 +513,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000075",
             "display_name": "Google: Gemini 3.1 Flash Lite (batch)",
             "prompt": "0.000000125",
@@ -504,7 +530,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000015",
             "display_name": "Google: Gemini 3.1 Flash Lite",
             "prompt": "0.00000025",
@@ -513,7 +539,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000006",
             "display_name": "Google: Gemini 3.1 Pro Preview (batch)",
             "prompt": "0.000001",
@@ -530,7 +556,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000012",
             "display_name": "Google: Gemini 3.1 Pro Preview",
             "prompt": "0.000002",
@@ -539,7 +565,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000045",
             "display_name": "Google: Gemini 3.5 Flash (batch)",
             "prompt": "0.00000075",
@@ -556,7 +582,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000009",
             "display_name": "Google: Gemini 3.5 Flash",
             "prompt": "0.0000015",
@@ -565,7 +591,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000125",
             "display_name": "Google: Gemini 3.5 Flash Lite (batch)",
             "prompt": "0.00000015",
@@ -582,7 +608,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000025",
             "display_name": "Google: Gemini 3.5 Flash Lite",
             "prompt": "0.0000003",
@@ -591,7 +617,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000001875",
             "display_name": "Google: Gemini 3.6 Flash (batch)",
             "prompt": "0.000000375",
@@ -608,7 +634,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000375",
             "display_name": "Google: Gemini 3.6 Flash",
             "prompt": "0.00000075",
@@ -617,7 +643,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000001875",
             "display_name": "Google: Gemini 3.7 Flash (batch)",
             "prompt": "0.000000375",
@@ -634,7 +660,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000375",
             "display_name": "Google: Gemini 3.7 Flash",
             "prompt": "0.00000075",
@@ -643,7 +669,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000001875",
             "display_name": "Google: Gemini 3.8 Flash (batch)",
             "prompt": "0.000000375",
@@ -660,7 +686,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000375",
             "display_name": "Google: Gemini 3.8 Flash",
             "prompt": "0.00000075",
@@ -669,7 +695,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000097",
             "display_name": "Google: Gemma 4 31B (batch)",
             "prompt": "0.00000039",
@@ -686,7 +712,7 @@
             "prompt": -3.33333333333333
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000034",
             "display_name": "Google: Gemma 4 31B",
             "prompt": "0.00000009",
@@ -701,24 +727,24 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
-            "completion": "0.0000015",
+            "as_of": "2026-09-09",
+            "completion": "0.00000075",
             "display_name": "Meta: Muse Glimmer 30B (batch)",
-            "prompt": "0.00000035",
+            "prompt": "0.000000175",
             "row_id": "meta/muse-glimmer-30b:batch"
           },
           "model_id": "meta/muse-glimmer-30b",
           "provider": "meta",
           "ratios": {
-            "completion": 1.36363636363636,
-            "prompt": 1.16666666666667
+            "completion": 0.681818181818182,
+            "prompt": 0.583333333333333
           },
           "savings": {
-            "completion": -0.36363636363636,
-            "prompt": -0.16666666666667
+            "completion": 0.318181818181818,
+            "prompt": 0.416666666666667
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000011",
             "display_name": "Meta: Muse Glimmer 30B",
             "prompt": "0.0000003",
@@ -733,7 +759,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000012",
             "display_name": "MiniMax: MiniMax M3 (batch)",
             "prompt": "0.0000003",
@@ -750,7 +776,7 @@
             "prompt": 0
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000012",
             "display_name": "MiniMax: MiniMax M3",
             "prompt": "0.0000003",
@@ -765,7 +791,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000375",
             "display_name": "Mistral: Mistral Medium 3.5 (batch)",
             "prompt": "0.00000075",
@@ -782,7 +808,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000075",
             "display_name": "Mistral: Mistral Medium 3.5",
             "prompt": "0.0000015",
@@ -797,7 +823,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "MoonshotAI: Kimi K3 (batch)",
             "prompt": "0.000003",
@@ -814,7 +840,7 @@
             "prompt": 0
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "MoonshotAI: Kimi K3",
             "prompt": "0.000003",
@@ -829,7 +855,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000075",
             "display_name": "OpenAI: GPT-3.5 Turbo (batch)",
             "prompt": "0.00000025",
@@ -846,7 +872,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000015",
             "display_name": "OpenAI: GPT-3.5 Turbo",
             "prompt": "0.0000005",
@@ -855,7 +881,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "OpenAI: GPT-4 Turbo (batch)",
             "prompt": "0.000005",
@@ -872,7 +898,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00003",
             "display_name": "OpenAI: GPT-4 Turbo",
             "prompt": "0.00001",
@@ -881,7 +907,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000004",
             "display_name": "OpenAI: GPT-4.1 (batch)",
             "prompt": "0.000001",
@@ -898,7 +924,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000008",
             "display_name": "OpenAI: GPT-4.1",
             "prompt": "0.000002",
@@ -907,7 +933,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000008",
             "display_name": "OpenAI: GPT-4.1 Mini (batch)",
             "prompt": "0.0000002",
@@ -924,7 +950,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000016",
             "display_name": "OpenAI: GPT-4.1 Mini",
             "prompt": "0.0000004",
@@ -933,7 +959,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000002",
             "display_name": "OpenAI: GPT-4.1 Nano (batch)",
             "prompt": "0.00000005",
@@ -950,7 +976,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000004",
             "display_name": "OpenAI: GPT-4.1 Nano",
             "prompt": "0.0000001",
@@ -959,7 +985,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "OpenAI: GPT-4o (batch)",
             "prompt": "0.00000125",
@@ -976,7 +1002,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "OpenAI: GPT-4o",
             "prompt": "0.0000025",
@@ -985,7 +1011,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000003",
             "display_name": "OpenAI: GPT-4o-mini (batch)",
             "prompt": "0.000000075",
@@ -1002,7 +1028,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000006",
             "display_name": "OpenAI: GPT-4o-mini",
             "prompt": "0.00000015",
@@ -1011,7 +1037,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "OpenAI: GPT-5 (batch)",
             "prompt": "0.000000625",
@@ -1028,7 +1054,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "OpenAI: GPT-5",
             "prompt": "0.00000125",
@@ -1037,7 +1063,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000001",
             "display_name": "OpenAI: GPT-5 Mini (batch)",
             "prompt": "0.000000125",
@@ -1054,7 +1080,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000002",
             "display_name": "OpenAI: GPT-5 Mini",
             "prompt": "0.00000025",
@@ -1063,7 +1089,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000002",
             "display_name": "OpenAI: GPT-5 Nano (batch)",
             "prompt": "0.000000025",
@@ -1080,7 +1106,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000004",
             "display_name": "OpenAI: GPT-5 Nano",
             "prompt": "0.00000005",
@@ -1089,7 +1115,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00006",
             "display_name": "OpenAI: GPT-5 Pro (batch)",
             "prompt": "0.0000075",
@@ -1106,7 +1132,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00012",
             "display_name": "OpenAI: GPT-5 Pro",
             "prompt": "0.000015",
@@ -1115,7 +1141,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "OpenAI: GPT-5.1 (batch)",
             "prompt": "0.000000625",
@@ -1132,7 +1158,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "OpenAI: GPT-5.1",
             "prompt": "0.00000125",
@@ -1141,7 +1167,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000007",
             "display_name": "OpenAI: GPT-5.2 (batch)",
             "prompt": "0.000000875",
@@ -1158,7 +1184,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000014",
             "display_name": "OpenAI: GPT-5.2",
             "prompt": "0.00000175",
@@ -1167,7 +1193,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000084",
             "display_name": "OpenAI: GPT-5.2 Pro (batch)",
             "prompt": "0.0000105",
@@ -1184,7 +1210,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000168",
             "display_name": "OpenAI: GPT-5.2 Pro",
             "prompt": "0.000021",
@@ -1193,7 +1219,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000075",
             "display_name": "OpenAI: GPT-5.4 (batch)",
             "prompt": "0.00000125",
@@ -1210,7 +1236,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "OpenAI: GPT-5.4",
             "prompt": "0.0000025",
@@ -1219,7 +1245,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000225",
             "display_name": "OpenAI: GPT-5.4 Mini (batch)",
             "prompt": "0.000000375",
@@ -1236,7 +1262,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000045",
             "display_name": "OpenAI: GPT-5.4 Mini",
             "prompt": "0.00000075",
@@ -1245,7 +1271,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000000625",
             "display_name": "OpenAI: GPT-5.4 Nano (batch)",
             "prompt": "0.0000001",
@@ -1262,7 +1288,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000125",
             "display_name": "OpenAI: GPT-5.4 Nano",
             "prompt": "0.0000002",
@@ -1271,7 +1297,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00009",
             "display_name": "OpenAI: GPT-5.4 Pro (batch)",
             "prompt": "0.000015",
@@ -1288,7 +1314,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00018",
             "display_name": "OpenAI: GPT-5.4 Pro",
             "prompt": "0.00003",
@@ -1297,7 +1323,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000015",
             "display_name": "OpenAI: GPT-5.5 (batch)",
             "prompt": "0.0000025",
@@ -1314,7 +1340,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00003",
             "display_name": "OpenAI: GPT-5.5",
             "prompt": "0.000005",
@@ -1323,7 +1349,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00009",
             "display_name": "OpenAI: GPT-5.5 Pro (batch)",
             "prompt": "0.000015",
@@ -1340,7 +1366,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00018",
             "display_name": "OpenAI: GPT-5.5 Pro",
             "prompt": "0.00003",
@@ -1349,7 +1375,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000006",
             "display_name": "OpenAI: GPT-5.6 Luna (batch)",
             "prompt": "0.0000001",
@@ -1366,7 +1392,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000012",
             "display_name": "OpenAI: GPT-5.6 Luna",
             "prompt": "0.0000002",
@@ -1375,7 +1401,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000006",
             "display_name": "OpenAI: GPT-5.6 Luna Pro (batch)",
             "prompt": "0.0000001",
@@ -1392,7 +1418,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000012",
             "display_name": "OpenAI: GPT-5.6 Luna Pro",
             "prompt": "0.0000002",
@@ -1401,7 +1427,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "OpenAI: GPT-5.6 Sol (batch)",
             "prompt": "0.000001",
@@ -1418,7 +1444,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "OpenAI: GPT-5.6 Sol",
             "prompt": "0.000002",
@@ -1427,7 +1453,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000005",
             "display_name": "OpenAI: GPT-5.6 Sol Pro (batch)",
             "prompt": "0.000001",
@@ -1444,7 +1470,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00001",
             "display_name": "OpenAI: GPT-5.6 Sol Pro",
             "prompt": "0.000002",
@@ -1453,7 +1479,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000006",
             "display_name": "OpenAI: GPT-5.6 Terra (batch)",
             "prompt": "0.000001",
@@ -1470,7 +1496,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000012",
             "display_name": "OpenAI: GPT-5.6 Terra",
             "prompt": "0.000002",
@@ -1479,7 +1505,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000006",
             "display_name": "OpenAI: GPT-5.6 Terra Pro (batch)",
             "prompt": "0.000001",
@@ -1496,7 +1522,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000012",
             "display_name": "OpenAI: GPT-5.6 Terra Pro",
             "prompt": "0.000002",
@@ -1505,7 +1531,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "OpenAI: GPT-6 Astra (batch)",
             "prompt": "0.000005",
@@ -1522,7 +1548,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00005",
             "display_name": "OpenAI: GPT-6 Astra",
             "prompt": "0.00001",
@@ -1531,7 +1557,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000025",
             "display_name": "OpenAI: GPT-6 Astra Pro (batch)",
             "prompt": "0.000005",
@@ -1548,7 +1574,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00005",
             "display_name": "OpenAI: GPT-6 Astra Pro",
             "prompt": "0.00001",
@@ -1557,7 +1583,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000006",
             "display_name": "OpenAI: gpt-oss-120b (batch)",
             "prompt": "0.00000015",
@@ -1574,7 +1600,7 @@
             "prompt": -3.05405405405405
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000017",
             "display_name": "OpenAI: gpt-oss-120b",
             "prompt": "0.000000037",
@@ -1583,7 +1609,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000002",
             "display_name": "OpenAI: gpt-oss-20b (batch)",
             "prompt": "0.00000005",
@@ -1600,7 +1626,7 @@
             "prompt": -0.66666666666667
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000013",
             "display_name": "OpenAI: gpt-oss-20b",
             "prompt": "0.00000003",
@@ -1609,7 +1635,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000004",
             "display_name": "OpenAI: o3 (batch)",
             "prompt": "0.000001",
@@ -1626,7 +1652,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000008",
             "display_name": "OpenAI: o3",
             "prompt": "0.000002",
@@ -1635,7 +1661,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000022",
             "display_name": "OpenAI: o3 Mini (batch)",
             "prompt": "0.00000055",
@@ -1652,7 +1678,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000044",
             "display_name": "OpenAI: o3 Mini",
             "prompt": "0.0000011",
@@ -1661,7 +1687,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000022",
             "display_name": "OpenAI: o4 Mini (batch)",
             "prompt": "0.00000055",
@@ -1678,7 +1704,7 @@
             "prompt": 0.5
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000044",
             "display_name": "OpenAI: o4 Mini",
             "prompt": "0.0000011",
@@ -1693,7 +1719,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000025",
             "display_name": "Qwen: Qwen3.5-9B (batch)",
             "prompt": "0.00000017",
@@ -1710,7 +1736,7 @@
             "prompt": -0.7
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000015",
             "display_name": "Qwen: Qwen3.5-9B",
             "prompt": "0.0000001",
@@ -1719,7 +1745,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000006",
             "display_name": "Qwen: Qwen3.8 2.4T A95B (batch)",
             "prompt": "0.000002",
@@ -1736,7 +1762,7 @@
             "prompt": 0
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000006",
             "display_name": "Qwen: Qwen3.8 2.4T A95B",
             "prompt": "0.000002",
@@ -1751,7 +1777,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000405",
             "display_name": "Thinking Machines: Inkling (batch)",
             "prompt": "0.000001",
@@ -1768,7 +1794,7 @@
             "prompt": 0
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000405",
             "display_name": "Thinking Machines: Inkling",
             "prompt": "0.000001",
@@ -1777,7 +1803,7 @@
         },
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000012",
             "display_name": "Thinking Machines: Inkling Small (batch)",
             "prompt": "0.0000005",
@@ -1794,7 +1820,7 @@
             "prompt": -0.11111111111111
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000012",
             "display_name": "Thinking Machines: Inkling Small",
             "prompt": "0.00000045",
@@ -1809,7 +1835,7 @@
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.000002",
             "display_name": "SpaceXAI: Grok 4.3 (batch)",
             "prompt": "0.000001",
@@ -1826,7 +1852,7 @@
             "prompt": 0.2
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.0000025",
             "display_name": "SpaceXAI: Grok 4.3",
             "prompt": "0.00000125",
@@ -1837,28 +1863,80 @@
       "provider": "x-ai"
     },
     {
-      "model_count": 1,
+      "model_count": 3,
       "models": [
         {
           "batch": {
-            "as_of": "2026-09-08",
-            "completion": "0.0000005",
+            "as_of": "2026-09-09",
+            "completion": "0.0000022",
+            "display_name": "Z.ai: GLM 5.2 (batch)",
+            "prompt": "0.0000007",
+            "row_id": "z-ai/glm-5.2:batch"
+          },
+          "model_id": "z-ai/glm-5.2",
+          "provider": "z-ai",
+          "ratios": {
+            "completion": 0.72463768115942,
+            "prompt": 0.72463768115942
+          },
+          "savings": {
+            "completion": 0.27536231884058,
+            "prompt": 0.27536231884058
+          },
+          "synchronous": {
+            "as_of": "2026-09-09",
+            "completion": "0.000003036",
+            "display_name": "Z.ai: GLM 5.2",
+            "prompt": "0.000000966",
+            "row_id": "z-ai/glm-5.2"
+          }
+        },
+        {
+          "batch": {
+            "as_of": "2026-09-09",
+            "completion": "0.0000022",
+            "display_name": "Z.ai: GLM 5.3 (batch)",
+            "prompt": "0.0000007",
+            "row_id": "z-ai/glm-5.3:batch"
+          },
+          "model_id": "z-ai/glm-5.3",
+          "provider": "z-ai",
+          "ratios": {
+            "completion": 0.5,
+            "prompt": 0.5
+          },
+          "savings": {
+            "completion": 0.5,
+            "prompt": 0.5
+          },
+          "synchronous": {
+            "as_of": "2026-09-09",
+            "completion": "0.0000044",
+            "display_name": "Z.ai: GLM 5.3",
+            "prompt": "0.0000014",
+            "row_id": "z-ai/glm-5.3"
+          }
+        },
+        {
+          "batch": {
+            "as_of": "2026-09-09",
+            "completion": "0.00000025",
             "display_name": "Z.ai: GLM 5.3 Flash (batch)",
-            "prompt": "0.00000015",
+            "prompt": "0.000000075",
             "row_id": "z-ai/glm-5.3-flash:batch"
           },
           "model_id": "z-ai/glm-5.3-flash",
           "provider": "z-ai",
           "ratios": {
-            "completion": 2,
-            "prompt": 2
+            "completion": 1,
+            "prompt": 1
           },
           "savings": {
-            "completion": -1,
-            "prompt": -1
+            "completion": 0,
+            "prompt": 0
           },
           "synchronous": {
-            "as_of": "2026-09-08",
+            "as_of": "2026-09-09",
             "completion": "0.00000025",
             "display_name": "Z.ai: GLM 5.3 Flash",
             "prompt": "0.000000075",
@@ -1869,6 +1947,6 @@
       "provider": "z-ai"
     }
   ],
-  "row_count": 69,
+  "row_count": 72,
   "source": "openrouter-models"
 }
