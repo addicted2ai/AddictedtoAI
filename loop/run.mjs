@@ -1921,6 +1921,18 @@ export async function runLoop(ctx, opts = {}) {
   // permitted only after an `{ok: true}` result. The final prune still runs in
   // every case, and each cleanup failure is logged without escaping before the
   // ledger line or the records commit (addictedtoai-osru).
+  // `RESULT.md` is the executor protocol file, not job work. Remove it before
+  // asking git to remove the otherwise-clean worktree; this keeps throwaway
+  // fixtures whose ignore rules do not name the protocol file equivalent to
+  // the real repository without weakening git's refusal for actual work.
+  const resultPath = join(worktree, RESULT_FILENAME);
+  if (existsSync(resultPath)) {
+    try {
+      unlinkSync(resultPath);
+    } catch (e) {
+      ctx.log(`WORKTREE CLEANUP FAILED: could not clear ${resultPath}: ${(e && e.message) || String(e)}`);
+    }
+  }
   removeJobWorktree(ctx, worktree, ctx.worktreeCleanup ?? {});
 
   // -------------------------------------------------------------------------
