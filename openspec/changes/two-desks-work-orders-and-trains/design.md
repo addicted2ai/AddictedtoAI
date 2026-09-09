@@ -2342,3 +2342,28 @@ file (`no-change-dir-refs.test.mjs:33-47`; `specs.mjs:23`). Luna-Boss-2's
 own note on its four nils: its probe verifies BEHAVIOUR and could not have
 found any of these, which are about whether the behaviour is DEFENDED — a
 different question needing a different instrument.
+
+**B1 round 5 — authority @`d75275c`; branch `bcea121`; worker 14 minutes at
+medium; all four of REVIEW4's green mutations now red (baseline 21 → 23
+tests); reviewer 23 minutes at max.** Verdict REVISE, three findings: the new
+shortfall arm accepts any digits after `marker shortfall=` (mutating the
+shortfall to 1 leaves 23/23 green — the arm added to fix a check narrower
+than its property is itself narrower than its property, the fourth
+consecutive round of that class in this file); two assertions without the
+paired numbers (`:357`, `:375`); and the portability scan scope, EXCLUDED
+from round 6 because it is the experiment's subject and both experiment
+worktrees are staged from `96e15fa` to do it — two branches editing one file
+from one base would contaminate the measurement. Luna-Boss-2 disclosed that
+it pre-registered no hypotheses for round 5, so the round is no-data rather
+than a nil, and its own kill condition for the practice (two zero rounds)
+stands unrestarted. Round 6 dispatched 20:48 at medium, tests only. RULING
+on its review, made because rounds 4, 5 and 6 are about tests rather than
+code and each full sealed review costs about 25 minutes of max: a DELTA
+review at medium — scoped to the findings it fixes (mutated, red and
+restored), the diff-as-the-list mutation on every changed line, and the
+standing property checks; given the previous review, because it needs it.
+The rule from here: a round whose diff touches only test files and only the
+lines the previous review named gets a delta review at medium; any
+production change gets the full sealed max review; a delta reviewer's
+out-of-scope finding is a full-review trigger; the full suite on the final
+tip backstops both.

@@ -133,6 +133,18 @@ corollary: a brief's inventory is a claim with an expiry date its author
 cannot see expire; this is the quantifier obligation pointed at instruments
 and delegated to the agent reading the tree).
 
+**A delta review for a tests-only round (adopted at B1 round 6, 20:49).**
+Rounds 4, 5 and 6 of B1 were about test arms, not production code, and each
+full sealed max review cost about 25 minutes for a few changed lines. So: a
+round whose diff touches only test files and only the lines the previous
+review named gets a DELTA review at medium — the reviewer is given the
+previous review (it needs it), verifies each named finding fixed by mutation
+(red and restored), performs the diff-as-the-list mutation on every changed
+line, and runs the standing property checks. Any production change gets the
+full sealed max review; a delta reviewer's out-of-scope finding is a
+full-review trigger; and the completed full suite on the final tip backstops
+both kinds.
+
 **And the architect's own obligation before every freeze: when a task says
 "every X", enumerate the X's and confirm each one can satisfy it.** Two of
 packet A's five revisions were defects in the STANDARD, not the implementation
