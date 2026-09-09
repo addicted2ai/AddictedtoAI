@@ -698,7 +698,23 @@ the sentence that uses it.
       only file in loop/, pulse/, scripts/ and data/config.json that may name a
       model" are both wider than the enforced form, for the reason the test
       records; CLAUDE.md's sentence is the orchestrator's to correct after
-      Stage 0.
+      Stage 0. **Second enforcement gap of the same class, from B1 round 4's
+      sealed review (finding 6, verified by Luna-Boss-2):**
+      `scripts/no-change-dir-refs.test.mjs:33-47` allow-lists per FILE with a
+      blanket `match: CHANGE_DIR`, so any change-directory reference anywhere
+      in `loop/lib/specs.mjs`, `scripts/check-spec-deltas.mjs` or its test
+      passes — including the NAMED, pre-archive path
+      `openspec/changes/build-initial-site/specs/<cap>/spec.md` in
+      `specs.mjs`'s comment at `:23`. Each stated reason justifies GENERIC
+      path construction over every in-flight change, not a named one. In the
+      same packet: narrow each allow-list entry to the generic form its reason
+      describes (a template or `join` over a variable change name), so a
+      literal `openspec/changes/<name>/` in an allowed file fails; reword the
+      `:23` comment to the archive form, which is what a document that must
+      name the change writes; and plant a named path in an allow-listed
+      fixture file and require the test red, named as a mutation. Same rule
+      as the floor above: an allow-list wider than its reason is an
+      expectation file whose unlisted case is permitted but unguarded.
 - [ ] 23. `loop/lib/select.mjs` and `loop/lib/runners.mjs`: escalation moves into the
       repository and fires when the **top-ranked** candidate is refused *solely* on
       `runner:job-type`; no other refusal escalates. Implements the same

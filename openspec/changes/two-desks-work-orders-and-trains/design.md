@@ -2316,3 +2316,29 @@ rule puts re-execution on the reviewer with no author document in the middle.
 Also measured: reverting `brief.mjs:720` to its pre-packet wording goes red at
 `:376` (`pass 20, fail 1`), so task 9's arm is reached and finding 2 stays
 dissolved. Round 4 briefed from `4d86826`: the chars item alone.
+
+**B1 round 4 — authority @`4d86826`; branch `0e6b455` (19:34; `specs.mjs`
++54/−24, the budget test, and `RESULT4.md`, committed by accident because
+`.gitignore:78` is `/RESULT.md` exactly — merged as reviewed and moved into
+`evidence/reviews/stage0-packet-B1/` by one commit on main afterwards);
+worker 22.2 minutes at MEDIUM; reviewer 27.2 minutes at max, sealed from all
+three prior verdicts; hypotheses 0 of 6.** Verdict REVISE. The production
+change is correct — Luna-Boss-2's own probe prints gap 0 at every cap, cap
+800 throws `marker shortfall=53` against the live tree's 853-character
+minimum (the fixture's three-marker minimum is 833, its tight-cap arm moved
+600 → 900), and a sweep of every cap 840–1000 plus about 430 more to 60,000
+found nothing over cap and nothing that failed to throw below the minimum —
+but THE DIFF-AS-THE-LIST OBLIGATION PAID ON ITS FIRST OUTING: three
+mutations to correct code leave the suite green (`chars` set to 0; the
+inter-chunk separator dropped; `- overhead` dropped from the pending-chunk
+budget), all three reproduced by Luna-Boss-2. An author's table could never
+have reported them: the author had no reason to write a row against a line it
+got right. Round 5 (dispatched 20:07 at medium) carries those test-coverage
+items only, with the instruction that an arm going red against current code
+is a stop-and-report, not a fix to the arm. Findings 5 and 6 are
+repository-wide and routed to task 22: the portability scope already there,
+and the change-directory allow-list that permits a named path in an allowed
+file (`no-change-dir-refs.test.mjs:33-47`; `specs.mjs:23`). Luna-Boss-2's
+own note on its four nils: its probe verifies BEHAVIOUR and could not have
+found any of these, which are about whether the behaviour is DEFENDED — a
+different question needing a different instrument.
