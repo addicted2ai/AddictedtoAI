@@ -828,7 +828,7 @@ the brief under `evidence/reviews/`.
 
 ### The carry channel and the filing lint
 
-- [ ] 13. `loop/lib/verdict.mjs` and `loop/lib/carry.mjs`: `subject` becomes
+- [x] 13. `loop/lib/verdict.mjs` and `loop/lib/carry.mjs`: `subject` becomes
       **required** on a `carry:` entry; an entry without one is refused and
       reported naming the record. A finding whose subject already carries standing
       findings merges into that subject's item. **No numeric cap** is added.
@@ -887,7 +887,7 @@ the brief under `evidence/reviews/`.
       "findings accepted" without a line in `run.mjs` changing. `run.mjs` is
       outside this packet's files; the author records it in `RESULT<N>.md` and
       the architect files it at handover.
-- [ ] 14. `loop/lib/review.mjs`: the reviewer's brief documents both fields and the
+- [x] 14. `loop/lib/review.mjs`: the reviewer's brief documents both fields and the
       required subject. Implements the same requirement's brief bullet.
       **Resolved before C1's freeze (the architect's quantifier enumeration,
       2026-09-09 22:01, from the code at `2c62454`):** (i) "both fields" are
@@ -915,7 +915,7 @@ the brief under `evidence/reviews/`.
       asserts the reviewer brief documents `carry:` and matches on `/carry:/`,
       so it stays green; an assertion on the new required wording belongs in
       that test and nowhere else.
-- [ ] 15. `loop/tests/carry.test.mjs`: a subject-less entry is refused; a second
+- [x] 15. `loop/tests/carry.test.mjs`: a subject-less entry is refused; a second
       finding on a carried subject produces no second item; five entries in one
       record are all accepted. **Mutation A**: make `subject` optional again and
       confirm the refusal test fails. **Mutation B**: reinstate a cap of two and
