@@ -60,7 +60,7 @@
  * cannot, since either conjunct alone refuses the same input); both bind, so
  * both RECORDs retire here with this justification, count 24 to 22.
  *
- * Count: twenty-two records. Retired I4star and J2star by detail-line twins
+ * Count: see EXPECTED_COUNT; the number is not repeated here so it cannot drift. Retired I4star and J2star by detail-line twins
  * (see twin section): each twin asserts the printed detail for the bare form
  * (numbered false), and flipping its arm to the star form flips the detail to
  * true while status stays refusing, so the twin binds the arm and the RECORD
@@ -85,7 +85,7 @@ const SRC = readFileSync(LINTER, 'utf8');
 
 const EXPECTED_COUNT = 22;
 
-// The ordered identity of the wall. The count pin alone reports a number;
+// The identity of the wall. The count pin alone reports a number;
 // the identity pin names the thing, so a deletion is accused rather than
 // inferred. A future BIND or DELETE updates this list with its justification
 // in the same edit that updates EXPECTED_COUNT. Round 3 retires I4star and
@@ -564,7 +564,7 @@ test('records: no record is expired', () => {
 /* Check S — shape. Fail-closed: an unparsable record refuses rather than
    passing silently. Count is pinned with identity; retiring a record updates
    the count and the identity list in the same edit with justification. */
-test('records: shape holds and the count is twenty-two', () => {
+test(`records: shape holds and the count is ${EXPECTED_COUNT}`, () => {
   checkShape(RECORDS);
 });
 
@@ -729,32 +729,106 @@ test('twin E7sfx: distinct cite refuses (twin)', () => {
   });
 });
 
-/* Zone: the live wall ignores the caller override. Direct reads are tainted;
-   system reads via a stripped child are not. This mutates the override in
-   this process and restores via the system zone, which leaves direct clean
-   again (deleting straight from the override would stick tainted). */
-test('records control: live wall ignores the caller zone override', () => {
-  const parentDirect = localToday();
-  const parentSystem = systemToday();
-  assert.equal(parentSystem, parentDirect, 'with no override in this process, system and direct agree');
-  assert.equal(liveNow(), parentSystem, 'live reads the system date');
-  const systemZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+/* Zone (a): an override reaches a direct read — separable, needs no live clock.
+   Fixed instant 2026-01-01T06:30:00Z.
+   WHY this pair differs at this instant, beside the constant so the next
+   reader can tell choice from inheritance: America/Denver is UTC-7 (MST) on
+   this date, so 06:30Z reads 23:30 on 2025-12-31 there; Pacific/Kiritimati is
+   UTC+14, so the same instant reads 20:30 on 2026-01-01 there. The 21-hour gap
+   crosses the date line, so the calendar dates differ. Deterministic at every
+   hour of every day because the instant and the zones are fixed. */
+const FIXED_INSTANT_MS = Date.parse('2026-01-01T06:30:00Z');
+const FIXED_DENVER_WANT = '2025-12-31';
+const FIXED_KIRITIMATI_WANT = '2026-01-01';
+
+function fixedDateUnderZone(ms, zone) {
+  const sysZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const prev = process.env.TZ;
   try {
-    process.env.TZ = 'Pacific/Niue';
-    const directNiue = localToday();
-    const systemNiue = systemToday();
-    assert.equal(systemNiue, parentSystem, 'system date ignores the caller override');
-    assert.notEqual(directNiue, parentSystem, 'direct read is tainted, proving the override reaches direct reads');
-    assert.equal(directNiue, '2026-09-09', 'overridden direct is one day behind on this date, as measured');
-    assert.equal(liveNow(), parentSystem, 'live still reads the system date under the override');
+    process.env.TZ = zone;
+    const d = new Date(ms);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   } finally {
-    if (systemZone) process.env.TZ = systemZone;
+    if (sysZone) process.env.TZ = sysZone;
     if (prev === undefined) delete process.env.TZ;
     else process.env.TZ = prev;
   }
-  assert.equal(localToday(), parentSystem, 'restore leaves direct clean again');
-  assert.equal(systemToday(), parentSystem, 'restore leaves system clean');
+}
+
+/* Zone (b/c) instruments ordered EASTWARD (most east first). From
+   America/Denver (UTC-6 in summer, UTC-7 in winter) every wide instrument is
+   east: Kiritimati UTC+14 (20.0h ahead), Apia UTC+13 (19.0h), Tokyo UTC+9
+   (15.0h), against GMT+12 UTC-12 (6.0h), UTC 0 (6.0h), Niue UTC-11 (5.0h),
+   Midway UTC-11 (5.0h), Honolulu UTC-10 (4.0h). Two sessions reached for the
+   4-to-6h band and missed the 15-to-20h band because a different date gets
+   searched as far away and far away reaches west. The pair below are
+   complements, not alternatives: Kiritimati covers all but its own four-hour
+   hole, Etc/GMT+12 covers exactly that hole. Measured across 144 ten-minute
+   instants of 2026-09-10: 0 with no instrument, Kiritimati 120, GMT+12 24. */
+const ZONE_CANDIDATES_EASTWARD = ['Pacific/Kiritimati', 'Etc/GMT+12'];
+
+function dateInZoneNow(zone) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: zone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const get = (t) => parts.find((p) => p.type === t).value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+/* Select the first candidate whose current date differs from the system date.
+   Refuses (throws) when none differs — fail, never skip, because a skip reads
+   as a pass. Shared by (b) and (c) so a break inside turns both red. */
+function selectInstrument(candidates, systemDate, dateForZone) {
+  for (const z of candidates) {
+    if (dateForZone(z) !== systemDate) return z;
+  }
+  throw new Error(`no instrument: no candidate differs from system date ${systemDate} (fail, never skip)`);
+}
+
+test('records control: override reaches a direct read at a fixed instant (deterministic)', () => {
+  assert.equal(fixedDateUnderZone(FIXED_INSTANT_MS, 'America/Denver'), FIXED_DENVER_WANT, 'fixed instant reads prior date in Denver');
+  assert.equal(fixedDateUnderZone(FIXED_INSTANT_MS, 'Pacific/Kiritimati'), FIXED_KIRITIMATI_WANT, 'same instant reads next date in Kiritimati');
+  assert.notEqual(FIXED_DENVER_WANT, FIXED_KIRITIMATI_WANT, 'zones differ at this instant, proving an override reaches a direct read without any live clock');
+});
+
+test('records control: live wall ignores the caller override via a selected instrument', () => {
+  // This control establishes its own baseline (system) so it must not claim
+  // clean live alone: clean alone with no tainted direct is an echo. A first
+  // run cannot detect drift. It refuses to pass unless direct is shown tainted
+  // alongside live clean, proving the instrument was active.
+  const system = systemToday();
+  const instrument = selectInstrument(ZONE_CANDIDATES_EASTWARD, system, dateInZoneNow);
+  assert.ok(instrument, 'instrument selected (fail, never skip, when none differs)');
+  const sysZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const prev = process.env.TZ;
+  try {
+    process.env.TZ = instrument;
+    const direct = localToday();
+    const systemUnder = systemToday();
+    assert.notEqual(direct, system, 'direct is tainted, proving the instrument is active — without this, clean live would be an echo');
+    assert.equal(systemUnder, system, 'system ignores the caller override');
+    assert.equal(liveNow(), system, 'live still reads the system date under the override');
+  } finally {
+    if (sysZone) process.env.TZ = sysZone;
+    if (prev === undefined) delete process.env.TZ;
+    else process.env.TZ = prev;
+  }
+  assert.equal(localToday(), system, 'restore leaves direct clean again');
+  assert.equal(systemToday(), system, 'restore leaves system clean');
+});
+
+test('records control: instrument selection refuses when no candidate differs (forced)', () => {
+  // This branch cannot be reached by waiting: candidates spanning both
+  // directions always leave one available (0 in 144 measured). It ships
+  // unproved unless forced. Forcing with only the system zone (whose date
+  // equals system by definition) must refuse, and does — shown firing here.
+  const system = systemToday();
+  const sysZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  assert.throws(() => selectInstrument([sysZone], system, dateInZoneNow), /no instrument/, 'candidate list with only the system zone must refuse');
 });
 
 /* Furniture 1: local date sanity via an independent read. Replacing localToday
