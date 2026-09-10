@@ -627,8 +627,49 @@ runners:
     effort: high
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model openrouter/meta/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
-    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
+    # `is not supported for model` is the LAST alternative and it is measured,
+    # not guessed. See "AN UNSUPPORTED EFFORT RUNG" in this entry's note for the
+    # bytes, and for why the phrase a reader would naturally anchor on is the
+    # one that cannot work.
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed|is not supported for model)'
     note: >-
+      AN UNSUPPORTED EFFORT RUNG IS A SILENT, SUCCESSFUL, EMPTY RUN ON THIS
+      ROUTE, AND THE PATTERN ABOVE IS WHAT MAKES IT SAY SO. Measured
+      2026-09-10 by A2AI-Fable-Arch with separated pipes and re-measured for
+      this entry rather than recalled: dispatching `--variant max` here exits
+      **0** after 75.6s, writes **no** RESULT.md, prints **zero bytes** on
+      stdout, and puts the whole message on stderr —
+
+        Error: [Meta] reasoning_effort 'max' is not supported for model
+        'muse-spark-1.3-contributor'. Supported values: [minimal, low,
+        medium, high, xhigh]
+
+      Exit 0 with an empty stdout means `producedNothing` fires and the
+      no-output streak arms, so the run is already self-limiting after three.
+      What was missing was the CAUSE on the ledger line, which is exactly what
+      a `startup_failure_stderr_pattern` supplies, and it may speak here
+      because there is no positive evidence the runner ran
+      (`loop/lib/result.mjs`, `startupFailureMeansNothingRan`).
+
+      THE ANCHOR IS CHOSEN AGAINST A TRAP AND VERIFIED THROUGH THE REAL
+      MATCHER. That stderr is ANSI-coloured and the escapes sit INSIDE the
+      phrase a person would anchor on: there is a reset sequence between
+      `Error: ` and `[Meta]`. Run through `matchingLine` against the measured
+      bytes, `Error: \[Meta\]` DOES NOT MATCH while `is not supported for
+      model` does; `Error:.*reasoning_effort` happens to survive only because
+      `.*` spans the escape, which is luck rather than design. A pattern that
+      never matches never errors — it reads as coverage from this file while
+      the ledger stays exactly as silent as it was. The chosen phrase carries
+      no escape sequences at all. The line is 160 characters of which 13 are
+      escapes, so it fits inside `matchingLine`'s 200-character cap and the
+      ledger records the message whole, "Supported values" included.
+
+      NOT ADDED TO `opencode-muse-spark`, deliberately. The refusal is Meta's
+      and plausibly a property of the model rather than of the route, but it
+      was measured HERE and nowhere else, and this file's own rule is
+      per-runner data, never a global heuristic. Measure the Go route before
+      copying it there.
+
       The same model as opencode-muse-spark at the same Contributor price,
       on a DIFFERENT LANE: `provider: openrouter-account` is its own
       subscription and its own rate limits, so the pause the Go lane earns
