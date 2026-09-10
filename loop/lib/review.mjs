@@ -682,15 +682,15 @@ List each such finding under \`carry:\` in the front matter — zero or more
 entries, each a separate small correction, never a job-sized idea (that is
 what \`proposal:\` above is for). Each needs a short \`title\` — one line, what
 needs doing, not a restatement of the finding — and a \`detail\` naming what
-you found and what would fix it. \`subject\` is optional: the one content file
-the finding concerns, when there is one.
+you found and what would fix it. \`subject\` is required: the repository path
+the finding concerns.
 
 \`\`\`
 carry:
   - title: <one line — what needs doing>
     detail: <the finding — quote the wrong text, name what is wrong, say what
              would fix it>
-    subject: <optional — the content file this concerns, e.g.
+    subject: <required — the repository path this concerns, e.g.
              "content/wiki/model/example.md">
   # - title: ...              # a second entry, if there is a second finding
   #   detail: ...
@@ -734,6 +734,7 @@ ${voice ? `reads-human: >-
 # carry:                    # optional, zero or more — omit the key entirely
 #   - title: ...             # if you are carrying nothing forward
 #     detail: ...
+#     subject: ...           # required repository path this concerns
 ---
 
 Free-form notes: what you checked, what you fetched, what you ran, and what

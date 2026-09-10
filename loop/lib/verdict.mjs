@@ -55,8 +55,8 @@ export const VERDICTS = Object.freeze(['approve', 'revise', 'reject']);
  * mandatory rather than falling back to `detail` (the way an ordinary queue
  * item's title does) because a carried finding's detail can run to the length
  * of a review paragraph, and a job brief that renders a paragraph as its own
- * heading is not dispatchable. `subject` is optional: the content file the
- * finding concerns, when there is one file it is about.
+ * heading is not dispatchable. `subject` is also mandatory: the repository
+ * path the finding concerns.
  *
  * An empty or absent `carry:` is the ordinary case — most reviews carry
  * nothing — and is not a warning of any kind.
@@ -82,6 +82,10 @@ export function parseCarry(data) {
     }
     if (!detail) {
       carryWarnings.push(`${at} ${JSON.stringify(title)}: no non-empty \`detail\` — skipped`);
+      return;
+    }
+    if (!subject) {
+      carryWarnings.push(`${at} ${JSON.stringify(title)}: no non-empty \`subject\` — skipped`);
       return;
     }
     carry.push({ title, detail, subject });
