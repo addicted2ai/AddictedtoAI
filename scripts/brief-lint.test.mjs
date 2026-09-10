@@ -1109,6 +1109,257 @@ test('pointers: twenty-char absent refuses', () => {
   });
 });
 
+/* ── 3b. substantiation: addressed is not substantiated ──────────
+ *
+ * A claim is substantiated when a named, existing instrument shares
+ * something with the claim (a backticked identifier, a double-quoted
+ * string, a path) beyond the file name. Naming the file alone is
+ * addressed, not substantiated. Delegation ("find ...") keeps passing,
+ * and a claim carrying no distinctive content passes as addressed.
+ */
+
+function countFail(out) {
+  return (out.match(/FAIL/g) || []).length;
+}
+
+test('instruments: shared token stays green (substantiation vehicle)', () => {
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'Stale source references are enforced by `scripts/no-change-dir-refs.test.mjs`, which scans the `SEARCH` directories.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+    assert.match(r.out, /1 claim\(s\): 1 substantiated, 0 addressed/);
+  });
+});
+
+test('instruments: wild addressed-but-unsubstantiated twin refuses', () => {
+  // The packet's live false claim: existing, correctly-named,
+  // relevant-sounding instrument that cannot do what the claim says
+  // (its glob collects code files and has never read a markdown file).
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'Stale references in markdown under `wisdom/` are enforced by `scripts/no-change-dir-refs.test.mjs`.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*every enforcement claim names/);
+    assert.match(r.out, /UNSUBSTANTIATED/);
+    assert.match(r.out, /no-change-dir-refs\.test\.mjs/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+test('instruments: named-plus-delegation stays green (wild delegation vehicle)', () => {
+  // The shape the review briefs actually use: the property stated, the
+  // mapping handed to the reader. Refusing it would push briefs toward
+  // naming a file confidently instead. Must stay green.
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'The three properties above hold; find what enforces each and run it before dispatch.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+  });
+});
+
+test('instruments: content-free claim stays green (addressed, not substantiated)', () => {
+  // "The property is enforced by ..." carries nothing to look for. There
+  // is nothing to refuse it FOR without refusing brevity itself, and
+  // demanding content would push authors to invent some. Passes, and says
+  // addressed in the detail so a reader sees how much of the PASS was which.
+  const sha = headSha();
+  withTemp(baseBrief(sha), (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+    assert.match(r.out, /1 claim\(s\): 0 substantiated, 1 addressed/);
+  });
+});
+
+test('instruments: double-quoted present content stays green', () => {
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'Loopback port exhaustion is enforced by `scripts/run-tests.mjs` ("ephemeral loopback ports").',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+    assert.match(r.out, /1 claim\(s\): 1 substantiated, 0 addressed/);
+  });
+});
+
+test('instruments: double-quoted absent content refuses', () => {
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'The coverage gap is enforced by `scripts/run-tests.mjs` ("markdown gap analysis").',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*every enforcement claim names/);
+    assert.match(r.out, /UNSUBSTANTIATED/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+test('instruments: one unshared instrument of two refuses', () => {
+  // Each named instrument must earn its naming: the token lives in the
+  // first file and nowhere in the second, so the claim over its second
+  // half is addressed, not substantiated.
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'The `TEST_LOCK_SUFFIX` rule is enforced by `scripts/run-tests.mjs` and `scripts/brief-lint.mjs`.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*every enforcement claim names/);
+    assert.match(r.out, /UNSUBSTANTIATED/);
+    assert.match(r.out, /scripts\/brief-lint\.mjs shares nothing/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+/* ── 3c. non-claim text neither welds nor claims ───────────────────
+ *
+ * Headings, block quotes, fenced code, table rows and the authority line
+ * never contribute a claim sentence and never weld to one. List bullets
+ * stay claims. The physical-line model is not the remedy: the weld twins
+ * below refuse as prose, which is what a line model would also do to the
+ * wrapped-claim vehicles it would newly split.
+ */
+
+test('instruments: heading trigger with delegation beside it stays green (weld vehicle)', () => {
+  // The 2026-09-10 incident shape: the heading carries the trigger word,
+  // the paragraph beneath names no instrument, the delegation sits in the
+  // next sentence. The heading is a label, not a claim: dropping it leaves
+  // zero claim sentences, which passes with a warning outside review mode.
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    '## Three properties, and you locate what enforces each\n\nI am naming properties and deliberately not naming instruments here.\n\nFind the instruments for each property and run them before dispatch.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /WARN.*enforcement claims/);
+  });
+});
+
+test('instruments: heading words as prose still refuse (weld twin)', () => {
+  // Same words, no heading marker: a real claim naming no instrument and
+  // delegating nothing. Must refuse, and for the missing-instrument reason.
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'Three properties, and you locate what enforces each. I am naming properties and deliberately not naming instruments here.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*every enforcement claim names/);
+    assert.match(r.out, /NO INSTRUMENT/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+test('instruments: quoted frozen standard carrying trigger words stays green', () => {
+  // A verbatim quote of the frozen standard is not the brief's assertion
+  // (check 8 reads the brief's OWN lines for the same reason). The quoted
+  // span below is verbatim from the change tasks and carries "enforced by"
+  // with no instrument and no delegation; as prose it would refuse.
+  const sha = headSha();
+  const text = `${baseBrief(sha)}\n> ... were "both enforced by tests" and named only\n`;
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+    assert.match(r.out, /PASS.*quotes verbatim against/);
+  });
+});
+
+test('instruments: fenced trigger stays green', () => {
+  // Fenced code is commands, not assertions.
+  const sha = headSha();
+  const text = `${baseBrief(sha)}\n\`\`\`\nenforced by \`scripts/does-not-exist-xyz.mjs\`\n\`\`\`\n`;
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+  });
+});
+
+test('instruments: fenced words as prose still refuse (fence twin)', () => {
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'enforced by `scripts/does-not-exist-xyz.mjs`.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*every enforcement claim names/);
+    assert.match(r.out, /NO INSTRUMENT/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+test('instruments: table row trigger stays green', () => {
+  // A table row is structured data, not a sentence.
+  const sha = headSha();
+  const text = `${baseBrief(sha)}\n| property | enforced by nothing here |\n`;
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+  });
+});
+
+test('instruments: table words as prose still refuse (table twin)', () => {
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'The property is enforced by nothing here.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*every enforcement claim names/);
+    assert.match(r.out, /NO INSTRUMENT/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+test('instruments: wrapped delegation across two lines stays green (sentence-model vehicle)', () => {
+  // The C1 wrapping shape the sentence model exists for: the claim sits on
+  // one physical line and its delegation on the next, split by wrapping
+  // alone. A physical-line model reads the first line as a claim with no
+  // delegation and refuses; the sentence model joins them first and passes.
+  const sha = headSha();
+  const text = baseBrief(sha).replace(
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    'The property is enforced by `scripts/does-not-exist-xyz.mjs`\nfind them and run them before you start.',
+  );
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*every enforcement claim names/);
+  });
+});
+
 test('pointers: nineteen-char absent stays green', () => {
   // Nineteen inner chars with a space, absent: ignored under a 20-char
   // threshold. Under a 19-char threshold it would be collected and refuse.
