@@ -1,6 +1,6 @@
 # WISDOM ITEM 2b — the requirement that never left the issue, and the reason a truncation guard is not the fix
 
-authority: two-desks-work-orders-and-trains@9aaf6fe
+authority: two-desks-work-orders-and-trains@696a9c1
 
 Five briefs lost a requirement between an issue and the job that was supposed to
 satisfy it. Four lost it to **truncation** — an agent reading a long issue through
@@ -29,11 +29,13 @@ advance rather than built and then found wanting.
   from 2a, cheap, and it catches the shape where it is durable rather than where
   it is typed.
 - **OUT — 2a, and not because it is unimportant.** 2a is a command guard that
-  would refuse an enumerating command piped through an output shortener, and its
-  host is a `PreToolUse` hook in the maintainer's own settings file, outside this
-  repository. **That file is his.** It is raised with him and is not yours or
-  mine to edit. Say nothing about it in your report beyond that it was out of
-  scope.
+  would refuse an enumerating command piped through an output shortener. Its
+  primary host is the `PreToolUse` hook in the maintainer's own
+  `~/.claude/settings.json`, outside this repository — that file is his, and
+  the hold applies to it. (A second wiring of the same guard lives at the
+  tracked repo path `.claude/settings.json` beside the shell-token guard;
+  it is not yours to rewire this round either.) **Say nothing about 2a in
+  your report beyond that it was out of scope.**
 
 Because 2a is held, **item 2 does not fully ship this round**, and your report
 must say so in those words rather than implying the item is closed.
@@ -51,12 +53,18 @@ What survives is the half that matters:
 
 - **THE SOURCE IS WILD.** `bd show addictedtoai-x2jl` is intact and readable, and
   the source issue is where the imperatives live. Its description carries the
-  three numbered requirements (classify environmental spawn failures; wait and
-  retry the records `git add`; re-gate without re-authoring) and then, in the
-  closing paragraph and **not** in the list: *"Cause of the process-creation
-  failures themselves is OPEN; record the next instance with the free-memory
-  figure at the moment it happens."* That sentence is the fourth requirement and
-  the whole subject of this round.
+  three numbered requirements (classify environmental spawn failures with a
+  named cause without consuming the retry or counting toward the breaker;
+  wait and retry the records `git add` a few seconds a few times; re-gate
+  without re-authoring) and then, appended to item 3's block with no blank
+  line and **not** enumerated — which is exactly the ambiguity your
+  classifier must handle — the fourth requirement, quoted here in full
+  including its parenthetical, which is the only concrete operationalization
+  and must not be dropped or silently ellipsized: *"Cause of the
+  process-creation failures themselves is OPEN; record the next instance
+  with the free-memory figure at the moment it happens (the loop could
+  print os.freemem() beside any spawn failure for exactly this)."* That
+  sentence is the fourth requirement and the whole subject of this round.
 - **THE VEHICLE IS CONSTRUCTED.** No brief exists to be refused, so your fixture
   brief is one you write.
 
@@ -146,9 +154,14 @@ recorded **before** any mutation:
    and the arm asserts that choice rather than the absence of an error.
 5. **Mutation A** — reconcile against the enumerated list only. Arm 1 must go
    green, and that green is the defect. Show it.
-6. **Mutation B** — the refusal is moved to after the brief is written. The arm
-   that catches it is the one asserting nothing was written on a refusal, so
-   write that arm.
+6. **Mutation B** — the reconcile call is moved to after the `return` of the
+    assembled text (dead code: the refusal never fires). Your arm mirrors
+    production order in a test-only harness — assemble, and write the result
+    to a temporary file only when assembly did not refuse — then asserts no
+    file was written for the missing-fourth brief. Under the mutation the
+    assembly succeeds and the file gets written, so the arm goes red. The
+    harness lives in your test file only; `loop/run.mjs` stays read-only
+    and is reverted byte-identical along with everything else.
 7. Secondary host: an enumerating command through a shortener goes **red**; a
    declared non-exhaustive diagnostic stays **green**; and a mutation that drops
    the non-exhaustive exemption turns the green arm red, proving the exemption
