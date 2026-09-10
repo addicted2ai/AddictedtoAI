@@ -115,6 +115,11 @@ const DECLARED = [
     patterns: [
       /machinery[\s\S]{0,30}?ceiling[\s\S]{0,30}?(\d+)\s*%/i,
       /(\d+)\s*%\s+machinery[\s\S]{0,10}?ceiling/i,
+      // Number-between-anchors: "the machinery has a 10% ceiling" states
+      // the figure with the value between the anchors and matches
+      // neither pattern above — and that phrasing is the incident class
+      // (addictedtoai-mrld) this figure was declared for.
+      /machinery[\s\S]{0,30}?(\d+)\s*%[\s\S]{0,30}?ceiling/i,
     ],
     incident: 'AGENTS.md "machinery ceiling 10%" against live 30 (addictedtoai-mrld)',
   },
@@ -298,6 +303,27 @@ test('restated bound: live value with pointer passes', () => {
 test('restated bound: live value without pointer is still refused', () => {
   const text = `The machinery ceiling is ${LIVE.machinery}%.`;
   assert.equal(refused(text, byId('machinery-ceiling')), true, 'correctness is not sourcing');
+});
+
+test('restated bound: number-between-anchors phrasing is still a restatement', () => {
+  const stale = `The machinery has a ${STALE_BOUND}% ceiling.`;
+  assert.equal(refused(stale, byId('machinery-ceiling')), true, 'stale value between anchors refused');
+  const liveBare = `The machinery has a ${LIVE.machinery}% ceiling.`;
+  assert.equal(refused(liveBare, byId('machinery-ceiling')), true, 'live value between anchors still needs its pointer');
+  const liveSourced = `The machinery has a ${LIVE.machinery}% ceiling (${CANONICAL}).`;
+  assert.equal(refused(liveSourced, byId('machinery-ceiling')), false, 'live value between anchors with pointer passes');
+});
+
+test('declaration is non-vacuous: figures, patterns, and swept files all exist', () => {
+  // An emptied DECLARED (or emptied patterns, or an empty sweep) passes
+  // the live sweep by asserting nothing — the floor that keeps the
+  // sweep from going stale exactly like the restatements it polices.
+  // Floors, never exact counts: additions are legitimate, only loss refuses.
+  assert.ok(DECLARED.length > 0, 'at least one declared figure');
+  for (const figure of DECLARED) {
+    assert.ok(figure.patterns.length > 0, `${figure.id} carries at least one pattern`);
+  }
+  assert.ok(sweepFiles(ROOT).length > 0, 'the sweep examines at least one file');
 });
 
 test('count over a moving population: without producer refused (56-vs-55 shape)', () => {
