@@ -1378,6 +1378,81 @@ direction: **the strongest-looking evidence is the most dangerous to get wrong,
 because its strength is what stops anyone looking further.** A guard with a clean
 record, a parameter nobody has attacked, and a total red are all of that kind.
 
+### 7o. THE SUITE WAS GREEN WHEN IT WAS COMMITTED AND RED FIFTEEN MINUTES LATER, WITH NO EDIT IN BETWEEN
+
+The record wall's round 3 closed the caller-zone hole: an override in the
+environment could green a wall that was genuinely expired, and the repair reads
+the live date from a child process with `TZ` stripped. I verified it myself
+against a genuinely expired record before committing — no zone set, the wall
+refuses; under `Pacific/Niue`, `Pacific/Midway` and `Etc/GMT+12`, the wall still
+refuses. Full suite 25 of 25. Committed at `2c3d026`.
+
+Fifteen minutes later the same commit, unedited, ran 24 of 25. The failing test
+is the control that proves the override reaches a direct read at all:
+
+    expected: '2026-09-10'
+    actual:   '2026-09-10'
+    operator: 'notStrictEqual'
+    error: 'direct read is tainted, proving the override reaches direct reads'
+
+**Nothing changed except the time of day.** `Pacific/Niue` is eleven hours behind
+UTC and this machine is six behind, so the two are on different calendar dates
+only during the first five hours of the local day. Measured rather than
+calculated, by walking a whole local day in ten-minute steps:
+
+    Pacific/Niue     differs from the system date 00:00-04:50 — 5.0 of 24 hours
+    Pacific/Midway   differs from the system date 00:00-04:50 — 5.0 of 24 hours
+    Etc/GMT+12       differs from the system date 00:00-05:50 — 6.0 of 24 hours
+    UTC              differs from the system date 18:00-23:50 — 6.0 of 24 hours
+
+**A CONTROL THAT ASSERTS A DIFFERENCE CAN ONLY SEE ITS PROPERTY WHILE THE
+DIFFERENCE EXISTS, AND FOR NINETEEN HOURS A DAY THIS ONE HAS NOTHING TO
+MEASURE.**
+
+Three things make this worth more than a bug fix.
+
+**The zone was chosen by someone working inside the window, and so was every
+measurement that validated it.** The hole was found at 04:22 and the repair
+verified between 04:22 and 04:55 — every reading, the author's and mine, taken
+inside a five-hour band nobody knew was a band. It is §7n's rule with the sample
+chosen by the clock instead of by the caller: **a mechanism proved only at the
+hours somebody happened to be working is proved against a sample drawn by the
+working hours**, and 04:00 is exactly when this kind of work gets done.
+
+**It also retroactively narrows what my own verification established, and the
+narrowing is not small.** I measured that the wall still refuses under three
+overrides after the repair and read that as the repair holding. Outside the
+window the wall refuses under those overrides **whether or not the repair
+exists**, because the override does not move the date at all — so the same
+observation would have been produced by a broken repair. That is §7l's rule
+arriving at my own door: **a comparison taken at a point where the hypothesis
+predicts no difference is not a negative result, it is not a measurement at
+all.** My reading was inside the window and is therefore real; but I did not know
+it needed to be, which means I could not have told the difference.
+
+**And the failure mode is the good one, which is the only comfortable part.** The
+control fails LOUDLY outside its window rather than passing vacuously. Had it
+been written the other way round — asserting that the wall's verdict is
+unchanged, with no assertion that the override was doing anything — it would
+have passed at every hour and meant something at five of them, and nobody would
+ever have found out. **The version that breaks is the version that told us.**
+
+**The repair, and why the obvious one is wrong.** Do not pick a different
+hard-coded zone: every fixed pair has a window, and `Etc/GMT+12` merely moves the
+edge to 05:50. The property "somewhere on earth it is a different date" is true
+at **every** instant, because the inhabited offsets span more than 24 hours. So
+the control should **select, at run time, a zone whose current date differs from
+the system date**, and refuse outright if it can find none — a control that
+cannot find its own instrument must fail, not skip. The sub-property "an override
+reaches a direct read" is separable and can be pinned at any hour by formatting a
+**fixed instant** under two zones, which removes the clock from that half
+entirely.
+
+The distinction to keep: **the repair was never hour-dependent — `systemToday()`
+strips the override at any hour. What was hour-dependent was the evidence for
+it.** A sound mechanism and an unsound proof of it look identical from the green
+column, and only one of them is worth having.
+
 ---
 
 ## 8. THE PHASED PLAN
