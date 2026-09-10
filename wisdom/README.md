@@ -1147,6 +1147,45 @@ reading the numbers and the other was writing them. **AGREEMENT BETWEEN TWO
 AGENTS IS NOT EVIDENCE.** Where a claim cannot be checked against something
 neither of them wrote, it is not checked.
 
+### 7k. The repair script outlives the defect, and the rule that keeps failing
+
+Two more from the same night, both about what a fix leaves behind.
+
+**A ONE-SHOT REPAIR SCRIPT IS A LOADED GUN THE MOMENT ITS JOB IS DONE.** The
+script written to replace fabricated timestamps ran a second time, by accident,
+inside a throwaway command whose author believed it had been skipped. It
+rewrote the header of the file about corrupted timestamps — because its pattern
+was written to match what was wrong then, and **the corrected text that replaces
+a defect sits, by construction, in the same neighbourhood as the defect.** A
+timestamp fixer's output is timestamps. A path fixer's output is paths. Nothing
+about the second run looks any different from the first, and the second run is
+always the one nobody reasoned about.
+
+Two details of the response are the reusable part. The script was **not
+deleted** — it is the only surviving record of the values it replaced, so
+removing it would have been another in-place correction of exactly the kind this
+section is about. It was made to **refuse unless an explicit variable is set**,
+and the refusal was proved rather than assumed. And the damage was **bounded by
+measurement rather than by argument**: one line, with the recovered anchors
+re-read afterwards to confirm they were untouched — which they were, for the
+reason already recorded here, because they were not part of the story being
+corrected.
+
+The second finding is harder and is recorded without a repair, which is the
+honest state of it. The same session's standing rule is that composed throwaway
+one-liners are not to be written at all. **That rule failed three times in one
+night** — twice caught by a token guard, once not caught by anything, because
+the command was perfectly legitimate shell.
+
+**A RULE THAT HAS FAILED THREE TIMES IN ONE NIGHT IS NOT A RULE, IT IS A
+PREFERENCE RESTATED AFTER EACH FAILURE.** The failure mode of a rule with no
+mechanism is that it gets re-affirmed each time it is broken, and the
+re-affirmation feels like a response. It is the same shape as section 7j's
+decay: the version of the practice that is kept and the version that is
+abandoned produce identical-looking output, so nothing signals which one is
+running. Saying that no mechanism exists yet is worth more than a fourth
+restatement of the preference.
+
 ---
 
 ## 8. THE PHASED PLAN
