@@ -679,6 +679,14 @@ export function subjectLines(job) {
  * - "could / would / can / may / might" are NOT modals here. They mark
  *   suggestion ("the loop could print os.freemem()"), and counting them
  *   would refuse briefs over prose that suggests rather than requires.
+ * - The verb meaning send-to-remote is NOT in COMMAND_VERBS although it
+ *   is a command verb, because `loop/` code may not contain that token
+ *   quoted at all (`portability.test.mjs` and `publish.test.mjs` refuse
+ *   it: publishing is the Pulse's step and a remote-writing
+ *   implementation in `loop/` is how unverified work reaches the
+ *   remote). A job instructing a remote write would be a scope
+ *   violation rather than a requirement, so the under-count risk is
+ *   accepted and stated here instead of hidden.
  * - Quoted lines and fenced blocks COUNT (are not excluded). Naming a
  *   repair target inside a quote still names it, and intent-reading
  *   ("mentioned as example" vs "mentioned as subject") is beyond a
@@ -723,7 +731,7 @@ const COMMAND_VERBS = new Set([
   'close', 'commit', 'compare', 'count', 'cover', 'create', 'delete', 'do',
   'document', 'drop', 'ensure', 'file', 'fix', 'follow', 'gate', 'handle',
   'ignore', 'keep', 'land', 'leave', 'list', 'measure', 'merge', 'move',
-  'name', 'print', 'prove', 'publish', 'push', 'read',   'rebase', 'record',
+  'name', 'print', 'prove', 'publish', 'read', 'rebase', 'record',
   'refuse', 'remove', 'rename', 'repair', 'repeat', 'report', 'require',
   'resolve', 'retry', 'return', 'run', 'set', 'ship', 'show', 'skip',
   'split', 'start', 'state', 'stop', 'take', 'test', 'update', 'use',
