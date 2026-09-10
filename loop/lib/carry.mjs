@@ -82,7 +82,7 @@ export function transcribeCarriedFindings(
     return { transcribed: [], skipped: [], orphaned: [], warnings: [], why: 'no verdict record' };
   }
   const v = parseVerdict(readFileSync(verdictPath, 'utf8'));
-  const warnings = [...(v.carryWarnings ?? [])];
+  const warnings = (v.carryWarnings ?? []).map((warning) => `${verdictPath}: ${warning}`);
   const entries = v.carry ?? [];
   if (entries.length === 0) {
     return { transcribed: [], skipped: [], orphaned: [], warnings, why: 'the verdict record carries no findings' };
@@ -95,7 +95,7 @@ export function transcribeCarriedFindings(
   const orphaned = [];
 
   entries.forEach((entry, i) => {
-    if (subjectMustExist && entry.subject && !existsSync(join(ctx.repoRoot, entry.subject))) {
+    if (subjectMustExist && !existsSync(join(ctx.repoRoot, entry.subject))) {
       orphaned.push({ title: entry.title, detail: entry.detail, subject: entry.subject });
       return;
     }
@@ -111,7 +111,7 @@ export function transcribeCarriedFindings(
     const front = [
       '---',
       `title: ${JSON.stringify(entry.title)}`,
-      ...(entry.subject ? [`subject: ${JSON.stringify(entry.subject)}`] : []),
+      `subject: ${JSON.stringify(entry.subject)}`,
       `origin: review of job ${jobId}`,
       `carried_by: the reviewer of job ${jobId}${reviewer ? ` (${reviewer})` : ''}`,
       `date: ${today}`,

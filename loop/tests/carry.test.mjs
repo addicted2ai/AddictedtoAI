@@ -41,11 +41,11 @@ test('parseCarry: absent or empty carry: is legal and produces nothing, not a wa
   assert.deepEqual(parseCarry({ carry: [] }), { carry: [], carryWarnings: [] });
 });
 
-test('parseCarry: a well-formed entry is read whole, with subject optional', () => {
+test('parseCarry: a well-formed entry is read whole, with subject required', () => {
   const { carry, carryWarnings } = parseCarry({
     carry: [
       { title: 'fix the date', detail: 'The interval is 29 days, not six weeks.', subject: 'content/wiki/model/x.md' },
-      { title: 'fix the other thing', detail: 'No subject on this one.' },
+      { title: 'fix the other thing', detail: 'The second correction concerns another path.', subject: 'content/wiki/model/y.md' },
     ],
   });
   assert.deepEqual(carryWarnings, []);
@@ -53,11 +53,24 @@ test('parseCarry: a well-formed entry is read whole, with subject optional', () 
   assert.equal(carry[0].title, 'fix the date');
   assert.equal(carry[0].detail, 'The interval is 29 days, not six weeks.');
   assert.equal(carry[0].subject, 'content/wiki/model/x.md');
-  assert.equal(carry[1].subject, '', 'subject defaults to empty, never undefined');
+  assert.equal(carry[1].subject, 'content/wiki/model/y.md');
+});
+
+test('parseCarry: a missing or blank subject is skipped and warned about', () => {
+  const { carry, carryWarnings } = parseCarry({
+    carry: [
+      { title: 'no path', detail: 'This finding has no subject.' },
+      { title: 'blank path', detail: 'This finding has a blank subject.', subject: '   ' },
+    ],
+  });
+  assert.deepEqual(carry, []);
+  assert.equal(carryWarnings.length, 2);
+  assert.match(carryWarnings[0], /carry\[0\] "no path": no non-empty `subject`/);
+  assert.match(carryWarnings[1], /carry\[1\] "blank path": no non-empty `subject`/);
 });
 
 test('parseCarry: a single mapping (not a list) is accepted the same way a list of one would be', () => {
-  const { carry } = parseCarry({ carry: { title: 't', detail: 'd' } });
+  const { carry } = parseCarry({ carry: { title: 't', detail: 'd', subject: 'content/x.md' } });
   assert.equal(carry.length, 1);
   assert.equal(carry[0].title, 't');
 });
@@ -82,9 +95,9 @@ test('parseCarry: a missing detail is skipped and warned about', () => {
 test('parseCarry: one bad entry among good ones is skipped without discarding the rest', () => {
   const { carry, carryWarnings } = parseCarry({
     carry: [
-      { title: 'good one', detail: 'fine' },
+      { title: 'good one', detail: 'fine', subject: 'content/good-one.md' },
       { title: '', detail: 'no title here' },
-      { title: 'also good', detail: 'also fine' },
+      { title: 'also good', detail: 'also fine', subject: 'content/also-good.md' },
     ],
   });
   assert.deepEqual(carry.map((c) => c.title), ['good one', 'also good']);
@@ -103,7 +116,7 @@ test('parseCarry: a non-mapping entry (a bare string) is skipped and warned abou
 
 test('parseVerdict carries carry: and carryWarnings alongside the existing fields, unchanged', () => {
   const text =
-    '---\nverdict: approve\nwould-cite: "someone"\ncarry:\n  - title: fix it\n    detail: the finding\n---\n\nnotes\n';
+    '---\nverdict: approve\nwould-cite: "someone"\ncarry:\n  - title: fix it\n    detail: the finding\n    subject: content/x.md\n---\n\nnotes\n';
   const v = parseVerdict(text);
   assert.equal(v.verdict, 'approve');
   assert.equal(v.wouldCite, 'someone');
@@ -146,14 +159,14 @@ test('a carry: block does not affect the merge gate, in either direction', () =>
   writeRecordAt(
     ctx,
     'j-carry-ok',
-    'verdict: approve\nwould-cite: "someone arguing X"\ncarry:\n  - title: t\n    detail: d\n',
+    'verdict: approve\nwould-cite: "someone arguing X"\ncarry:\n  - title: t\n    detail: d\n    subject: content/x.md\n',
   );
   assert.equal(mergeGate(ctx, { jobId: 'j-carry-ok', type: 'machinery' }).ok, true);
 
   // A record that would be refused anyway (blank would-cite on a prose type)
   // is refused for the SAME reason, carry: present or not — the field cannot
   // rescue an otherwise-invalid record.
-  writeRecordAt(ctx, 'j-carry-blank-cite', 'verdict: approve\nwould-cite: ""\ncarry:\n  - title: t\n    detail: d\n');
+  writeRecordAt(ctx, 'j-carry-blank-cite', 'verdict: approve\nwould-cite: ""\ncarry:\n  - title: t\n    detail: d\n    subject: content/x.md\n');
   const g = mergeGate(ctx, { jobId: 'j-carry-blank-cite', type: 'post' });
   assert.equal(g.ok, false);
   assert.equal(g.code, 'would-cite-empty');
@@ -197,7 +210,7 @@ test('two carry entries become two files, each named for the job and numbered, w
     ctx,
     'j-two',
     'carry:\n  - title: first fix\n    detail: the first finding, in full\n    subject: content/a.md\n' +
-      '  - title: second fix\n    detail: the second finding, in full\n',
+      '  - title: second fix\n    detail: the second finding, in full\n    subject: content/b.md\n',
   );
   const r = transcribeCarriedFindings(ctx, { jobId: 'j-two', verdictPath: p, reviewer: 'r7-fable' });
   assert.equal(r.transcribed.length, 2);
@@ -216,7 +229,23 @@ test('two carry entries become two files, each named for the job and numbered, w
   assert.match(one.content, /delete this file/);
 
   const two = matter(readFileSync(join(ctx.carriedDir, 'j-two-carry-2.md'), 'utf8'));
-  assert.equal(two.data.subject, undefined, 'no subject key at all when none was given, never an empty string key');
+  assert.equal(two.data.subject, 'content/b.md');
+  ctx.cleanup();
+});
+
+test('five carry entries in one record are all accepted and transcribed', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  const entries = Array.from({ length: 5 }, (_, i) => `  - title: fix ${i + 1}\n    detail: finding ${i + 1}\n    subject: content/${i + 1}.md\n`).join('');
+  const p = writeRecord(ctx, 'j-five', `carry:\n${entries}`);
+  const r = transcribeCarriedFindings(ctx, { jobId: 'j-five', verdictPath: p });
+  assert.equal(r.transcribed.length, 5);
+  assert.deepEqual(readdirSync(ctx.carriedDir).sort(), [
+    'j-five-carry-1.md',
+    'j-five-carry-2.md',
+    'j-five-carry-3.md',
+    'j-five-carry-4.md',
+    'j-five-carry-5.md',
+  ]);
   ctx.cleanup();
 });
 
@@ -225,12 +254,13 @@ test('a malformed entry inside an otherwise-valid carry: list is skipped and rep
   const p = writeRecord(
     ctx,
     'j-mixed',
-    'carry:\n  - title: good\n    detail: this one is fine\n  - detail: no title, dropped\n',
+    'carry:\n  - title: good\n    detail: this one is fine\n    subject: content/good.md\n  - detail: no title, dropped\n',
   );
   const r = transcribeCarriedFindings(ctx, { jobId: 'j-mixed', verdictPath: p });
   assert.equal(r.transcribed.length, 1);
   assert.equal(r.transcribed[0].title, 'good');
   assert.equal(r.warnings.length, 1);
+  assert.ok(r.warnings[0].startsWith(`${p}: `), 'the warning names its verdict record');
   assert.match(r.warnings[0], /no non-empty `title`/);
   assert.deepEqual(readdirSync(ctx.carriedDir), ['j-mixed-carry-1.md']);
   ctx.cleanup();
@@ -238,7 +268,7 @@ test('a malformed entry inside an otherwise-valid carry: list is skipped and rep
 
 test('transcribing twice does not overwrite an existing file — a retry does not clobber a finding already written', () => {
   const ctx = makeRepo({ now: () => NOW });
-  const p = writeRecord(ctx, 'j-retry', 'carry:\n  - title: fix\n    detail: original text\n');
+  const p = writeRecord(ctx, 'j-retry', 'carry:\n  - title: fix\n    detail: original text\n    subject: content/x.md\n');
   transcribeCarriedFindings(ctx, { jobId: 'j-retry', verdictPath: p });
   writeFileSync(join(ctx.carriedDir, 'j-retry-carry-1.md'), 'hand-edited sentinel\n', 'utf8');
 
@@ -278,6 +308,9 @@ test('the reviewer brief documents carry: — syntax, and that it is distinct fr
   assert.match(brief, /carry:/);
   assert.match(brief, /never a job-sized idea/);
   assert.match(brief, /Carrying nothing is the normal case/);
+  assert.match(brief, /`subject` is required: the repository path/);
+  assert.match(brief, /subject: <required — the repository path this concerns/);
+  assert.match(brief, /#\s+subject: \.\.\.\s+# required repository path this concerns/);
   ctx.cleanup();
 });
 
