@@ -27,19 +27,31 @@
  * chronological for YYYY-MM-DD). The expiry day itself still passes; the day
  * after fails. Today is the machine local calendar date (local getters, never
  * UTC), matching the corpus convention. BRIEF_RECORDS_NOW pins the clock for
- * controls only; the gate runs without it and prints a notice whenever the
- * override is active, so a pinned pass can never read as a live pass.
+ * controls only; the live expiry check ignores the pin entirely and always
+ * reads the local date, so a pinned pass can never green the live wall.
+ * The pin stays available to the controls, which need day-independence.
+ *
+ * Round 2 ruling: a RECORD without a twin by its date is debt, not a
+ * disposition. Anchors pin substrings but cannot pin behaviour (flags,
+ * operators, added or dropped conjuncts, upstream definitions, sibling arms,
+ * call sites that bypass a definition); do not lengthen them. The date is a
+ * deadline for work (a behaviour twin), for deletion, or for a written
+ * reason why neither happened — not a re-decision prompt. This round builds
+ * one twin and binds the mechanism itself.
  *
  * Count: twenty-four records. A future BIND or DELETE that retires a record
- * must update EXPECTED_COUNT in the same edit with its justification; a
- * silent deletion fails here first, which is the point.
+ * must update EXPECTED_COUNT and EXPECTED_IDS in the same edit with its
+ * justification; a silent deletion fails here first, which is the point.
+ * Every refusal names the record or records responsible, never only a count.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..');
@@ -47,6 +59,21 @@ const LINTER = resolve(REPO, 'scripts', 'brief-lint.mjs');
 const SRC = readFileSync(LINTER, 'utf8');
 
 const EXPECTED_COUNT = 24;
+
+// The ordered identity of the wall. The count pin alone reports a number;
+// the identity pin names the thing, so a deletion is accused rather than
+// inferred. A future BIND or DELETE updates this list with its justification
+// in the same edit that updates EXPECTED_COUNT.
+const EXPECTED_IDS = [
+  'B2', 'B3', 'B6trim', 'C5i', 'C6lines', 'C4', 'D5', 'E2chg', 'E3del',
+  'E5res', 'E7sfx', 'F3i', 'F4e', 'F5b', 'F6lines', 'G7hy', 'G8sent',
+  'H2i', 'H4dist', 'H6b', 'I4star', 'J2star', 'K5diff', 'Nsplit',
+];
+
+// The batch that shares one expiry. B3 is the outlier with its own later
+// date. Pinning the batch identity lets the batch control name the absent
+// record instead of listing survivors for inference.
+const EXPECTED_BATCH_IDS = EXPECTED_IDS.filter((id) => id !== 'B3');
 
 // Re-derived anchors (content substrings, never line numbers). Each was
 // located in the current linter source by substring search; the expected
@@ -263,9 +290,16 @@ function pinnedNow() {
 function effectiveNow() {
   const p = pinnedNow();
   if (p) {
-    console.log(`records check: pinned now ${p} (controls only; gate runs without override)`);
+    console.log(`records check: pinned now ${p} (controls only; live wall ignores the pin)`);
     return p;
   }
+  return localToday();
+}
+
+// The live wall clock. It always reads the machine local date and never
+// consults the pin, so an outer environment value cannot green the wall at
+// one stroke. Controls keep using effectiveNow; the live check uses this.
+function liveNow() {
   return localToday();
 }
 
@@ -305,39 +339,129 @@ function shapeErrors(rec, seen) {
   return errs;
 }
 
-/* Check A — anchors resolve. An edited, removed, or rewritten arm breaks its
-   anchor count and fails here, which is when a re-decision is owed. */
-test('records: every anchor resolves with its expected count', () => {
+// Shared anchor logic. Both the gate check and the binding controls call
+// this, so a break inside it (a narrowed loop, a loosened comparison)
+// turns a binding control red instead of passing silently.
+function anchorBad(records, src) {
   const bad = [];
-  for (const rec of RECORDS) {
-    const got = countOccurrences(SRC, rec.anchor);
+  for (const rec of records) {
+    const got = countOccurrences(src, rec.anchor);
     if (got !== rec.expect) bad.push(`${rec.id}: anchor ${JSON.stringify(rec.anchor)} found ${got}x, want ${rec.expect}x`);
   }
-  assert.equal(bad.length, 0, `stale anchors (arm moved, changed, or vanished — re-derive, re-decide):\n${bad.join('\n')}`);
-});
+  return bad;
+}
 
-/* Check E — expiries refuse. Hard fail: exit non-zero, gate red, push bar
-   holds. The expiry day passes; the day after refuses. */
-test('records: no record is expired', () => {
-  const now = effectiveNow();
-  const late = RECORDS.filter((rec) => isExpired(rec, now)).map(
+function checkAnchors(records, src) {
+  const bad = anchorBad(records, src);
+  assert.equal(bad.length, 0, `stale anchors (arm moved, changed, or vanished — re-derive, re-decide):\n${bad.join('\n')}`);
+}
+
+// Shared expiry logic. The late list carries the full per-record line, so
+// every refusal names the record or records responsible.
+function expiryLate(records, now) {
+  return records.filter((rec) => isExpired(rec, now)).map(
     (rec) => `${rec.id} owned by ${rec.owner} expired ${rec.expiry} (now ${now}): ${rec.reason.slice(0, 80)}…`,
   );
-  assert.equal(late.length, 0, `expired record judgements (re-sweep owed, new information required):\n${late.join('\n')}`);
-});
+}
 
-/* Check S — shape. Fail-closed: an unparsable record refuses rather than
-   passing silently. Count is pinned; retiring a record updates the count in
-   the same edit with justification. */
-test('records: shape holds and the count is twenty-four', () => {
-  assert.equal(RECORDS.length, EXPECTED_COUNT, `record count ${RECORDS.length}, want ${EXPECTED_COUNT} (retire with justification, never by silent deletion)`);
+function checkExpiry(records, now) {
+  const late = expiryLate(records, now);
+  assert.equal(late.length, 0, `expired record judgements (re-sweep owed, new information required):\n${late.join('\n')}`);
+}
+
+// Shared count logic. Names the missing and the extra identities, so a
+// deletion is accused rather than inferred from a bare number.
+function countProblems(records) {
+  const ids = records.map((r) => r.id);
+  const missing = EXPECTED_IDS.filter((id) => !ids.includes(id));
+  const extra = ids.filter((id) => !EXPECTED_IDS.includes(id));
+  const problems = [];
+  if (records.length !== EXPECTED_COUNT || missing.length > 0 || extra.length > 0) {
+    problems.push(`record count ${records.length}, want ${EXPECTED_COUNT} (missing: ${missing.join(',') || 'none'}; extra: ${extra.join(',') || 'none'})`);
+  }
+  return { missing, extra, problems };
+}
+
+function shapeBad(records) {
   const seen = new Set();
   const bad = [];
-  for (const rec of RECORDS) {
+  for (const rec of records) {
     for (const e of shapeErrors(rec, seen)) bad.push(e);
     if (rec.id) seen.add(rec.id);
   }
+  return bad;
+}
+
+function checkShape(records) {
+  const { problems } = countProblems(records);
+  assert.equal(problems.length, 0, `retire with justification, never by silent deletion:\n${problems.join('\n')}`);
+  const bad = shapeBad(records);
   assert.equal(bad.length, 0, `malformed records fail closed:\n${bad.join('\n')}`);
+}
+
+// Twin helpers: minimal briefs run through the linter directly. Nothing
+// here writes into the working tree; each trial uses a fresh area under the
+// OS temp area and removes it after.
+function linterHeadSha() {
+  return execFileSync('git', ['-C', REPO, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+}
+
+function writeBriefTemp(text) {
+  const dir = mkdtempSync(join(tmpdir(), 'brief-twin-'));
+  const path = join(dir, 'brief.md');
+  writeFileSync(path, text, 'utf8');
+  return { dir, path };
+}
+
+function runLint(briefPath, sha, flags = []) {
+  const res = spawnSync(process.execPath, [LINTER, briefPath, sha, ...flags], { encoding: 'utf8' });
+  return { status: res.status, out: `${res.stdout || ''}${res.stderr || ''}` };
+}
+
+function twinBaseBrief(sha) {
+  return [
+    '# Twin brief — suffix allowance vehicle',
+    '',
+    `authority: two-desks-work-orders-and-trains@${sha}`,
+    '',
+    'The property is enforced by `scripts/run-tests.mjs`.',
+    '',
+    '## Files',
+    '',
+    '- `scripts/run-tests.mjs` — the test runner',
+    '',
+    'Your report is `RESULT2.md`.',
+    '',
+  ].join('\n');
+}
+
+function withBriefTemp(text, fn) {
+  const { dir, path } = writeBriefTemp(text);
+  try {
+    return fn(path);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/* Check A — anchors resolve. An edited, removed, or rewritten arm breaks its
+   anchor count and fails here, which is when a re-decision is owed. */
+test('records: every anchor resolves with its expected count', () => {
+  checkAnchors(RECORDS, SRC);
+});
+
+/* Check E — expiries refuse. Hard fail: exit non-zero, gate red, push bar
+   holds. The expiry day passes; the day after refuses. The live wall always
+   reads the local date and ignores the pin; the pin is for controls only. */
+test('records: no record is expired', () => {
+  checkExpiry(RECORDS, liveNow());
+});
+
+/* Check S — shape. Fail-closed: an unparsable record refuses rather than
+   passing silently. Count is pinned with identity; retiring a record updates
+   the count and the identity list in the same edit with justification. */
+test('records: shape holds and the count is twenty-four', () => {
+  checkShape(RECORDS);
 });
 
 /* Controls, clock pinned. None of these read the live clock. */
@@ -350,10 +474,16 @@ test('records control: all green at pinned 2026-09-10', () => {
 
 test('records control: batch expires at pinned 2026-10-11, outlier holds until 2026-12-02', () => {
   const batchAt = RECORDS.filter((rec) => isExpired(rec, '2026-10-11')).map((r) => r.id).sort();
-  assert.equal(batchAt.length, 23, `want 23 expired at 2026-10-11, got ${batchAt.length}: ${batchAt.join(',')}`);
+  const batchMissing = EXPECTED_BATCH_IDS.filter((id) => !batchAt.includes(id)).sort();
+  const batchExtra = batchAt.filter((id) => !EXPECTED_BATCH_IDS.includes(id)).sort();
+  assert.equal(batchAt.length, 23, `want 23 expired at 2026-10-11, got ${batchAt.length} (expired: ${batchAt.join(',') || 'none'}; missing: ${batchMissing.join(',') || 'none'}; extra: ${batchExtra.join(',') || 'none'})`);
+  assert.deepEqual(batchMissing, [], `batch absent records at 2026-10-11: ${batchMissing.join(',')}`);
+  assert.deepEqual(batchExtra, [], `batch unexpected records at 2026-10-11: ${batchExtra.join(',')}`);
   assert.ok(!batchAt.includes('B3'), 'outlier B3 must not expire with the batch');
-  const allAt = RECORDS.filter((rec) => isExpired(rec, '2026-12-02')).map((r) => r.id);
-  assert.equal(allAt.length, 24, `want 24 expired at 2026-12-02, got ${allAt.length}`);
+  const allAt = RECORDS.filter((rec) => isExpired(rec, '2026-12-02')).map((r) => r.id).sort();
+  const allMissing = EXPECTED_IDS.filter((id) => !allAt.includes(id)).sort();
+  const allExtra = allAt.filter((id) => !EXPECTED_IDS.includes(id)).sort();
+  assert.equal(allAt.length, 24, `want 24 expired at 2026-12-02, got ${allAt.length} (expired: ${allAt.join(',') || 'none'}; missing: ${allMissing.join(',') || 'none'}; extra: ${allExtra.join(',') || 'none'})`);
 });
 
 test('records control: expiry boundary day passes, next day refuses', () => {
@@ -398,4 +528,89 @@ test('records control: malformed twins fail shape while the vehicle holds', () =
   assert.ok(shapeErrors(noAnchor, new Set()).some((e) => e.includes('anchor empty')), 'anchor without content refuses');
   const dupe = { ...vehicle };
   assert.ok(shapeErrors(dupe, seen).some((e) => e.includes('duplicate id')), 'duplicate id refuses');
+});
+
+test('records bind: later-record break refuses via shared anchor check', () => {
+  const badLater = RECORDS.map((r, i) => (i === RECORDS.length - 1 ? { ...r, anchor: '__no_such_arm_xyz__' } : r));
+  const bad = anchorBad(badLater, SRC);
+  assert.ok(bad.some((m) => m.startsWith('Nsplit:')), `later-record break must name Nsplit, got: ${bad.join(';') || 'none'}`);
+  assert.throws(() => checkAnchors(badLater, SRC), /stale anchors/, 'shared anchor check throws on later-record break');
+  checkAnchors(RECORDS, SRC);
+});
+
+test('records bind: double occurrence refuses, strict inequality holds', () => {
+  const one = [{ id: '__twin_double__', anchor: 'ab', expect: 1 }];
+  assert.equal(countOccurrences('ab ab', 'ab'), 2, 'synthetic doubled source holds twice');
+  const bad = anchorBad(one, 'ab ab');
+  assert.equal(bad.length, 1, `doubled anchor must refuse: ${bad.join(';')}`);
+  assert.throws(() => checkAnchors(one, 'ab ab'), /stale anchors/, 'shared anchor check throws on doubling');
+  const two = [{ id: '__vehicle_double__', anchor: 'ab', expect: 2 }];
+  assert.deepEqual(anchorBad(two, 'ab ab'), [], 'expecting twice holds');
+});
+
+test('records bind: expect zero refuses, one holds', () => {
+  const vehicle = RECORDS[0];
+  assert.deepEqual(shapeErrors({ ...vehicle, id: '__vehicle_expect_one__', expect: 1 }, new Set()), [], 'expect one holds');
+  const zero = { ...vehicle, id: '__twin_expect_zero__', expect: 0 };
+  assert.ok(shapeErrors(zero, new Set()).some((e) => e.includes('expect bad')), 'expect zero refuses');
+  const wallZero = RECORDS.map((r) => (r.id === 'B2' ? { ...r, expect: 0 } : r));
+  assert.throws(() => checkShape(wallZero), /malformed records fail closed/, 'shared shape check throws on expect zero');
+});
+
+test('records bind: shared expiry check throws on the expired wall', () => {
+  assert.equal(expiryLate(RECORDS, '2026-09-10').length, 0, 'pre-batch wall holds no late');
+  assert.equal(expiryLate(RECORDS, '2026-12-02').length, 24, 'full wall is late at the outlier day after');
+  assert.throws(() => checkExpiry(RECORDS, '2026-12-02'), /expired record judgements/, 'shared expiry check throws when the wall is late');
+  checkExpiry(RECORDS, '2026-09-10');
+});
+
+test('records bind: shared shape check throws on bad shape and names a short wall', () => {
+  const badOwnerWall = RECORDS.map((r) => (r.id === 'B2' ? { ...r, owner: '  ' } : r));
+  assert.ok(shapeBad(badOwnerWall).some((e) => e.includes('owner empty')), 'bad owner surfaces in shared shape detail');
+  assert.throws(() => checkShape(badOwnerWall), /malformed records fail closed/, 'shared shape check throws on bad owner');
+  const short = RECORDS.filter((r) => r.id !== 'Nsplit');
+  const probs = countProblems(short);
+  assert.ok(probs.missing.includes('Nsplit'), `short wall must name Nsplit as missing, got: ${probs.missing.join(',')}`);
+  assert.equal(probs.problems.length, 1, 'short wall yields one count problem');
+  assert.throws(() => checkShape(short), /Nsplit/, 'shared shape check names the absent record when it throws');
+  checkShape(RECORDS);
+});
+
+test('records control: live wall ignores the pin while controls honor it', () => {
+  const prev = process.env.BRIEF_RECORDS_NOW;
+  try {
+    process.env.BRIEF_RECORDS_NOW = '2026-12-02';
+    assert.equal(effectiveNow(), '2026-12-02', 'controls honor the pin');
+    assert.equal(liveNow(), localToday(), 'live wall ignores the pin');
+    assert.equal(expiryLate(RECORDS, liveNow()).length, 0, 'live wall stays green under a far-future pin');
+    assert.equal(expiryLate(RECORDS, effectiveNow()).length, 24, 'pinned view is fully late at the far-future pin');
+    checkExpiry(RECORDS, liveNow());
+  } finally {
+    if (prev === undefined) delete process.env.BRIEF_RECORDS_NOW;
+    else process.env.BRIEF_RECORDS_NOW = prev;
+  }
+  assert.equal(effectiveNow(), localToday(), 'without override the local date rules');
+});
+
+test('twin E7sfx: suffix cite stays green (vehicle)', () => {
+  const sha = linterHeadSha();
+  const base = twinBaseBrief(sha).replace('- `scripts/run-tests.mjs` — the test runner', '- `loop/run.mjs` — the permitted scope');
+  const text = `${base}\nEdit \`sub/loop/run.mjs\` to improve logging.\n`;
+  withBriefTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, `suffix vehicle must pass:\n${r.out}`);
+    assert.match(r.out, /PASS.*no instruction directs an edit/);
+  });
+});
+
+test('twin E7sfx: distinct cite refuses (twin)', () => {
+  const sha = linterHeadSha();
+  const base = twinBaseBrief(sha).replace('- `scripts/run-tests.mjs` — the test runner', '- `loop/run.mjs` — the permitted scope');
+  const text = `${base}\nEdit \`loop/other.mjs\` to improve logging.\n`;
+  withBriefTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, `distinct twin must refuse:\n${r.out}`);
+    assert.match(r.out, /FAIL.*no instruction directs an edit/);
+    assert.match(r.out, /loop\/other\.mjs/);
+  });
 });
