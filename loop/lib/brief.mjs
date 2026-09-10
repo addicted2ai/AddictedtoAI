@@ -716,13 +716,13 @@ export function subjectLines(job) {
  * refuse is itself the tested behavior.
  *
  * WHERE THIS RUNS AND WHAT IT DOES NOT COVER. `assembleBrief` reconciles
- * its own output before returning and throws on missing imperatives, so
- * the refusal lands before the brief is written anywhere (`run.mjs`
- * writes `.job/brief.md` only after `assembleBrief` returns — a guard
- * placed after the write would be decoration). In current production the
- * source (title + detail) is embedded verbatim, so this acts as a
- * tripwire: it fires the day a template edit or a future brief diet stops
- * carrying source text, which is exactly the loss class it names.
+ * its own output before returning and throws on missing or truncated
+ * required text; contradicted is detected and returned but not wired to
+ * the throw (see the wiring comment for the measured reason). In current
+ * production the source (title + detail) is embedded verbatim, so the
+ * wired half acts as a tripwire: it fires the day a template edit or a
+ * future brief diet stops carrying source text, which is exactly the
+ * loss class it names.
  * Revision and resume briefs rebuild rather than carry and are not covered
  * here; that is a stated limit, not an oversight found later.
  */
@@ -825,6 +825,137 @@ export function briefSourceText(job) {
   return [job?.title, job?.detail].filter((s) => typeof s === 'string' && s.trim().length > 0).join('\n\n');
 }
 
+/**
+ * 3a required-text coverage — missing, truncated, contradicted.
+ *
+ * WHAT "REQUIRED" AND "COMPLETE" MEAN, EACH WITH ITS REASON. Required text
+ * is the work source (title plus detail, via `briefSourceText`): the
+ * sentences the brief exists to carry. "Carries completely" does NOT mean
+ * 2b's token coverage and must not reuse it — 2b answers "is the
+ * imperative accounted for" loosely so rewording passes, while this
+ * answers "is the required sentence carried whole" strictly: EVERY
+ * significant token (length 4+, lowercased, alphanumeric, outside
+ * STOPWORDS) must be present. Two different properties, two
+ * instruments; a shared strictness would collapse them into one check
+ * wearing two names.
+ *
+ * - MISSING: no significant token of the sentence appears in the brief
+ *   at all — more precisely, its OPENING content word never arrives (see
+ *   truncated). The block never arrived; nothing downstream can quote,
+ *   check or execute what is not there, which is why absence refuses
+ *   rather than warns.
+ * - TRUNCATED: the sentence's opening significant tokens arrive in
+ *   order, then stop — a leading run of length ≥1 present with the tail
+ *   gone. A prefix present with the tail gone is the truncation shape
+ *   (the historical instance is an acceptance paragraph cut by an
+ *   output shortener); scattered middle words without the opening are
+ *   classified missing, because a sentence that never starts never
+ *   arrived rather than arriving cut.
+ * - CONTRADICTED: a brief sentence carrying a negation shares ≥2
+ *   significant tokens with the required sentence. Negations are the
+ *   plain forms ("not", "never", "no" as a word, "refuses to",
+ *   "declines to") plus contracted stems ("dont", "wont", … — matched
+ *   whole after apostrophe-stripping, because a bare "n't" entry could
+ *   never match post-normalization and would be a dead arm dressed as
+ *   coverage). The co-occurrence
+ *   floor exists so a stray "not" cannot fire on one shared word —
+ *   without it every brief mentioning any common word beside any
+ *   negation would refuse. WHAT ESCAPES, STATED: hedged negations,
+ *   double negatives, scope ambiguity ("not only"), pure reordering
+ *   with all words present (order is checked only for the truncation
+ *   prefix run, never for the complete case), and content words under
+ *   four letters (nothing to pin, same rule as 2b).
+ * - EMPTY REQUIRED TEXT PASSES by asserted choice, like 2b: refusing
+ *   would ban sourceless work, and the arm asserts the choice rather
+ *   than the absence of an error.
+ *
+ * WHY STRICTNESS CANNOT FALSE-FIRE HERE THE WAY IT WOULD IN 2B'S
+ * POSITION: assembly embeds title+detail verbatim, so in production
+ * the strict property holds trivially and this acts as a tripwire
+ * against the day a template edit or a future brief diet stops
+ * embedding source. Without verbatim embedding every completeness
+ * demand would be a false-fire factory; with it, the demand costs
+ * nothing until the embedding breaks, which is exactly the moment
+ * worth refusing. A tripwire whose production can never fire is
+ * decoration unless a mutation proves the wire live — the
+ * detail-drop liveness arm does exactly that.
+ */
+const NEGATIONS = [
+  'not', 'never', 'no', 'refuses to', 'declines to',
+  // Contracted forms. Normalization strips apostrophes without a space
+  // ("don't" becomes "dont", never "don t"), so these are matched whole;
+  // a bare "n't" entry could never match and would be a dead arm dressed
+  // as coverage.
+  'dont', 'cant', 'wont', 'isnt', 'arent', 'wasnt', 'werent', 'couldnt',
+  'shouldnt', 'wouldnt', 'mustnt', 'doesnt', 'didnt', 'hasnt', 'havent',
+];
+
+function squashed(sentence) {
+  return ` ${String(sentence ?? '').toLowerCase().replace(/'/g, '').replace(/[^a-z0-9\s]/g, ' ')} `;
+}
+
+function briefTokens(briefText) {
+  return String(briefText ?? '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+}
+
+function briefSentences(briefText) {
+  return splitSentences(briefText);
+}
+
+function hasNegation(sentence) {
+  const low = squashed(sentence);
+  return NEGATIONS.some((n) => low.includes(` ${n} `));
+}
+
+function sharedTokens(a, b) {
+  const set = new Set(b);
+  return a.filter((t) => set.has(t));
+}
+
+/**
+ * Pure: `{ missing, truncated, contradicted }` arrays of required
+ * sentences, in source order. All empty means carried completely and
+ * uncontradicted (or required text with no content sentences, which
+ * passes by documented choice).
+ */
+export function reconcileRequiredCoverage(requiredText, briefText) {
+  const missing = [];
+  const truncated = [];
+  const contradicted = [];
+  const sentences = splitSentences(requiredText).filter((s) => significantTokens(s).length > 0);
+  if (sentences.length === 0) return { missing, truncated, contradicted };
+  const tokens = briefTokens(briefText);
+  const present = new Set(tokens);
+  const briefSents = briefSentences(briefText).map((s) => ({
+    negated: hasNegation(s),
+    tokens: new Set(s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean)),
+  }));
+  for (const sentence of sentences) {
+    const sig = significantTokens(sentence);
+    const hits = sig.filter((t) => present.has(t));
+    if (hits.length === 0) {
+      missing.push(sentence);
+      continue;
+    }
+    // Contradiction is checked before completeness: a negated sentence
+    // contains the words, so a completeness-first order would pass it.
+    const denied = briefSents.some((b) => b.negated && sharedTokens(sig, [...b.tokens]).length >= 2);
+    if (denied) {
+      contradicted.push(sentence);
+      continue;
+    }
+    if (hits.length === sig.length) continue;
+    // Leading run present in order, tail gone: the truncation shape.
+    // Order is read off first occurrences in the brief token stream.
+    const positions = sig.map((t) => tokens.indexOf(t));
+    let run = 0;
+    while (run < sig.length && positions[run] >= 0 && (run === 0 || positions[run] > positions[run - 1])) run += 1;
+    if (run >= 1) truncated.push(sentence);
+    else missing.push(sentence);
+  }
+  return { missing, truncated, contradicted };
+}
+
 export function assembleBrief(ctx, {
   jobId,
   job,
@@ -904,6 +1035,29 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
   if (missing.length > 0) {
     throw new Error(
       `brief refuses: ${missing.length} imperative(s) from the work source are not carried: ${missing[0].slice(0, 160)}`,
+    );
+  }
+  // 3a refusal, same placement for the same reason: the required source
+  // must arrive complete, not merely mentioned. Only missing and
+  // truncated refuse at dispatch. CONTRADICTED is computed, tested and
+  // returned by `reconcileRequiredCoverage` but deliberately NOT wired
+  // here, for a measured reason: the template's own sentences negate
+  // work vocabulary ("Do not widen it: a diff that exceeds the stated
+  // outcome is a scope-violation"), so whole-brief contradiction
+  // refusal false-fires on the existing suite (35 red, measured — the
+  // run that proved it is recorded in round 3a's report). Scoping the
+  // search down until it can never fire would be decoration; shipping
+  // the detector unwired, with arms and mutation proofs, is the honest
+  // state until a review-time reader exists to judge polarity, which
+  // is round 3b's question, not this one's.
+  const coverage = reconcileRequiredCoverage(briefSourceText(job), text);
+  const firstBad =
+    (coverage.missing.length > 0 && ['missing', coverage.missing[0]]) ||
+    (coverage.truncated.length > 0 && ['truncated', coverage.truncated[0]]) ||
+    null;
+  if (firstBad) {
+    throw new Error(
+      `brief refuses: required source text ${firstBad[0]}: ${firstBad[1].slice(0, 160)}`,
     );
   }
   return text;
