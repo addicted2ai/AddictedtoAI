@@ -799,6 +799,55 @@ CHECK THAT CANNOT DISTINGUISH "I LOOKED AND FOUND NOTHING" FROM "I LOOKED AT
 NOTHING" IS NOT A CHECK.** The repair is always the same shape — make it report
 its denominator, and refuse on zero.
 
+### 7f. RECORD was never a third outcome — this one corrects a rule in section 8
+
+Section 8's Phase 0 closed on a disposition rule this report states: every arm is
+**BIND**, **DELETE**, or **RECORD** — kept unbound with a named owner and a date
+it expires. Twenty-four arms took the third option, and Phase 0 shipped.
+
+A sealed review of the mechanism built to enforce those records refuted the rule
+from the outside, and the evidence is a measurement rather than an argument. The
+mechanism anchored each record to a **content substring** of the linter with an
+expected occurrence count — chosen after 7d showed line numbers rot. The reviewer
+took all 24, found the arm each reason describes, and constructed an edit that
+**changes what the arm does while leaving the anchor present at its expected
+count.** Applied, run, restored, re-run.
+
+**Twenty-four of twenty-four stayed green. Zero sound.**
+
+**The gap is structural and there is no better substring.** Behaviour lives in
+flags, in `&&` versus `||`, in an added conjunct, in a dropped one, in an upstream
+definition, in a sibling arm of one alternation, in a call site that bypasses a
+definition. A substring pins none of those unless it spans them — and spanning
+them is the whole linter quoted back, which then fails on any reformat. That is
+an impossibility result, not a tuning failure, and those are rare enough to name
+as one.
+
+Which yields the correction, in the reviewer's words:
+
+**A RECORD WITHOUT A TWIN BY ITS DATE IS DEBT, NOT A DISPOSITION.**
+
+So **BIND / DELETE / RECORD was always two outcomes wearing three names, and the
+third one's whole function was to let twenty-four arms read as dispositioned
+while nothing bound them.** The expiry now means *by this date this arm has a
+behaviour twin, or it is deleted, or someone writes down why neither happened* —
+a deadline for WORK rather than for a decision, which removes the cheap way out,
+because a date can be edited and a fixture either exists or does not.
+
+**It is the same shape as every other finding in this section, and it reaches
+furthest because it is a rule this report wrote and used to close a packet.** A
+name doing work no mechanism ever did — `RECORD` alongside `known-good`,
+`unmerged`, and `the worktree stands`. All four were true-sounding, all four
+were re-read many times, and re-reading confirms the true half at no cost while
+carrying the false half along with it.
+
+One consequence belongs here because it is a scheduling property and not a
+discipline problem: three of the twenty-four reasons are **recognisable but not
+re-decidable** — they say what the arm is, not what deleting it would cost. The
+shared expiry forces all twenty-three onto one morning. **The weakest records and
+the highest-pressure moment are therefore the same event by construction**, which
+no amount of intending to be careful will fix.
+
 ---
 
 ## 8. THE PHASED PLAN
