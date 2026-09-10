@@ -656,6 +656,167 @@ export function subjectLines(job) {
   return out.length ? `${out.join('\n')}\n` : '';
 }
 
+/**
+ * 2b reconciliation — no requirement left the brief.
+ *
+ * WHAT COUNTS AS AN IMPERATIVE, AND WHAT IS EXCLUDED, EACH WITH ITS REASON.
+ * A classifier over prose is a judgement, and this comment is where the
+ * judgement says what it is, following the convention `brief-lint.mjs` sets
+ * in its header (including the limit it cannot catch).
+ *
+ * A sentence is an imperative when ANY of these hold:
+ * - It is a numbered or bulleted list item. Lists are how this repository
+ *   writes requirements, so list shape is the strongest signal. REASON.
+ * - It carries a deontic modal: SHALL, MUST, should, must, "needs to",
+ *   "required to". Modals are explicit obligation language. REASON.
+ * - It opens with a bare command verb from COMMAND_VERBS below (classify,
+ *   record, wait, retry, ...). The x2jl fourth imperative — "record the
+ *   next instance ..." — is prose, unlisted, unmodal, and only the verb
+ *   marks it. REASON: without the verb arm the enumerated-list check the
+ *   brief refuses in advance is exactly what this would be.
+ *
+ * Exclusions, each with a reason:
+ * - "could / would / can / may / might" are NOT modals here. They mark
+ *   suggestion ("the loop could print os.freemem()"), and counting them
+ *   would refuse briefs over prose that suggests rather than requires.
+ * - Quoted lines and fenced blocks COUNT (are not excluded). Naming a
+ *   repair target inside a quote still names it, and intent-reading
+ *   ("mentioned as example" vs "mentioned as subject") is beyond a
+ *   classifier; excluding quotes would let a real imperative hide behind
+ *   one `>` character. Same decision as `lint-deferrals.mjs`, for its
+ *   reason.
+ * - Sentences about what ANOTHER system does cannot be told from
+ *   instructions to this job, so they COUNT. This over-counts imperatives
+ *   (refuses more), never under-counts — the safe direction for a check
+ *   whose failure mode is a lost requirement, and the author sees the
+ *   named missing imperative in the refusal.
+ *
+ * WHAT "THE BRIEF CARRIES THIS IMPERATIVE" MEANS. It cannot mean substring
+ * equality — a brief legitimately rewords — so it means token coverage:
+ * at least half the imperative's significant tokens appear in the
+ * normalized brief. Significant is length 4+, lowercased, alphanumeric,
+ * outside STOPWORDS. This is the loosest joint in the mechanism and where
+ * its next defect will be: a heavy paraphrase that keeps fewer than half
+ * the tokens escapes, and brief-lint's verbatim-quote rules remain the
+ * strict backstop for quoted authority. Verbatim text always scores 1.0.
+ * An imperative with no significant tokens ("Fix it.") counts as carried:
+ * there is nothing to pin, and refusing on it would be unfalsifiable.
+ *
+ * A SOURCE WITH NO IMPERATIVES PASSES. Refusing every such job would ban a
+ * whole class of work; passing silently would make the check unfalsifiable
+ * on that class. Passing is chosen and asserted, so the choice not to
+ * refuse is itself the tested behavior.
+ *
+ * WHERE THIS RUNS AND WHAT IT DOES NOT COVER. `assembleBrief` reconciles
+ * its own output before returning and throws on missing imperatives, so
+ * the refusal lands before the brief is written anywhere (`run.mjs`
+ * writes `.job/brief.md` only after `assembleBrief` returns — a guard
+ * placed after the write would be decoration). In current production the
+ * source (title + detail) is embedded verbatim, so this acts as a
+ * tripwire: it fires the day a template edit or a future brief diet stops
+ * carrying source text, which is exactly the loss class it names.
+ * Revision and resume briefs rebuild rather than carry and are not covered
+ * here; that is a stated limit, not an oversight found later.
+ */
+const COMMAND_VERBS = new Set([
+  'add', 'address', 'assert', 'build', 'carry', 'change', 'check', 'classify',
+  'close', 'commit', 'compare', 'count', 'cover', 'create', 'delete', 'do',
+  'document', 'drop', 'ensure', 'file', 'fix', 'follow', 'gate', 'handle',
+  'ignore', 'keep', 'land', 'leave', 'list', 'measure', 'merge', 'move',
+  'name', 'print', 'prove', 'publish', 'push', 'read',   'rebase', 'record',
+  'refuse', 'remove', 'rename', 'repair', 'repeat', 'report', 'require',
+  'resolve', 'retry', 'return', 'run', 'set', 'ship', 'show', 'skip',
+  'split', 'start', 'state', 'stop', 'take', 'test', 'update', 'use',
+  'verify', 'wait', 'warn', 'write',
+]);
+
+const IMPERATIVE_MODAL = /\b(SHALL|MUST|should|must|needs?\s+to|required?\s+to)\b/;
+
+const STOPWORDS = new Set([
+  'shall', 'must', 'should', 'will', 'would', 'could', 'can', 'may', 'might',
+  'the', 'and', 'with', 'from', 'that', 'this', 'these', 'those', 'into',
+  'over', 'under', 'than', 'then', 'such', 'only', 'also', 'each', 'every',
+  'when', 'where', 'which', 'what', 'have', 'has', 'had', 'been', 'were',
+  'does', 'doing', 'done', 'them', 'they', 'their', 'there', 'here',
+  'about', 'after', 'before', 'between', 'during', 'without', 'within',
+]);
+
+/** Split source text into candidate sentences, keeping list items whole. */
+export function splitSentences(text) {
+  return String(text ?? '')
+    .split(/\r?\n/)
+    // Semicolons join independent clauses ("... is OPEN; record the next
+    // instance ...") and the clause after one can carry the imperative
+    // while the head cannot, so they split unconditionally.
+    .flatMap((line) => line.split(/;\s*/))
+    .flatMap((line) => line.split(/(?<=[.!?])\s+(?=[A-Z0-9"`*\-])/))
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+function stripListMarker(sentence) {
+  const m = sentence.match(/^\s*(?:\d+[.)]|[-*])\s+(.*)$/s);
+  return { listed: !!m, body: (m ? m[1] : sentence).trim() };
+}
+
+function firstWord(body) {
+  const m = body.match(/^["'`*]*([A-Za-z][A-Za-z-]*)/);
+  return m ? m[1].toLowerCase() : '';
+}
+
+/** True when the sentence is an imperative per the comment above. */
+export function isImperative(sentence) {
+  const { listed, body } = stripListMarker(sentence);
+  if (body.length === 0) return false;
+  if (listed) return true;
+  if (IMPERATIVE_MODAL.test(body)) return true;
+  return COMMAND_VERBS.has(firstWord(body));
+}
+
+/** Every imperative sentence in the source text, in order. */
+export function extractImperatives(sourceText) {
+  return splitSentences(sourceText).filter(isImperative);
+}
+
+function significantTokens(sentence) {
+  return sentence
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length >= 4 && !STOPWORDS.has(t));
+}
+
+function normalizeBrief(briefText) {
+  return ` ${String(briefText ?? '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ')} `;
+}
+
+/**
+ * True when the brief carries the imperative by token coverage (see comment).
+ * Rewording that keeps at least half the significant tokens still counts;
+ * this is deliberately not substring equality.
+ */
+export function briefCarries(briefText, imperative) {
+  const sig = significantTokens(imperative);
+  if (sig.length === 0) return true;
+  const brief = normalizeBrief(briefText);
+  const hit = sig.filter((t) => brief.includes(` ${t} `)).length;
+  return hit / sig.length >= 0.5;
+}
+
+/**
+ * Pure: the source imperatives the assembled brief does not account for,
+ * in source order. Empty means reconciled (or a source with no
+ * imperatives, which passes by documented choice).
+ */
+export function reconcileBriefImperatives(sourceText, briefText) {
+  return extractImperatives(sourceText).filter((imp) => !briefCarries(briefText, imp));
+}
+
+/** The work-source text a brief must carry: title plus detail, verbatim. */
+export function briefSourceText(job) {
+  return [job?.title, job?.detail].filter((s) => typeof s === 'string' && s.trim().length > 0).join('\n\n');
+}
+
 export function assembleBrief(ctx, {
   jobId,
   job,
@@ -684,7 +845,7 @@ export function assembleBrief(ctx, {
   // list it has no charge to read.
   const radar = job.type === 'scout' ? `\n${radarInputs(ctx.repoRoot)}` : '';
 
-  return `# Job ${jobId} — \`${job.type}\`
+  const text = `# Job ${jobId} — \`${job.type}\`
 
 ${resumed ? CONTINUE_PREAMBLE + '\n\n' : ''}You are working alone, unattended, in a git worktree checked out on branch
 \`${branch}\`. Everything you need is in this file and in the repository around
@@ -725,8 +886,19 @@ ${RESULT_PROTOCOL_INSTRUCTION}
 These are the rules this work is judged against. They are excerpts targeted at
 this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut — the full files are in this worktree at the paths named below, read them if you need the omitted or complete text)' : ''}.
 
-${ex.text || '_No spec files found in this worktree._'}
+ ${ex.text || '_No spec files found in this worktree._'}
 `;
+  // 2b refusal, placed before the return so it lands before the brief is
+  // written anywhere: `run.mjs` writes `.job/brief.md` only after this
+  // returns. Moving this check after the return (or after the write) is
+  // mutation B, and the test pins the order.
+  const missing = reconcileBriefImperatives(briefSourceText(job), text);
+  if (missing.length > 0) {
+    throw new Error(
+      `brief refuses: ${missing.length} imperative(s) from the work source are not carried: ${missing[0].slice(0, 160)}`,
+    );
+  }
+  return text;
 }
 
 function revisionVerdictSection(verdict = {}, findings = '') {
