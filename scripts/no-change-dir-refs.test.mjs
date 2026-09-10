@@ -41,6 +41,11 @@ const ALLOWED = [
     match: /openspec\/changes\/(?:\$\{name\}|live-one)\//,
     reason: 'creates and asserts temporary in-flight change trees to test the delta checker',
   },
+  {
+    file: 'scripts/brief-closure.test.mjs',
+    match: /openspec\/changes\/two-desks-work-orders-and-trains\//,
+    reason: 'reads banked round-1 evidence briefs as wild fixtures (B2/E catch, F pass); copies would desync from the banked record. If the change archives, these paths move and the arms fail loudly — update the paths and this entry then; the staleness arm below enforces the update',
+  },
 ];
 
 function relativeFile(abs) {
