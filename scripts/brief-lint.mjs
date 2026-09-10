@@ -11,12 +11,19 @@
 //     equal to the argument.
 //  2. QUOTES: every `>` block (joined, whitespace-normalised) is a substring of
 //     tasks.md at the authority sha — a paraphrase is where a clause leaves.
-//  3. INSTRUMENTS: every line containing "enforced by" or "enforces" names a
-//     path that exists in the tree, or contains "find" (delegating the search to
-//     the reader). Zero such lines is a WARN, and with --review a FAIL: a review
-//     brief must name at least one property and delegate its enforcement.
-//     LIMIT, stated so nobody trusts this for more than it does: the linter sees
-//     one line at a time, so "both are enforced by `portability.test.mjs`" —
+//  3. INSTRUMENTS: every SENTENCE containing "enforced by" or "enforces"
+//     names a path that exists in the tree, or contains "find" (delegating the
+//     search to the reader, which keeps passing). Headings, block quotes,
+//     fenced code and table rows are not claims and never weld to one; list
+//     bullets stay claims. A claim carrying distinctive content (a backticked
+//     identifier, a double-quoted string, a path) must share at least one of
+//     it with EACH existing instrument it names — addressed is not
+//     substantiated, and a shared token is evidence somebody opened the file,
+//     not proof the property holds there. Zero such sentences is a WARN, and
+//     with --review a FAIL: a review brief must name at least one property
+//     and delegate its enforcement.
+//     LIMIT, stated so nobody trusts this for more than it does: the linter
+//     cannot read English, so "both are enforced by `portability.test.mjs`" —
 //     one instrument for two properties, the defect that sat in seven briefs —
 //     PASSES here. Property-to-instrument completeness is the reviewer's
 //     "find and run it" duty and the full suite's backstop, not this check.
@@ -183,25 +190,134 @@ else {
   report(pf(bad === 0 && blob.length > 0), `quotes verbatim against ${TASKS_NAME}@${authority}`, `${quotes.length - bad}/${quotes.length}`);
 }
 
-// 3. instruments
+// 3. instruments — SUBSTANTIATION, not mere address (extended 2026-09-10).
 //
-// SENTENCES, NOT PHYSICAL LINES (fixed 2026-09-09 on C1's brief). The check
-// used to filter `lines`, so a claim that wrapped — "…`scripts/` the second.\n
-// Find them and run them." — lost its delegation to the line break and failed
-// a brief that was doing exactly what the check asks. A brief is hard-wrapped
-// prose; a check that reads one physical line at a time is reading an artifact
-// of the wrapping, not the sentence. Same defect as check 5's, below.
-const instLines = prose.filter((l) => /enforced by|enforces/i.test(l));
+// A claim is SUBSTANTIATED when a named, existing instrument can be shown to
+// contain something the claim is about. A claim that names an existing
+// instrument and nothing else is ADDRESSED, not substantiated.
+//
+// LIMITS, stated so nobody trusts this for more than it does: a check that
+// overstates itself in its own comment is this defect wearing the uniform of
+// the fix, and this whole extension exists to prevent that.
+// (a) The linter cannot read English, so it cannot know whether an
+// instrument implements the property credited to it; the most it establishes
+// is that the instrument and the claim share something — a backticked
+// identifier, a double-quoted string, or a path — beyond the file name. A
+// shared token is evidence somebody opened the file, not proof the property
+// holds there. A shared bare directory token (such as `scripts/` credited
+// to any file under `scripts/`) satisfies this check and proves almost
+// nothing; it passes here and is said to.
+// (b) One instrument for two properties still PASSES here: the defect that
+// sat in seven briefs, named in the header comment, is still the reviewer's
+// "find and run it" duty and the full suite's backstop, not this check.
+// (c) Bare English words are never tokens. There is no boundary between
+// property language and ordinary prose, so binding on bare words would share
+// something with nearly every file and substantiate nearly every claim —
+// the check wider than the property, which is the defect.
+// (d) The whole instrument file is read, comments and strings included: a
+// property may be credited in a test name or a comment, and reading code
+// only would miss the bindings authors actually write. The cost is the
+// mirror of (a): a mention is not an implementation.
+// (e) The token match is verbatim and case-sensitive, like the pointer
+// check's: an identifier renamed by case alone does not count as shared.
+// Single-quoted spans are never tokens: an apostrophe (`reader's`) is
+// indistinguishable from an opening quote without reading English, and
+// collecting the text between two apostrophes manufactures tokens from
+// ordinary prose. Bare numerals are never tokens, for the same reason a
+// bare word is not: a small number occurs incidentally in nearly every
+// file. A numeral the author backticks (`3000`) counts like any backticked
+// span — the backticks are a deliberateness signal the linter can read
+// without English. Backticked spans under 3 characters do not count either:
+// a one-letter token shares something with every file worth the name.
+//
+// DELEGATION KEEPS PASSING. A sentence carrying "find" hands the mapping to
+// the reader and says so; refusing it would push briefs toward naming a
+// file confidently instead — the exact defect, made worse by the remedy.
+//
+// A CLAIM CARRYING NO DISTINCTIVE CONTENT passes as ADDRESSED. "The
+// property is enforced by `scripts/run-tests.mjs`" carries nothing to look
+// for, and there is nothing to refuse it FOR without refusing brevity
+// itself. Demanding content would push authors to invent some, which
+// manufactures the domain that satisfies the claim; inventing the domain
+// proves the domain, not the property. The detail line reports how many
+// claims were substantiated and how many merely addressed, so a reader sees
+// how much of a PASS was which.
+//
+// NON-CLAIM TEXT neither welds to a claim nor counts as one. On 2026-09-10
+// this check refused a brief whose HEADING carried the trigger word: the
+// sentence model had welded the heading to the paragraph beneath it, the
+// pair read as one claim, and the delegation sitting in the NEXT sentence
+// did not count — the check shaping the artifact (a worse heading, written
+// to satisfy it) rather than guarding it. A heading is a label for the
+// section that makes claims. Block quotes are the frozen standard, not the
+// brief's assertion (check 8 reads the brief's OWN lines for the same
+// reason). Fenced code is commands, not assertions. A table row is
+// structured data, not a sentence. The authority line is routing metadata,
+// fixed by the change it names: the author cannot repair trigger words in
+// its fixed part, and the rest welds (the line carries no terminal
+// punctuation, so without this it joins whatever claim follows it and its
+// words vote on that claim's delegation). List bullets STAY claims: a bullet is
+// author prose, and no Files bullet carries trigger words, so keeping them
+// binds real directives without moving the scope check. The physical-line
+// model is NOT the remedy: it would re-open the wrapped-claim hole the
+// sentence model was built to close (a claim on one line, its delegation on
+// the next, split by wrapping alone), trading today's false refusal for its
+// opposite — a round trip, not a repair.
+//
+// SENTENCES, NOT PHYSICAL LINES (kept from the 2026-09-09 repair on C1's
+// brief, which this extension preserves: paragraph lines still join before
+// splitting, so a claim that wraps keeps its delegation). What changes is
+// only which lines are allowed into a sentence.
+const NONCLAIM_LINE = /^\s*(#{1,6}(\s|$)|>|\||```|authority:\s*\S+@[0-9a-f]{7,40})/;
+const claimBody = [];
+let inClaimFence = false;
+for (const l of proseLines) {
+  if (/^\s*```/.test(l)) { inClaimFence = !inClaimFence; continue; }
+  if (inClaimFence) continue;
+  if (NONCLAIM_LINE.test(l)) continue;
+  claimBody.push(l);
+}
+// Same terminal set the shared sentence model splits on (period and
+// semicolon, each closing a sentence only before whitespace, so dotted
+// paths and identifiers never split a claim), split rather than matched so
+// interior periods survive; the shared split is not restated here.
+const claimSents = claimBody.join('\n').replace(/\s+/g, ' ').split(/[.;]\s+/)
+  .map((s) => s.trim()).filter((s) => s.length > 0);
+const instClaims = claimSents.filter((l) => /enforced by|enforces/i.test(l));
 let instBad = 0;
-for (const l of instLines) {
+let instSubstantiated = 0;
+let instAddressed = 0;
+for (const l of instClaims) {
   const paths = [...l.matchAll(/`([^`]+\.(?:mjs|js|ps1|sh))`/g)].map((m) => m[1]);
   const delegates = /\bfind\b/i.test(l);
   const exist = paths.filter((p) => existsSync(`${REPO}/${p}`) || existsSync(p));
-  if (!delegates && exist.length === 0) { instBad += 1; console.log(`      NO INSTRUMENT: ${l.trim().slice(0, 100)}`); }
+  if (!delegates && exist.length === 0) { instBad += 1; console.log(`      NO INSTRUMENT: ${l.trim().slice(0, 100)}`); continue; }
+  if (delegates) continue;
+  const allTicked = [...l.matchAll(/`([^`\n]+)`/g)].map((m) => m[1].trim());
+  const debackticked = l.replace(/`[^`]*`/g, ' ');
+  const quoted = [...debackticked.matchAll(/"([^"\n]{3,})"/g)].map((m) => m[1].trim()).filter((t) => t.length >= 3);
+  // A sentence-final period after an unbackticked path ("see wisdom/.") is
+  // the sentence's, not the path's; without the strip the token carries it
+  // and misses the file it names.
+  const barePaths = [...debackticked.matchAll(/[A-Za-z0-9_.\-]+(?:\/[A-Za-z0-9_.\-]+)+\/?/g)].map((m) => m[0].replace(/[.;]+$/, ''));
+  const tokens = [...new Set([...allTicked.filter((t) => !paths.includes(t) && t.length >= 3), ...quoted, ...barePaths])];
+  if (tokens.length === 0) { instAddressed += 1; continue; }
+  let claimOk = true;
+  for (const p of exist) {
+    let text = null;
+    try { text = readFileSync(`${REPO}/${p}`, 'utf8'); } catch { text = null; }
+    if (text === null) { try { text = readFileSync(p, 'utf8'); } catch { text = null; } }
+    if (text === null || !tokens.some((t) => text.includes(t))) {
+      claimOk = false;
+      console.log(`      UNSUBSTANTIATED: ${p} shares nothing with the claim — ${l.trim().slice(0, 100)}`);
+    }
+  }
+  if (claimOk) instSubstantiated += 1;
+  else instBad += 1;
 }
 if (isPacket) skip('enforcement claims', 'a packet asserts no enforcement — the reviewer\'s instructions come from the prompt file, not from this document');
-else if (instLines.length === 0) report(flags.has('--review') ? 'FAIL' : 'WARN', 'enforcement claims', flags.has('--review') ? 'a review brief must name a property and delegate finding its enforcement' : 'none present (nothing asserted as enforced)');
-else report(pf(instBad === 0), 'every enforcement claim names an existing instrument or delegates the finding', `${instLines.length} lines (per-line only; one instrument for two properties passes here — the reviewer finds and runs)`);
+else if (instClaims.length === 0) report(flags.has('--review') ? 'FAIL' : 'WARN', 'enforcement claims', flags.has('--review') ? 'a review brief must name a property and delegate finding its enforcement' : 'none present (nothing asserted as enforced)');
+else report(pf(instBad === 0), 'every enforcement claim names an existing instrument or delegates the finding', `${instClaims.length} claim(s): ${instSubstantiated} substantiated, ${instAddressed} addressed (no distinctive content); per-claim only; one instrument for two properties passes here — the reviewer finds and runs`);
 
 // 4. files
 let fi = isPacket ? -1 : lines.findIndex((l) => /^##\s+Files/i.test(l));
