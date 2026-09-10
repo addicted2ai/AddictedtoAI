@@ -848,6 +848,141 @@ shared expiry forces all twenty-three onto one morning. **The weakest records an
 the highest-pressure moment are therefore the same event by construction**, which
 no amount of intending to be careful will fix.
 
+### 7g. The sealed review is blind in one direction, and it is the direction of whoever designed it
+
+The sealed review is this project's strongest instrument. A reviewer gets the
+tree, the author's reports and a list of questions, and never gets the brief the
+author was working from. That seal is what makes the review's findings about the
+work rather than about the instruction.
+
+It is also the defect. **A SEALED REVIEW ATTRIBUTES EVERY DEFECT TO THE AUTHOR,
+BECAUSE THE BRIEF IS OUTSIDE THE ENVELOPE — AND THE DEFECTS MOST WORTH FINDING
+ARE THE ONES THE BRIEF CAUSED.** This report's own record says specification was
+the bottleneck; briefs and task text caused most revision rounds. So the review
+is systematically silent about the largest category of defect, and silent in
+favour of the party who wrote the brief, designed the review, and reads the
+verdict.
+
+The instance that made it visible is the Pulse's gate lease. A reviewer ruled
+that proceeding past a sixty-second clock-skew tolerance was indefensible: a
+live holder with a fast clock has its lease disregarded at the instant it is
+read, which is the exact overlap the lease exists to prevent, and the overlap is
+silent — exit zero, work written, every later line ordinary. The review recorded
+that choice as the author's, quoting the author's own concession that the live
+skew population is unknown.
+
+**The choice was not the author's. It was forced by a sentence in the brief**,
+which set the property as *no state of this file may cause the engine to refuse
+past the maximum age*. Given that property, the future arm must proceed, and the
+author derived it correctly and said so.
+
+The missing word is `dead`. **A BOUND WRITTEN ON THE SYMPTOM OF A FAILURE ALSO
+BINDS THE MECHANISM WORKING CORRECTLY, UNLESS THE PROPERTY NAMES WHICH ONE IT
+MEANS.** A live holder refusing the engine for as long as it holds the tree is
+the brake, not the failure. One absent adjective converted a bound on a failure
+mode into a bound on the mechanism.
+
+What caught it was luck of a specific kind: the reviewer opened by stating the
+property it had reconstructed from the surrounding system — *the engine never
+rewrites tracked files while a live holder holds the lease* — and that sentence
+disagrees with the brief's on exactly one state. **The divergence between the
+reconstruction and the instruction is the only signal a sealed review can carry
+about a defect in the instruction**, and it arrived unrequested.
+
+So it is now required, and three things about how it is required are the whole
+value, each of which was a hole in the first version of the requirement:
+
+**The source.** Reconstruct the property from **the thing being guarded, never
+from the guard**. A reviewer who reconstructs from the change under review
+reconstructs the brief implemented faithfully and reports agreement — a
+mechanism whose answer is *agrees* precisely when the work was done well, which
+is precisely when a defect in the instruction is invisible. The guard is
+downstream of the instruction under suspicion; the guarded thing is not.
+
+**The adjudicator.** A divergence is **not** ruled on by the brief's author.
+That is the party whose work is under examination judging the claim against it,
+and the same rule already exists here for merge decisions on a packet whose
+brief one wrote. Otherwise the strongest finding the mechanism can produce is
+the one finding it is least able to accept, and it gets resolved as a reviewer's
+misreading more often than it is true, without anyone deciding to do that.
+
+**The ordering.** The reconstruction is written and saved **before** the diff,
+the reports and the mechanism are opened, and never edited afterwards; a
+reconstruction that turns out wrong gets a correction beside it rather than a
+rewrite. **A SENTENCE THAT CAN STILL BE ADJUSTED AFTER THE CHANGE IS KNOWN IS
+NOT A PRIOR, IT IS AN ECHO**, and an echo agrees every time. A required section
+is otherwise the cheapest box on the form to tick, which is section 7f's problem
+arriving in a new place.
+
+### 7h. Two rules about numbers and about bundles, from the same review
+
+**A CONSTANT THAT SEPARATES TWO SAFE OUTCOMES DOES NOT HAVE TO BE MEASURED; ONE
+THAT SEPARATES A SAFE OUTCOME FROM AN UNSAFE ONE DOES.** In the lease, the same
+sixty-second constant is either a safety boundary or a message selector
+depending on what the arms on each side of it do. Under the shipped disposition
+it separated a refusal from a proceed, so the number needed a distribution of
+real-world clock skew that nobody can measure. Under the corrected disposition
+both sides refuse and the number only decides which diagnostic line prints. The
+repair was not a better number — it was removing the number's authority over
+anything dangerous. **A number with a respectable provenance sitting on an
+unsafe boundary is still an unmeasured number, and the provenance is exactly
+what makes it feel settled.**
+
+**THE OBVIOUSLY-RIGHT HALF IS THE ALIBI.** That packet bundled two changes: a
+repair to the DIAGNOSIS — a distinct state for clock skew, said loudly, since
+the old code printed *age 0s* for a file dated ten years in the future — and a
+change to the DISPOSITION that no part of the diagnosis required. The first is
+unarguable. The second rode in on it, through a review and two rounds. This is
+section 7's true-half-carries-the-false-half promoted from a sentence to a
+change, and it is worse there, because a bundled commit gets one review and the
+unambiguous half sets its tone. The diagnosis half also turned out to be what
+made the corrected disposition affordable: refusing was undiagnosable before,
+precisely because skew read as a live lease.
+
+### 7i. What a remedy costs, which is a different question from whether it works
+
+Section 7 already says that an error message suggesting a remedy is prescribing,
+and that a guard prescribing the edit which silences it is worse than one that
+simply refuses. Three sharpenings arrived the same night, from two directions,
+and each was found by someone auditing their own guards against the other's.
+
+**A WORKING REMEDY AND A SAFE REMEDY ARE DIFFERENT QUESTIONS, AND A SWEEP THAT
+ASKS THE FIRST ONE FEELS EXHAUSTIVE BECAUSE EVERY ITEM GETS AN ANSWER.** Four
+override paths were audited and cleared, and the audit asked of each whether it
+genuinely does what it says. One of them disables a safety window entirely, at
+no cost, with the qualifier *if you know why that is safe* — pure honour system.
+**The reader most likely to type it is the one who wants the run to start now,
+which is the exact state the guard exists for.** The clearing was not careless;
+it answered one question twice. This is the same shape as three separate passes
+over a count pin all asking whether the number was right and none asking whether
+the set was.
+
+**A REMEDY THAT CAN BE PERFORMED WITHOUT KNOWING ANYTHING IS A LAUNDERING PATH;
+A REMEDY THAT CARRIES A COST IS NOT.** The lease's refusal may tell a reader to
+delete an abandoned advisory file when nothing holds the tree, because that
+costs a judgement about the world. It may not tell them to widen the tolerance,
+because that costs nothing and silences the guard permanently. The same
+distinction repaired an override elsewhere: it now proceeds, and stamps the run
+not-pushable. The remedy still works and it is no longer free.
+
+**AND THE STAMP HAS TO REACH THE LAST LINE.** Section 7's rule that the noisiest
+part of an output is where a skipped check hides best has a mirror image: a
+caveat printed at the place the override was taken sits hundreds of lines above
+the final verdict, and the final verdict is what gets read and relayed. The
+repair was a closing line that names the override, refuses to read as either
+green or red, and carries its own exit code. **THE PLACE A CAVEAT IS FIRST
+NOTICED IS NOT THE PLACE IT HAS TO SURVIVE TO.**
+
+Finally, the two failure modes of a prescribed remedy are worth holding as a
+pair, because they fail in opposite directions. A remedy that is **false and
+effective** — mark this existing file as new, and the check passes forever —
+works every time, and every use makes the record slightly less true while the
+check stays green. A remedy that is **true and inert** — write the note in the
+history file and re-run, from a check that never reads the history file — wastes
+one run and burns the trust of the one person who obeyed it. **The first
+corrupts the corpus the instrument protects; the second destroys the
+instrument.** The second is self-limiting. The first is not.
+
 ---
 
 ## 8. THE PHASED PLAN
