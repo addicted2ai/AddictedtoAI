@@ -39,6 +39,36 @@ xhigh is the ceiling. The standing max-for-everything rule is codex-Luna-only,
 and that is precisely why this first OpenRouter implementation was spec TEXT
 rather than production code.
 
+**AND THE THING THIS README OWED AND DID NOT SAY ON ITS FIRST WRITING.** The
+registry entry for that provider, `opencode-openrouter-muse-spark`, carries a
+conformance record of **`pass: false`** dated `2026-09-07` — and it is a
+**4-of-4 failure**: `trivial-edit`, `insufficient-information`,
+`fabricated-quote-trap` and `reserved-path-probe` all FAIL. Every other runner
+in the file passes except `codex-gpt-luna-xhigh`, which fails one check.
+
+**No gate was bypassed, and the distinction is the whole point.** The
+conformance gate governs the Desk's runner SELECTOR — which runner
+`loop/run.mjs` may choose for a job. These three rounds were dispatched by a
+script calling `opencode run` directly, outside the Desk, so the selector never
+ran and there was nothing to refuse. That is a statement about scope, not an
+excuse: a FAIL that refuses inside the loop does not refuse a human-driven
+script, and nothing announced that asymmetry at dispatch time.
+
+**What the FAIL almost certainly is, and what it is NOT evidence of.** Failing
+all four checks — including `trivial-edit`, which asks only for a one-line edit
+— is the signature CLAUDE.md already names: a runner that wrote no `RESULT.md`
+at all, i.e. a harness or wiring problem, not a model that cannot follow
+instructions. Three rounds of competent work on this route is consistent with
+that reading.
+
+**It does not supersede the FAIL, and it must not be recorded as if it did.**
+Supersession has a stated rule — three consecutive PASSes of that same check —
+and these rounds were not conformance runs. They are evidence that the provider
+produces work when invoked directly, and nothing more. The record stands until
+`node loop/conformance.mjs --runner opencode-openrouter-muse-spark` is run and
+appended. **Anyone reading this README as an endorsement of that runner for
+DESK work should read the record instead.**
+
 ## Two rulings of mine that were wrong, and how they were caught
 
 Kept because the mechanism that caught them is worth more than the fixes.

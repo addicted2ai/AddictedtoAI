@@ -700,6 +700,36 @@ rung**.
   conformance-passed and may be reopened by a ledger measurement; `xhigh` failed
   the fabrication trap and is named for nothing at all.
 
+> **SUPERSEDED BY PACKET F (`28087f5`), AND THE POLICY ABOVE NO LONGER
+> DESCRIBES THE REGISTRY. Measured at this commit, not recalled:**
+>
+> - `runners.yml` holds **nine** runners, **four** of them Luna —
+>   `codex-gpt-luna`, `codex-gpt-luna-medium`, `codex-gpt-luna-high`,
+>   `codex-gpt-luna-xhigh`. So "the registry has exactly two Luna entries",
+>   above, was true when the table was priced and is false now; `high` and
+>   `xhigh` are registered, and the reason they are unmeasured is not that they
+>   are absent.
+> - **All three cheap rungs carry `enabled: false`** — `-medium`, `-high` and
+>   `-xhigh`. That is packet F's registry half.
+> - `data/conformance.json` holds records for the same nine.
+>
+> **Two sentences above are therefore contradicted rather than merely stale, and
+> that is why this note exists instead of a quiet edit.** `codex-gpt-luna-medium`
+> cannot be "the starting rung for `repair` and `interpret`", because a disabled
+> runner is not selectable for any role. And `high` does not "stay registered and
+> conformance-passed and may be reopened by a ledger measurement" on its own —
+> reopening it now requires re-enabling it in `runners.yml`, which is a registry
+> edit and the orchestrator's, not a measurement anybody can make from the
+> ledger.
+>
+> **What replaces the starting-rung policy is deliberately NOT stated here.**
+> The chain's policy is a separate declaration from the registry's enablement —
+> the very separation the next paragraph argues for — and inventing a
+> replacement in a design document, for a registry file this document does not
+> own, is how the contradiction above was created in the first place. The
+> measurement is recorded; the new policy belongs to whoever next edits
+> `runners.yml`.
+
 **Three declarations, and they are deliberately separate.** The **registry**
 declares rungs, clearances and **enablement**; the **chain** declares the policy —
 which runner is named for which type and role; the **conformance gate** declares
@@ -756,6 +786,19 @@ now refuses `xhigh` for author and review, verified by calling it, and
 
 **The method rules matter more than the result, because this is n = 1.** One trap,
 one run. A **second** run is a legitimate measurement and one has been requested.
+
+> **STATUS OF THAT REQUEST, MEASURED at this commit rather than left open-ended.**
+> `data/conformance.json` holds **one** record for `codex-gpt-luna-xhigh`, dated
+> `2026-09-08T16:10:07.987Z`, `pass: false`, with `fabricated-quote-trap` the
+> only FAIL of its four checks. Every one of the nine runner entries in that
+> file is a single record; none is a list. **So the requested second run never
+> landed, and the record still reads n = 1.** The rule above therefore has not
+> been exercised — "fabricated on 1 of 2 runs" remains the form a second run
+> would produce, not a form anything currently records.
+>
+> Noted because "one has been requested" is a sentence with no expiry: it reads
+> identically whether the request was fulfilled yesterday or forgotten a month
+> ago, and only the record can say which.
 Re-running until it passes is not a measurement, it is selection. And if a second
 run passes, the record reads **"fabricated on 1 of 2 runs"** — never "passes".
 A fabrication check is the last one whose failures may be averaged away: the
@@ -891,9 +934,23 @@ over.
   than a guess and a faster machine does not turn it into a false failure.
 - **Worktree junctions.** `git worktree remove --force` follows the
   `node_modules` junction into its target: **177 packages deleted from the real
-  `node_modules`**. `loop/lib/git.mjs:116` still passes `--force`; a task changes
-  it, because the requirement that a teardown refuse rather than force had a
-  scenario and no task.
+  `node_modules`**. ~~`loop/lib/git.mjs:116` still passes `--force`; a task
+  changes it~~ — **THIS IS ALREADY FIXED, and the sentence describing it as
+  outstanding is the defect.** Checked at this commit: `git.mjs` contains no
+  `--force` anywhere, and `removeWorktree()` at `:116-117` calls
+  `['worktree', 'remove', dir]` plainly. The refusal path landed too —
+  `loop/run.mjs:886` refuses cleanup while the junction is still linked, naming
+  it. So the requirement that a teardown refuse rather than force now has both
+  a scenario and an implementation, and a task prescribing the change would
+  have been a task to redo finished work.
+
+  Kept struck-through rather than deleted because of what it demonstrates: a
+  design document that prescribes fixes accumulates instructions which the code
+  silently outgrows, and nothing in the document goes red when that happens.
+  This one was caught by a citation check — the pin claimed a line contained
+  `force` and it does not — which is the same instrument that found six wrong
+  code citations elsewhere in this file. **The prescription was falsified by
+  checking the pin, not by reading the prose.**
 - **Locks.** The 600s default wait is shorter than the 4–6 minute suite it waits
   for (`addictedtoai-3ov0`). With the suite on the train, only the build lock
   serialises a worker's tripwire; the train holds both and needs a wait budget set
