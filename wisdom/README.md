@@ -2402,3 +2402,83 @@ measurements with their numbers, and the remaining explanation is written as
 That sentence, in exactly those words, is what belongs in the bead. A cause
 nobody can reproduce is not a closed question; it is an open one with a known
 last-seen date.
+
+### 7w. THE CLEANUP IS WHERE THE EVIDENCE DIES
+
+Every rung above is about a check that was narrower than its claim. This one is
+about the step nobody writes a check for at all — **the teardown** — and it
+produced four defects in twenty minutes, three of them in code I had written that
+same night specifically to be careful.
+
+**"UNTRACKED" IS NOT "NOT WORK", AND ASSERTING IT IS HOW A NIGHT'S OUTPUT GETS
+DELETED.** My teardown script classified each worktree's files, printed *"N
+untracked file(s), not work"*, and moved on. The dry run listed what those files
+were: `REVIEW3.md` in two worktrees and `RESULT3.md`/`RESULT4.md` in a third —
+**sealed reviews and round reports**, the entire product of two packets. They
+were in fact safe to delete, because I had relocated them into the evidence tree
+twenty minutes earlier. **THAT IS A FACT ABOUT THAT PARTICULAR MOMENT, NOT A
+PROPERTY OF UNTRACKED FILES**, and the script stated it as a property. The repair
+is to measure rather than classify: hash each file, require a byte-identical
+committed twin, and refuse the whole worktree over any file that has none. Four
+files, four twins, each named in the output with the path that survives it.
+
+**AND THE REFUSAL IMMEDIATELY FOUND SOMETHING I DID NOT KNOW WAS MISSING.** It
+stopped on `pulse-lease/.agent-brief.md`. Every RESULT and every REVIEW had been
+relocated into the repository — and **the authority document all of them are
+judged against existed only in a session scratchpad that dies with the session.**
+A report whose brief is gone cannot be re-checked by anyone: the round's record
+collapses into the author's account of what was asked, which is the one thing a
+review exists to be independent of. Eight briefs are now committed beside their
+reports, and the precedent turned out to already be ours —
+`evidence/reviews/experiment-medium-vs-max/` has always committed its brief and
+both judge briefs. **THE CONVENTION EXISTED AND HAD NEVER BEEN GENERALISED**,
+which is its own small instance of the same disease. Two rounds' briefs are not
+in hand and are recorded as absent rather than reconstructed: **a brief rebuilt
+from memory reads exactly like the original and is not one.**
+
+**A GUARDRAIL IS NOT LOOSENED BY SATISFYING THE CONDITION IT CHECKS.** Git
+refuses to remove a worktree holding untracked files and tells you to use
+`--force`. `--force` is a blanket instruction to delete whatever is there —
+including the modified tracked file the previous check exists to catch — so
+taking it would convert two independent guards into none. The narrow act is to
+delete the specific files just proven to have committed twins, one at a time, and
+let git's own refusal keep standing over everything else. The distinction is the
+whole of this repository's rule that *a run blocked by a guardrail reports it and
+stops; it does not loosen the guardrail to get past it* — and the interesting
+part is that satisfying the condition is not loosening it, so the rule does not
+mean "give up".
+
+**THE OBVIOUS NEXT REACH IS SOMETIMES THE DANGEROUS ONE.** On Windows a
+directory junction reports as a directory, so `rmSync(path, {recursive:false})`
+throws `ERR_FS_EISDIR`. The reflex is to add `recursive:true` — **which is
+precisely the call that can walk through the reparse point and delete the main
+tree's dependencies**, the exact hazard the junction-first ordering was written to
+avoid. `rmdirSync` removes the reparse point and cannot recurse. Because "cannot
+recurse" is a claim about an API on a platform rather than a measurement, the
+main tree's `node_modules` is counted before and after every removal and any drop
+stops the whole teardown: **177 → 177 → 177**. The `ls` that reported 175
+afterwards was missing `.bin` and `.package-lock.json`, and checking that
+difference rather than shrugging at it is the difference between a verification
+and a scare.
+
+**A LIST MAINTAINED BESIDE THE THING IT DESCRIBES IS A SECOND SOURCE, AND THE
+SECOND SOURCE IS THE ONE THAT ROTS.** The relocation script's mapping was
+enumerated from the world after §7t. Its *removal* list was not — it stayed
+hand-written, and it went stale the moment two more rounds were committed: the
+script printed a complete plan for eight files while naming three of the five
+root reports to delete. Same file, same author, same night, one half repaired and
+the other left. It is derived from the branch now, and the hand-written list is
+kept only as a cross-check that **prints a disagreement rather than resolving
+it** — I do not know from inside which side is wrong.
+
+**And one from the same twenty minutes that belongs to the instrument rather than
+the cleanup: A COUNTER THAT DEFAULTS TO ZERO ON A PARSE MISS REPORTS A GREEN
+SUITE OF NO TESTS AS A GREEN SUITE.** My suite runner matched `# tests N`; the
+runner prints `ℹ tests N` when stdout is not a terminal. Every counter came back
+**null**, beside `EXIT 0`. It was honest only because null was left visible
+instead of being coalesced to 0 — `tests null pass null fail null` is unmistakably
+*nothing was measured*, and `0/0/0` beside a zero exit code is indistinguishable
+from success. The fix accepts both glyphs, and the number was recovered by
+**re-parsing the saved output rather than re-running**: re-running to repair a
+parser measures a different run to answer a question about this one, which is
+§7v's whole subject arriving in a place I did not expect it.
