@@ -15,7 +15,7 @@ block says why.
 **Mechanism.** A job's unit becomes a **work order**: 1..N items sharing a
 **coherence key** = `budget category` + `subject path or surface` + `source
 cohort`. Coherence, not count. Same-category only, so `categoryOf`
-(`config.mjs:355`) and `invocationAllowance` (`budget.mjs:158`) keep one cap and
+(`config.mjs:362`) and `invocationAllowance` (`budget.mjs:158`) keep one cap and
 one category per job; the **governing type** is what `checklistFor`
 (`review.mjs:381`), `proposalCapFor` (`proposals.mjs:77`), the ledger `type` and
 breaker 1 (`run.mjs:2082`) all read.
@@ -375,7 +375,7 @@ code change.
 2. **Four locks, and two of them are new.** The existing build and test locks; a
    **selection lock** over "read the ledger → mint the id → create the branch →
    commit `.job/`" as one critical section, because `nextJobId`
-   (`ledger.mjs:173`) derives the id from the ledger plus existing branch names
+   (`ledger.mjs:202`) derives the id from the ledger plus existing branch names
    and two workers in one window mint the **same id**; and a **ledger lock** over
    every append (`run.mjs:977`, `:1048`, `:1429`), including the paths that never
    reach a merge. **One ledger file.** Per-run line-files that something later
