@@ -16,10 +16,27 @@ human decides when this repository reaches the public internet.
 > unverified push is a public defect.
 
 **Still the maintainer's, not an agent's:** `bd dolt push`; `gh pr create` and
-`gh pr merge`; and `"publish": true` in `data/config.json`, which stays
-`false` — that flag arms the Pulse's and the loop's *own* unattended publish
-step, a far larger grant than one reviewed launch push, and it belongs with
-task 9.5.
+`gh pr merge`; creating or removing `STOP`; and `package.json`.
+
+**`publish` is NOT on that list, and this passage no longer states its value.**
+The flag arms the Pulse's and the loop's *own* unattended publish step — a far
+larger grant than one reviewed push — and the maintainer granted the
+orchestrator standing authority to turn it on and off, at its own judgment,
+between runs, on 2026-08-29. What governs it is below under "Operating the
+site"; what its value is right now is `data/config.json`, which is the only
+place it is ever read. **Read the JSON.**
+
+This sentence used to say the flag "stays `false`", which had been false since
+2026-08-29 and was worse than merely stale: `data/config.json` reads `false`
+during any change the orchestrator is holding publishing down for, so the
+sentence is periodically, accidentally right for a reason it does not give, and
+a reader who checks it while a hold is on finds it confirmed. It also claimed
+the flag was the maintainer's alone, two hundred lines from the passage
+recording that he had granted it away — an operational instruction that a
+reader loading only this half would follow. A value restated outside the file
+that holds it is a second source that goes stale silently while reading exactly
+like a measurement; the same defect and the same repair as the conformance
+table in `CLAUDE.md`. Found by A2AI-Fable-Arch, `addictedtoai-mrld`.
 
 **Why the rule existed:** the remote deploys to `www.addictedtoai.net` through
 Vercel on push, and the tree was deliberately emptied for the greenfield
@@ -244,14 +261,30 @@ exception.
 ### Publishing
 
 `data/config.json` is the one normative loop config: the `publish` flag, the
-budget bounds (upkeep floor 40%, new-writing ceiling 45%, machinery ceiling
-10%), the per-type wall-clock job caps, and the capacity-degradation
-thresholds. Both engines call the same publish step (`pulse/lib/publish.mjs`),
-so there is exactly one implementation of deploy and exactly one gate on it.
+budget bounds, the per-type wall-clock job caps, and the capacity-degradation
+thresholds. **This passage names those keys and does not reproduce their
+values — read the JSON.** Both engines call the same publish step
+(`pulse/lib/publish.mjs`), so there is exactly one implementation of deploy and
+exactly one gate on it.
 
-**`publish` is `true`** as of 2026-08-29, set on the maintainer's explicit
-instruction once the site was live. The Pulse and the loop now commit and push
-their own work, unattended.
+The values used to be restated here, and both restatements had gone wrong by
+2026-09-09. The budget line said "machinery ceiling 10%" when
+`budget.bounds.machinery_ceiling_pct` had been `30` for some time — and that
+stale 10 was not inert: the orchestrator wrote it into a design discussion as a
+live figure and computed a correct threefold warm-up widening from it, because
+`loop/lib/budget.mjs`'s `tightestCeilingPct` reads these bounds BY PATTERN and
+`warmUpJobs()` is `100 / tightestCeilingPct(cfg)`, so the number has arithmetic
+consequences and a wrong copy of it produces confident, wrong arithmetic. The
+`publish` line said `true` where the file says whatever the orchestrator's
+current hold says. **A value restated outside the file that holds it is a
+second source that goes stale silently while reading exactly like a
+measurement** — see the conformance table in `CLAUDE.md`, which was repaired
+this way after its fourth instance. `addictedtoai-mrld`.
+
+**The flag's meaning, which does not go stale:** `publish` arms the Pulse's and
+the loop's own unattended publish step. Set to `true` on 2026-08-29 on the
+maintainer's explicit instruction once the site was live; whether it is `true`
+right now is a question only `data/config.json` answers.
 
 **The orchestrator may turn publishing on and off at its own judgment**, by
 standing authority granted 2026-08-29 — typically off while a larger change is
