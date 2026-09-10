@@ -868,8 +868,9 @@ export function briefSourceText(job) {
  *   arrived rather than arriving cut.
  * - CONTRADICTED: a brief sentence carrying a negation shares ≥2
  *   significant tokens with the required sentence. Negations are the
- *   plain forms ("not", "never", "no" as a word, "refuses to",
- *   "declines to") plus contracted stems ("dont", "wont", … — matched
+ *   plain forms ("not", "never", "no" as a word, "cannot", "forbidden",
+ *   "refuses to", "declines to", "prohibited from") plus contracted
+ *   stems ("dont", "wont", … — matched
  *   whole after apostrophe-stripping, because a bare "n't" entry could
  *   never match post-normalization and would be a dead arm dressed as
  *   coverage). The co-occurrence
@@ -896,13 +897,20 @@ export function briefSourceText(job) {
  * detail-drop liveness arm does exactly that.
  */
 const NEGATIONS = [
-  'not', 'never', 'no', 'refuses to', 'declines to',
+  'not', 'never', 'no', 'cannot', 'forbidden', 'refuses to', 'declines to',
+  'prohibited from',
   // Contracted forms. Normalization strips apostrophes without a space
   // ("don't" becomes "dont", never "don t"), so these are matched whole;
   // a bare "n't" entry could never match and would be a dead arm dressed
   // as coverage.
   'dont', 'cant', 'wont', 'isnt', 'arent', 'wasnt', 'werent', 'couldnt',
   'shouldnt', 'wouldnt', 'mustnt', 'doesnt', 'didnt', 'hasnt', 'havent',
+  // Deliberately absent, with reasons: "without" and "against" mark
+  // manner and relation, not polarity — they occur constantly in
+  // faithful prose ("re-gated without re-authoring"), so admitting them
+  // would flag faithful copies as inversions. A wider net here is easy
+  // to propose and expensive to carry; each candidate above earned its
+  // place with an arm proving it fires on a real inversion.
 ];
 
 function squashed(sentence) {
@@ -969,6 +977,33 @@ export function reconcileRequiredCoverage(requiredText, briefText) {
     else missing.push(sentence);
   }
   return { missing, truncated, contradicted };
+}
+
+/**
+ * polaritySection() — the review-time polarity reader (the P0-3
+ * deferral, resolved). Polarity cannot be refused at dispatch: the
+ * template's own scope sentences negate work vocabulary, so a
+ * whole-brief contradiction throw false-fires on ordinary titles
+ * (35 red, measured). A reviewer reading the diff against the source
+ * can tell a scope sentence from an inversion, so the judgment lives
+ * here, in the review brief, with refusal power behind it — an
+ * inversion is refused under an existing closed reason, never a new
+ * one, because the spec owns that list.
+ */
+export function polaritySection() {
+  return `## Polarity: does the diff do what the source required, or the opposite?
+
+For each requirement in the work source above, ask whether the diff
+implements it, ignores it, or INVERTS it — does the opposite: deletes
+what it should add, loosens what it should tighten, wires what it
+should refuse. An inversion is refused: \`revise\` or \`reject\` under
+\`spec-violation\`, naming the inverted requirement and quoting both
+the requirement and the inverting hunk. Template scope-negations ("do
+not widen", "never edit X") and deletions the brief itself requests
+are not inversions. When uncertain whether a pair is an inversion or
+a rewording, name the pair in \`notes\` rather than refusing — a false
+inversion refusal costs a round, a missed inversion ships the opposite
+of what was asked.`;
 }
 
 export function assembleBrief(ctx, {
@@ -1067,10 +1102,11 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
   // outcome is a scope-violation"), so whole-brief contradiction
   // refusal false-fires on the existing suite (35 red, measured — the
   // run that proved it is recorded in round 3a's report). Scoping the
-  // search down until it can never fire would be decoration; shipping
-  // the detector unwired, with arms and mutation proofs, is the honest
-  // state until a review-time reader exists to judge polarity, which
-  // is round 3b's question, not this one's.
+  // search down until it can never fire would be decoration; the
+  // polarity judgment lives instead at review time
+  // (`polaritySection`, interpolated into every review brief), where a
+  // reader tells scope sentences from inversions and refusal power
+  // already exists.
   const coverage = reconcileRequiredCoverage(briefSourceText(job), text);
   const firstBad =
     (coverage.missing.length > 0 && ['missing', coverage.missing[0]]) ||

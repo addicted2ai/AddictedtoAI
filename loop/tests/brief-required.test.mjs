@@ -183,6 +183,22 @@ test('arm 3b — contracted negations are detected (no dead arms in the negation
   assert.ok(r.contradicted.length >= 1, `contracted negation found: ${JSON.stringify(r)}`);
 });
 
+test('arm 3c — extended negation forms are detected (cannot, prohibited from, forbidden)', () => {
+  // Each new entry earned its place with a live fire below. "without"
+  // and "against" are deliberately absent (manner/relation, not
+  // polarity — they occur in faithful prose), and the comment above
+  // NEGATIONS says so.
+  const required = 'The gate reads the history.';
+  for (const denial of [
+    'The gate cannot read the history.',
+    'The gate is prohibited from reading the history.',
+    'Reading the history is forbidden for the gate.',
+  ]) {
+    const r = reconcileRequiredCoverage(required, `${required}\n\n${denial}`);
+    assert.ok(r.contradicted.length >= 1, `detected: ${denial}`);
+  }
+});
+
 test('arm 4 — required text with no content sentences passes by documented choice', () => {
   const r = reconcileRequiredCoverage('   \n  ', 'anything at all');
   assert.deepEqual(r, { missing: [], truncated: [], contradicted: [] }, 'passes, asserted');

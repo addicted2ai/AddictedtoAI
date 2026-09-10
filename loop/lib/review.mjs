@@ -38,7 +38,7 @@ import { PROSE_TYPES, requirementHeadings } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
-import { GROUND_RULES, subjectLines } from './brief.mjs';
+import { GROUND_RULES, polaritySection, subjectLines } from './brief.mjs';
 import { corroborationSection } from './lineage.mjs';
 import { gateCommand, gateCommandForName } from './gates.mjs';
 import {
@@ -575,6 +575,7 @@ this site, and never once by an automated check.
 ${checklistFor(job.type).map((c) => `- ${c}`).join('\n')}
 ${rejection}
 ${corroborationSection()}
+${polaritySection()}
 ## The verdict
 
 Return exactly one verdict: \`approve\`, \`revise\` (naming the required

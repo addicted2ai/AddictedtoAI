@@ -184,6 +184,10 @@ test('the reviewer brief carries the closed reason list, the checklist, and no a
     outPath: verdictPath(ctx, 'j-20260910-01'),
   });
   for (const r of REASONS) assert.match(brief, new RegExp(r.replace(/-/g, '\\-')));
+  assert.match(brief, /## Polarity: does the diff do what the source required, or the opposite\?/);
+  assert.match(brief, /INVERTS it/);
+  assert.match(brief, /`spec-violation`/);
+  assert.match(brief, /Template scope-negations/);
   assert.match(brief, /Run the changed check or script and confirm the claimed behaviour/);
   assert.match(brief, /Guard rails are tested by attempting what they forbid/);
   assert.match(brief, /you have not seen the author's\s+reasoning/);
