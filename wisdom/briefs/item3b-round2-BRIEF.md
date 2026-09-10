@@ -88,7 +88,8 @@ Your comment must answer, each with a reason:
   file list that misses a pin, which is what the bead asks for. The
   automatic form (the merge step refusing on instrument output with
   nobody judging) is a recorded follow-up owned by the orchestrator,
-  due once the false-fire rate is measured over real reviews — not a
+  due when the false-fire rate has been measured over real reviews;
+  that measurement is a later attempt under its own brief, not a
   promise this round makes.
 - Why strictness here cannot false-fire on legitimate rewording the
   way a text search would: candidates are exact-shape assertions over
@@ -202,11 +203,10 @@ cache-busting query for mutation observations, documented in the test
 round 2b recorded. Node runs test FILES in parallel subprocesses:
 your mutations here touch only your own new file, which no other
 file's tests rewrite — intra-file tests run sequentially, so the
-`loop/tests/lib-mutate.mjs` lock (which serializes mutators of
-`loop/lib/brief.mjs`) is NOT required for these arms. If you rewrite
-`loop/lib/brief.mjs` you must hold it; if you do not, say so in one
-line and move on rather than holding a lock against a race that does
-not exist.
+shared file-mutation lock from rounds 1 and 2b is NOT required for
+these arms. If you rewrite the brief reconciler itself you must hold
+it; if you do not, say so in one line and move on rather than holding
+a lock against a race that does not exist.
 
 ## Verification
 
