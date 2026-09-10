@@ -2594,3 +2594,73 @@ a transient; the Pulse detector still discriminates on a script path rather than
 on what a Pulse writes to; the tuple capture has never been fired on a red;
 `addictedtoai-4w2` is answerable only from a host build log nobody here can read;
 and the write-time half of the main-quiet guard is designed and unbuilt.
+
+### 7y. A VALUE WHOSE JUSTIFICATION LIVES ONLY IN A SESSION
+
+The last finding of the handover, and it arrived as a clause its author nearly
+cut from a closing paragraph.
+
+`data/config.json` carries `"publish": false`. It is off for a reason — Stage 0's
+C2 packet is not green — and that reason existed only in two sessions that were
+hours from ending. The setting would have survived; **the sentence explaining it
+would not.**
+
+**A VALUE WHOSE JUSTIFICATION LIVES ONLY IN A SESSION IS INDISTINGUISHABLE FROM A
+VALUE NOBODY DECIDED**, and the two invite opposite treatment. A deliberate
+`false` is a brake somebody set and is not yours to lift. An undecided `false`
+reads as drift, or as an oversight from a run that forgot to turn it back on —
+and the natural, helpful, entirely reasonable act is to flip it. **The toggle
+without the reason is an invitation.**
+
+This is §7x's shape one level over. There, a record written for one purpose was
+read as a denominator for another; here, a **state** with no record at all is read
+as an accident. Both are failures of provenance rather than of the artifact: the
+artifact is fine, and what is missing left no trace in it.
+
+The general form, and it applies to far more than one boolean — a disabled check,
+a pinned version, a lowered threshold, a skipped test, an excluded path, a
+commented-out step:
+
+> **ANY DELIBERATE-LOOKING VALUE THAT CONSTRAINS FUTURE WORK MUST CARRY ITS
+> REASON WHERE THE VALUE LIVES.** Not in the commit that set it, which nobody
+> reads at the point of use; not in a session, which ends. Beside it.
+
+And the asymmetry is worth stating because it decides how hard to work at this:
+**turning a constraint OFF needs no justification; turning it ON does.** So the
+reason has to be durable enough to survive every person who will later have a
+good, local, sincere argument for lifting it.
+
+**A NOTE ON HOW THIS WAS FOUND, because the mechanism generalises further than
+the finding.** It reached the handoff because one session mentioned in passing
+what it considered *current state rather than handover content*, and the other
+recognised it as **the class of thing a successor would find and be unable to
+explain.** Neither could have found it alone: the holder of the value did not see
+it as needing a reason, and the writer of the handoff did not know the value was
+set. **That is the same structural asymmetry as every other catch of that
+night** — neither party caught their own worst defect, both caught the other's,
+twice, and the reason is positional rather than a matter of anybody being
+careful. A reviewer of someone else's work occupies a structurally easier seat
+than a reviewer of their own, and **that advantage is available to any two agents
+who have never met.**
+
+**TWO MORE FROM THE SAME HOUR, DISCLOSED BY THEIR OWN AUTHOR AFTER A PUSH THAT
+SHOULD HAVE STOPPED.** A tree-diff read, a revert, the pre-push checks and the
+push itself were batched into one command. The diff failed — its path had been
+reconstructed from a timestamp and was five seconds wrong — so it printed
+`No such file or directory` twice **and the push went ahead anyway.** The verdict
+turned out to be right, read afterwards; but it was reached after the action it
+was supposed to gate.
+
+**A CHECK BATCHED INTO THE SAME COMMAND AS THE ACTION IT GATES IS NOT A GATE.**
+The shell runs on. This is the guard-placed-after-the-thing-it-guards defect
+(§7u) committed forty minutes after its author wrote that phrase into a committed
+README — which is the strongest available evidence that **writing a rule down
+does not install it.**
+
+**AND: DO NOT RECONSTRUCT AN IDENTIFIER THE TOOL PRINTS.** The run directory was
+the first line of the harness's own output and was rebuilt from a start time
+instead of read. **The reconstruction was PLAUSIBLE, which is exactly why it
+produced a path rather than an error anybody would notice** — the same shape as
+the invented timestamps in §7v's neighbourhood: a plausible value is
+indistinguishable from a read one, and it fails silently where a wrong-looking
+one would fail loudly. **Read the identifier; never rebuild it.**

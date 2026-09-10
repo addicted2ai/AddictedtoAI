@@ -120,4 +120,15 @@ recaps waste his context window. Findings belong in the change's evidence tree,
 `wisdom/README.md` and the coordination board — all durable, none of which cost
 him anything.
 
+**A CONSTRAINT YOU NEED BEFORE YOUR FIRST ACTION, NOT AFTER IT.** At handover the
+account's **seven-day rate window was at 95% used, resetting Sunday 16:00 local**
+(the five-hour window was at 6% and is not the binding one). You may have very
+little headroom. **Follow the pointers in these documents; do not open with a
+broad survey.** `wisdom/README.md` is 2,600 lines and `tasks.md` is 2,500 — a
+sweep of either will spend your remaining budget in an hour and teach you less
+than the four documents will. Read
+`C:/Users/BadBitch/.claude/usage/<session_id>.json` for the live figure rather
+than asking the maintainer, and prefer `opencode-go` for implementation work
+because it spends no Anthropic quota at all.
+
 Start by reading the four documents.
