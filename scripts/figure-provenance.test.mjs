@@ -69,6 +69,11 @@
  * to name them; policing them would forbid reporting); dot-directories and
  * build output. Patterns match within one line: a value wrapped to the next
  * line escapes, and that blind spot is recorded here rather than hidden.
+ * One dated decision narrative is carried as a documented exact-text
+ * exemption (EXEMPTIONS below, live-verified by its own arm): the sweep
+ * skips that file+line+figure ONLY while the line's text still equals the
+ * recorded exactLineText, so drifted text re-fires — the exemption cannot
+ * go stale silently.
  *
  * MUTATIONS (procedure, recorded in RESULT1.md): Mutation A drops one figure's
  * patterns; Mutation B counts any noun phrase as a pointer. Both touch only
@@ -334,6 +339,33 @@ test('bare numbers never match: 10, 30, 55 and 56 mean nothing until a pattern n
 
 /* ---- arm 9: liveness — the sweep runs and its result is asserted ---- */
 
+/* DOCUMENTED EXEMPTIONS (S5 disposition). Each entry names one live match the
+ * sweep would otherwise report, with the exact line text at exemption time
+ * and the reason it must not be rewritten. The sweep skips a match ONLY
+ * while the matched line's text still equals exactLineText: edited text
+ * re-fires the finding, so a stale exemption fails loudly instead of
+ * silently blessing a changed passage (the same staleness discipline as
+ * scripts/no-change-dir-refs.test.mjs's allow-list liveness arm). */
+const EXEMPTIONS = [
+  {
+    file: 'FULL-MEM-LOG.md',
+    line: 3440,
+    figure: 'new-writing-ceiling',
+    exactLineText: 'stays 40% and the new-writing ceiling stays 45%; because the bounds share one',
+    reason:
+      'dated decision narrative under the dated section two-desks-work-orders-and-trains-2026-09-08 ' +
+      '(the bd84b4b drain record): both values checkable via the bead refs and the in-situ arithmetic ' +
+      'in the passage (40 + 30 leaves at most 30 for new writing); rewriting the passage to satisfy ' +
+      "the pattern would edit a historical record to earn a green — refused per Luna's bound",
+  },
+];
+
+function exempted(rel, lineNo, figureId, lineText) {
+  return EXEMPTIONS.some(
+    (e) => e.file === rel && e.line === lineNo && e.figure === figureId && e.exactLineText === lineText,
+  );
+}
+
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'out', 'fixtures-out', '.beads', '.agents', '.claude', '.opencode', '.job']);
 const SKIP_BASENAMES = new Set(['package-lock.json', 'RESULT1.md', 'figure-provenance.test.mjs']);
 const SWEPT_EXTS = new Set(['.md', '.mdx', '.mjs', '.js', '.ts', '.tsx', '.json']);
@@ -366,6 +398,10 @@ export function sweepLiveRestatements() {
       for (const figure of DECLARED) {
         const captures = capturesOf(figure, line);
         if (captures.length === 0) continue;
+        // Documented exact-text exemption (S5): skips ONLY while the line
+        // still reads exactly as recorded — drifted text falls through and
+        // re-fires below.
+        if (exempted(rel, index + 1, figure.id, line)) continue;
         // One line each side: a wider window once laundered data/README.md:43
         // through a neighbouring sentence's "was". Exemptions that need more
         // than a line of context are stating too much.
@@ -392,4 +428,20 @@ export function sweepLiveRestatements() {
 test('live sweep: every declared figure is sourced where the tree restates it', () => {
   const violations = sweepLiveRestatements();
   assert.deepEqual(violations, [], 'live unsourced restatements — file, line and reason above — are scope decisions, reported not edited here');
+});
+
+test('exemption is exact-text and live: restored text exempt, tampered text fires', () => {
+  const entry = EXEMPTIONS.find((e) => e.file === 'FULL-MEM-LOG.md' && e.line === 3440);
+  assert.ok(entry.reason, 'every exemption carries its reason');
+  const figure = byId(entry.figure);
+  // Live-verified: the recorded line still matches the figure's patterns, and
+  // would still fire on its own text absent the exemption.
+  assert.ok(capturesOf(figure, entry.exactLineText).length > 0, 'exemption entry still matches a live pattern');
+  assert.equal(refused(entry.exactLineText, figure, entry.exactLineText), true, 'recorded text would fire without the exemption');
+  assert.equal(exempted(entry.file, entry.line, entry.figure, entry.exactLineText), true, 'restored text is exempt');
+  // Mechanism proof: the same line with a changed value fires despite the entry.
+  const tampered = entry.exactLineText.replace('45%', '46%');
+  assert.notEqual(tampered, entry.exactLineText);
+  assert.equal(exempted(entry.file, entry.line, entry.figure, tampered), false, 'drifted text is not exempt');
+  assert.equal(refused(tampered, figure, tampered), true, 'tampered text fires despite the entry');
 });
