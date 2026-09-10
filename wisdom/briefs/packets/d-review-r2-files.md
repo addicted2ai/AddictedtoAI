@@ -1,0 +1,1 @@
+- `loop/tests/runner-policy.test.mjs` — (new) on this branch since round 1 (task 24); the early-return and malformed-`escalates_to` arms (findings 1-2) and the sweep

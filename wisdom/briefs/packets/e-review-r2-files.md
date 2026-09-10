@@ -1,0 +1,4 @@
+- `loop/tests/ledger.test.mjs` — (new) on this branch since round 1; the three value arms (findings 1-3) and the sweep
+- `loop/tests/breakers.test.mjs` — the field-for-field comparison's `varies` set at `:172-178` (the pin)
+- `loop/tests/gate-transport-retry.test.mjs` — the additive-key pin at `:876-880`
+- `loop/tests/mock-executor.mjs` — one new reviewer mode, `review-approve-carry`, and `writeVerdict`'s optional carry block (finding 3)
