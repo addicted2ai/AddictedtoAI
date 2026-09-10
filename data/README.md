@@ -40,9 +40,13 @@ JSON carries no comments, so the shape is documented here. It is a
    from an uncommitted working tree dispatched the Desk at a record that was
    not on `main`.) The launch checklist (task 9.1) is what flips it, by the
    maintainer's own hand.
-2. **`budget`** — the rolling window (`window_days`: 30), the category
-   membership of every job type, and the three bounds from `specs/loop`:
-   upkeep floor 40%, new-writing ceiling 45%, machinery ceiling 10%. Shares
+2. **`budget`** — the rolling window (`window_days`: 30,
+   `data/config.json` `budget.window_days`), the category
+   membership of every job type, and the three bounds from
+   `data/config.json`: upkeep floor 40%
+   (`budget.bounds.upkeep_floor_pct`), new-writing ceiling 45%
+   (`budget.bounds.new_writing_ceiling_pct`), machinery ceiling 30%
+   (`budget.bounds.machinery_ceiling_pct`). Shares
    are computed **within each tier separately** and each bound has its own
    enforcement point — the floor binds on its own, not as the residue of the
    ceilings. Changing a bound requires an OpenSpec change.

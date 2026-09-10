@@ -86,7 +86,7 @@ Your comment must answer, each with a reason:
 
 ## The control, wild incidents with constructed fixtures
 
-The four wild controls are prose history — they cannot be re-executed,
+The five wild controls are prose history — they cannot be re-executed,
 and history's bytes are gone — so each arm builds a constructed
 fixture MODELED on one, declares it as such, and the fixture must
 fail until sourced while the sourced re-statement passes:
@@ -122,10 +122,14 @@ restatement, the round reports it with disposition, file and reason
 as a scope decision — "this list" throughout this brief means the
 Files bullets below, so a citing-file fix outside the new test file
 is reported, not edited in this diff. This round's shippable work is
-the declaration, the fixtures, and the sweep enumeration; the tree is
-clean today (verified at briefing: the 10-vs-30 restatement stands
-repaired to key-names-only), so the expected path is a passing sweep
-with the declaration named.
+the declaration, the fixtures, and the sweep enumeration; the tree
+may or may not be clean — the briefing verified one instance only
+(the `AGENTS.md` restatement repaired to key-names-only), so a red
+liveness arm with named findings travels the reporting path below
+instead of failing the round. The expected path is a passing sweep
+with the declaration named; the honest path, if the sweep finds live
+restatements, is names plus scope decisions, no edits outside the one
+new file.
 
 ## The refusal, and where it sits
 
@@ -144,12 +148,11 @@ names.
 Everything else is read-only for this round. Do not edit `loop/`,
 `pulse/`, anything under `openspec/changes/`,
 `scripts/brief-lint.mjs`, `scripts/brief-closure.mjs`,
-`data/config.json`, `runners.yml` or `package.json` — if the sweep
-finds a live restatement inside a read-only path, fix the
-RESTATEMENT only where the sweep's disposition puts it (pointers and
-values in the citing file, never the canonical source), and a fix
-needing a file outside this list is a scope decision for me, stated
-with the file and the reason, not taken.
+`data/config.json`, `runners.yml` or `package.json` — "this list"
+means the Files bullets above, so a citing-file fix outside the new
+test file is REPORTED with disposition, file and reason, never edited
+in this diff. A fix needing a file outside this list is a scope
+decision for me, stated with the file and the reason, not taken.
 
 ## Tests
 

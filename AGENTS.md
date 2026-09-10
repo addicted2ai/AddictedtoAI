@@ -91,7 +91,7 @@ ranked — file order *is* the ranking), then ripe proposals in
 and classifies the outcome from the first line of `RESULT.md` — `done` /
 `blocked: <reason>` / `capacity`, with absent-or-malformed meaning
 `interrupted`. Every run appends one line to `data/ledger.jsonl`, which is the
-only state the 30-day budget is computed from.
+only state the 30-day budget (`data/config.json` `budget.window_days`) is computed from.
 
 **Two caps, and the difference matters.** `data/config.json`'s
 `job_caps_minutes` is a **per-invocation** runaway-process guard, and a job
