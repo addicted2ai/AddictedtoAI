@@ -28,6 +28,10 @@
  *
  * Every property above is enforced by an arm in this file, so a reviewer
  * finds each by lookup. Counts are read from the runner's own summary.
+ * Node runs test FILES in parallel subprocesses, and item 3a's file
+ * mutates the same brief.mjs on disk: every file-mutation block below
+ * holds the lib-mutate.mjs lock from the pre-mutation read to the
+ * reverted byte-identical assert.
  */
 
 import test from 'node:test';
@@ -45,6 +49,7 @@ import {
   reconcileBriefImperatives,
 } from '../lib/brief.mjs';
 import { makeRepo } from './helpers.mjs';
+import { withLibMutation } from './lib-mutate.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BRIEF_LIB = resolve(HERE, '..', 'lib', 'brief.mjs');
@@ -150,26 +155,28 @@ test('arm 1b — the refusal fires at assembly, before anything is written', asy
   const faithful = assembleFor(t, job);
   assert.ok(faithful.length > 0, 'a faithful assembly returns text');
   assert.ok(faithful.includes('free-memory figure'), 'detail carried verbatim');
-  const original = readFileSync(BRIEF_LIB, 'utf8');
-  const anchor = '${job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'}';
-  assert.ok(original.includes('job.detail && job.detail !== job.title'), 'detail-embed anchor present');
-  const dropped = original.replace(
-    'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
-    'job.detail && job.detail !== job.title ? \'\' : \'\'',
-  );
-  assert.notEqual(dropped, original);
-  writeFileSync(BRIEF_LIB, dropped, 'utf8');
-  try {
-    const fresh = await freshBriefLib();
-    assert.throws(
-      () => assembleFor(t, job, fresh.assembleBrief),
-      /brief refuses/,
-      'dropping the detail embed makes assembly refuse — the throw is reachable, not dead code',
+  await withLibMutation(async () => {
+    const original = readFileSync(BRIEF_LIB, 'utf8');
+    const anchor = '${job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'}';
+    assert.ok(original.includes('job.detail && job.detail !== job.title'), 'detail-embed anchor present');
+    const dropped = original.replace(
+      'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
+      'job.detail && job.detail !== job.title ? \'\' : \'\'',
     );
-  } finally {
-    writeFileSync(BRIEF_LIB, original, 'utf8');
-  }
-  assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
+    assert.notEqual(dropped, original);
+    writeFileSync(BRIEF_LIB, dropped, 'utf8');
+    try {
+      const fresh = await freshBriefLib();
+      assert.throws(
+        () => assembleFor(t, job, fresh.assembleBrief),
+        /brief refuses/,
+        'dropping the detail embed makes assembly refuse — the throw is reachable, not dead code',
+      );
+    } finally {
+      writeFileSync(BRIEF_LIB, original, 'utf8');
+    }
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
+  });
   assert.equal(guardedAssembleAndWrite(t, job), true, 'faithful pair writes');
 });
 
@@ -217,46 +224,49 @@ test('mutation B — the reconcile call moved after the return never fires, and 
     title: 'Classify spawn failures',
     detail: X2JL_SOURCE,
   };
-  const original = readFileSync(BRIEF_LIB, 'utf8');
-  const anchor = '  const missing = reconcileBriefImperatives(briefSourceText(job), text);';
-  assert.ok(original.includes(anchor), 'mutation anchor present');
-  // Dead refusal: the whole check block becomes dead code, so nothing can
-  // refuse. (Neutralizing only the `const` line would leave the `if`
-  // below referencing it — a crash, not the silent pass this mutation
-  // must demonstrate.)
-  const checkStart = original.indexOf('  // 2b refusal');
-  const checkEnd = original.indexOf('  return text;\n}', original.indexOf(anchor));
-  assert.ok(checkStart >= 0 && checkEnd > checkStart, 'check block bounds found');
-  const deadCheck = original.slice(0, checkStart)
-    + '  void reconcileBriefImperatives; // mutation B: refusal dead\n'
-    + original.slice(checkEnd);
-  // The drop makes the refusal reachable (arm 1b); under the dead check
-  // the same dropped tree assembles silently. Both mutations are applied
-  // together here and the tree is reverted byte-identical afterwards.
-  const dropped = deadCheck.replace(
-    'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
-    'job.detail && job.detail !== job.title ? \'\' : \'\'',
-  );
-  assert.notEqual(dropped, deadCheck);
-  writeFileSync(BRIEF_LIB, dropped, 'utf8');
-  try {
-    const fresh = await freshBriefLib();
-    const dir = freshDir(t);
-    const file = join(dir, 'brief.md');
-    // Mirrored production order: assemble, write only on success.
-    let text = null;
+  const original = await withLibMutation(async () => {
+    const original = readFileSync(BRIEF_LIB, 'utf8');
+    const anchor = '  const missing = reconcileBriefImperatives(briefSourceText(job), text);';
+    assert.ok(original.includes(anchor), 'mutation anchor present');
+    // Dead refusal: the whole check block becomes dead code, so nothing can
+    // refuse. (Neutralizing only the `const` line would leave the `if`
+    // below referencing it — a crash, not the silent pass this mutation
+    // must demonstrate.)
+    const checkStart = original.indexOf('  // 2b refusal');
+    const checkEnd = original.indexOf('  return text;\n}', original.indexOf(anchor));
+    assert.ok(checkStart >= 0 && checkEnd > checkStart, 'check block bounds found');
+    const deadCheck = original.slice(0, checkStart)
+      + '  void reconcileBriefImperatives; // mutation B: refusal dead\n'
+      + original.slice(checkEnd);
+    // The drop makes the refusal reachable (arm 1b); under the dead check
+    // the same dropped tree assembles silently. Both mutations are applied
+    // together here and the tree is reverted byte-identical afterwards.
+    const dropped = deadCheck.replace(
+      'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
+      'job.detail && job.detail !== job.title ? \'\' : \'\'',
+    );
+    assert.notEqual(dropped, deadCheck);
+    writeFileSync(BRIEF_LIB, dropped, 'utf8');
     try {
-      text = assembleFor(t, job, fresh.assembleBrief);
-    } catch {
-      text = null;
+      const fresh = await freshBriefLib();
+      const dir = freshDir(t);
+      const file = join(dir, 'brief.md');
+      // Mirrored production order: assemble, write only on success.
+      let text = null;
+      try {
+        text = assembleFor(t, job, fresh.assembleBrief);
+      } catch {
+        text = null;
+      }
+      if (text !== null) writeFileSync(file, text, 'utf8');
+      assert.equal(existsSync(file), true, 'dead refusal lets the incomplete brief through to a write — the defect, shown');
+      assert.ok(!readFileSync(file, 'utf8').includes('free-memory figure'), 'the written brief lacks the fourth');
+    } finally {
+      writeFileSync(BRIEF_LIB, original, 'utf8');
     }
-    if (text !== null) writeFileSync(file, text, 'utf8');
-    assert.equal(existsSync(file), true, 'dead refusal lets the incomplete brief through to a write — the defect, shown');
-    assert.ok(!readFileSync(file, 'utf8').includes('free-memory figure'), 'the written brief lacks the fourth');
-  } finally {
-    writeFileSync(BRIEF_LIB, original, 'utf8');
-  }
-  assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
+    return original;
+  });
   // Correct order on the same pair refuses first, so nothing is written.
   const missing = reconcileBriefImperatives(X2JL_SOURCE, briefCarryingThree());
   assert.ok(missing.length > 0);
