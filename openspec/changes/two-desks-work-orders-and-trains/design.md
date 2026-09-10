@@ -1451,6 +1451,26 @@ N > 1 and **allowing at N = 1**, the second arm demonstrating that N = 1
 reproduces today's defect exactly — and preserve the absent-record warning
 alongside the reader-count assertion.
 
+> **LANDED, AND THE PRESCRIPTION ABOVE MATCHES WHAT SHIPPED — checked in the
+> code, because a review finding said it did not.** A finding against this file
+> claimed the prescribed Stage-0 fix contradicted the landed one. It does not
+> reproduce at this commit, and the measurement is recorded so the claim is not
+> re-raised from memory: `conformanceGate()` at `loop/lib/runners.mjs:195` takes
+> `passesToSupersede = 3`, reads `conformanceHistory()`, counts **consecutive
+> PASSes of the same check name**, resets that counter on any FAIL, and clears a
+> standing failure at three — the prescription's rule exactly, with the "starting
+> value" left configurable as this text asked. An empty history returns `ok`, so
+> the absent-record warning survives as a distinct state, as required.
+>
+> **Two things in the paragraph above are now past tense and were written in the
+> present.** `data/conformance.json` no longer "keeps one record per runner"
+> because the schema forbids it — it keeps a history, and the gate reads it. What
+> the FILE happens to hold today is nine single-entry records, which is not the
+> old defect but the trivial case of the new shape: no runner has been re-run
+> since the append landed. Those two states are byte-similar and mean opposite
+> things, which is precisely the confusion this whole paragraph is about, so it
+> is worth saying which one is on disk.
+
 **It is Luna-Boss-2's diagnostic seen from the other side.** *A control that counts
 within a window survives concurrency; one that depends on order does not.* The
 ledger survives because it **appends**; the conformance record fails because it
