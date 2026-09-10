@@ -995,6 +995,23 @@ the brief under `evidence/reviews/`.
       assertion fails. **Mutation B**: have the script spawn the tracker instead of
       reading the file, and confirm a source check that no module outside
       `loop/lib/beads.mjs` spawns it goes red. Tests task 16.
+      **MUTATION B'S CHECK IS RED AT BASELINE AS WRITTEN, measured at `c15e901`,
+      and an arm that is red before the mutation witnesses nothing.** Two
+      independent causes: `loop/lib/beads.mjs` does not exist (this task list says
+      so one task up), and `scripts/verify-issue-links.mjs:128` spawns the tracker
+      by design, its reason written at that file's lines 96–102 and required by
+      the format/existence split at `specs/loop/spec.md:1688`. Round 2's finding
+      NEW-5 caught this and its fix reached task 16's *"It SHALL NOT spawn the
+      tracker"* without reaching this sentence — **a finding fixed at its cited
+      line is not a finding fixed.** Split the assertion: **B1**, a source check
+      over `scripts/lint-deferrals.mjs` alone, green at baseline and red under the
+      mutation, is the witness; **B2**, the boundary the spec gives a reason for —
+      nothing under `lib/` and no step registered in the prebuild's `STEPS` array
+      imports or spawns the tracker — is measured green at baseline and stays
+      green under the mutation, so it is recorded as a standing assertion and
+      named in the report as NOT the witness. Do not repair this by loosening a
+      check until it passes, and do not repair it by editing
+      `scripts/verify-issue-links.mjs`.
 - [x] 18. **Done at `bd84b4b`** — he answered question 6 on 2026-09-08 and
       narrowed the rule as proposed.
       `CLAUDE.md` and `AGENTS.md`: state the bounded filing rule — a deferral
