@@ -34,7 +34,7 @@
 import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
-import { makeLogger, paths, readJson, readJsonl, repoRoot, today } from './lib/core.mjs';
+import { makeLogger, paths, readJson, readJsonl, repoRoot, today, checkLease, LEASE_MAX_AGE_MS, LEASE_FUTURE_TOLERANCE_MS } from './lib/core.mjs';
 import { loadRegistry, sortedSources } from './lib/registry.mjs';
 import { ingestCompanion, ingestSource, loadCompanionSnapshot, loadSnapshot, loadState, saveState } from './lib/sources.mjs';
 import { appendChanges, diffSnapshots, seedChanges, vendorPriceChanges } from './lib/diff.mjs';
@@ -81,6 +81,39 @@ if (existsSync(p.stop)) {
   process.stdout.write(`pulse: STOP file present at ${p.stop} — exiting immediately, nothing done.\n`);
   process.exit(0);
 }
+
+// ---- 1b. gate-lease check (after STOP, never before it) -------------------
+// The scheduler cannot be told to wait, so a gate harness touches GATE_LEASE
+// while it runs and the Pulse refuses to rewrite tracked files underneath it.
+// A lease, not a lock: the mtime is the authority and a file past the max age
+// is ignored loudly, so a dead holder cannot stop the Pulse forever. An mtime
+// ahead of now beyond tolerance is likewise ignored loudly on clock skew, so
+// a wrong timestamp cannot refuse past the max. Refusal
+// exits 0 like STOP — an instruction obeyed, not an error — but names
+// GATE_LEASE, the age and the holder so the two brakes are never confused.
+// Placed after STOP so a run where both stand still reports the maintainer's
+// brake. Reached before any network use, like STOP, so ending here is clean.
+const lease = checkLease(root);
+if (lease.state === 'fresh') {
+  const ageS = Math.max(0, Math.round(lease.ageMs / 1000));
+  const who = lease.holder ?? 'unnamed';
+  process.stdout.write(`pulse: GATE_LEASE present at ${lease.path} (age ${ageS}s, holder ${who}) — a gate run holds the tree, refusing this run, nothing done.\n`);
+  process.exit(0);
+}
+if (lease.state === 'stale') {
+  const ageS = Math.max(0, Math.round(lease.ageMs / 1000));
+  const maxS = Math.round(LEASE_MAX_AGE_MS / 1000);
+  const who = lease.holder ?? 'unnamed';
+  process.stdout.write(`pulse: WARN stale GATE_LEASE at ${lease.path} (age ${ageS}s exceeds max ${maxS}s) — disregarding it and proceeding; holder ${who} may have died without releasing.\n`);
+} else if (lease.state === 'future') {
+  const aheadS = Math.max(0, Math.round(-lease.ageMs / 1000));
+  const tolS = Math.round(LEASE_FUTURE_TOLERANCE_MS / 1000);
+  const who = lease.holder ?? 'unnamed';
+  process.stdout.write(`pulse: WARN future GATE_LEASE at ${lease.path} (mtime ${aheadS}s ahead of now, beyond tolerance ${tolS}s) — disregarding it and proceeding; holder ${who} looks skewed, check the writer clock.\n`);
+} else if (lease.state === 'stat-failed') {
+  process.stdout.write(`pulse: WARN cannot read mtime of GATE_LEASE at ${lease.path} (${lease.error}) — proceeding; refusing on unreadable timing would risk refusing forever.\n`);
+}
+// 'absent' proceeds silently: the ordinary case, no line.
 
 log.step('run', `root ${root}, date ${today()}${options.offline ? ', offline' : ''}${options.force ? ', forced' : ''}`);
 

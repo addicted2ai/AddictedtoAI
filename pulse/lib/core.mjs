@@ -39,7 +39,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -55,6 +55,12 @@ export function paths(root = repoRoot()) {
     root,
     stop: join(root, 'STOP'),
     hold: join(root, 'HOLD.md'),
+    // The gate lease. Written ONLY by the gate harness, which lives outside
+    // this repository in a session scratch area and touches this file while a
+    // gate run is active. The Pulse only reads it, never writes it. A brake
+    // whose writer is invisible reads as dead logic to the next reader, so
+    // this note stays where the path is defined.
+    lease: join(root, 'GATE_LEASE'),
     config: join(root, 'data', 'config.json'),
     registry: join(root, 'data', 'sources', 'registry.json'),
     sourcesDir: join(root, 'data', 'sources'),
@@ -65,6 +71,135 @@ export function paths(root = repoRoot()) {
     wiki: join(root, 'content', 'wiki'),
     publicDir: join(root, 'public'),
   };
+}
+
+/**
+ * How long a gate lease stays live after its last touch.
+ *
+ * A gate run was measured near seven minutes, with the holder touching the
+ * file while it runs. Fifteen minutes is near twice that run: long enough
+ * that a slow run with a delayed touch still holds its own lease mid-flight,
+ * short enough that a dead holder blocks at most one scheduled firing before
+ * the Pulse starts ignoring the stale file loudly. Too long turns a crash
+ * into a long outage; too short lets a slow run lose its own brake.
+ */
+export const LEASE_MAX_AGE_MS = 15 * 60 * 1000;
+
+/**
+ * How far ahead of now an mtime may be while still counting as live.
+ *
+ * A holder writing from a machine a few seconds ahead is doing nothing
+ * wrong, and filesystem timestamp granularity plus scheduling jitter can
+ * put a healthy lease seconds in the future. Sixty seconds covers that
+ * with margin while staying small against the fifteen-minute max (at most
+ * ~7% extra refuse at the near end) and tiny against the hours between
+ * scheduled firings.
+ *
+ * Costs, stated at both ends as the brief requires:
+ * - Near end (within tolerance): a lease up to 60s in the future still
+ *   refuses, so the longest refuse from now is max plus tolerance (16
+ *   minutes). That 60s past the max is the price of keeping jitter usable.
+ * - Far end (beyond tolerance): a live holder more than 60s ahead has its
+ *   lease disregarded at once, risking overlap with that holder. Such skew
+ *   is itself a misconfiguration, and the distinct loud line makes it
+ *   visible rather than silent.
+ */
+export const LEASE_FUTURE_TOLERANCE_MS = 60 * 1000;
+
+/**
+ * Name the holder from advisory lease text, for the log only. Never throws.
+ *
+ * The file is expected to carry JSON such as
+ * `{"holder": "gate-1", "reason": "verify", "since": "2026-09-10"}`. When it
+ * does, the holder field names the run. When it carries plain text instead,
+ * the first non-empty line names it, truncated. Empty text, a JSON value
+ * with no usable holder field, or anything unparseable as a name yields null
+ * — a lease with no name — and the mtime alone still decides. This mirrors
+ * how readJsonl skips one bad line in append-only history rather than
+ * failing the run on it.
+ */
+export function holderFromLeaseText(text) {
+  if (typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  if (trimmed === '') return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      for (const key of ['holder', 'job', 'by', 'owner']) {
+        const v = parsed[key];
+        if (typeof v === 'string' && v.trim() !== '') return v.trim().slice(0, 120);
+      }
+      // JSON without a usable holder field: advisory only, so no name.
+      // Plain-text handling below would print the whole JSON blob as if it
+      // were a name; returning null keeps the log honest here.
+      if (trimmed.startsWith('{')) return null;
+    }
+  } catch {
+    // Not JSON — fall through to plain-text handling below.
+  }
+  const first = trimmed
+    .split('\n')
+    .map((l) => l.trim())
+    .find((l) => l !== '');
+  if (!first) return null;
+  return first.slice(0, 120);
+}
+
+/**
+ * Read the lease state. The mtime is the authority; contents only name.
+ *
+ * Returns one of:
+ *   - `{state: 'absent'}` — no file, the ordinary case, proceed.
+ *   - `{state: 'fresh', ageMs, holder}` — live lease, the Pulse refuses.
+ *   - `{state: 'stale', ageMs, holder}` — past the max age, proceed loudly.
+ *   - `{state: 'future', ageMs, holder}` — mtime ahead of now beyond
+ *     tolerance, proceed loudly on clock skew. A skew this large would
+ *     otherwise refuse for the skew plus the max; disregarding it bounds
+ *     every refuse to at most max plus tolerance from now.
+ *   - `{state: 'stat-failed', error}` — the mtime itself could not be read,
+ *     proceed loudly and never refuse. A timing read that fails once will
+ *     usually fail again, so refusing on it would refuse forever.
+ *
+ * A past mtime always ages out on its own: for any fixed mtime at or behind
+ * now, age grows with wall time until it passes the max. A future mtime
+ * within tolerance is treated as live (it refuses, costing at most tolerance
+ * past the max); a future mtime beyond tolerance is disregarded at once, so
+ * no fixed future mtime can refuse past max plus tolerance, and no past
+ * mtime can refuse past the max. Only a holder that keeps touching the file
+ * keeps it fresh, which is a live holder rather than a dead one. Boundaries
+ * are strict: age past the max is stale; age at or under the max and at or
+ * above negative tolerance is fresh; age below negative tolerance is future.
+ *
+ * `opts` exists only so tests can pin the clock and fail the timing read on
+ * purpose; no caller in `pulse/` passes it.
+ */
+export function checkLease(root, opts = {}) {
+  const leasePath = paths(root).lease;
+  const nowMs = typeof opts.nowMs === 'number' ? opts.nowMs : Date.now();
+  const doStat = opts.statSyncImpl ?? statSync;
+  const doRead = opts.readFileSyncImpl ?? readFileSync;
+  let stat;
+  try {
+    stat = doStat(leasePath);
+  } catch (err) {
+    const code = err?.code;
+    if (code === 'ENOENT') return { state: 'absent', path: leasePath };
+    return { state: 'stat-failed', path: leasePath, error: err?.message ?? String(err) };
+  }
+  const mtimeMs = stat?.mtimeMs;
+  if (typeof mtimeMs !== 'number' || !Number.isFinite(mtimeMs)) {
+    return { state: 'stat-failed', path: leasePath, error: 'unreadable mtime' };
+  }
+  let holder = null;
+  try {
+    holder = holderFromLeaseText(doRead(leasePath, 'utf8'));
+  } catch {
+    holder = null;
+  }
+  const ageMs = nowMs - mtimeMs;
+  if (ageMs < -LEASE_FUTURE_TOLERANCE_MS) return { state: 'future', path: leasePath, ageMs, holder };
+  if (ageMs > LEASE_MAX_AGE_MS) return { state: 'stale', path: leasePath, ageMs, holder };
+  return { state: 'fresh', path: leasePath, ageMs, holder };
 }
 
 /** Per-source directory and its three files. */
