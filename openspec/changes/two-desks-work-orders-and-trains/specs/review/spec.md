@@ -229,9 +229,12 @@ For every verdict on a prose piece, the review record SHALL contain the
 reviewer's own-words answer to "who would link this, and in what argument?", in a
 required, non-empty `would-cite`. Where the merged subjects hold **more than
 one** prose piece, the record SHALL carry a `would-cite-for` **list of entries**,
-each naming its piece and carrying that piece's own answer, and a piece among the
-merged subjects left with no entry and no record-wide `would-cite` is refused
-exactly as a blank `would-cite` is refused. A work order carries several pieces
+each naming its piece and carrying that piece's own answer, and each piece
+among the merged subjects requires its own entry: a record-wide `would-cite`
+  alone satisfies nothing for N>1. A piece among the
+  merged subjects left with no entry — where more than one prose piece is
+  present — is refused exactly as a blank `would-cite` is refused. A work order
+  carries several pieces
 by design, and one sentence standing for all of them is the 1/N attention problem
 in the one field that exists to prevent it.
 
