@@ -1,10 +1,13 @@
 /**
  * brief-required.test.mjs — wisdom item 3, round 1 of 2: the required
- * text, carried completely and uncontradicted.
+ * text, carried completely; contradiction detected, not dispatched.
  *
  * Item 2b refuses a brief that drops an imperative. This refuses the
- * three quieter deaths: MISSING (the block never arrives), TRUNCATED
- * (it arrives cut off mid-sentence), CONTRADICTED (it arrives negated).
+ * two quieter deaths MISSING (the block never arrives) and TRUNCATED
+ * (it arrives cut off mid-sentence), and DETECTS the third,
+ * CONTRADICTED (it arrives negated), without dispatching on it — the
+ * detector wired to refuse false-fires on 35 existing tests, so
+ * polarity is judged by a review-time reader (round 3b), not here.
  * Strictness here is every-content-word, deliberately NOT 2b's loose
  * token coverage: two properties, two instruments, one shared splitter
  * at most.
@@ -21,16 +24,24 @@
  *            the block.
  *   arm 2 — brief cut mid-sentence inside ACCEPTANCE: REFUSED as
  *            truncated; the complete brief PASSES.
- *   arm 3 — brief negating a required sentence: REFUSED as
- *            contradicted, naming the sentence.
+ *   arm 3 — brief negating a required sentence: DETECTED as
+ *            contradicted, naming the sentence; NOT dispatched
+ *            (detected-reported-unwired, pinned by arm 5).
+ *   arm 3b — contracted negations detected (no dead arms in the
+ *            negation list).
  *   arm 4 — required text with no content sentences PASSES by
  *            documented choice.
- *   mutation A — completeness reduced to any-token presence: the
+ *   arm 5 — contradiction detected but NOT wired to dispatch:
+ *            assembly succeeds AND the detector is live at assembly
+ *            level, so the non-wiring is measured, never silence.
+ *   mutation A — completeness reduced to any-token presence, as a
+ *            real FILE mutation observed through a fresh import: the
  *            truncated arm goes GREEN, and that green is the defect.
  *   mutation B — the reconcile call moved dead (whole block): the
  *            order harness (assemble, write to temp only on success,
  *            against a detail-dropped assembly) writes the file under
- *            the mutation and never under the correct order.
+ *            the mutation; the correct-half calls LIVE assembleBrief
+ *            on the identical pair and writes nothing.
  *   liveness — dropping the detail embed makes assembly throw,
  *            proving the wire live rather than dead code.
  *
