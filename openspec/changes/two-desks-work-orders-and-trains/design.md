@@ -55,7 +55,7 @@ renders `subject:` as a scalar for one and a list for many, and `reviewed:` as a
 path→hash map; `mergeGate` already enforces set equality (`:1086-1104`), which is
 orthogonal to the new subset rule and survives untouched. What changes is
 `would-cite`: **per prose piece**, reusing `reads-human-from`'s entry shape and
-`existingFieldValues`'s existing per-entry walk (`review.mjs:784`, `:798-799`), so
+`existingFieldValues`'s existing per-entry walk (`review.mjs:792`, `:806-807`), so
 the duplicate check and the same-record exemption fall out for free.
 
 **Invariant preserved.** One job still ends in exactly one merge or one discard,
@@ -542,12 +542,14 @@ subjects name, plus the pending-amendment deltas for those requirements only. Th
 per-source budget stops splitting across unarchived changes.
 
 **And the ceiling comes down, which an earlier draft did not do.**
-`BRIEF_EXCERPT_MAX_CHARS` is **88,000** today. Deleting pass 2b removes the
-saturation; task 17 *raises* what passes 1 and 2 may each spend; nothing lowered
-the constant, so the headline "~100,000 → ~30,000 characters" had no mechanism
+`BRIEF_EXCERPT_MAX_CHARS` was **88,000** when this was written; packet B1's
+task 7 has since lowered it to **24,000** (`config.mjs:304`). Deleting pass 2b
+removes the saturation; task 17 *raises* what passes 1 and 2 may each spend;
+nothing lowered the constant *then*, so the headline "~100,000 → ~30,000 characters" had no mechanism
 behind it and the only thing touching 30,000 was a Stage-2 gate that *measured*
 the claim it was supposed to enforce. The ceiling is restored to **24,000** — its
-value before the four raises — and the test asserts an **upper bound on the
+value before the four raises, landed in packet B1's task 7 and reading `24000`
+at `config.mjs:304` today — and the test asserts an **upper bound on the
 assembled brief** (a `repair` at most 30,000 characters against a pinned fixture
 corpus), not merely that budget went unspent. The bound is asserted on the
 fixture and never on the live tree, because the live brief's size moves with
@@ -1727,10 +1729,11 @@ named when it does not.
 tree.** `loop/tests/specs.test.mjs` and `loop/tests/brief.test.mjs` do not
 exist (48 files under `loop/tests/`; the task anchors were hypotheses). The
 only file binding the ceiling is `loop/tests/brief-excerpt-budget.test.mjs`:
-`:133` asserts equality with 88,000 under a header recording the four
-re-measurements, and `:143` measures the live tree for mid-sentence cuts across
-all ten job types; neither was in packet B's file list, so the packet forbade
-the edit its own green-suite acceptance required. The per-source division is
+`:183` asserts equality with **24,000** under a header recording the four
+re-measurements, and `:428` measures the live tree for mid-sentence cuts across
+all ten job types. **And the record, which is permanently true and must not be
+repinned:** neither arm was in packet B's file list, so the packet forbade the
+edit its own green-suite acceptance required. The per-source division is
 `specs.mjs:281` (`share = Math.floor(maxChars / plan.length)`), not
 `config.mjs`, which holds only the constant. Tasks 6 to 8 corrected: the budget
 test file is B1's fourth permitted file and the one home of the ceiling's
@@ -1863,7 +1866,7 @@ while the new build runs. Column 2, the withheld finding, NOTICED rather than
 predicted because the coordinator skipped pre-registration this round and said
 so: no test reaches the production floor default — the helper defaults to
 `FIXTURE_FLOORS` and all ten calls forward a floor set, so
-`floorSet = GATE_FLOORS` at `verify-launch.mjs:952` replaced by `{}` leaves
+`floorSet = GATE_FLOORS` at `verify-launch.mjs:958` replaced by `{}` leaves
 every test green while production builds against no floor; the same question
 stands for the injected `isCurrent`. Disposition: round 5 carries both (same
 two files, four lines for the second), stated in tasks 2 and 4 as one property:
@@ -2536,8 +2539,8 @@ the first scoring section and deltas contribute only that heading; pass 2b's
 round-robin is gone, so a capability with three relevant requirements quotes
 one and sets `truncated`) — INTENDED, task 5's own first sentence, stated
 here as the behavioural cut it is, wider than the cap change alone; (3)
-`ctx.pendingRoot` is never assigned in production (`brief.mjs:665` passes it
-and nothing sets it), so it always falls back to the repository's in-flight
+`ctx.pendingRoot` is never assigned in production (`brief.mjs:679`, `:780` and
+`:781` each pass it and nothing sets it), so it always falls back to the repository's in-flight
 root — a correct, inert seam that needs a comment saying so before someone
 "fixes" the missing assignment; (4) the empty-plan early return computes
 `truncated: plan.some(...)` on an empty array, always false, a guard that

@@ -671,8 +671,8 @@ the brief under `evidence/reviews/`.
       copy of an amended requirement is now quoted beside its amendment
       (`superseded` hardcoded 0) while the old comment argued against exactly
       that — strike the old rationale or explain the reversal in the file;
-      (b) `ctx.pendingRoot` is never assigned in production (`brief.mjs:665`
-      passes it; nothing sets it) — an inert seam that needs a comment before
+      (b) `ctx.pendingRoot` is never assigned in production (`brief.mjs:679`,
+      `:780` and `:781` each pass it; nothing sets it) — an inert seam that needs a comment before
       someone "fixes" it; (c) the empty-plan early return computes
       `truncated` on an empty array, always false. And (d) the pre-existing
       `chars: used` exclusion of headings and separators, re-introduced by
