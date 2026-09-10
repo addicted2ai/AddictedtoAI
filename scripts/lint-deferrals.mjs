@@ -11,6 +11,14 @@
  * carrying a byte-order mark (stripped before parsing), with `status` compared
  * lower-cased against `closed` and the report naming each issue by `id`.
  *
+ * THE EXPORT MUST BE FRESH, TAKEN FOR THIS RUN. An absence verdict ("no
+ * unroutable issues") is only as live as its input: a checked-in or cached
+ * export is a claim with an expiry date, and the checked-in
+ * `.beads/issues.jsonl` is a one-record legacy export that can prove
+ * nothing about the current tracker — an absence search against it measured
+ * against nothing (audit finding, 2026-09-10). Produce the export in the
+ * same session as the run; never cite a stored file as current.
+ *
  * Exit code: 0 when there is nothing to report, 0 with rows printed when rows
  * are reported, and 1 with the SAME rows printed under `--strict`. The flag
  * changes the exit code and nothing else. Any refusal (missing/unreadable

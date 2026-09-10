@@ -38,3 +38,11 @@ review were never the same session.
 The mutation-B order harness (dead-check + dropped-detail + mirrored
 production write order) — the arm that makes placement falsifiable
 rather than asserted.
+
+## Correction 2026-09-10 (orchestrator, appended — the record above is untouched)
+
+The "sealed ... no author reasoning supplied" claim above is inaccurate:
+the review dispatch attached the author's RESULT file alongside the diff
+(an orchestrator error, since tightened in AGENTS.md review flow step 1).
+The verdict stands on its arms and re-runs, but the seal does not — read
+this review as unsealed.

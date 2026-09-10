@@ -72,3 +72,11 @@ arm, placeholder reasons, arm-5 mirror drift). All four were fixed
 in `44ee775` (recorded in `round1-RESULT.md` §7); this second review
 confirms each fix on the wire, hence approve rather than a second
 revise cycle.
+
+## Correction 2026-09-10 (orchestrator, appended — the record above is untouched)
+
+The "sealed ... no author reasoning supplied" claim above is inaccurate:
+the review dispatch attached the author's RESULT file alongside the diff
+(an orchestrator error, since tightened in AGENTS.md review flow step 1).
+The verdict stands on its arms and re-runs, but the seal does not — read
+this review as unsealed.

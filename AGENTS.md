@@ -148,7 +148,13 @@ the steps are mechanisms rather than instructions, which is the whole design.
 
 1. The diff, the checklist for the piece's kind, and **nothing of the author's
    reasoning** go to a separate invocation with fresh context. The authoring
-   run and the reviewing run are never the same session.
+   run and the reviewing run are never the same session. Mechanically: the
+   review dispatch attaches the diff and the checklist only — never the
+   author's `RESULT.md` or any summary of it, which is withheld until the
+   verdict is recorded — and the reviewer states which files it received
+   before giving the verdict, so a sealed claim is checkable rather than
+   asserted. (Tightened 2026-09-10: five wisdom reviews claimed a seal
+   while scoping the author's result file.)
 2. The reviewer runs in a **disposable worktree**. Whatever it edits there is
    discarded and the reviewed branch is asserted unchanged afterwards — "no
    edit rights" is enforced by throwing the tree away, not by asking.

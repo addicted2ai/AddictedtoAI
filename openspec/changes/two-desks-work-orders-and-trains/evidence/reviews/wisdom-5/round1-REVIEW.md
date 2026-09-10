@@ -23,3 +23,11 @@ reverts. Arm 6's template-read limitation judged non-weakening
 (brief-sanctioned; live import runs on the merge target).
 
 WOULD-CITE: n/a (machinery, no prose)
+
+## Correction 2026-09-10 (orchestrator, appended — the record above is untouched)
+
+The "sealed ... no author reasoning supplied" claim above is inaccurate:
+the review dispatch attached the author's RESULT file alongside the diff
+(an orchestrator error, since tightened in AGENTS.md review flow step 1).
+The verdict stands on its arms and re-runs, but the seal does not — read
+this review as unsealed.
