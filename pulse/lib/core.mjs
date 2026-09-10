@@ -39,7 +39,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { dirname, join, resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -55,6 +55,12 @@ export function paths(root = repoRoot()) {
     root,
     stop: join(root, 'STOP'),
     hold: join(root, 'HOLD.md'),
+    // The gate lease. Written ONLY by the gate harness, which lives outside
+    // this repository in a session scratch area and touches this file while a
+    // gate run is active. The Pulse only reads it, never writes it. A brake
+    // whose writer is invisible reads as dead logic to the next reader, so
+    // this note stays where the path is defined.
+    lease: join(root, 'GATE_LEASE'),
     config: join(root, 'data', 'config.json'),
     registry: join(root, 'data', 'sources', 'registry.json'),
     sourcesDir: join(root, 'data', 'sources'),
@@ -65,6 +71,158 @@ export function paths(root = repoRoot()) {
     wiki: join(root, 'content', 'wiki'),
     publicDir: join(root, 'public'),
   };
+}
+
+/**
+ * How long a gate lease stays live after its last touch.
+ *
+ * A gate run was measured near seven minutes, with the holder touching the
+ * file while it runs. Fifteen minutes is near twice that run: long enough
+ * that a slow run with a delayed touch still holds its own lease mid-flight,
+ * short enough that a dead holder blocks at most one scheduled firing before
+ * the Pulse starts ignoring the stale file loudly. Too long turns a crash
+ * into a long outage; too short lets a slow run lose its own brake.
+ */
+export const LEASE_MAX_AGE_MS = 15 * 60 * 1000;
+
+/**
+ * How far ahead of now an mtime may be while still counting as live.
+ *
+ * Under refusal both sides of this line refuse: within tolerance the reader
+ * reports fresh and the guard prints the fresh refusal; beyond tolerance the
+ * reader reports future and the guard prints the future refusal. The number
+ * then decides only which diagnostic line prints, not whether the run goes
+ * ahead. A CONSTANT THAT SEPARATES TWO SAFE OUTCOMES DOES NOT HAVE TO BE
+ * MEASURED the way one that separates a safe outcome from an unsafe one
+ * does, and this one is now the first kind.
+ *
+ * A holder writing from a machine a few seconds ahead is doing nothing
+ * wrong, and filesystem timestamp granularity plus scheduling jitter can
+ * put a healthy lease seconds in the future. Sixty seconds covers that
+ * with margin while staying small against the fifteen-minute max.
+ *
+ * Which error we are choosing, stated plainly because it goes in the
+ * source: a stateless mtime read cannot tell a live holder with a fast
+ * clock from a dead file left ahead, because at any instant the two look
+ * identical. One of the two errors has to be made. Refusing accepts an
+ * unbounded outage for a dead future lease. That outage is visible in the
+ * run own log only: one line to its own stdout, exit 0. No mechanism in
+ * this tree surfaces it — the loop queue reader warns on missing or invalid
+ * JSON and never on age, none of the four Desk breakers fires on a stale
+ * queue or an absent Pulse, freshness measures corpus-date intervals rather
+ * than engine liveness, the refusal exits before the build so no halt file
+ * is written, and the scheduler own signal cannot tell refused from done
+ * because both are exit 0. The one signal that moves is the live site build
+ * stamp going stale, and noticing that is a manual comparison a person
+ * makes. Proceeding would accept a silent overlap with a live holder while
+ * it runs, where the harm is a tree rewritten under a running gate.
+ */
+export const LEASE_FUTURE_TOLERANCE_MS = 60 * 1000;
+
+/**
+ * Name the holder from advisory lease text, for the log only. Never throws.
+ *
+ * The file is expected to carry JSON such as
+ * `{"holder": "gate-1", "reason": "verify", "since": "2026-09-10"}`. When it
+ * does, the holder field names the run. When it carries plain text instead,
+ * the first non-empty line names it, truncated. Empty text, a JSON value
+ * with no usable holder field, or anything unparseable as a name yields null
+ * — a lease with no name — and the mtime alone still decides. This mirrors
+ * how readJsonl skips one bad line in append-only history rather than
+ * failing the run on it.
+ */
+export function holderFromLeaseText(text) {
+  if (typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  if (trimmed === '') return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      for (const key of ['holder', 'job', 'by', 'owner']) {
+        const v = parsed[key];
+        if (typeof v === 'string' && v.trim() !== '') return v.trim().slice(0, 120);
+      }
+      // JSON without a usable holder field: advisory only, so no name.
+      // Plain-text handling below would print the whole JSON blob as if it
+      // were a name; returning null keeps the log honest here.
+      if (trimmed.startsWith('{')) return null;
+    }
+  } catch {
+    // Not JSON — fall through to plain-text handling below.
+  }
+  const first = trimmed
+    .split('\n')
+    .map((l) => l.trim())
+    .find((l) => l !== '');
+  if (!first) return null;
+  return first.slice(0, 120);
+}
+
+/**
+ * Read the lease state. The mtime is the authority; contents only name.
+ *
+ * Returns one of:
+ *   - `{state: 'absent'}` — no file, the ordinary case, proceed.
+ *   - `{state: 'fresh', ageMs, holder}` — live lease, the Pulse refuses.
+ *   - `{state: 'stale', ageMs, holder}` — past the max age, proceed loudly.
+ *   - `{state: 'future', ageMs, holder}` — mtime ahead of now beyond
+ *     tolerance, REFUSE under its own line like a fresh lease. A skew this
+ *     large may be a live holder with a fast clock or a dead
+ *     file left ahead; the read cannot tell them apart, and refusing takes
+ *     the error that is visible over a silent overlap.
+ *   - `{state: 'stat-failed', error}` — the mtime itself could not be read,
+ *     proceed loudly and never refuse. A timing read that fails once will
+ *     usually fail again, so refusing on it would refuse forever.
+ *
+ * A past mtime always ages out on its own: for any fixed mtime at or behind
+ * now, age grows with wall time until it passes the max. A future mtime
+ * within tolerance is treated as live and refuses; a future mtime beyond
+ * tolerance refuses under its own line until a person clears it or the
+ * writer timepiece is put right. Only a DEAD lease past the max ages out on
+ * its own; a dead lease left ahead refuses until cleared, which is the
+ * visible error chosen above. A holder that keeps touching the file keeps
+ * it fresh, which is a live holder rather than a dead one. Boundaries
+ * are strict: age past the max is stale; age at or under the max and at or
+ * above negative tolerance is fresh; age below negative tolerance is future.
+ *
+ * A non-finite injected timepiece (NaN passed as nowMs in tests) makes
+ * ageMs not a number, which fails both comparisons and lands on fresh,
+ * which refuses. That is the safe direction, not a measurement: when the
+ * timepiece cannot be read the run must not rewrite under a gate that may
+ * be live. (A negative-infinite nowMs likewise refuses as future; a
+ * positive-infinite one reads as stale, but Date.now never returns either,
+ * so no shipped path meets them.)
+ *
+ * `opts` exists only so tests can pin the timepiece and fail the timing read on
+ * purpose; no caller in `pulse/` passes it.
+ */
+export function checkLease(root, opts = {}) {
+  const leasePath = paths(root).lease;
+  const nowMs = typeof opts.nowMs === 'number' ? opts.nowMs : Date.now();
+  const doStat = opts.statSyncImpl ?? statSync;
+  const doRead = opts.readFileSyncImpl ?? readFileSync;
+  let stat;
+  try {
+    stat = doStat(leasePath);
+  } catch (err) {
+    const code = err?.code;
+    if (code === 'ENOENT') return { state: 'absent', path: leasePath };
+    return { state: 'stat-failed', path: leasePath, error: err?.message ?? String(err) };
+  }
+  const mtimeMs = stat?.mtimeMs;
+  if (typeof mtimeMs !== 'number' || !Number.isFinite(mtimeMs)) {
+    return { state: 'stat-failed', path: leasePath, error: 'unreadable mtime' };
+  }
+  let holder = null;
+  try {
+    holder = holderFromLeaseText(doRead(leasePath, 'utf8'));
+  } catch {
+    holder = null;
+  }
+  const ageMs = nowMs - mtimeMs;
+  if (ageMs < -LEASE_FUTURE_TOLERANCE_MS) return { state: 'future', path: leasePath, ageMs, holder };
+  if (ageMs > LEASE_MAX_AGE_MS) return { state: 'stale', path: leasePath, ageMs, holder };
+  return { state: 'fresh', path: leasePath, ageMs, holder };
 }
 
 /** Per-source directory and its three files. */
