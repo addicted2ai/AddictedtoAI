@@ -733,6 +733,72 @@ this whole area that names a real
 future risk, and that sentence has no owner and no expiry, which is the third
 option the disposition rule forbids.
 
+### 7d. All twenty-four records went stale in under three hours, and no expiry date was involved
+
+Every record in `phase-0-RESULT3.md` section 5 pins its arm by LINE NUMBER in
+`scripts/brief-lint.mjs`. On 2026-09-10 at 02:47 I read all twenty-four pins out
+of the committed report and compared what stood at each line when the report was
+committed with what stands there now. **Zero of twenty-four still resolve.
+Twenty-four of twenty-four moved**, most by twenty-three lines, and `B3` cannot
+be located by its own text at all because the same edit rewrote that line.
+
+The edit had nothing to do with any record: it removed a reference to an
+unarchived change directory that a repository guard refused (`3c46e46`).
+
+**THE EXPIRY WAS NEVER THE THING THAT WOULD BREAK FIRST.** A date fires a single
+time, a month out. An ordinary edit invalidates a pointer constantly, and it
+already has. A mechanism watching only dates would have sat green through that
+morning and then gone red on 2026-10-10 over twenty-four records that stopped
+describing anything on 2026-09-10 — **a check that is precisely on time about the
+wrong event.** The record-expiry packet now carries this as its second enumerated
+hole, and it is the measured one rather than the reasoned one.
+
+It also prices a disposition, which is the number the design actually turns on.
+Re-DECIDING one record is cheap: two to four sentences carrying their own
+reasoning — the arm, why no twin exists, what removing it would do, why DELETE
+was rejected. But FINDING the arm is now a search rather than a lookup. **The
+cost of a disposition is inflated by exactly the defect that makes the pins
+stale**, so the anchoring question and the interval question are one question.
+
+**The digest in `phase-0-RESULT3.md` section 6 is superseded, and is not to be
+edited.** It records `7F37BC11…F180E` for the linter as round 3 produced it,
+which was true. After `3c46e46` the file hashes to
+`6294C11533EE19E12283ED4F5AFCBCC75884ECC293F85D57D14418357EA15792`. A result
+report is a dated measurement, not a description of the present; the pointer
+belongs here, so that whoever re-runs `Get-FileHash` reads *superseded* rather
+than *tampered with*.
+
+### 7e. A check that passed on a third of the list it was checking
+
+Filed as `addictedtoai-188p`. The linter's Files check terminates its scan at the
+first blank line after a bullet — deliberate, and bound in round 3 by the D4 arm.
+A paragraph added inside the first bullet's continuation, separated by a blank
+line, made the parser stop after ONE bullet in a brief listing three. It reported:
+
+    PASS  every permitted file carries "— reason" and exists or is (new) — 1 files
+
+**PASS, because every bullet it FOUND was well-formed. Its verdict answers "was
+everything I parsed well-formed?" when the property is "did I parse everything
+the brief declares?"** Nothing distinguishes those in the output. It was caught
+only because the same detail line had read `3 files` twenty minutes earlier and
+the `1` looked wrong — a plausibility judgement about the magnitude of an answer,
+made outside the tool, which is not a system property and will not fire when the
+wrong answer happens to look reasonable.
+
+The worse half: check 4b builds its permitted-path set from a **different** loop
+that runs to the next heading and does not stop at a blank line. So one run held
+two answers about one list — 1 file and 3 permitted paths — and reported neither
+the disagreement nor the existence of two parses. **TWO PARSES OF ONE THING ARE
+TWO CHANCES TO BE RIGHT AND NO MECHANISM FOR NOTICING YOU ARE NOT.**
+
+This is the same family as 7b. A sha that resolves to nothing reads exactly like
+evidence; a list that is exact against its instrument reads exactly like a list
+of the problem; a check that parsed a third of its input reads exactly like a
+check that passed. **The general form, and it is the one to carry forward: A
+CHECK THAT CANNOT DISTINGUISH "I LOOKED AND FOUND NOTHING" FROM "I LOOKED AT
+NOTHING" IS NOT A CHECK.** The repair is always the same shape — make it report
+its denominator, and refuse on zero.
+
 ---
 
 ## 8. THE PHASED PLAN
