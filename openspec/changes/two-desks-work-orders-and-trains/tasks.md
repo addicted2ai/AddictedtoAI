@@ -834,14 +834,151 @@ the brief under `evidence/reviews/`.
       findings merges into that subject's item. **No numeric cap** is added.
       Implements: *A reviewer's non-blocking finding reaches work without editing
       anything*, the subject and merge bullets.
+      **Resolved before C1's freeze (the architect's quantifier enumeration,
+      2026-09-09 22:01, from the code at `2c62454`):** (i) REQUIRED means
+      non-empty after `String(...).trim()` — the same test `title` and
+      `detail` already get at `loop/lib/verdict.mjs:79` and `:83`. `:78`'s
+      empty-string default STAYS: it is what makes `!subject` behave
+      identically to `!title` and `!detail`, and "tidying" it to `?? null`
+      changes the refusal's shape silently. (ii) REFUSED means the ENTRY is
+      dropped from the array `parseCarry` returns. The record is not refused,
+      the merge is not refused, no exit code moves. The guard is the THIRD in
+      `parseCarry`'s sequence, after title and after detail — and that order is
+      PINNED, not stylistic: `loop/tests/mock-proposal-executor.mjs:110-116`
+      carries a deliberate entry with neither a title nor a subject, whose
+      comment says it exists so the warning path runs for real, and it must go
+      on reporting "no title". (iii) REPORTED NAMING THE RECORD: the warning
+      itself is a `carryWarnings` string naming `carry[i]` and the title, as
+      the two existing ones do; **the RECORD is named in `loop/lib/carry.mjs`**,
+      which holds `jobId` and `verdictPath` and is the only consumer of
+      `carryWarnings` in the tree (`carry.mjs:85`). `parseCarry` takes no new
+      parameter — it parses front matter and cannot know which file the front
+      matter came from. (iv) THE MERGE IS ALREADY BUILT AND IS NOT THIS TASK'S
+      WORK. `pulse/lib/queue.mjs`'s `carriedFindingItems` (`:424`) already
+      groups on each file's `subject`, falling back to that file's own path
+      under `data/carried/` when it has none — so findings sharing a subject
+      are ONE item today and subject-less ones can never group, because their
+      key is unique by construction. `pulse/tests/carry-queue.test.mjs:189`,
+      `:229`, `:243`, `:259` and `:302`
+      already test it. NO SECOND GROUPING is written; NO MERGE AT
+      TRANSCRIPTION TIME, because one file per finding IS the retirement
+      mechanism (`loop/lib/carry.mjs:29-42`: "the fixing job's own diff deletes
+      the file it was dispatched against"). (v) THE READ-SIDE FALLBACK STAYS.
+      `pulse/lib/queue.mjs` is not in this packet's files. A file under
+      `data/carried/` with no `subject` may be hand-written or may predate this
+      change, and `carry-queue.test.mjs:73` and `:243` pin that it still
+      produces a dispatchable item and still never groups. Removing the
+      fallback's REASON TO EXIST is not permission to remove the fallback.
+      (vi) NO NUMERIC CAP bounds either the number of entries in one `carry:`
+      block or the number of files sharing one subject. Measured at this
+      commit: no bound of any kind exists in either file — the only `.length`
+      comparison in the two is `verdict.mjs:250`'s front-matter presence test.
+      (vii) TWO GUARDS DIE WITH THIS CHANGE AND ARE REMOVED HERE:
+      `carry.mjs:98`'s `entry.subject &&` (today a MISSING subject skips the
+      orphan check entirely, which is the hole this task closes) and `:114`'s
+      conditional `subject:` spread. Both are unreachable once (i)-(ii) land,
+      because `transcribeCarriedFindings` calls `parseVerdict` itself at
+      `carry.mjs:84` — every caller, production or direct-from-a-test, goes
+      through the parser. Dead defensive code around an invariant is
+      indistinguishable from doubt about the invariant. (viii) STATED, NOT
+      FIXED: `loop/run.mjs:678` counts `gate.verdict.carry.length` into
+      `reviewPhase.carried`, which is the parser's ACCEPTED list, so that
+      ledger figure changes meaning from "findings the reviewer wrote" to
+      "findings accepted" without a line in `run.mjs` changing. `run.mjs` is
+      outside this packet's files; the author records it in `RESULT<N>.md` and
+      the architect files it at handover.
 - [ ] 14. `loop/lib/review.mjs`: the reviewer's brief documents both fields and the
       required subject. Implements the same requirement's brief bullet.
+      **Resolved before C1's freeze (the architect's quantifier enumeration,
+      2026-09-09 22:01, from the code at `2c62454`):** (i) "both fields" are
+      `title` and `detail`; the required `subject` is the third thing the brief
+      must document. (ii) THERE ARE THREE SITES IN `loop/lib/review.mjs` AND
+      ALL THREE ARE REQUIRED — line numbers at the authority commit:
+      `:685-686`, the prose sentence "`subject` is optional: the one content
+      file the finding concerns, when there is one"; `:693-694`, the worked
+      example's `subject: <optional — the content file this concerns, …>`; and
+      **`:734-736`, the front-matter SKELETON**, which today lists only
+      `title` and `detail` and does not mention `subject` at all. THE SKELETON
+      IS WHAT A REVIEWER PASTES. Change the prose and leave the skeleton and
+      the documentation is correct while the template people actually use
+      produces entries this change refuses — and every test stays green,
+      because no test copies a skeleton. (iii) A SECOND ERROR RIDES IN THE SAME
+      SENTENCE and is fixed with it: "the one CONTENT file" is narrower than
+      the mechanism. `carry.mjs:98`'s `subjectMustExist` tests
+      `existsSync(join(repoRoot, entry.subject))` — any tracked path, not a
+      content file. The replacement names the path the finding is about and
+      does not say "content". (iv) `loop/lib/verdict.mjs:58-59`'s JSDoc states
+      the same optionality and is corrected too; it is already in this
+      packet's files. (v) OUT OF SCOPE: `data/carried/README.md:9` carries
+      BOTH errors and is A2AI-Orch's at handover. Do not edit it. (vi) One
+      existing test pins this text — `loop/tests/carry.test.mjs:266-278`
+      asserts the reviewer brief documents `carry:` and matches on `/carry:/`,
+      so it stays green; an assertion on the new required wording belongs in
+      that test and nowhere else.
 - [ ] 15. `loop/tests/carry.test.mjs`: a subject-less entry is refused; a second
       finding on a carried subject produces no second item; five entries in one
       record are all accepted. **Mutation A**: make `subject` optional again and
       confirm the refusal test fails. **Mutation B**: reinstate a cap of two and
       confirm the five-entry test fails — the absence of a cap is a decision under
       test, not an omission. Tests tasks 13–14.
+      **Resolved before C1's freeze (the architect's quantifier enumeration,
+      2026-09-09 22:01, from the code at `2c62454`):** (i) THE BLAST RADIUS IS
+      MEASURED, NOT ESTIMATED, so it is not discovered mid-implementation. The
+      architect applied the guard alone as a probe in a worktree and ran
+      `loop/tests/carry.test.mjs`, `loop/tests/corrections.test.mjs`,
+      `loop/tests/discarded-proposal-retry.test.mjs` and
+      `pulse/tests/carry-queue.test.mjs`: baseline **57 pass, 0 fail, exit 0**;
+      with the guard **50 pass, 7 fail, exit 1**; probe reverted, tree clean.
+      **SEVEN test cases go red, every one in `loop/tests/carry.test.mjs`:**
+      `parseCarry: a well-formed entry is read whole, with subject optional`;
+      `parseCarry: a single mapping (not a list) is accepted the same way a
+      list of one would be`; `parseCarry: one bad entry among good ones is
+      skipped without discarding the rest`; `parseVerdict carries carry: and
+      carryWarnings alongside the existing fields, unchanged`; `two carry
+      entries become two files, each named for the job and numbered, with real
+      titles`; `a malformed entry inside an otherwise-valid carry: list is
+      skipped and reported, the rest still transcribe`; and `transcribing twice
+      does not overwrite an existing file — a retry does not clobber a finding
+      already written`. (ii) TWO OF THE SEVEN ARE NOT WHAT THEY LOOK LIKE. The
+      first has the reversed property IN ITS NAME, so it is REWRITTEN, not
+      repaired — repairing it leaves a test whose name asserts the opposite of
+      the code. The last fails with an `ENOENT` rather than an assertion,
+      because it writes a file the first transcription was supposed to create;
+      that reads as a broken test, and the natural wrong response is to fix the
+      path. (iii) FILES THAT NEED NOTHING, with the counts that disarm a grep
+      for `subject:`, each cleared by RUNNING under the probe and not by
+      inspection: `loop/tests/review-blog-bar.test.mjs` (0 carry blocks, 30
+      unrelated `subject:` lines); `loop/tests/review.test.mjs` (0 and 9);
+      `scripts/verify-launch-voice-carry.test.mjs` (7 `carry:` hits and 29
+      `subject:` lines, ALL of them the `reads-human-from` carry-FORWARD's
+      `{subject, record, why}` — a different feature that shares two words);
+      `loop/tests/corrections.test.mjs` (its single `carry:` match is a comment
+      at `:99`); `loop/tests/discarded-proposal-retry.test.mjs` (three
+      fixtures, all three already carrying a subject);
+      `pulse/tests/carry-queue.test.mjs`; `loop/tests/mock-executor.mjs` and
+      `loop/tests/mock-proposal-executor.mjs` (both already carrying subjects).
+      **Textual counting of these fixtures is unreliable in BOTH directions** —
+      they are JavaScript object literals and YAML inside JS string literals,
+      not YAML blocks — so a line grep reads 32 where the answer is 7 and a
+      structural YAML walker reads 0. Neither number is evidence; the probe is.
+      (iv) "a second finding on a carried subject produces no second item" IS
+      ALREADY TESTED, at `pulse/tests/carry-queue.test.mjs:189` ("several
+      findings on ONE subject become ONE job, not one job each"), with `:229`,
+      `:243`, `:259` and `:302` covering the rest of the grouping. That arm is
+      CITED AND RUN, not rewritten inside `carry.test.mjs`: transcription
+      writes one file per finding whatever the subject is, so the same
+      assertion in the loop's test would pass vacuously and test nothing.
+      (v) "five entries in one record are all accepted" asserts FIVE
+      TRANSCRIBED FILES, so it goes red end-to-end under a cap wherever the cap
+      is placed. (vi) MUTATION A is the guard deleted — `!subject` removed from
+      `parseCarry` — and the new refusal arm must go red. (vii) MUTATION B SAYS
+      "REINSTATE" AND THERE IS NOTHING TO REINSTATE: measured at this commit,
+      no bound of any kind exists in `verdict.mjs` or `carry.mjs`, the only
+      `.length` comparison in the two being `verdict.mjs:250`'s front-matter
+      presence test. The mutation is INTRODUCE a cap of two, sited in
+      `parseCarry`'s loop, and the five-entry arm must go red. A mutation that
+      reinstates a bound no version of the file ever had cannot go red for the
+      reason the task states.
 - [ ] 16. `scripts/lint-deferrals.mjs` (new, standalone): take **a JSON export path
       as its argument** and report every open issue that names neither a subject
       path nor a specification requirement, exiting non-zero only under a
