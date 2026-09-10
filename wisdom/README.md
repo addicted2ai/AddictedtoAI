@@ -1954,3 +1954,77 @@ host, **read whether the host exists** — because a proposal naming a host that
 does not exist fails its own read-before-proposing bar, and this report's own
 first draft did exactly that, twice, and was caught by two readers who could not
 see each other.
+
+### 7r. THE PROOF POOL WAS SKEWED AND NOBODY SKEWED IT
+
+The worktree guard's allowlist compared a modified path against each declared
+prefix with `startsWith`. A2AI-Orch found the defect in its own copy at 05:29,
+minutes after I named the rung that predicts it, and reported it to me; my copy
+had it verbatim. It was the third defect of Orch's that was also in mine.
+
+Declaring `scripts/brief` counted **two** files as standing: `scripts/brief.mjs`,
+which the caller meant, and `scripts/briefing-unrelated.mjs`, **which it never
+named**. A caller exempting one file silently exempted a sibling.
+
+**STARTSWITH IS A STRING PREDICATE AND THESE ARE PATHS.** That sentence is the
+whole bug, and it is not the interesting part.
+
+**The interesting part is how it survived being proved.** Every prefix this guard
+had *ever* been proved with was `.agents/`, `standing.txt`, or a whole test
+filename. Each of those either **ends in a separator** or **is a complete path**.
+Neither shape can exercise a prefix that stops mid-name. So:
+
+**A PROOF POOL CAN BE SKEWED WITH NOBODY SELECTING IT, BECAUSE THE EXAMPLES THAT
+COME TO HAND SHARE A SHAPE — AND A SHAPE THAT NOBODY CHOSE IS ONE NOBODY THINKS
+TO VARY.**
+
+This is the fourth depth of the same rule and the depths are worth keeping
+straight, because each is invisible from inside the one above it:
+
+- **§7n — the sample.** A mechanism is proved against the subjects it happens to
+  be used on, and those were chosen by the person who wrote it.
+- **§7o addendum — the candidate pool.** The selection also operates on what was
+  *available to choose from*, and there it leaves no trace, because a pool nobody
+  wrote down cannot show what it excluded.
+- **§7p — the check's own subject list.** A parameter of the check, written in the
+  same file, reviewed in the same breath, inheriting credibility it never earned.
+- **§7r — the proof pool.** Not the subjects, not the pool they came from, but
+  the *examples used to demonstrate the mechanism works*. Here nobody chose at
+  all. `.agents/` is the real background state; `standing.txt` is what you name a
+  decoy file. **The natural example simply never has the awkward shape**, and
+  writing more examples produces more of the same shape, which is why "we tested
+  it thoroughly" is not a defence against this one.
+
+The repair is path semantics — match exactly, or match under `prefix/` — and it
+fails **safe** in the same asymmetric way the universal-token refusal does: a
+mid-name prefix now matches nothing, the file it meant lands in UNEXPLAINED, the
+guard refuses, and `(MATCHED NOTHING)` prints the reason. Refusing every
+non-directory prefix outright would have been the over-broad arm a fourth time in
+one night, and **the over-broad arm is the one that gets the guard deleted.**
+
+**THE TALLY LINE HAD ITS OWN COPY OF THE PREDICATE.** Repairing the
+classification and not the printed hit count would have left a guard and its own
+report disagreeing about what was counted — the two-homes shape twice in one
+file, in the file whose entire job is to report accurately. Both now call one
+`matches`. Orch found this in its copy as well.
+
+**And one thing about the demonstration itself.** Orch's decoy showed the count
+going `2` to `0`. That is the defect, but it is the *soft* version: in that
+arrangement a third modified file kept the guard refusing either way, so only a
+printed number changed, and a reader could reasonably file it as cosmetic. The
+arm that prices it correctly removes the third file — then the mid-name prefix
+swallows **every** modified file, `unexplained` reaches zero, and the guard
+**returns quiet on a tree somebody is working in**, which is the one outcome it
+exists to prevent. Measured, both arms, old predicate against new:
+
+    A  3 modified, prefix scripts/brief   old: 2 standing 1 unexplained -> would have refused
+                                          new: 0 standing 3 unexplained -> REFUSED, "scripts/brief"=0 (MATCHED NOTHING)
+    B  2 modified, prefix scripts/brief   old: 2 standing 0 unexplained -> WOULD HAVE RETURNED QUIET
+                                          new: 0 standing 2 unexplained -> REFUSED
+
+**A DEFECT DEMONSTRATED ON AN ARM THAT FAILS EITHER WAY UNDERSTATES ITSELF, AND
+THE UNDERSTATED VERSION IS THE ONE THAT GETS DEPRIORITISED.** When you find a
+predicate wrong, construct the arm where the wrong verdict is *returned to the
+caller*, not merely printed. Eight arms, 8 pass 0 fail; live main unchanged at
+12 modified / 12 standing / 0 unexplained in all three directory forms and
+refusing with nothing declared.
