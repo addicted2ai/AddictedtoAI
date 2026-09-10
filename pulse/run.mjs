@@ -86,13 +86,36 @@ if (existsSync(p.stop)) {
 // The scheduler cannot be told to wait, so a gate harness touches GATE_LEASE
 // while it runs and the Pulse refuses to rewrite tracked files underneath it.
 // A lease, not a lock: the mtime is the authority and a file past the max age
-// is ignored loudly, so a dead holder cannot stop the Pulse forever. An mtime
-// ahead of now beyond tolerance is likewise ignored loudly on clock skew, so
-// a wrong timestamp cannot refuse past the max. Refusal
-// exits 0 like STOP — an instruction obeyed, not an error — but names
-// GATE_LEASE, the age and the holder so the two brakes are never confused.
+// is ignored loudly, so a dead holder left behind cannot stop the Pulse
+// forever. An mtime ahead of now beyond tolerance REFUSES under its own line,
+// like a fresh lease: a stateless mtime read cannot tell a live holder with
+// a fast clock from a dead file left ahead, because at any instant
+// the two look identical. Refusing accepts an unbounded outage for a dead
+// future lease, and that outage announces itself on every run and a person
+// clears it in a second. Proceeding accepts a silent overlap with a live one,
+// and the harm is a tree rewritten under a running gate, which nothing
+// announces and nobody diffs. We take the error that is visible.
 // Placed after STOP so a run where both stand still reports the maintainer's
 // brake. Reached before any network use, like STOP, so ending here is clean.
+//
+// Ahead-magnitude rendering: below LEASE_AHEAD_DISPLAY_THRESHOLD_S the line
+// prints whole seconds ("90s"); at or above it the line prints the two
+// largest whole units ("2m 30s", "1h 0m", "1d 0h", "10y 0d"). Display only;
+// no safety depends on the threshold, which is a round number picked for
+// readability in the small hours rather than measured.
+const LEASE_AHEAD_DISPLAY_THRESHOLD_S = 120;
+function formatAheadDuration(aheadS) {
+  const s = Math.max(0, Math.round(aheadS));
+  if (s < LEASE_AHEAD_DISPLAY_THRESHOLD_S) return `${s}s`;
+  const MIN = 60;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+  const YEAR = 365 * DAY;
+  if (s < HOUR) return `${Math.floor(s / MIN)}m ${s % MIN}s`;
+  if (s < DAY) return `${Math.floor(s / HOUR)}h ${Math.floor((s % HOUR) / MIN)}m`;
+  if (s < YEAR) return `${Math.floor(s / DAY)}d ${Math.floor((s % DAY) / HOUR)}h`;
+  return `${Math.floor(s / YEAR)}y ${Math.floor((s % YEAR) / DAY)}d`;
+}
 const lease = checkLease(root);
 if (lease.state === 'fresh') {
   const ageS = Math.max(0, Math.round(lease.ageMs / 1000));
@@ -107,9 +130,11 @@ if (lease.state === 'stale') {
   process.stdout.write(`pulse: WARN stale GATE_LEASE at ${lease.path} (age ${ageS}s exceeds max ${maxS}s) — disregarding it and proceeding; holder ${who} may have died without releasing.\n`);
 } else if (lease.state === 'future') {
   const aheadS = Math.max(0, Math.round(-lease.ageMs / 1000));
+  const aheadText = formatAheadDuration(aheadS);
   const tolS = Math.round(LEASE_FUTURE_TOLERANCE_MS / 1000);
   const who = lease.holder ?? 'unnamed';
-  process.stdout.write(`pulse: WARN future GATE_LEASE at ${lease.path} (mtime ${aheadS}s ahead of now, beyond tolerance ${tolS}s) — disregarding it and proceeding; holder ${who} looks skewed, check the writer clock.\n`);
+  process.stdout.write(`pulse: GATE_LEASE future at ${lease.path} (mtime ${aheadText} ahead of now, beyond tolerance ${tolS}s, holder ${who}) — a gate run with a fast writer clock may hold the tree, refusing this run, nothing done. Delete the file only when no gate run is active, or correct the writer clock.\n`);
+  process.exit(0);
 } else if (lease.state === 'stat-failed') {
   process.stdout.write(`pulse: WARN cannot read mtime of GATE_LEASE at ${lease.path} (${lease.error}) — proceeding; refusing on unreadable timing would risk refusing forever.\n`);
 }

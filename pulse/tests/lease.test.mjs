@@ -105,6 +105,7 @@ test('stale lease: the Pulse proceeds loudly, naming the file, the age and the d
   assert.match(run.out, /WARN stale GATE_LEASE/, run.out);
   assert.match(run.out, new RegExp(HOLDER), 'the loud line still names the holder it is ignoring: ' + run.out);
   assert.match(run.out, /disregarding it and proceeding/, run.out);
+  assert.match(run.out, /exceeds max 900s/, 'the stale line names the max literally so a value drift fails: ' + run.out);
   assert.match(run.out, /queue/, 'and the pipeline then ran');
   assert.equal(existsSync(queueFile(root)), true, 'a dead holder cannot keep derived state from being written');
 });
@@ -336,48 +337,57 @@ test('within tolerance: 30s ahead still refuses as a live lease', async (t) => {
   assert.equal(checkLease(root).state, 'fresh');
 });
 
-test('beyond tolerance: 90s ahead proceeds loudly on clock skew', async (t) => {
+test('beyond tolerance: 90s ahead refuses as future under its own line', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   writeLease(root, leaseBody(), -90 * 1000);
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, run.out);
-  assert.match(run.out, /WARN future GATE_LEASE/, run.out);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
   assert.match(run.out, new RegExp(HOLDER), run.out);
-  assert.match(run.out, /ahead of now, beyond tolerance/, run.out);
-  assert.match(run.out, /disregarding it and proceeding/, run.out);
-  assert.doesNotMatch(run.out, /GATE_LEASE present/, run.out);
-  assert.match(run.out, /queue/, run.out);
-  assert.equal(existsSync(queueFile(root)), true);
+  assert.match(run.out, /mtime 90s ahead of now, beyond tolerance 60s/, 'the small magnitude is literal so a dropped sign fails: ' + run.out);
+  assert.match(run.out, /refusing this run, nothing done/, run.out);
+  assert.match(run.out, /Delete the file only when no gate run is active, or correct the writer clock/, run.out);
+  assert.doesNotMatch(run.out, /GATE_LEASE present/, 'future has its own line, distinct from the fresh refusal: ' + run.out);
+  assert.doesNotMatch(run.out, /disregarding it and proceeding/, 'future refuses, it never proceeds: ' + run.out);
+  assert.doesNotMatch(run.out, /queue/, run.out);
+  assert.equal(existsSync(queueFile(root)), false, 'nothing is written under a future lease');
   assert.equal(checkLease(root).state, 'future');
+  assert.equal(checkLease(root).path, leasePath(root), 'the future return carries the lease path');
 });
 
-test('one hour ahead: refuses nothing, proceeds as future', async (t) => {
+test('one hour ahead: refuses as future, nothing written', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   writeLease(root, leaseBody(), -3600 * 1000);
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, run.out);
-  assert.match(run.out, /WARN future GATE_LEASE/, run.out);
-  assert.match(run.out, /queue/, run.out);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
+  assert.match(run.out, /1h 0m ahead of now/, 'the hour renders in hours, not raw seconds: ' + run.out);
+  assert.match(run.out, /refusing this run, nothing done/, run.out);
+  assert.doesNotMatch(run.out, /queue/, run.out);
+  assert.equal(existsSync(queueFile(root)), false);
   assert.equal(checkLease(root).state, 'future');
 });
 
-test('one day ahead: refuses nothing, proceeds as future', async (t) => {
+test('one day ahead: refuses as future, nothing written', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   writeLease(root, leaseBody(), -24 * 3600 * 1000);
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, run.out);
-  assert.match(run.out, /WARN future GATE_LEASE/, run.out);
-  assert.match(run.out, /queue/, run.out);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
+  assert.match(run.out, /1d 0h ahead of now/, 'the day renders in days, not raw seconds: ' + run.out);
+  assert.match(run.out, /refusing this run, nothing done/, run.out);
+  assert.doesNotMatch(run.out, /queue/, run.out);
+  assert.equal(existsSync(queueFile(root)), false);
   assert.equal(checkLease(root).state, 'future');
 });
 
-test('ten years ahead, the threatening end: proceeds as future', async (t) => {
+test('ten years ahead, the threatening end: refuses as future', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   const tenYearsMs = 10 * 365 * 24 * 3600 * 1000;
@@ -385,10 +395,13 @@ test('ten years ahead, the threatening end: proceeds as future', async (t) => {
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, run.out);
-  assert.match(run.out, /WARN future GATE_LEASE/, run.out);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
   assert.match(run.out, /beyond tolerance 60s/, run.out);
-  assert.match(run.out, /queue/, run.out);
-  assert.equal(existsSync(queueFile(root)), true);
+  assert.match(run.out, /10y 0d ahead of now/, 'ten years renders in years, not 315360000s: ' + run.out);
+  assert.match(run.out, /refusing this run, nothing done/, run.out);
+  assert.doesNotMatch(run.out, /GATE_LEASE present/, 'future keeps its own line: ' + run.out);
+  assert.doesNotMatch(run.out, /queue/, run.out);
+  assert.equal(existsSync(queueFile(root)), false);
   const seen = checkLease(root);
   assert.equal(seen.state, 'future');
   assert.ok(seen.ageMs < -LEASE_FUTURE_TOLERANCE_MS);
@@ -482,4 +495,122 @@ test('line-count range: a thousand plain-text lines still name the first one', (
   assert.equal(holderFromLeaseText(lines), 'first-holder');
   const longFirst = 'k'.repeat(5000) + '\nsecond\n';
   assert.equal(holderFromLeaseText(longFirst).length, 120);
+});
+
+// ---------------------------------------------------------------------------
+// Round 3: the future arm refuses. The four beyond-tolerance trials above now
+// refuse under their own line; the pins below keep the constants honest. A
+// computed edge fixture proves the comparison is strict; a literal value pin
+// proves the number has not drifted. The file needs both.
+// ---------------------------------------------------------------------------
+
+test('value pin: the stale line names the max as 900s literally', async (t) => {
+  const root = makeRoot([], { publish: false });
+  t.after(() => cleanup(root));
+  writeStaleLease(root);
+
+  const run = await runPulse(root, ARGS);
+  assert.match(run.out, /exceeds max 900s/, 'multiplying LEASE_MAX_AGE_MS by ten must fail here: ' + run.out);
+});
+
+test('value pin: a fixed 960s-old lease is stale without naming the constant', async (t) => {
+  // 960000ms is a literal past the current 900000ms max, not an expression
+  // built from it. If the max grows tenfold this lease is fresh again and
+  // the run refuses, so the suite fails until a person edits this number
+  // with eyes open. That conscious edit is the point.
+  const root = makeRoot([], { publish: false });
+  t.after(() => cleanup(root));
+  writeLease(root, leaseBody(), 960000);
+
+  const run = await runPulse(root, ARGS);
+  assert.equal(run.status, 0, run.out);
+  assert.match(run.out, /WARN stale GATE_LEASE/, run.out);
+  assert.match(run.out, /exceeds max 900s/, run.out);
+  assert.match(run.out, /queue/, run.out);
+  assert.equal(checkLease(root).state, 'stale');
+});
+
+test('non-finite mtime never decides: positive and negative infinity read as stat-failed', () => {
+  const nowMs = 1_720_000_000_000;
+  for (const mtimeMs of [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+    const seen = checkLease(tmpdir(), {
+      nowMs,
+      statSyncImpl: () => ({ mtimeMs }),
+      readFileSyncImpl: () => leaseBody(),
+    });
+    assert.equal(seen.state, 'stat-failed', `mtime ${String(mtimeMs)} must not decide`);
+  }
+});
+
+test('future return carries the lease path for its own line', () => {
+  const nowMs = 1_720_000_000_000;
+  const seen = checkLease(tmpdir(), {
+    nowMs,
+    statSyncImpl: () => ({ mtimeMs: nowMs + LEASE_FUTURE_TOLERANCE_MS + 1000 }),
+    readFileSyncImpl: () => leaseBody(),
+  });
+  assert.equal(seen.state, 'future');
+  assert.ok(typeof seen.path === 'string' && seen.path.length > 0, 'path must be present');
+  assert.equal(seen.path, paths(tmpdir()).lease, 'path must be the lease path, or the guard prints undefined');
+});
+
+test('non-finite injected timepiece refuses: NaN lands on fresh', () => {
+  // Refusing is the safe direction when the timepiece cannot be read, not a
+  // measurement of anything: a run that cannot tell the age must not
+  // rewrite under a gate that may be live.
+  const mtimeMs = 1_720_000_000_000;
+  const seenNaN = checkLease(tmpdir(), {
+    nowMs: Number.NaN,
+    statSyncImpl: () => ({ mtimeMs }),
+    readFileSyncImpl: () => leaseBody(),
+  });
+  assert.equal(seenNaN.state, 'fresh', 'NaN nowMs must refuse, not proceed');
+  const seenNegInf = checkLease(tmpdir(), {
+    nowMs: Number.NEGATIVE_INFINITY,
+    statSyncImpl: () => ({ mtimeMs }),
+    readFileSyncImpl: () => leaseBody(),
+  });
+  assert.equal(seenNegInf.state, 'future', 'negative-infinite nowMs must refuse as future');
+});
+
+test('display threshold, below: 100s ahead renders as seconds and refuses', async (t) => {
+  const root = makeRoot([], { publish: false });
+  t.after(() => cleanup(root));
+  writeLease(root, leaseBody(), -100 * 1000);
+
+  const run = await runPulse(root, ARGS);
+  assert.equal(run.status, 0, run.out);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
+  assert.match(run.out, /mtime 100s ahead of now/, run.out);
+  assert.match(run.out, /refusing this run, nothing done/, run.out);
+  assert.doesNotMatch(run.out, /queue/, run.out);
+  assert.equal(existsSync(queueFile(root)), false);
+});
+
+test('display threshold, above: 150s ahead renders in minutes and refuses', async (t) => {
+  const root = makeRoot([], { publish: false });
+  t.after(() => cleanup(root));
+  writeLease(root, leaseBody(), -150 * 1000);
+
+  const run = await runPulse(root, ARGS);
+  assert.equal(run.status, 0, run.out);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
+  assert.match(run.out, /mtime 2m 30s ahead of now/, run.out);
+  assert.match(run.out, /refusing this run, nothing done/, run.out);
+  assert.match(run.out, /Delete the file only when no gate run is active, or correct the writer clock/, run.out);
+  assert.doesNotMatch(run.out, /raising the tolerance/, 'the line must never prescribe widening the guard: ' + run.out);
+  assert.doesNotMatch(run.out, /queue/, run.out);
+  assert.equal(existsSync(queueFile(root)), false);
+});
+
+test('future refusal never suggests raising the tolerance', async (t) => {
+  const root = makeRoot([], { publish: false });
+  t.after(() => cleanup(root));
+  writeLease(root, leaseBody(), -90 * 1000);
+
+  const run = await runPulse(root, ARGS);
+  assert.match(run.out, /GATE_LEASE future/, run.out);
+  assert.doesNotMatch(run.out, /rais/i, 'no remedy may point at the tolerance: ' + run.out);
+  assert.doesNotMatch(run.out, /widen/i, run.out);
+  assert.doesNotMatch(run.out, /increas/i, run.out);
 });

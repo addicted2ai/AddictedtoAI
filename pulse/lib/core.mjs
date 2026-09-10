@@ -88,21 +88,28 @@ export const LEASE_MAX_AGE_MS = 15 * 60 * 1000;
 /**
  * How far ahead of now an mtime may be while still counting as live.
  *
+ * Under refusal both sides of this line refuse: within tolerance the reader
+ * reports fresh and the guard prints the fresh refusal; beyond tolerance the
+ * reader reports future and the guard prints the future refusal. The number
+ * then decides only which diagnostic line prints, not whether the run goes
+ * ahead. A CONSTANT THAT SEPARATES TWO SAFE OUTCOMES DOES NOT HAVE TO BE
+ * MEASURED the way one that separates a safe outcome from an unsafe one
+ * does, and this one is now the first kind.
+ *
  * A holder writing from a machine a few seconds ahead is doing nothing
  * wrong, and filesystem timestamp granularity plus scheduling jitter can
  * put a healthy lease seconds in the future. Sixty seconds covers that
- * with margin while staying small against the fifteen-minute max (at most
- * ~7% extra refuse at the near end) and tiny against the hours between
- * scheduled firings.
+ * with margin while staying small against the fifteen-minute max.
  *
- * Costs, stated at both ends as the brief requires:
- * - Near end (within tolerance): a lease up to 60s in the future still
- *   refuses, so the longest refuse from now is max plus tolerance (16
- *   minutes). That 60s past the max is the price of keeping jitter usable.
- * - Far end (beyond tolerance): a live holder more than 60s ahead has its
- *   lease disregarded at once, risking overlap with that holder. Such skew
- *   is itself a misconfiguration, and the distinct loud line makes it
- *   visible rather than silent.
+ * Which error we are choosing, stated plainly because it goes in the
+ * source: a stateless mtime read cannot tell a live holder with a fast
+ * clock from a dead file left ahead, because at any instant the two look
+ * identical. One of the two errors has to be made. Refusing accepts an
+ * unbounded outage for a dead future lease, and that outage announces
+ * itself on every run and a person clears it in a second. Proceeding
+ * accepts a silent overlap with a live one, and the harm is a tree
+ * rewritten under a running gate, which nothing announces and nobody
+ * diffs. We take the error that is visible.
  */
 export const LEASE_FUTURE_TOLERANCE_MS = 60 * 1000;
 
@@ -153,24 +160,34 @@ export function holderFromLeaseText(text) {
  *   - `{state: 'fresh', ageMs, holder}` — live lease, the Pulse refuses.
  *   - `{state: 'stale', ageMs, holder}` — past the max age, proceed loudly.
  *   - `{state: 'future', ageMs, holder}` — mtime ahead of now beyond
- *     tolerance, proceed loudly on clock skew. A skew this large would
- *     otherwise refuse for the skew plus the max; disregarding it bounds
- *     every refuse to at most max plus tolerance from now.
+ *     tolerance, REFUSE under its own line like a fresh lease. A skew this
+ *     large may be a live holder with a fast clock or a dead
+ *     file left ahead; the read cannot tell them apart, and refusing takes
+ *     the error that is visible over a silent overlap.
  *   - `{state: 'stat-failed', error}` — the mtime itself could not be read,
  *     proceed loudly and never refuse. A timing read that fails once will
  *     usually fail again, so refusing on it would refuse forever.
  *
  * A past mtime always ages out on its own: for any fixed mtime at or behind
  * now, age grows with wall time until it passes the max. A future mtime
- * within tolerance is treated as live (it refuses, costing at most tolerance
- * past the max); a future mtime beyond tolerance is disregarded at once, so
- * no fixed future mtime can refuse past max plus tolerance, and no past
- * mtime can refuse past the max. Only a holder that keeps touching the file
- * keeps it fresh, which is a live holder rather than a dead one. Boundaries
+ * within tolerance is treated as live and refuses; a future mtime beyond
+ * tolerance refuses under its own line until a person clears it or the
+ * writer timepiece is put right. Only a DEAD lease past the max ages out on
+ * its own; a dead lease left ahead refuses until cleared, which is the
+ * visible error chosen above. A holder that keeps touching the file keeps
+ * it fresh, which is a live holder rather than a dead one. Boundaries
  * are strict: age past the max is stale; age at or under the max and at or
  * above negative tolerance is fresh; age below negative tolerance is future.
  *
- * `opts` exists only so tests can pin the clock and fail the timing read on
+ * A non-finite injected timepiece (NaN passed as nowMs in tests) makes
+ * ageMs not a number, which fails both comparisons and lands on fresh,
+ * which refuses. That is the safe direction, not a measurement: when the
+ * timepiece cannot be read the run must not rewrite under a gate that may
+ * be live. (A negative-infinite nowMs likewise refuses as future; a
+ * positive-infinite one reads as stale, but Date.now never returns either,
+ * so no shipped path meets them.)
+ *
+ * `opts` exists only so tests can pin the timepiece and fail the timing read on
  * purpose; no caller in `pulse/` passes it.
  */
 export function checkLease(root, opts = {}) {
