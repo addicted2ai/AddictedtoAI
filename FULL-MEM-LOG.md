@@ -3272,7 +3272,7 @@ own output; a zero firing rate is not evidence that that guard is useless.
 
 pass 2b of excerptsFor is deleted, and the excerpt ceiling falls 88,000 to
 24,000. The second and third per-job builds in the old arithmetic are separated
-by fact: the second, the post-merge build at run.mjs:1661, is deleted because
+by fact: the second, the post-merge build at run.mjs:1750-1755, is deleted because
 the tripwire now builds the merged tip; the claimed third per-job build never
 existed, which is why the six-gate arithmetic was corrected from three builds
 to two. The property carried by the deleted build
