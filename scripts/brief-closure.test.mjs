@@ -6,11 +6,17 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const WORKTREE = 'D:/addictedtoai-worktrees/item3-closure';
-const INSTRUMENT = 'D:/addictedtoai-worktrees/item3-closure/scripts/brief-closure.mjs';
+// Location-independent: the suite measures whichever copy of the
+// instrument it runs beside, never a hardcoded worktree. (A hardcoded
+// INSTRUMENT beside a relative re-import mutates one file and measures
+// another from any disposable copy — found by the sealed review.)
+const HERE = dirname(fileURLToPath(import.meta.url));
+const INSTRUMENT = join(HERE, 'brief-closure.mjs');
+const WORKTREE = resolve(HERE, '..');
 const MAIN = 'D:/AddictedtoAI';
 const B2_BRIEF = `${MAIN}/openspec/changes/two-desks-work-orders-and-trains/evidence/reviews/stage0-packet-B2/round1-agent-brief.md`;
 const E_BRIEF = `${MAIN}/openspec/changes/two-desks-work-orders-and-trains/evidence/reviews/stage0-packet-E/round1-agent-brief.md`;
@@ -130,8 +136,11 @@ test('arm 6 — mutation A: shape pattern neutered, E goes green (the defect), r
   writeFileSync(INSTRUMENT, mutated, 'utf8');
   try {
     // Node caches modules: re-import under a cache-busting query so the observation measures the mutated file.
+    // The re-import is derived from the mutated constant, never a relative path beside it: a relative import
+    // resolves against THIS copy while INSTRUMENT may name another, so a disposable copy would mutate one
+    // file and measure another (sealed-review finding).
     const stamp = Date.now();
-    const fresh = await import(`./brief-closure.mjs?mutA=${stamp}`);
+    const fresh = await import(`${pathToFileURL(INSTRUMENT).href}?mutA=${stamp}`);
     const res = fresh.checkClosure({ briefPath: E_BRIEF, base: E_BASE, tip: E_TIP, root: WORKTREE });
     assert.equal(res.ok, true, `mutated E must go green (the defect being shown): ${JSON.stringify(res.candidates)}`);
     assert.equal(res.candidates.length, 0, 'neutering the shape pattern must hide both E shape pins');
