@@ -76,12 +76,25 @@ a run — once 61 seconds in, once after saying "the machine is free" — and on
 writing an untracked file into the tree mid-run. Each time I was doing something
 I considered obviously harmless, and the third one was this very document.
 
+**Make that four.** An hour later, sixty seconds into another run, I edited this
+very file — by then **tracked** — because the maintainer had just asked for
+something. Reverted within a minute and the tree verified clean, but the count
+is four.
+
 **THE STANDING INSTRUCTION, not a lesson learned:** draft into a scratchpad and
 copy into the repository only **between** runs. The guard cannot help — it
-refuses commits, and only one of the three was a commit. The rule is durable
+refuses commits, and only one of the four was a commit. The rule is durable
 precisely because it is **answerable without knowing anything about the file**,
 where "is this particular write harmless?" is a judgement made under time
 pressure.
+
+**AND THE RULE NEEDS A TRIGGER, NOT JUST A STATEMENT — this is the part I would
+give a successor over everything else in this section.** All four breaches
+happened at the same moment: **a new instruction arrived mid-run**, and I went
+straight to the file. Writing the rule down in capitals two commits before the
+fourth breach did not prevent the fourth breach. The rule has to fire on *"a new
+task just arrived"*, which is precisely the moment nobody checks a lock. Until
+that is mechanised, assume you will do this too.
 
 The guard's own asymmetry is still unfixed: it answers *"is the other session
 running?"* and never *"am I running?"*. **A guard built while thinking about one
@@ -271,6 +284,90 @@ brief is gone collapses into the author's account of what was asked. Lease round
 1–2 have no brief in hand and are recorded as absent rather than reconstructed.
 
 ---
+
+## 6b. The session transcripts — where the reasoning behind all of this lives
+
+Every decision in this repository was argued somewhere before it was committed,
+and the argument is in a transcript. **Read one when a commit message or an
+artifact does not explain enough** — but read §6b's warning first, because these
+files are easy to misread.
+
+### The live transcripts — the authoritative record, still being written
+
+These are Claude Code's own session files. **They are the primary source; the
+exports below are derived from them.** One file per session, and the sessions
+that did this work are:
+
+```
+A2AI-Orch          C:/Users/BadBitch/.claude/projects/D--AddictedtoAI/b0a0272b-5058-41e7-ac66-431922257ff6.jsonl
+A2AI-Fable-Arch    C:/Users/BadBitch/.claude/projects/D--AddictedtoAI/47a211cc-a047-4474-bb53-9cfe0505f2b9.jsonl
+A2AI-mem-cond      C:/Users/BadBitch/.claude/projects/D--AddictedtoAI/b721efae-d92f-45f3-a2d7-293a97d8a3fb.jsonl
+A2AI-Luna-Boss-2   C:/Users/BadBitch/.claude/projects/D--AddictedtoAI/d005b682-58b5-4330-b9ab-4eac8f7af78d.jsonl
+```
+
+Sizes read 2026-09-10 08:07 local, and what each one holds:
+
+| Session | Size | What is in it |
+|---|---|---|
+| **A2AI-Orch** | 266 MB | The gates, the ratchet, the remote, the deploy verification. Spans 2026-08-13 onward — much the longest history, and the only record of most of what came before this change. |
+| **A2AI-Fable-Arch** (me) | 74 MB | The change, every brief, the packet rounds, and the whole wisdom conversion. From 2026-09-08 13:36. |
+| **A2AI-mem-cond** | 10.7 MB | The memory condenser: distilled 58 `bd remember` entries into one index, keeping every original in full in `FULL-MEM-LOG.md`. |
+| **A2AI-Luna-Boss-2** | 16 MB | The Luna coordination, before it was folded into my role on 2026-09-08 21:55. Its helper scripts lived in that session's scratchpad and were **not** rescued — treat them as gone. |
+
+**These files keep growing after this document was written**, so anything quoted
+here is a snapshot of a file that has since gained records. To find the current
+set rather than trusting this table, list
+`C:/Users/BadBitch/.claude/projects/D--AddictedtoAI/` and sort by modification
+time — an active session is one whose file changed in the last few minutes.
+
+Older files in that directory (`ac437b52`, `5db14456`, `b53d2536`, and several
+small ones from August) predate this effort. **A session's own scratchpad is at
+`C:/Users/BadBitch/AppData/Local/Temp/claude/D--AddictedtoAI/<sessionId>/scratchpad/`
+and is NOT durable** — that is the directory whose contents had to be rescued
+into `wisdom/tools/`, `wisdom/timeline-notes/` and `wisdom/briefs/` at handover.
+
+**My own and Orch's files keep growing after this document is written**, so
+anything quoted here is a snapshot of a file that has since gained more records.
+
+### The readable exports, and the tooling to make more
+
+`D:/addictedtoai-coord/transcript-exports/` holds conversation-turn exports
+generated 2026-09-09 by Orch, with its own `README.md`:
+
+- `orch-transcript-turns.md` (6,179 turns), `orch-transcript-human-only.md` (662)
+- `arch-transcript-turns.md` (877 turns), `arch-transcript-human-only.md` (51)
+- `*-turns-with-thinking.md` variants, the Luna exports, and
+  `merged-timeline.md` — both sessions interleaved chronologically
+- `orch-export-turns.mjs`, `merge-timeline.mjs`, `chunk-timeline.mjs` — the
+  exporters. Re-run as
+  `node orch-export-turns.mjs <transcript.jsonl> <out.md> [--from YYYY-MM-DD] [--to] [--human-only]`
+
+**These exports are NOT in the repository** — they are in the coordination
+directory, which is not version-controlled. If they matter to you, copy them
+somewhere durable before that directory is cleaned, which is the same defect
+this handoff has now hit three times.
+
+### THE ONE THING TO KNOW BEFORE READING OR EXPORTING A TRANSCRIPT
+
+**A `type: "user"` record is not necessarily something the human typed.** Tool
+results come back as user records. So do system reminders, task notifications,
+cross-session messages between the two sessions, `<local-command-stdout>`, and
+hook output. **Filtering on the record type alone produces a file that reads like
+a conversation and is not one — machine chatter wearing a person's label**, and
+you will attribute instructions to the maintainer that he never gave.
+
+The exporter therefore filters on envelope prefixes as well as record type, and
+drops records with no text block at all. Across the two sessions that removed
+**38,211 non-prose records against 7,056 kept** — the ratio is the point.
+
+It was **verified rather than assumed**: the human-only files were grepped
+afterwards for each envelope marker. Mine returned zero on all four; Orch's
+showed two hits for `system-reminder`, both inside genuine maintainer prose in
+notes *about* system reminders rather than leaked machinery. **That distinction is
+why the check is a grep-and-read rather than a count.**
+
+The timeline notes in `wisdom/timeline-notes/` were produced from these
+transcripts, and they are the primary source `wisdom/README.md` cites.
 
 ## 7. Open, unexplained, and honest about it
 
