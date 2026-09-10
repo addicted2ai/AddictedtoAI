@@ -119,7 +119,17 @@ asked.
 - **One gate run went red at `113996c`**: `loop/tests/runner-health.test.mjs`,
   the G8A streak trial, `actual ''`. See §7.
 
-**Nothing since `c15e901` is pushed.** Push is Orch's, and only after gates pass.
+**Push is Orch's, and only after gates pass.** By the end of the handover
+everything was gated and pushed; `origin/main` and local `main` agree, and the
+ratchet stands at **2000**.
+
+**PUBLISHING IS OFF — `"publish": false` in `data/config.json` — AND IT IS OFF
+DELIBERATELY.** Stage 0's last packet (C2) is not green, and the toggle stays
+down until it is. Turning it back on is a deliberate act carrying the **same
+six-gate bar as any push**, and it belongs to whoever holds the orchestrator
+lane. Turning it *off* needs no justification at all; turning it *on* does. **Do
+not flip it because a run wants to publish** — that is the conflict of interest
+the whole brake exists for.
 
 ---
 

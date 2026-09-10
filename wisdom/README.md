@@ -2529,6 +2529,42 @@ distribution, and cannot ever refute a claim about frequency. That row-per-run
 rule was itself installed after getting the same class of thing wrong in the
 opposite direction — four clean runs read as a refutation.
 
+**AND THE HONEST ATTRIBUTION, WHICH ITS AUTHOR INSISTED ON AND WHICH IS THE
+TRANSFERABLE HALF.** It is tempting to record this as a session that measured
+instead of reasoning. That is not what happened, and the author of the
+row-per-run rule refused the credit in those terms: the two largest errors of
+that night were both cases of **accepting a conclusion without running a check
+whose inputs were already on disk** — a one-line `diff` against two preserved
+artifacts, and a four-decoy proof whose every arm came from the prover's own
+hypothesis.
+
+**THE MEASURE-DON'T-REASON INSTINCT WAS NOT RELIABLY PRESENT. WHAT WAS PRESENT
+WAS A HARNESS THAT PRESERVED EVIDENCE WHETHER OR NOT ANYONE WAS THINKING
+CLEARLY.** Every drifted file kept per run and never overwritten; a row per run
+including the clean ones; raw output kept beside every parsed count. **The
+instrument outlasted the conclusions**, which is why a correction was still
+available twenty-five minutes after both parties had stopped thinking about it.
+
+That is a fact about **tooling**, not about anybody's judgement, and it is the
+only part of it a successor can actually inherit. **Judgement does not survive a
+session; a harness that refuses to discard does.**
+
+**THE SAME OBSERVATION, POINTED AT A HABIT INSTEAD OF A HARNESS, IS WHY THE
+UNBUILT GUARD IS UNBUILT.** One tree-hygiene rule was broken four times in a
+night, and the run that finally came back clean was not the run where discipline
+arrived — it was ten minutes in which no new instruction happened to land. **THE
+VARIABLE THAT CHANGED WAS NOT THE PERSON.** A rule that survives only while
+nothing interrupts is measuring the interruptions, not the rule.
+
+**AND THE PROTOCOL THAT MADE THE PAIRING WORK, stated because it is reusable and
+almost nothing else about two-session coordination is:** neither party caught
+their own worst defect, and each caught the other's twice. **The reason it worked
+is that observations were handed over rather than conclusions** — a tree diff
+rather than "it could not have mattered", a byte comparison rather than "that
+sample is contaminated", a run log rather than "the process table is the stronger
+signal". **A conclusion arrives with its reasoning already spent and is nearly
+impossible to re-open. An observation arrives with the question still attached.**
+
 **A COROLLARY WORTH ITS OWN LINE, from the same night.** A run of two is exactly
 the sample size at which an **alternation** is indistinguishable from a **new
 regime**. Two consecutive observations of a new value read as "the mode changed";
