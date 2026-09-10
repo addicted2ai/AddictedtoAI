@@ -513,7 +513,11 @@ runners:
     effort: max
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
-    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
+    # `Session not found` is what THIS CLIENT says when the server on 4096 is
+    # down — measured, not assumed, and it is why the three network literals
+    # beside it are not enough. See "A DEAD SERVER DOES NOT SAY ECONNREFUSED"
+    # in the opencode-muse-spark note.
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed|Session not found)'
     note: >-
       The advertised swap: a different model, a different provider, a
       different harness, reachable by `node loop/run.mjs --runner
@@ -562,7 +566,11 @@ runners:
     effort: high
     command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
-    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
+    # `Session not found` is what THIS CLIENT says when the server on 4096 is
+    # down — measured, not assumed, and it is why the three network literals
+    # beside it are not enough. See "A DEAD SERVER DOES NOT SAY ECONNREFUSED"
+    # in the opencode-muse-spark note.
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed|Session not found)'
     note: >-
       Added 2026-09-07 on the maintainer's instruction ("I want to try a new
       model runner"): Muse Spark 1.3 Contributor, on the same OpenCode Go
@@ -583,6 +591,52 @@ runners:
 
       The template is otherwise the deepseek one verbatim, including the
       load-bearing argument order (message first, `--file` last).
+
+      A DEAD SERVER DOES NOT SAY `ECONNREFUSED`, AND THAT IS WHY
+      `Session not found` IS IN THE PATTERN ABOVE ON ALL THREE ATTACHING
+      ENTRIES. Measured 2026-09-10 by A2AI-Fable-Arch against a port with
+      nothing listening, teed to a file:
+
+        exit status 1, elapsed 1.0s
+        stdout  0 bytes
+        stderr  "Error: Session not found"   (37 chars trimmed, 3 escapes)
+
+        "Session not found"    on stderr: YES
+        "ECONNREFUSED"                     no
+        "connection refused"               no
+        "fetch failed"                     no
+
+      Those three literals are in the pattern PRECISELY so a dead server
+      names itself on the ledger line, and the client emits none of them.
+      **The exact scenario the pattern was written for is the one it
+      missed.** stdout is zero bytes, so `producedNothing` fires and the
+      no-output streak still arms after three — the loss was diagnostic
+      only, which is why this went unnoticed.
+
+      IT IS ON ALL THREE ATTACHING ENTRIES rather than one, and that is a
+      different judgement from the variant refusal on
+      opencode-openrouter-muse-spark, which is on ONE. This message comes
+      from the CLIENT talking to a missing server: it has nothing to do
+      with which model the entry names, and the probe measured the client
+      against a dead port rather than any model. The variant refusal comes
+      from a PROVIDER rejecting a rung for a named model, so it was left
+      where it was measured. Per-runner data, never a global heuristic —
+      the rule is about what the evidence covers, not about how many
+      entries are convenient to edit.
+
+      SECOND INSTANCE OF THE ANSI TRAP, WHICH MAKES IT A PROPERTY AND NOT A
+      QUIRK. As with the variant refusal, the escapes sit between `Error: `
+      and the message, so `Error: Session not found` as an anchor NEVER
+      MATCHES while `Session not found` alone is clean. Two out of two: do
+      not anchor a pattern on a span containing `Error: `, or strip ANSI
+      before matching. A pattern that never matches never errors.
+
+      ONE DIFFERENCE BETWEEN THE TWO MEASURED CASES THAT OUTLIVES BOTH
+      PATTERNS: the dead server exits **1**; the unsupported rung exits
+      **0**. Both print nothing on stdout, so `producedNothing` arms for
+      both and the pattern speaks for both. But a refusal that exits 0
+      looks like a success, so anything that ever shortcuts on a nonzero
+      exit code would catch the dead-port case and miss the variant one.
 
       THE SERVER, and why `--attach` (the maintainer's instruction,
       2026-09-07). Measured that morning: without `--attach`, each
@@ -631,7 +685,7 @@ runners:
     # not guessed. See "AN UNSUPPORTED EFFORT RUNG" in this entry's note for the
     # bytes, and for why the phrase a reader would naturally anchor on is the
     # one that cannot work.
-    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed|is not supported for model)'
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed|Session not found|is not supported for model)'
     note: >-
       AN UNSUPPORTED EFFORT RUNG IS A SILENT, SUCCESSFUL, EMPTY RUN ON THIS
       ROUTE, AND THE PATTERN ABOVE IS WHAT MAKES IT SAY SO. Measured
