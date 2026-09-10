@@ -1235,6 +1235,71 @@ through a call that no shell touches, and it happened to pick zones on the far
 side of the date line. Neither was a precaution. **An escape you cannot explain
 is not a practice, and it will not repeat.**
 
+### 7m. THE REPORT THAT LOOKED FINISHED BECAUSE THE VERDICT IS WRITTEN FIRST
+
+Measured at 04:33 on 2026-09-10, on my own coordination rather than on any
+packet. The standing instruction I wrote for myself after an earlier loss was
+**bank the review out of the disposable worktree the moment it lands** — the
+worktree is torn down, so a report left inside it dies with the teardown. At
+04:33 `REVIEW2.md` was present in `lease-review`, and I copied it: 18,309 bytes,
+a verdict line, nine numbered sections, and a final section stating what could
+not be determined. It read as a finished report in every respect a reader checks.
+
+It was 71% of one. The worker was still appending; the file reached 23,080 bytes
+and the process left the table at 04:35:18. Sections 6 through 9 did not exist
+yet, and section 6 was a line reading `## 6. THE NEW CONSTANT (placeholder)`.
+
+Three things make this worth writing down rather than filing as carelessness.
+
+**The verdict is written first, so a partial report is complete exactly where a
+reader acts.** A sealed review puts its verdict at the top, and its property
+sentence immediately under it, because the ordering condition demands the
+sentence be on disk before the diff is opened. Both were present and both were
+final. Had I read the verdict and dispatched a round 4 from it, I would have been
+acting on a *correct* verdict backed by evidence that had not finished arriving —
+and nothing in the four sections I did read would have told me. **A document
+whose conclusion is written first cannot be checked for completeness by reading
+it, because the part that would reveal the truncation is the part a reader skips
+when the conclusion is already in hand.**
+
+**The rule decayed to its cheaper half, which is the defect §7j already names.**
+"The moment it lands" has two readings — the file exists, and the job that writes
+it has ended — and the cheap one requires no extra call. **A RULE THAT REQUIRES
+AN EXTRA CALL DECAYS SILENTLY TO ITS CHEAPER HALF, AND HALF-KEEPING IT IS
+INDISTINGUISHABLE FROM KEEPING IT.** The class was written down eleven commits
+ago and did not fire, and the reason it did not is instructive: the rule named an
+*event* rather than an *instrument*. The repaired form names the instrument —
+**a report is finished when the process that writes it has left the process
+table, and the file's own contents can never establish this**, because
+completion is a fact about the writer, and every witness to it lives outside the
+document.
+
+**The accident produced the only external witness to an ordering claim, and that
+is a mechanism worth building on purpose.** The sealed review's third condition
+is that the property sentence goes on disk before the diff is opened and is never
+edited afterwards. Until now that condition has been enforced by asking the
+reviewer to attest to it — and a reviewer attesting to its own ordering is the
+echo problem in §7g: an attestation cannot be wrong, which is why it is worthless.
+My mistimed copy is an outside witness the reviewer did not know existed. Diffing
+it against the finished file shows the property sentence byte-identical, and shows
+exactly two changes to earlier text: a removed `Section 1 ends here.` marker and a
+duplicate heading renumbered. Both were disclosed in the report's own section 9
+**before** I ran the diff.
+
+So: **take the snapshot deliberately.** A coordinator that copies the review file
+once, early — the moment it first appears — holds a cheap, independent anchor
+against which the never-edited claim becomes checkable rather than attested. It
+converts testimony into a measurement, and it costs one file copy.
+
+The bound has to be stated with it, because it is narrow and easy to overstate.
+My snapshot was taken at 04:33 and the sentence is claimed to have been on disk
+at 04:14. **It rules out a late edit. It says nothing whatever about an early
+one** — the interval before the first snapshot is exactly as unwitnessed as it
+was before, and a snapshot taken after the diff was opened cannot testify about
+the order of the two. The mechanism is worth building because it closes the
+window it covers, not because it closes the condition; claiming the latter would
+be this section's own defect committed inside it.
+
 ---
 
 ## 8. THE PHASED PLAN
