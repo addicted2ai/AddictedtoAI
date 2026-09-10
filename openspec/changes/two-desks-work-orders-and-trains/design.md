@@ -460,10 +460,29 @@ describes the system's state and every Dolt hiccup is a Desk outage.
 
 **What changed this round.** An earlier draft capped carried findings at two per
 review and called that an inflow budget. A sealed reviewer measured the channel:
-across all 407 records in `data/reviews/` on 2026-09-08 there are **222 `carry:`
-entries in 143 records — 86 records with one, 37 with two, 17 with three, two with
-four**. A cap of 2 would have suppressed **24 of 222 entries, 10.8%**, in 20 of
-407 records; the required subject would refuse **15 of 222, 6.8%**; and the
+across all 408 records in `data/reviews/` on 2026-09-09 there are **223 `carry:`
+entries in 144 records — 87 records with one, 37 with two, 18 with three, two with
+four**.
+
+RE-MEASURED AND CORRECTED 2026-09-09, because the previous figures did not add
+up and nothing had ever checked them. They read "222 entries in 143 records — 86
+with one, 37 with two, 17 with three, two with four", and that breakdown totals
+**142 records and 219 entries**, neither of which is the number it sits beside.
+The counting rule is now stated so the figures can be re-derived instead of
+trusted: a record's `carry:` is a YAML block list, each entry begins
+`  - title:`, and the block ends at the next top-level field — so counting
+`^carry:` counts RECORDS, not entries, which is how a breakdown that contradicts
+its own totals gets written in the first place. The corrected breakdown
+re-totals exactly: 87+37+18+2 = 144 records, and 87 + 74 + 54 + 8 = 223 entries.
+The two derived figures below are computed by the same script rather than
+asserted — the old "24 of 222, 10.8%" did not follow from its own breakdown
+either (17 records with three and two with four yield 21 excess, not 24). Only
+the fifteen subject-less entries survived re-measurement unchanged; its
+denominator moved.
+
+A cap of 2 would have suppressed **22 of 223 entries, 9.9%**, in 20 of
+408 records; the required subject would refuse **15 of 223, 6.7%** (fifteen
+entries carry no `subject:` field); and the
 merge-into-existing-subject rule is something `pulse/lib/queue.mjs:436-459`
 already does. Against a channel filing 37 in three days and a tracker growing at
 1.43, 10.8% is not a budget. This change deletes two other mechanisms *because*
