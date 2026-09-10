@@ -2028,3 +2028,128 @@ predicate wrong, construct the arm where the wrong verdict is *returned to the
 caller*, not merely printed. Eight arms, 8 pass 0 fail; live main unchanged at
 12 modified / 12 standing / 0 unexplained in all three directory forms and
 refusing with nothing declared.
+
+### 7s. THE VERIFIER'S OWN PROOF POOL, AND WHY THE MECHANISM THAT REPLACES A JUDGEMENT RELOCATES IT
+
+§7r is about the examples used to prove a mechanism. This is the same rung
+pointed at the instrument doing the proving, and both sessions found it in their
+own verifiers within minutes of each other, which is the part that should be
+uncomfortable.
+
+A2AI-Orch sent me *"20 files, guard-before-action 20, TOO LATE 0, NO GUARD 0"* as
+proof its wiring was correct. It then withdrew it unprompted: every file that
+check examined **had just been written by the generator and was correct by
+construction**, so all twenty arms were cases that could not fail. Its general
+form, and it is exact:
+
+**A VERIFIER RUN ONLY AGAINST ARTIFACTS A GENERATOR JUST PRODUCED CORRECTLY HAS A
+PROOF POOL OF EXACTLY ONE SHAPE, AND IT IS THE SHAPE THAT PASSES.**
+
+Orch then turned it on mine, and was right. I had mechanised §7m's early
+snapshot: a watcher that copies a report ONCE at first sighting, so *"section 1
+was never edited"* becomes a diff instead of an attestation. It had fired twice.
+**Both times on files that appeared normally after arming — one shape.** The
+branch that decides whether the anchor means anything at all had never run:
+
+**THE WATCHER COULD NOT TELL A FILE THAT APPEARED AFTER ARMING FROM ONE THAT WAS
+ALREADY THERE.** Those are opposite facts wearing the same observation. An anchor
+copied from a pre-existing file is not an early copy of this round's report — it
+is whatever the previous round left behind, and it would later "prove" section 1
+unchanged by comparing a stale document against itself.
+
+**IT NEARLY BIT, AND THE NEAR-MISS IS THE REAL FINDING.** At 05:31:33 the lease
+watcher fired thirty seconds after dispatch — fast for a written section 1. The
+only thing that established the anchor was genuine is that **I opened it and read
+it**. That is the manual glance the watcher was built to remove, reappearing one
+level up, *inside* the mechanism built to remove it. So:
+
+**A MECHANISM THAT REPLACES A JUDGEMENT USUALLY RELOCATES IT. ASK WHERE IT WENT.**
+It is not gone because the mechanism ran; it moved to whoever decides the
+mechanism's output is trustworthy, and that decision is made once, informally, by
+the person who wanted the mechanism to work.
+
+Arming is now a decision with four outcomes taken before any polling, and the
+refusals are asymmetric in the way that keeps being right: a pre-existing watched
+file refuses (`code 5`) and says the honest thing — **this round has no ordering
+anchor, say so rather than banking one that looks like it does**; an existing
+anchor refuses (`code 3`) and wins even when both are present, because never
+overwriting an anchor is the older commitment.
+
+**AND THE DECOY'S FIRST RUN DIED ON THE MODULE'S OWN USAGE MESSAGE.** Importing
+it executed its CLI. That is not incidental:
+
+**A MECHANISM THAT CANNOT BE IMPORTED CANNOT BE TESTED EXCEPT BY RUNNING THE
+WHOLE THING, AND A BRANCH THAT COSTS A THREE-HOUR WATCH TO REACH IS ONE NOBODY
+REACHES. THE UNTESTABILITY AND THE UNTESTED BRANCH WERE THE SAME FACT.**
+
+Five arms, 5 pass 0 fail. Arm E is the mutation, because a twin proves a check
+can fire and only a mutation proves it must: with the pre-existing-file check
+removed, the stale file **is copied — 43 bytes — and called the anchor.**
+
+    A  both absent                     ok=true   arms
+    B  watched file already exists     ok=false  code 5   <- the branch that had never run
+    C  anchor already banked           ok=false  code 3
+    D  both present                    ok=false  code 3   <- anchor refusal wins
+    E  MUTATION, check removed         old ok=true, copies 43 stale bytes as the anchor
+
+One correction belongs here rather than being quietly absorbed. Orch also found
+that **`.trim()` on the whole `git status --porcelain` output eats the first
+row's leading space** — porcelain is fixed-width, `" M path"` becomes `"M path"`,
+`slice(3)` returns `"cripts/brief.mjs"`, and **only the first row is affected**,
+so the defect shrinks a count by exactly one, never errors, and looks like a
+legitimately smaller answer. I checked my three copies rather than reasoning
+about them: all split first and use `l.trim()` only as a truthiness test, never
+reassigning, so `slice(3)` sees the raw line. Corroborated independently — my
+proof's arm A printed **2 standing / 1 unexplained**, which is Orch's *corrected*
+figure and not the 1 its trimmed instrument produced. Two instruments disagreeing
+about one fact was the signal; **neither was authoritative and the raw bytes
+were.**
+
+### 7t. WHAT A FINISHED ARTIFACT TURNS INTO
+
+Two instances tonight, hours apart, same shape: an artifact that was correct when
+it was made, kept afterwards, and dangerous precisely because nobody rereads a
+thing that is finished.
+
+**THE SPENT FIXER.** §7k says a one-shot repair script is a loaded gun the moment
+its job is done. I found the literal instance by grepping my own scripts for
+porcelain parsing and noticing an unrelated file in the results:
+`arch-guard-patch.mjs`, the 04:47 one-shot that installed the allowlist into the
+worktree guard. **The text it installs still contains the pre-§7r
+`p.startsWith(e)`.** Re-running it would either miss its anchor and do nothing,
+or match and **quietly reinstate the defect, in the file whose entire job is to
+refuse.**
+
+**A SUPERSEDED FIXER DOES NOT BECOME INERT BY BEING SUPERSEDED. IT BECOMES A
+FIXER THAT INSTALLS THE OLD BUG.** Disarmed with a throw at the top and kept for
+the record, because deleting it loses what was done at 04:47 and trusting myself
+not to run it is a preference restated after each failure — the exact thing the
+guard beneath it exists to replace.
+
+**THE PLAN NOBODY CHECKS.** I wrote the merge-time relocation script early and on
+purpose, so the evidence move would be mechanical rather than improvised at the
+end of a long night. It carries four refusals — missing source, existing
+destination, wrong branch, nothing without `--apply`. Every one of them is about
+**execution**, and every one presumes the file list is right.
+
+The dry run exposed it: the W3 plan mapped rounds 2 and 3 while **round 1 sat at
+the branch root unmentioned** and round 4 was being written as it ran. A missing
+source refuses loudly; **an unlisted one is silent, and silence here reads exactly
+like completeness — the summary prints "4 file(s)" either way.**
+
+That is §7p in a script written *after* committing §7p: the plan is a parameter,
+it lives in the same file, it is read in the same breath as the refusals, and it
+inherits their credibility without earning any. Both populations are now
+enumerated **from the world rather than from the plan** — rounds read from
+`git ls-tree` of the branch, banked reports read from the directory — and
+anything neither mapped nor **named as ignored with a reason** refuses. The two
+declared exclusions carry their reasons in the file: the 731-byte early anchor,
+which is evidence *about* a report rather than a report; and the 18,309-byte
+partial I banked as final at 04:33, kept under a name that carries its own
+defect.
+
+The destination convention gets written down for the same reason. **`REVIEW2.md`
+is the second review and it reviews round three, so it lands at
+`round3-REVIEW.md`.** The report's serial and the round disagree on purpose, so
+every entry carries its round explicitly rather than having it parsed out of a
+filename that means something else.
