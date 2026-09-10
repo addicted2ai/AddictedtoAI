@@ -31,9 +31,22 @@ disposition rule answers it.**
 
 Lineage is three fields, all required, none defaulted: **producer**
 (the code that computed it, named as a path/symbol), **input digest**
-(the bytes it read, as a content hash or a resolvable object id —
-`03e2207` is what a digest with no bytes looks like, and the check
-says so), **method** (the computation applied, named, not described).
+(the bytes it read — a resolvable object id, short or full, via the
+stated resolver, OR a 40-hex content hash with a resolver check),
+**method** (the computation applied, named, not described). Validity
+names its reason per digest: `03e2207` refuses on unresolvability
+(verified: `cat-file -t` answers no valid object name), `9c272f4`
+accepts as the resolvable alias of
+`9c272f425a1204a6da87aad34b5c85657adaf029` (verified: resolves to a
+blob). Form without bytes refuses; bytes without a stated resolver
+refuse — and the resolver is part of the claim, not assumed.
+Constructed pairs use full-length digests while quoting short ids as
+aliases, so no arm depends on alias length. The README's fourth
+field, source snapshot, is narrowed out here with the reason stated:
+lineage answers *which computation over which bytes* (enough to
+judge independence and re-check bytes); *which source the bytes came
+from* is provenance, and that half belongs to item 6, whose scope is
+exactly figures a later decision reads traced to their sources.
 A method name alone never confers independence: the same helper over
 the same input under two method names is one measurement twice, and
 the second is classified dependent — that is the constructed control,
@@ -62,10 +75,12 @@ question and not a pattern.
 
 Your comment must answer, each with a reason:
 
-- What makes a digest valid: 40-hex form AND resolvability where a
-  resolver exists. Form without bytes is `03e2207`; bytes without
-  form is a path masquerading as a digest. Both refuse, for different
-  stated reasons.
+- What makes a digest valid: a resolvable object id (short or full,
+  via the stated resolver) or a 40-hex content hash with a resolver
+  check, with the reason named per digest as above. Form without
+  bytes is `03e2207`; bytes without a stated resolver is a path
+  masquerading as a digest. Both refuse, for the different stated
+  reasons — never one rule with two compliant readings.
 - Why the downgrade records instead of deleting: consistency is
   information (the second run reproduced the first), and deleting it
   destroys the reproduction record. Refused-as-independent plus
@@ -114,12 +129,19 @@ independent-or-consistency and never throws away the earlier record —
 the downgrade returns `{ independent: false, consistencyOf }`, and a
 claim whose digest is malformed or unresolvable is refused outright
 with the reason named. It is wired into the measurement-writing path
-the sweep finds (telemetry call sites and/or the structured evidence
-writer — the sweep decides with reasons, the reviewer judges),
-additive-only: the packet-E closure lesson applies in full, and any
-exact-shape pin the wiring invalidates is updated in the same diff or
-the wiring moves to a sidecar. A measurement you cannot wire without
-breaking a pin is a sweep row with a disposition, not a silent skip.
+the sweep finds (telemetry call sites live in `loop/run.mjs`, not in
+the ledger module that only defines the functions — the sweep
+verifies this rather than assuming it; additive-only throughout),
+and/or the structured evidence writer. The packet-E closure lesson
+applies in full: the exact-shape pins over ledger lines
+(`loop/tests/breakers.test.mjs:172-178`,
+`loop/tests/issues.test.mjs:241–243`,
+`loop/tests/portability.test.mjs:429-443`,
+`loop/tests/gate-transport-retry.test.mjs:878-882`) are listed below
+for additive-key/varies-set updates in the same diff, because any
+additive wiring invalidates them and updating them elsewhere is a
+scope violation. A measurement you cannot wire without breaking a
+pin is a sweep row with a disposition, not a silent skip.
 
 5b is a reader question plus disposition rule committed as prompt text
 and wired into the review-brief assembly seam the sweep finds, so
@@ -130,8 +152,10 @@ first review to run under it.
 
 - `loop/lib/lineage.mjs` — (new) the lineage attach/classify module with the reason each refusal exists.
 - `loop/tests/lineage.test.mjs` — (new) this round's arms.
-- `loop/lib/ledger.mjs` — (existing) telemetry call sites if the sweep wires there; additive-only, E-closure applies.
+- `loop/lib/ledger.mjs` — (existing) the line builder and reader the lineage attaches beside; additive-only, E-closure applies.
+- `loop/run.mjs` — (existing) the telemetry call sites (`appendLedger`/`makeLedgerLine` callers); wiring-only, additive-only, nothing else in the file changes.
 - `loop/lib/review.mjs` — (existing) the record-writer lineage and the reader-question wiring seam.
+- `loop/tests/breakers.test.mjs`, `loop/tests/issues.test.mjs`, `loop/tests/portability.test.mjs`, `loop/tests/gate-transport-retry.test.mjs` — (existing) exact-shape pins over ledger lines; additive-key/varies-set updates only, in the same diff as any wiring that invalidates them.
 
 Everything else is read-only for this round. Do not edit `pulse/`,
 anything under `openspec/changes/`, `scripts/brief-lint.mjs`,
