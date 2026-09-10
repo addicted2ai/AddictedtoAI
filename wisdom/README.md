@@ -1007,7 +1007,11 @@ could not be anchored contribute nothing to the range, and unanchorable is
 precisely where a large error would hide. **THE SUBSET THAT CAN BE CHECKED IS
 THE SUBSET THAT WAS ALREADY MOST LIKELY TO BE RIGHT**, so a range measured over
 it understates the whole by construction. The defensible statement is: one to
-three minutes for the anchorable ones, unknown for the rest.
+three minutes for the anchorable ones, unknown for the rest. **The selection
+effect is not specific to timestamps** — the same session's sweep over thirteen
+build runs drew its conclusion from the runs that had summaries, which are the
+runs that completed, and the same shape sits under any audit whose evidence is
+whatever survived.
 
 The same correction applies to the population. Twelve entries were examined
 because twelve is where that session's context began, not because anything
@@ -1023,6 +1027,19 @@ a list that covers one of three fails against the list. A clock time has no
 shape. It is the cheapest measurement available and the only one whose forgery
 leaves no trace, so it survives every re-read, including by the person who
 invented it.
+
+**And it compounds, which is the mechanism.** Nine of the larger failure's
+entries were later anchored against directories the repair had no reason to
+touch, and the drift turned out to be monotonic and accelerating: about six
+minutes early on, an hour by the middle, ninety-five minutes by the end. So the
+session was not inventing a plausible time each turn. **It was estimating from
+its previous estimate**, and every entry was consistent with the one above it.
+
+**A SEQUENCE THAT IS SELF-CONSISTENT AND UNANCHORED DRIFTS WITHOUT EVER
+CONTRADICTING ITSELF.** Local consistency is what a writer checks — does this
+follow from the line above — and local consistency is exactly what a drifting
+sequence preserves. The error is visible only from outside, and there was
+nothing outside until an unrelated calculation needed the real time.
 
 Both sessions **already had the rule** — read the clock as its own call, then
 write. Both kept the write and stopped making the call. So the lesson is not
@@ -1068,7 +1085,34 @@ the other printed a count. The evidence survives exactly where the instrument
 named the thing instead of counting it. That is section 7's *print the thing,
 not only the count of things* deciding what is recoverable, inside a repair
 built to fix a different instance of the same rule, an hour after both sessions
-had agreed it was the important one.
+had agreed it was the important one. Neither session chose which of its errors
+would stay recoverable. **A rule both of them had articulated was operating on
+them while they were discussing it**, and a print statement decided.
+
+**The in-place correction cost more than that, and the extra cost is the reason
+to prefer appending even when the claim is small.** Timestamps written by
+something other than the writer turned out to be the only recovery available —
+every run leaves files, and the filesystem stamps them while the author is
+reading nothing. But the repair script had rewritten most of the scripts it
+corrected, so their mtimes now date the repair rather than the work. The nine
+anchors that survived did so only because they sat in directories the fixer had
+no reason to touch. **A CORRECTION APPLIED IN PLACE DESTROYS MORE THAN THE CLAIM
+IT REPLACES — IT DESTROYS THE ARTIFACT'S OWN TESTIMONY ABOUT WHEN IT WAS MADE.**
+
+Which puts a limit on the recovery technique itself, and it is worth stating
+because this report leans on it: **an mtime is a one-shot anchor that any later
+edit silently destroys, and nothing records that the destruction happened.**
+Unlike a commit timestamp it carries no history, so it is evidence only for a
+file nobody has touched since — and whether anybody has touched it is exactly
+what an mtime cannot say. Section 7d's own anchor is of this kind.
+
+One discipline held through the recovery and is worth copying. With nine
+anchored times and a list of subjects in hand, the obvious next step is to
+assign them to entries line by line. That was declined: **matching a recovered
+timestamp to an entry by inference produces a reconstruction wearing the clothes
+of a measurement**, which is the original error one level more sophisticated and
+therefore harder to see. The table is the recovery; the assignment stays with
+whoever reads it.
 
 The last piece is the reason this section exists at all rather than being one
 session's embarrassment. Neither session could have caught the other: one was
