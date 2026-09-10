@@ -91,18 +91,31 @@ if (existsSync(p.stop)) {
 // like a fresh lease: a stateless mtime read cannot tell a live holder with
 // a fast clock from a dead file left ahead, because at any instant
 // the two look identical. Refusing accepts an unbounded outage for a dead
-// future lease, and that outage announces itself on every run and a person
-// clears it in a second. Proceeding accepts a silent overlap with a live one,
-// and the harm is a tree rewritten under a running gate, which nothing
-// announces and nobody diffs. We take the error that is visible.
+// future lease. That outage is visible in the run own log only: one line to
+// its own stdout, exit 0. No mechanism in this tree surfaces it — the loop
+// queue reader warns on missing or invalid JSON and never on age, none of the
+// four Desk breakers fires on a stale queue or an absent Pulse, freshness
+// measures corpus-date intervals rather than engine liveness, the refusal
+// exits before the build so no halt file is written, and the scheduler own
+// signal cannot tell refused from done because both are exit 0. The one
+// signal that moves is the live site build stamp going stale, and noticing
+// that is a manual comparison a person makes. Proceeding would accept a
+// silent overlap with a live holder while it runs, where the harm is a tree
+// rewritten under a running gate. Between a loudly logged halt nobody is
+// paged for and a silent overlap nobody diffs, the refusal keeps the
+// evidence where the run can leave it: its own log line.
 // Placed after STOP so a run where both stand still reports the maintainer's
 // brake. Reached before any network use, like STOP, so ending here is clean.
 //
 // Ahead-magnitude rendering: below LEASE_AHEAD_DISPLAY_THRESHOLD_S the line
 // prints whole seconds ("90s"); at or above it the line prints the two
 // largest whole units ("2m 30s", "1h 0m", "1d 0h", "10y 0d"). Display only;
-// no safety depends on the threshold, which is a round number picked for
-// readability in the small hours rather than measured.
+// no safety depends on the threshold. It separates two safe renderings of a
+// refusal that already happened, not a safe outcome from an unsafe one, so it
+// does not have to be measured the way a safety boundary does. It is taste
+// with margins — a round 120s picked for readability in the small hours,
+// straddled by live trials at 100s and 150s and pinned exactly at 119, 120
+// and 121 through the helper — rather than a measured pin.
 const LEASE_AHEAD_DISPLAY_THRESHOLD_S = 120;
 function formatAheadDuration(aheadS) {
   const s = Math.max(0, Math.round(aheadS));

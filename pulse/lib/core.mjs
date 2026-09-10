@@ -105,11 +105,17 @@ export const LEASE_MAX_AGE_MS = 15 * 60 * 1000;
  * source: a stateless mtime read cannot tell a live holder with a fast
  * clock from a dead file left ahead, because at any instant the two look
  * identical. One of the two errors has to be made. Refusing accepts an
- * unbounded outage for a dead future lease, and that outage announces
- * itself on every run and a person clears it in a second. Proceeding
- * accepts a silent overlap with a live one, and the harm is a tree
- * rewritten under a running gate, which nothing announces and nobody
- * diffs. We take the error that is visible.
+ * unbounded outage for a dead future lease. That outage is visible in the
+ * run own log only: one line to its own stdout, exit 0. No mechanism in
+ * this tree surfaces it — the loop queue reader warns on missing or invalid
+ * JSON and never on age, none of the four Desk breakers fires on a stale
+ * queue or an absent Pulse, freshness measures corpus-date intervals rather
+ * than engine liveness, the refusal exits before the build so no halt file
+ * is written, and the scheduler own signal cannot tell refused from done
+ * because both are exit 0. The one signal that moves is the live site build
+ * stamp going stale, and noticing that is a manual comparison a person
+ * makes. Proceeding would accept a silent overlap with a live holder while
+ * it runs, where the harm is a tree rewritten under a running gate.
  */
 export const LEASE_FUTURE_TOLERANCE_MS = 60 * 1000;
 
