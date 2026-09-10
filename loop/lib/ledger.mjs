@@ -3,7 +3,8 @@
  *
  * One JSON object per line:
  *   { ts, id, type, runner, provider, tier, mm, outcome,
- *     note?, signal?, phases?, issues?, brief_chars?, gate_seconds?, authority_sha? }
+ *     note?, signal?, phases?, issues?, brief_chars?, gate_seconds?, authority_sha?,
+ *     lineage? }
  *
  * The first eight are LEDGER_FIELDS and are required. The rest are additive and
  * optional: a reader that does not know them is unaffected, and a line written
@@ -108,6 +109,7 @@ export function makeLedgerLine({
   brief_chars,
   gate_seconds,
   authority_sha,
+  lineage,
 }) {
   const line = {
     ts: ts ?? new Date().toISOString(),
@@ -139,6 +141,15 @@ export function makeLedgerLine({
   if (brief_chars !== undefined) line.brief_chars = brief_chars;
   if (gate_seconds !== undefined) line.gate_seconds = gate_seconds;
   if (authority_sha !== undefined) line.authority_sha = authority_sha;
+  // `lineage` is optional and additive on the same terms as `signal` and
+  // `phases` (wisdom item 5): the measurement lineage — producer, input
+  // digest, method, resolver — a later independence claim is judged against.
+  // Omitted entirely when the job carried none in, so every line written
+  // before this existed keeps its exact shape and LEDGER_FIELDS is
+  // deliberately not extended. This writer validates nothing: judging a
+  // lineage is `loop/lib/lineage.mjs`'s work, and a ledger that refused to
+  // record what it was given would be a second judge of the same claim.
+  if (lineage !== undefined) line.lineage = lineage;
   return line;
 }
 

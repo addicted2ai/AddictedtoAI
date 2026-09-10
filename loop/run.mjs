@@ -1514,6 +1514,13 @@ export async function runLoop(ctx, opts = {}) {
   // before the rederive, and every other path falls through to the call at the
   // foot of this function. The line is appended exactly once either way.
   // -------------------------------------------------------------------------
+  // Item 5 lineage wire (wisdom item 5): a measurement lineage the job carried
+  // in rides the ledger line additively beside brief_chars and gate_seconds,
+  // where `loop/lib/lineage.mjs` can later judge an independence claim against
+  // it. No selector sets one today, so this is absent in practice and a line
+  // without it keeps its exact shape; `makeLedgerLine` omits it when
+  // undefined, so this changes nothing until a job arrives carrying one.
+  const jobLineage = job.lineage ?? undefined;
   let ledgerLine = null;
   const recordOutcome = () => {
     if (ledgerLine) return ledgerLine;
@@ -1537,6 +1544,7 @@ export async function runLoop(ctx, opts = {}) {
         brief_chars: briefText.length,
         gate_seconds: result.gate_seconds,
         authority_sha: mergeBaseSha,
+        lineage: jobLineage,
         ts: ctx.now().toISOString(),
       }),
     );
