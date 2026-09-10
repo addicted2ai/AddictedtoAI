@@ -1587,6 +1587,82 @@ identical numbers looked too tidy, not because the method was sound.** A
 comparison taken where the hypothesis predicts no difference is not a negative
 result; and noticing one by aesthetics is not a practice either.
 
+### 7q. THE GUESS THAT RODE IN ON THE FINDING, AND WHY ITS DIRECTION IS THE EXPENSIVE PART
+
+A sealed review of the record wall returned `revise` and was the most useful
+artifact the packet produced. It also carried one claim that was false, and the
+shape of that claim is worth more than the correction.
+
+The review examined the zone control and reported **two** defects:
+
+1. **time-brittle** — it fires only between 00:00 and 04:59 local. True, and
+   §7o is that finding.
+2. **platform-brittle** — *"assumes POSIX TZ semantics that Windows Node does not
+   provide"*, evidenced by an override that *"never tainted direct or child in
+   any probe"*.
+
+The second is wrong. Measured on the machine in question, node v24.13.0, win32:
+
+    no override             getters 2026-09-10   offset 360
+    TZ=Pacific/Niue         getters 2026-09-10   offset 660
+    TZ=Pacific/Kiritimati   getters 2026-09-11   offset -840
+
+Windows Node honours `TZ` exactly. Kiritimati moves the date; Niue moves the
+**offset** and leaves the date alone **because Niue is genuinely on 2026-09-10 at
+that hour**. An override working perfectly produces precisely the reading the
+reviewer recorded as proof that it does not work.
+
+**THE FIRST EXPLANATION ACCOUNTED FOR THE OBSERVATION COMPLETELY, AND A SECOND
+WAS OFFERED ANYWAY.** That is the rule:
+
+**TWO CAUSES OFFERED FOR AN OBSERVATION THAT ONE EXPLAINS IS ONE FINDING AND ONE
+GUESS — AND THE GUESS INHERITS THE FINDING'S CREDIBILITY, BECAUSE THEY ARRIVE IN
+THE SAME SENTENCE, FROM THE SAME INVESTIGATION, SUPPORTED BY THE SAME EVIDENCE.**
+
+Nothing separates them for a reader. Both were measured; both were reported by
+someone doing careful work; the evidence cited is identical because it *is*
+identical — one observation.
+
+**Three things make this instance worth keeping.**
+
+**The direction is the expensive part.** A missed defect leaves the guard
+standing. This guess argues that a guard is **unnecessary on this platform** —
+and a threat that looks inert is one somebody stops defending against. It would
+have redirected the next round at a problem that does not exist and, worse, would
+have undercut a repository-wide finding about calendar dates that is filed as
+P1. **A FALSE FINDING THAT ARGUES A GUARD IS UNNECESSARY COSTS MORE THAN A MISSED
+DEFECT.**
+
+**The disproof was already inside the artifact under review.** The previous
+round's own report recorded *"still reads 2026-09-09 with offset 660"*. The
+offset moving **is** the override being honoured. The evidence that settles the
+question was sitting in the document the reviewer was reading, in the sentence
+the reviewer was checking.
+
+**And the report told a careful reader which half to believe.** Section 3 states
+the platform claim as a finding. Section 7 — *what I could not determine* — lists
+the same thing as open: *"whether the zone control ever passes on this Windows
+machine… I did not run on POSIX."* So:
+
+**A REPORT THAT STATES A THING AS A FINDING IN ONE SECTION AND AS UNDETERMINED
+IN ANOTHER HAS ALREADY TOLD YOU WHICH ONE TO BELIEVE, AND IT IS THE CAUTIOUS
+ONE.** That is a cheap check on any long report and it costs one grep: read the
+*could not determine* section first, then look for anything asserted elsewhere
+that it contradicts. The contradiction is not sloppiness — it is the honest half
+of the writer arguing with the confident half, and the honest half is the one
+that had to write down its own limits.
+
+Two things about the same review that belong beside this, because a section that
+only records where a reviewer was wrong misrepresents it. **It noticed that its
+own baseline was red for a cause outside the diff it had been given**, at 05:02,
+naming the control — it was deliberately not told, and a reviewer that reported
+mutations against a red baseline without noticing would have been a finding about
+sealed reviews as a mechanism. And its enumeration of the careful-edit class was
+real, built and run: a careful deletion that passes green while removing the
+guard, a careful anchor substitution that leaves one arm unguarded and another
+guarded twice with every count agreeing, an identity list whose ORDER is
+furniture, and a display name that narrates a constant nothing compares it to.
+
 ---
 
 ## 8. THE PHASED PLAN
