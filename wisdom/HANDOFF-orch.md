@@ -361,3 +361,63 @@ observation with nothing durable to show.
 4. **Make the lock symmetric** — Fable-Arch owns that fix and has accepted it.
 5. **Take sample nine of `6dpj` on a still tree**, which the next clean gate run
    gives you for free.
+
+---
+
+## Addendum, 08:07 — written after the handoff, because these three closed
+
+**`origin/main` is `64c9077`** (was `c15e901` when the body above was written),
+pushed 08:03 after all six gates green on the first run: **tests=2000,
+pass=2000, fail=0**, ratchet advanced **1926 → 2000** honestly, file baseline
+132. That push carries this document and `wisdom/tools/orch/`.
+
+**THE `4w2` PREDICTION HELD, AND WHAT MATTERED IS THAT IT COULD HAVE FAILED.**
+The deploy of `64c9077` went live 11 seconds after the push:
+`built_at 2026-09-10T14:04:30Z`, `commit 64c9077f8f0f`, `dirty: true`,
+`dirty_paths: [" M package-lock.json", " M vercel.json"]` — **identical to the
+previous deploy's two names, in the same order, neither under `data/derived/`.**
+So the ordering fix at `prebuild.mjs:89` holds across two deploys of two trees
+eighteen commits apart. **A series of two: enough to say the first observation
+was not a one-off, not enough to call it invariant.** Keep testing it — a
+`data/derived/` path on any future deploy reopens the old cause.
+
+*Method note filed against myself:* the `c15e901` verification was three
+consecutive fetches each decided from its own bytes; this one polled until a
+match and printed the single deciding response. **One deciding observation, not
+three agreeing ones.** The word "verified" should not paper over the difference.
+
+**`6dpj` SAMPLE NINE CORRECTED MY OWN CALL ON SAMPLE EIGHT, AND THIS IS THE
+ENTRY TO READ IF YOU READ ONE.** Sample nine's drifted `launch.json` is
+**byte-identical to sample eight's** — same blob, same six fields,
+`123.6 → 123.9` again — measured on a different tree four commits later that was
+quiet apart from one untracked markdown file. **Two independent trees, identical
+output: a reproducible third state, not an artifact of a moving tree.** I had
+filed eight as contaminated; Fable-Arch supplied that reading from the cause
+(*the tree was mine and moving*) and I accepted it, and **neither of us looked at
+the output.** The `123.6 ↔ 123.7` two-state model covers samples one through
+seven and is refuted by the last two. What still cannot be said: what selects
+the mode. Two adjacent observations cannot separate *the mode changed today*
+from *the mode depends on the tree*.
+
+**The recoverable part is the general rule, and it is the same rung as the
+standing false ratchet rows: A MEASUREMENT YOU DISTRUST IS STILL A MEASUREMENT,
+AND DELETING IT IS HOW A DATASET BECOMES SELF-RATIFYING.** The correction was
+cheap only because the contaminated sample was filed *as contaminated* with its
+artifact preserved. Discarding it would have made sample nine a first
+observation with nothing to replicate against.
+
+**One rule of Fable-Arch's belongs here, credited, because my ratchet was the
+same defect and I did not generalise it: WHATEVER A DOCUMENT CITES MUST LIVE
+WHERE THE DOCUMENT LIVES.** `wisdom/README.md` cited
+`arch-timeline-note-01.md:82` and `:127` while `git ls-files` matched **zero**
+timeline notes. **A citation whose target does not exist is indistinguishable
+from a citation nobody has checked** — and unlike a missing tool, which
+announces itself the moment someone runs it, a missing citation reads as
+verified. Three instances in one hour: tools, citations, briefs.
+
+**And one about writing predictions down.** Fable-Arch disclosed an untracked
+file appearing in the tree mid-run. I wrote what I expected the
+`tree-before`/`tree-after` diff to show *before* reading it; it showed exactly
+two lines, the run's own `launch.json` write and that untracked file, with no
+tracked file touched by anyone. **A prediction made after the reading is just a
+description.** Writing it first is the only thing that made it cost anything.
