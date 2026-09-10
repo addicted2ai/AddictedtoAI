@@ -2413,6 +2413,25 @@ denominator therefore has a floor of its own.
   bound outside `budget.bounds` settles it structurally: the suffix match stays
   as permissive as it should be, because everything within its reach is a
   category bound by construction.
+
+  **MEASURED, so the size of this is not left to the reader's imagination.**
+  `budget.bounds` today holds `upkeep_floor_pct: 40`, `new_writing_ceiling_pct:
+  45` and `machinery_ceiling_pct: 30`; the floor does not match the suffix, so
+  `tightestCeilingPct()` returns **30** and `warmUpJobs()` is **100 ÷ 30 =
+  3.33**. Any back-desk ceiling below 30 replaces it — at 10 the warm-up would
+  become **10 jobs, a threefold widening** of the denominator floor for new
+  writing and machinery. The starting value of the back-desk bound is
+  deliberately not stated in these specifications (it is taken from the measured
+  drain), and that is precisely why this cannot be left to whoever picks it.
+
+  Note what the effect is and is not, because the two are easy to swap: the
+  category ceilings are still enforced against their own named keys —
+  `budgetGate` reads `new_writing_ceiling_pct` and `machinery_ceiling_pct` by
+  name — so a misplaced bound does not refuse anything directly. **It moves the
+  DENOMINATOR those ceilings are measured against**, through
+  `tierShares` → `warmUpMm`. That is why it is invisible in review: the config
+  diff adds one line on an unrelated axis, and nothing in it mentions warm-up,
+  new writing or machinery.
 - The unit of "the largest per-type wall-clock cap" in that formula SHALL be
   one **invocation's** cap, NOT one whole job's bounded total under `A job's
   total spend is measured, and the cap is named for what it is` — a job's total
