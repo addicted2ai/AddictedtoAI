@@ -219,13 +219,40 @@ function modeledPointer(windowText) {
   return TRANSCLUSION_RE.test(windowText) || /`[^`]+`/.test(windowText);
 }
 
+/* Key-path spans never supply captured values: a backticked span holding an
+ * identifier-dot-identifier shape (budget.bounds.upkeep_floor_pct,
+ * budget.window_days, data/config.json) is a pointer, not prose, so the
+ * prose patterns match against the line with those spans blanked while
+ * pointers themselves are still read from the unmasked window; prose numbers
+ * outside backticks are still captured. Residual: a restatement written
+ * ENTIRELY in backticks with no prose number escapes capture (accepted
+ * because pointers themselves are backticked and the value rule needs a
+ * prose number; the reviewer judges). */
+const KEYPATH_SPAN_RE = /`[^`]*[A-Za-z0-9_]+\.[A-Za-z0-9_]+[^`]*`/g;
+const BACKTICK_SPAN_RE = /`[^`]*`/g;
+
+function backtickedRanges(s) {
+  const ranges = [];
+  BACKTICK_SPAN_RE.lastIndex = 0;
+  let m;
+  while ((m = BACKTICK_SPAN_RE.exec(s)) !== null) ranges.push([m.index, m.index + m[0].length]);
+  return ranges;
+}
+
 function capturesOf(figure, line) {
+  const masked = line.replace(KEYPATH_SPAN_RE, (m) => ' '.repeat(m.length));
+  const ranges = backtickedRanges(masked);
+  const insideBackticks = (pos) => ranges.some(([a, b]) => pos >= a && pos < b);
   const out = [];
   for (const re of figure.patterns) {
-    const once = line.match(re);
+    const once = masked.match(re);
     // First group only: non-value groups (e.g. a noun alternation) must never
     // read as captured values.
-    if (once && once[1] !== undefined) out.push(once[1]);
+    if (once && once[1] !== undefined) {
+      const start = once.index + once[0].lastIndexOf(once[1]);
+      if (insideBackticks(start)) continue;
+      out.push(once[1]);
+    }
   }
   return out;
 }
@@ -345,7 +372,9 @@ test('bare numbers never match: 10, 30, 55 and 56 mean nothing until a pattern n
  * while the matched line's text still equals exactLineText: edited text
  * re-fires the finding, so a stale exemption fails loudly instead of
  * silently blessing a changed passage (the same staleness discipline as
- * scripts/no-change-dir-refs.test.mjs's allow-list liveness arm). */
+ * scripts/no-change-dir-refs.test.mjs's allow-list liveness arm). The
+ * exemption is per-line: the identical line under altered surrounding text
+ * stays exempt, while line-number shift and line-text drift re-fire. */
 const EXEMPTIONS = [
   {
     file: 'FULL-MEM-LOG.md',
