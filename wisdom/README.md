@@ -1186,6 +1186,55 @@ abandoned produce identical-looking output, so nothing signals which one is
 running. Saying that no mechanism exists yet is worth more than a fourth
 restatement of the preference.
 
+### 7l. The strongest evidence is the most dangerous kind to get wrong
+
+Two near-misses on the same night, in two lanes, both of which would have ended
+an investigation early — and each was strong evidence about the wrong thing.
+
+**The first was a mutation proof.** A brief named a class: *an environment
+variable that greens every record at one stroke.* The named variable was closed,
+and the repair was verified the expensive way — a record moved genuinely past its
+date still refuses with the old override set to a rescuing day, and putting the
+override back in the live path rescues it again. That is the strongest form of
+evidence this project has, and it is evidence about **one member of the class.**
+`TZ` greens the same wall, measured under three zone values. **A MUTATION PROOF
+OF THE NAMED PATH IS THE STRONGEST POSSIBLE EVIDENCE ABOUT THE WRONG SUBJECT,
+AND ITS STRENGTH IS WHAT STOPS ANYONE LOOKING FURTHER.** Author, verifier and
+the previous round's reviewer all read the closed instance as the closed class.
+
+**The second was a probe that answered nothing and looked like a negative
+result** — and it carried two independent defects, either one fatal.
+
+- The zone was set through a shell that mangles environment values containing a
+  slash, so it never reached the process. The treatment was inert. This is the
+  same family as the trap already recorded in this project's instructions, where
+  a `rev:path` argument in that shell silently yields zero bytes with exit 0.
+- It ran at an hour when every candidate zone shared a calendar day, so the
+  comparison returns *identical* whether or not the zone matters. **A check
+  whose true and false answers are the same observation** — the first class in
+  this section, reappearing inside a probe written to investigate a different
+  one, six hours after being written down twice.
+
+**Together they are worse than either: an inert treatment plus a blind
+measurement produces a confident negative with a real-looking number attached.**
+The session was one keystroke from reporting that zones were harmless, with
+evidence.
+
+Two rules follow, and the second is the one that costs something. A probe must
+**print what the subject actually received**, not what the caller intended to
+send, so an inert treatment is visible rather than assumed. And a probe must be
+run where its two answers differ — **a comparison taken at a point where the
+hypothesis predicts no difference is not a negative result, it is not a
+measurement at all.** The second is hard because such a point is usually the
+convenient one, which is the control-at-a-convenient-point defect wearing new
+clothes.
+
+The other escape is worth naming honestly: the parallel probe in the other lane
+avoided both defects, and avoided them **by accident** — it passed its values
+through a call that no shell touches, and it happened to pick zones on the far
+side of the date line. Neither was a precaution. **An escape you cannot explain
+is not a practice, and it will not repeat.**
+
 ---
 
 ## 8. THE PHASED PLAN
