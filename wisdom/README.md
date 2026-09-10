@@ -1514,6 +1514,79 @@ branch that cannot be reached by waiting must be reached by forcing, and a
 branch nobody has reached is a branch nobody has run** — however obviously
 correct it looks in the source.
 
+### 7p. THE SAME RULE AT THREE DEPTHS, AND THE THIRD IS THE ONE NOBODY LOOKS AT
+
+Three findings arrived within an hour of each other on 2026-09-10, from two
+sessions checking each other's work. They read as three lessons and they are one,
+which is worth writing down as a ladder rather than as three more instances.
+
+**Depth 1 — the SAMPLE.** §7n: a mechanism proved only against the subjects it
+happens to be used on is proved against a sample chosen by the person who wrote
+it. Both copies of a worktree guard refused the repository root on standing
+background state; only the copy whose callers pointed at the root ever showed it.
+
+**Depth 2 — the CANDIDATE POOL.** §7o's addendum: two sessions independently
+picked zones from the 4-to-6-hour band and none from the 15-to-20-hour band,
+because *a different date* is searched as *far away*, far away reaches west, and
+from UTC-6 every wide instrument is east. The sample rule at least operates on
+recorded subjects. A pool is generated and discarded, so **nothing shows what it
+excluded.**
+
+**Depth 3 — the CHECK'S OWN SUBJECT LIST.** An environment-pin guard printed
+`18 checked`. A verifier of mine printed `3 pins checked, none set`. Both are a
+**numerator with no denominator**, and the silence about item 19 — or item 4 — is
+indistinguishable from item 19 not existing.
+
+The third is the one nobody looks at, and the reason is structural:
+
+**A CHECK'S SUBJECT LIST IS A PARAMETER OF THE CHECK, NOT THE CHECK — BUT IT IS
+WRITTEN IN THE SAME FILE, REVIEWED IN THE SAME BREATH, AND INHERITS THE CHECK'S
+CREDIBILITY WITHOUT EVER HAVING EARNED ANY.**
+
+And the provenance condemns it. Every name on such a list is there because
+something already went wrong with that name; two of the three on mine arrived
+from a peer's measurement an hour before. **A list built that way is a record of
+past incidents wearing the shape of a check.** It cannot propose the item nobody
+has been bitten by yet, which is the only item worth having.
+
+The repairs differ in strength and the difference should not be blurred.
+Printing the population does **not** complete the list — it makes the gap
+visible, which is the most an enumerated list can honestly offer:
+
+    env check: 3 pins checked of 84 variables present, none set —
+    the other 81 are unexamined, not known-clean
+
+The stronger repair is **inversion**: enumerate what is actually present and diff
+against a recorded baseline, so an item nobody thought of surfaces because it is
+NEW rather than because it was predicted. Three properties that came with it and
+transfer: it **reports rather than refuses**, because a machine's environment
+legitimately changes and refusing on any drift is the over-broad arm that gets a
+guard switched off; it **withholds the values of unknown variables** and compares
+digests, because an unknown variable is precisely the one whose value cannot be
+vouched for and a census that prints everything eventually prints a token; and
+its **first run refuses to claim it detected anything**, because a baseline run
+that returns *no drift* is the echo problem in a new place.
+
+**And the denominator itself is not a constant.** Measured here, the same call
+from two invokers:
+
+    from PowerShell    79 variables present
+    from Git Bash      84 variables present
+
+Five added by the shell. The peer measured its own pair at 85 and 87 — different
+magnitude, same fact. **THE POPULATION A CHECK IS MEASURING AGAINST DEPENDS ON
+HOW THE CHECK WAS INVOKED**, which is exactly the kind of thing a hand-written
+list can never tell you, and exactly the kind of thing a census reports for free.
+
+One more instance, recorded because it is the fourth tonight and the rule is not
+holding. My first attempt at that two-invoker comparison ran *node directly* and
+*node under an extra bash layer* — and both arms were already inside a Bash tool
+call, so the extra layer added nothing and the two arms were the same arm. It
+printed 84 and 84, which reads as a clean negative. **I caught it because the
+identical numbers looked too tidy, not because the method was sound.** A
+comparison taken where the hypothesis predicts no difference is not a negative
+result; and noticing one by aesthetics is not a practice either.
+
 ---
 
 ## 8. THE PHASED PLAN
