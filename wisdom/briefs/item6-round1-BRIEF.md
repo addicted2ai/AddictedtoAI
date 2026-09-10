@@ -59,7 +59,8 @@ historical sentences in logs and records — dated, past-tense, making
 no claim about a current value — are never candidates. A check that
 refused them would force true records to be deleted to earn a green,
 which is a guardrail producing false statements. The tense test from
-the `03e2207` discussion applies: present-tense claims about live
+the §7 Orch caveat applies (past-tense dated records exempt; the
+third restatement correctly declined): present-tense claims about live
 figures are candidates; stamped records are not.
 
 Your comment must answer, each with a reason:
@@ -93,8 +94,10 @@ fail until sourced while the sourced re-statement passes:
 1. **Restated bound (the 10-vs-30 shape).** A present-tense
    restatement of a declared bound with a stale value and no pointer
    must FAIL; the same sentence with the live value and a pointer to
-   the canonical file must PASS. (Wild: `AGENTS.md:262-264`
-   "machinery ceiling 10%" against live 30.)
+   the canonical file must PASS. (Wild, as banked 2026-09-09 and
+   since repaired to key-names-only: `AGENTS.md` "machinery ceiling
+   10%" against live 30. The arms are constructed fixtures, not live
+   claims.)
 2. **Count over a moving population (the 56-vs-55 shape).** A count
    asserted without the command or file that produced it must FAIL;
    the same count carrying its producer must PASS. (Wild: 56-test
@@ -115,8 +118,14 @@ fail until sourced while the sourced re-statement passes:
 
 Plus the live sweep: the current tree's declared figures
 dispositioned (below). If the sweep finds a live unsourced
-restatement, fixing it (add the pointer, correct the value) is this
-round's work, not a second round.
+restatement, the round reports it with disposition, file and reason
+as a scope decision — "this list" throughout this brief means the
+Files bullets below, so a citing-file fix outside the new test file
+is reported, not edited in this diff. This round's shippable work is
+the declaration, the fixtures, and the sweep enumeration; the tree is
+clean today (verified at briefing: the 10-vs-30 restatement stands
+repaired to key-names-only), so the expected path is a passing sweep
+with the declaration named.
 
 ## The refusal, and where it sits
 
@@ -124,8 +133,9 @@ A self-contained `scripts/` test, run by the suite like every other
 `scripts/*.test.mjs` file: declared figures with their canonical
 sources and restatement patterns beside them; each control fixture
 failing until sourced; the sweep's declaration failing on any live
-unsourced restatement. No new instrument file — the suite runs it,
-which is the host the derivation's cost tiering calls cheap.
+unsourced restatement. No new host — the suite auto-enrolls the new
+test file, which is the cheap host the derivation's own tiering
+names.
 
 ## Files
 
