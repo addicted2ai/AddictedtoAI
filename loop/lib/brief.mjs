@@ -684,9 +684,13 @@ export function subjectLines(job) {
  *   quoted at all (`portability.test.mjs` and `publish.test.mjs` refuse
  *   it: publishing is the Pulse's step and a remote-writing
  *   implementation in `loop/` is how unverified work reaches the
- *   remote). A job instructing a remote write would be a scope
- *   violation rather than a requirement, so the under-count risk is
- *   accepted and stated here instead of hidden.
+ *   remote). The gap this leaves — a bare send-to-remote imperative
+ *   unlisted, unmodal — is closed where the guard does not reach:
+ *   `scripts/brief-lint.mjs` check 9 supplements the classifier with
+ *   that verb (assembled at run time, same convention the guard's own
+ *   test uses) and documents why. A job instructing a remote write
+ *   would be a scope violation rather than a requirement, so the
+ *   under-count risk here is accepted and stated instead of hidden.
  * - Quoted lines and fenced blocks COUNT (are not excluded). Naming a
  *   repair target inside a quote still names it, and intent-reading
  *   ("mentioned as example" vs "mentioned as subject") is beyond a
@@ -722,7 +726,12 @@ export function subjectLines(job) {
  * production the source (title + detail) is embedded verbatim, so the
  * wired half acts as a tripwire: it fires the day a template edit or a
  * future brief diet stops carrying source text, which is exactly the
- * loss class it names.
+ * loss class it names. It cannot fire on a dropped imperative inside a
+ * faithfully embedded source — the tokens are present by construction —
+ * so the same reconciler's working enforcement for authored briefs lives
+ * in `scripts/brief-lint.mjs` check 9, over the quoted source with the
+ * quotes excluded from the body. One classifier, two hosts; the property
+ * is enforced where a brief can actually drop a requirement.
  * Revision and resume briefs rebuild rather than carry and are not covered
  * here; that is a stated limit, not an oversight found later.
  */
@@ -772,18 +781,24 @@ function firstWord(body) {
   return m ? m[1].toLowerCase() : '';
 }
 
-/** True when the sentence is an imperative per the comment above. */
-export function isImperative(sentence) {
+/** True when the sentence is an imperative per the comment above.
+ * `extraVerbs` supplements COMMAND_VERBS at the call site (never a second
+ * list to drift: the supplement is named, reasoned, and passed explicitly
+ * — currently only `scripts/brief-lint.mjs` check 9, for the
+ * send-to-remote verb this file may not quote). */
+export function isImperative(sentence, extraVerbs = null) {
   const { listed, body } = stripListMarker(sentence);
   if (body.length === 0) return false;
   if (listed) return true;
   if (IMPERATIVE_MODAL.test(body)) return true;
-  return COMMAND_VERBS.has(firstWord(body));
+  const first = firstWord(body);
+  if (COMMAND_VERBS.has(first)) return true;
+  return !!extraVerbs && extraVerbs.has(first);
 }
 
 /** Every imperative sentence in the source text, in order. */
-export function extractImperatives(sourceText) {
-  return splitSentences(sourceText).filter(isImperative);
+export function extractImperatives(sourceText, extraVerbs = null) {
+  return splitSentences(sourceText).filter((s) => isImperative(s, extraVerbs));
 }
 
 function significantTokens(sentence) {
@@ -1031,6 +1046,12 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
   // written anywhere: `run.mjs` writes `.job/brief.md` only after this
   // returns. Moving this check after the return (or after the write) is
   // mutation B, and the test pins the order.
+  // SCOPE HONESTY (2b re-scope, 2026-09-10): the source is embedded
+  // verbatim above, so on this path the reconciler passes by
+  // construction and fires only on a dropped embed — a tripwire shared
+  // with 3a, proven by arm 1b. A dropped imperative inside a faithful
+  // embed cannot fire here; that property is enforced where authored
+  // briefs are checked, `scripts/brief-lint.mjs` check 9.
   const missing = reconcileBriefImperatives(briefSourceText(job), text);
   if (missing.length > 0) {
     throw new Error(

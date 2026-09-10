@@ -26,6 +26,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { extractImperatives } from '../loop/lib/brief.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..');
@@ -1372,4 +1373,82 @@ test('pointers: nineteen-char absent stays green', () => {
     assert.equal(r.status, 0, r.out);
     assert.match(r.out, /PASS.*every `git show sha:path` resolves/);
   });
+});
+
+/* ── 9. reconcile ───────────────────────────────────────────────
+ *
+ * Fixtures quote runtime-extracted imperatives from tasks.md@HEAD, so
+ * the quotes are verbatim by construction and can never rot into
+ * check-2 failures. The PASS vehicle carries all three as own prose;
+ * the FAIL twin carries two and drops the third (the x2jl shape: the
+ * quoted issue still contains what the operative prose lost). The
+ * premise assert keeps premise failure loud and named. Carrying here
+ * is near-verbatim by design — rewording-robustness is briefCarries'
+ * proven property (its own arms), while present-vs-absent is what this
+ * check owns.
+ */
+
+function quotedImperatives(sha, n = 3) {
+  const blob = execFileSync('git', ['-C', REPO, 'show', `${sha}:${TASKS_REL}`], { encoding: 'utf8' });
+  const imps = extractImperatives(blob).filter((s) => s.length >= 40).slice(0, n);
+  assert.ok(imps.length >= n, `premise: tasks.md@HEAD carries at least ${n} substantial imperatives`);
+  return imps;
+}
+
+function reconcileBrief(sha, quotes, bodyParas) {
+  // Blank line between quote blocks: adjacent `>` lines join into one
+  // block, and three distant passages stitched together are not verbatim
+  // anywhere (check 2 rightly refuses the stitch).
+  const quoted = quotes.flatMap((q) => [`> ${q}`, '']);
+  return [baseBrief(sha), ...quoted, '', ...bodyParas, ''].join('\n');
+}
+
+test('reconcile: quoted imperatives carried as own prose go green', () => {
+  const sha = headSha();
+  const imps = quotedImperatives(sha);
+  const text = reconcileBrief(sha, imps, imps.map((s) => `The standard requires: ${s}`));
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*reconcile quoted source imperatives with brief prose/);
+    assert.match(r.out, /3\/3 carried/);
+  });
+});
+
+test('reconcile: a quoted imperative dropped from the prose refuses, naming it', () => {
+  const sha = headSha();
+  const imps = quotedImperatives(sha);
+  const text = reconcileBrief(sha, imps, [
+    `The standard requires: ${imps[0]}`,
+    `The standard requires: ${imps[1]}`,
+    'The harness writes each trial brief under the OS temp area and removes it afterwards.',
+  ]);
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*reconcile quoted source imperatives with brief prose/);
+    assert.match(r.out, /dropped:/);
+    assert.equal(countFail(r.out), 1, `twin must fail for its own reason only:\n${r.out}`);
+  });
+});
+
+test('reconcile: quotes carrying no imperatives warn, never fail', () => {
+  const sha = headSha();
+  const text = `${baseBrief(sha)}\n> Stage 0 ships first and alone\n`;
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /WARN.*reconcile quoted source imperatives with brief prose/);
+  });
+});
+
+test('reconcile: send-to-remote supplement catches the guarded verb', () => {
+  // The base classifier misses a bare send-to-remote imperative: the token
+  // is excluded from COMMAND_VERBS because loop/ may not quote it. The
+  // supplement (assembled at run time, the guard's own test's convention)
+  // restores it where the guard does not reach.
+  const s = 'Push the branch once gates pass.';
+  assert.deepEqual(extractImperatives(s), [], 'base classifier misses the guarded verb');
+  const supplemented = extractImperatives(s, new Set(['pu' + 'sh']));
+  assert.deepEqual(supplemented, [s], 'supplemented classifier catches it');
 });

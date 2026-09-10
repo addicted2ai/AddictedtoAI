@@ -45,10 +45,15 @@
 //     case-sensitive", so a brief spelling it `CD` passed the guard.
 //  7. REVISION (--revision): a CLASS statement and the word "sweep".
 //  8. RESULT NAME: a numbered `RESULT<n>.md` is named, never bare RESULT.md.
+//  9. RECONCILE: every imperative in the quoted source (check 2's quotes)
+//     is carried in the brief's own prose — quotes and fences excluded,
+//     send-to-remote supplement active. WARN when the quotes carry no
+//     imperatives; skipped out loud in --packet mode.
 import { readFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { briefCarries, extractImperatives } from '../loop/lib/brief.mjs';
 
 const args = process.argv.slice(2);
 const flags = new Set(args.filter((a) => a.startsWith('--')));
@@ -486,6 +491,52 @@ if (!shows.length) {
   report(pf(problems.length === 0),
     'every `git show sha:path` resolves and holds what the sentence names',
     problems.length ? problems.join('; ') : `${shows.length} pointer(s) resolved, named phrases found in each`);
+}
+
+// 9. RECONCILE (added 2026-09-10, wisdom 2b re-scope): every imperative in
+// the quoted source is carried in the brief's own prose.
+//
+// WHY HERE AND NOT ONLY AT DISPATCH. The dispatch reconciler runs over
+// generated briefs that embed their source verbatim, so every
+// imperative's tokens are present by construction and it can only fire
+// on a dropped embed. The x2jl failure was a HAND-written brief whose
+// operative prose dropped an imperative the quoted issue still
+// contained — that shape passes dispatch by construction, so the
+// working enforcement lives here, over the quotes check 2 already
+// verified verbatim. The body excludes the quotes (reconciling the
+// quote against itself would be the same vacuity wearing work clothes)
+// and fenced blocks (commands and diffs, not assertions — check 8's
+// doctrine for the same exclusion).
+//
+// THE SEND-TO-REMOTE SUPPLEMENT. COMMAND_VERBS excludes that verb
+// because `loop/` code may not quote the token at all; this file is
+// outside that guard's scope (`loop/` only), and a dropped remote-write
+// instruction is exactly the loss shape, so the classifier is
+// supplemented here. The token is assembled at run time — the guard's
+// own test's convention — and the supplement is named, never silent.
+const SEND_TO_REMOTE = new Set(['pu' + 'sh']);
+if (isPacket) {
+  skip('reconcile quoted source imperatives with brief prose', 'packets carry no work source');
+} else {
+  const bodyLines = [];
+  let inFence = false;
+  for (const l of proseLines) {
+    if (/^\s*```/.test(l)) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    if (/^\s*>/.test(l)) continue;
+    bodyLines.push(l);
+  }
+  const imps = extractImperatives(quotes.join('\n'), SEND_TO_REMOTE);
+  if (!imps.length) {
+    report('WARN', 'reconcile quoted source imperatives with brief prose', 'no RECOGNIZED imperatives in the quotes — absence unproven, see the classifier limits in loop/lib/brief.mjs (suggestion modals, hedged negations)');
+  } else {
+    const missing = imps.filter((imp) => !briefCarries(bodyLines.join('\n'), imp));
+    report(
+      pf(missing.length === 0),
+      'reconcile quoted source imperatives with brief prose',
+      missing.length ? `dropped: ${missing[0].slice(0, 160)}` : `${imps.length}/${imps.length} carried (send-to-remote supplement active)`,
+    );
+  }
 }
 
 console.log(fails ? `\nBRIEF REFUSED: ${fails} check(s) failed` : '\nBRIEF OK');
