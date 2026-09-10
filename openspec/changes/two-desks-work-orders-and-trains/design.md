@@ -92,8 +92,8 @@ is not.
 **What the gates actually are today, because an earlier draft had this wrong.**
 `DEFAULT_GATES` (`gates.mjs:346`) is
 `['test','build','verify-surfaces','verify-design']`, asserted exactly by
-`job-gate-set.test.mjs:74`, and `run.mjs` has two gate call sites: `:404` (that
-set) and `:1661` (`build` alone). So a merged job runs **four** gates and pays for
+`job-gate-set.test.mjs:74`, and `run.mjs` has two gate call sites: `:419` (that
+set) and `:1750-1755` (`build` alone). So a merged job runs **four** gates and pays for
 **two** builds. `verify-launch` and `verify-analytics` are in no job's path at all
 — `gates.mjs:293-296` says why, deliberately. The corrected arithmetic:
 
@@ -907,7 +907,7 @@ over.
 | Proposal expiry sweep and duplicate-slug discard | **Never fired.** Audited 2026-08-31 across all 15 retired proposals then; re-verified 2026-09-08 — only "## Consumed" headings exist, 35 of them. Building on a mechanism that has never fired *"would have produced a guardrail that measurably prevents nothing"* (`addictedtoai-occ0`). Intake owns dedup and expiry. |
 | The hand-driven fleet (at Stage 3) | No code, no ledger, no budget, no record. It ran all day 2026-09-08 from a script inside a session's temp directory after that session had ended. |
 | Pass 2b of `excerptsFor`, and 88,000 → 24,000 | The brief grew 16,181 → 103,881 chars in eleven days, ~85% spec excerpt (`specs.mjs:317-330`; `addictedtoai-2sx8`). |
-| The post-merge build (`run.mjs:1661`) | Two builds per merged job today, not three. **The property it carried is not deleted with it**: the tripwire now builds the merged tip, so "green apart, red together" is still caught per merge at one build per job. |
+| The post-merge build (`run.mjs:1750-1755`) | Two builds per merged job today, not three. **The property it carried is not deleted with it**: the tripwire now builds the merged tip, so "green apart, red together" is still caught per merge at one build per job. |
 
 ---
 

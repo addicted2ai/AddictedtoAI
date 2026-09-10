@@ -84,7 +84,7 @@ review-state binding check that distinguishes an unreviewed piece (`missing`) fr
 a reviewed-then-changed one (`mismatched`). **That check has never run inside the
 Desk on any job**: `loop/lib/gates.mjs:346` is
 `['test','build','verify-surfaces','verify-design']`, and `loop/run.mjs` has
-exactly two gate call sites, `:404` (that set) and `:1661` (`build` alone). Putting
+exactly two gate call sites, `:419` (that set) and `:1750-1755` (`build` alone). Putting
 `verify-launch` on the train puts the reserved property's own detector into the
 automated path for the first time.
 
@@ -104,7 +104,7 @@ Orch's own statement (`evidence/rerun-efficiency.txt`,
 **The gate arithmetic, corrected.** A job today runs **four** gates and pays for
 **two** builds, not six and three: `DEFAULT_GATES` is
 `['test','build','verify-surfaces','verify-design']` and the second build is the
-post-merge one at `run.mjs:1661`. The **442.5s six-gate total** measured on `main`
+post-merge one at `run.mjs:1750-1755`. The **442.5s six-gate total** measured on `main`
 at `78c6361` with publishing off — `npm test` 314.8s, `verify-launch` 39.6s (of
 which its own build is 39s: `verify-launch.mjs:832` starts the timer before the
 build spawn and `:847` reports that span), `verify-design` 35.7s, `npm run build`

@@ -137,15 +137,23 @@ and delegated to the agent reading the tree).
 Rounds 4, 5 and 6 of B1 were about test arms, not production code, and each
 full sealed max review cost about 25 minutes for a few changed lines. So: a
 round whose diff touches only test files and only the lines the previous
-review named gets a DELTA review at medium — the reviewer is given the
+review named gets a DELTA review — the reviewer is given the
 previous review (it needs it), verifies each named finding fixed by mutation
 (red and restored), performs the diff-as-the-list mutation on every changed
 line, and runs the standing property checks. Any production change gets the
 full sealed max review; a delta reviewer's out-of-scope finding is a
 full-review trigger; and the completed full suite on the final tip backstops
-both kinds. **Amended 2026-09-09 00:29 by the maintainer: every dispatch,
-delta reviews included, runs at max.** **The exit condition (the architect's
-ruling at B2 round 3, 2026-09-09 04:55).** Four consecutive reviews of one
+both kinds. **Amended 2026-09-09 00:29 by the maintainer: every codex Luna
+dispatch, delta reviews included, runs at max.** SCOPED TO CODEX LUNA on
+2026-09-09 19:30, because the unscoped wording had become false in two places
+and a rule that is false where it is read is not a rule: brief reviews run at
+`xhigh`, and on the OpenRouter route `max` DOES NOT EXIST — the provider
+refuses it ("Supported values: [minimal, low, medium, high, xhigh]") and
+`opencode run` exits 0 on that refusal, so a "max" dispatch there would look
+like a success and produce nothing. Every non-Luna route runs at its own top
+declared rung. The maintainer's ruling was about codex Luna and is unchanged in
+substance. **The exit condition (the architect's
+ruling at B2 round 3, 2026-09-09 04:55).** Three consecutive reviews of one
 diff each found new green mutants — REVIEW1 two, REVIEW2 six, REVIEW3 four,
 none overlapping — every one an arm narrower than its property, none a
 production defect; the class "an arm could be stronger" has no floor, so a
@@ -1715,7 +1723,10 @@ the brief under `evidence/reviews/`.
 
 - [ ] 32. `loop/lib/gates.mjs`: `DEFAULT_GATES` becomes `['build',
       'verify-surfaces']` and a frozen `TRAIN_GATES` carries the full six in order.
-      `loop/run.mjs` drops the post-merge build call site (`:1661`). Implements:
+      `loop/run.mjs` drops the post-merge build call site (`:1750-1755`, the
+      `postMergeGateOptions`/`runGates` block — RE-PINNED 2026-09-09 from the
+      stale `:1661`, which is the REDERIVE call and would have had a worker
+      delete the single rederive). Implements:
       *A job's gates are a tripwire…*, bullets 1 and 3.
 - [ ] 33. `loop/run.mjs` and `loop/lib/train.mjs` (new): **the tripwire builds the
       merged tip**, under the merge lock, not the branch; a red merged tip reverts
@@ -1876,16 +1887,20 @@ the brief under `evidence/reviews/`.
       declaration is a merge refusal. Implements the same requirement's structured
       list and empty-declaration bullets.
 - [ ] 56. **The root fix, and it is one task because it is one defect.**
-      `loop/run.mjs:1577-1594`: the merge's subject set is **constituted** from the
+      `loop/run.mjs:1674-1690`: the merge's subject set is **constituted** from the
       committed `declared_subjects` — on the `reviewed:` outcome, from the
       executor's declared paths intersected with it — and the measured diff is used
       only to **check** it: every diff content path inside the declaration
       (`scope-violation` otherwise), and every item retired only with a measured
       diff on its own subjects or a `reviewed:` declaration covering them.
       Unretired items stay open and the line records the order partially done.
-      Separately, make the empty-set refusal at `:1594` **unconditional** — today it
-      is itself guarded on `subjects.length`, so the empty set neither records nor
-      logs. Implements the same requirement's constitution, retirement and
+      Separately, make the empty-set refusal at `:1688` **unconditional** — today it
+      is itself guarded on `subjects.length` (`} else if (subjects.length) {`), so
+      the empty set neither records nor logs. BOTH PINS RE-PINNED 2026-09-09 from
+      the stale `:1577-1594`, which is proposal-cap code and a blank line and
+      contains no subject logic at all; the constitution is `:1674`
+      (`const subjects = joinableSubjects(...)`) and the guard `:1688`. The defect
+      DESCRIPTION above was and is accurate — this was a re-pin, not a re-think. Implements the same requirement's constitution, retirement and
       empty-set bullets, and *The executor result protocol…*'s `reviewed:` subject
       bullet.
 - [ ] 57. `loop/tests/work-order.test.mjs`: four repairs on one page bundle into one
@@ -2262,11 +2277,34 @@ the brief under `evidence/reviews/`.
 | `pulse` | 1 | 1 | 0 |
 | **Total** | **14** | **15** | **2** |
 
-Ninety-five numbered tasks, 1–95 with no gaps, of which **29 name a proof by
-mutation and 49 distinct mutations are named** (several tasks name an A, a B and a
-C, where one mutation alone would leave a control unmeasured). Counted by script,
-not by hand: `tasks: 95, contiguous=true; tasks naming a mutation: 29; distinct
-mutations: 49`. Three are already ticked done (28, 29, 30).
+**96 checkbox rows** — 95 numbered 1–95 with no gaps, **plus `3b`** — of which
+**38 name a proof by mutation, with 67 bold mutation slots in all** (several
+tasks name an A, a B and a C, where one mutation alone would leave a control
+unmeasured). **26 rows are ticked, 70 open.**
+
+THE COUNTING RULE, stated so the figures can be re-derived rather than trusted:
+a row is `^- \[[ x]\] <id>\.`; a mutation slot is a bolded `**Mutation…**` span
+inside a row's text; a row whose id does not parse is an ERROR, not a skip.
+
+CORRECTED 2026-09-09, and the correction is worth more than the numbers.
+This block previously read "Ninety-five numbered tasks … 29 name a proof by
+mutation and 49 distinct mutations … **Counted by script, not by hand** …
+Three are already ticked done (28, 29, 30)." Every one of those claims was
+wrong, and they were wrong in three different ways:
+
+- **It named no script.** No path, no command, nothing to re-run — so "counted
+  by script" was unfalsifiable. A reviewer could reproduce neither 29 nor 49
+  under any rule it tried, and neither could I. An unnamed script is a hand
+  count wearing a machine's clothes.
+- **"Three are already ticked" was off by 23.** Twenty-six rows are ticked.
+- **"95, contiguous=true" was the instructive one.** There are 96 rows. The
+  96th is `3b`, and it is ticked. A counter matching `^- \[.\] (\d+)\.` sees 95
+  contiguous rows and reports `contiguous=true` WITH PERFECT HONESTY, because
+  the single row that breaks its model is invisible to the pattern that defines
+  it. The count was not sloppy; the SCHEMA was wrong, and a wrong schema counted
+  twice is still wrong. This is the same defect class as an in-range line check
+  that cannot fail toward a wrong pin: **the check's false answer and its true
+  answer are the same observation.**
 
 ### Heading-to-task mapping
 
