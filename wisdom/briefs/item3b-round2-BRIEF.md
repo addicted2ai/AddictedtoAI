@@ -43,14 +43,21 @@ about this brief, not an extension you make:
   in `loop/lib/review.mjs`), and a test outside the list asserts the
   exact membership (`deepEqual` against a literal list, an exact
   `.length` beside the literal — B2: the seven-entry list at
-  `loop/tests/review-blog-bar.test.mjs:269-280`).
+  `loop/tests/review-blog-bar.test.mjs:269-280` at tip `5fb9b2b`).
 - **Shape pins.** A builder's emitted object gains or loses keys in
   the diff (E: `brief_chars`, `gate_seconds`, `authority_sha` joining
   the ledger line in `loop/lib/ledger.mjs` and `loop/run.mjs`), and a
-  test outside the list asserts the exact key set (`Object.keys`
-  comparisons, exact key arrays, exact-shape `deepEqual` — E:
-  `loop/tests/breakers.test.mjs:172-178`,
-  `loop/tests/gate-transport-retry.test.mjs:876-880`).
+  test outside the list asserts over the exact emitted shape. Two
+  forms, both covered: exact key-set assertions (`Object.keys`
+  comparisons against literal key arrays, exact-shape `deepEqual` —
+  E: `loop/tests/gate-transport-retry.test.mjs:876-880` at tip
+  `db10eac`, requiring the only additive key to be `phases`) and
+  comparative shape assertions (`Object.keys` equality between two
+  live lines plus per-field value equality — E:
+  `loop/tests/breakers.test.mjs:172-178` at tip `db10eac`, red via
+  `authority_sha` differing per throwaway repository, not via a
+  literal). Both invalidate when the emitted keys change; the arm
+  names which form each pin is.
 - **Field pins.** A named field/record shape the diff changes, pinned
   exactly elsewhere (`LEDGER_FIELDS` and the keys outside it — E:
   `loop/tests/issues.test.mjs:243` pins the array itself, which is why
@@ -76,7 +83,13 @@ Your comment must answer, each with a reason:
   instrument reports candidates and the reviewer judges them, because
   the false-fire rate of an automatic refusal is unmeasured — round
   1's detected-not-dispatched precedent. Enforcement this round is
-  reviewer-side, through the sealed review running the instrument.
+  reviewer-side: the sealed review runs the instrument and a revise
+  verdict naming unlisted true pins IS the review gate refusing a
+  file list that misses a pin, which is what the bead asks for. The
+  automatic form (the merge step refusing on instrument output with
+  nobody judging) is a recorded follow-up owned by the orchestrator,
+  due once the false-fire rate is measured over real reviews — not a
+  promise this round makes.
 - Why strictness here cannot false-fire on legitimate rewording the
   way a text search would: candidates are exact-shape assertions over
   identifiers the diff changes, never prose mentions.
@@ -96,11 +109,14 @@ object lives:
    is outside the brief's list.
 2. **E catch.** Brief
    `openspec/changes/two-desks-work-orders-and-trains/evidence/reviews/stage0-packet-E/round1-agent-brief.md`
-   against `9c1d980..db10eac` must be REFUSED, naming
-   `loop/tests/breakers.test.mjs:172-178` and
-   `loop/tests/gate-transport-retry.test.mjs:876-880`. The diff adds
-   the three ledger keys; both exact key-set assertions are outside
-   the list.
+  against `9c1d980..db10eac` must be REFUSED, naming
+  `loop/tests/breakers.test.mjs:172-178` at tip `db10eac`
+  (comparative shape form: Object.keys equality plus per-field value
+  equality, red via `authority_sha` uniqueness) and
+  `loop/tests/gate-transport-retry.test.mjs:876-880` at tip `db10eac`
+  (exact key-set form). The diff adds
+  the three ledger keys; both shape assertions are outside
+  the list, and the arm names which form each pin is.
 3. **F pass.** Brief
    `openspec/changes/two-desks-work-orders-and-trains/evidence/reviews/stage0-packet-F/round1-agent-brief.md`
    against `ddbfd52..df448970490c7fe496317182417364a281c216ed`
@@ -116,10 +132,16 @@ refusal follows the list and not the diff.
 
 A `scripts/` instrument, `scripts/brief-closure.mjs`, run by absolute
 path: `node scripts/brief-closure.mjs --brief <brief> --base <sha>
-[--tip <sha>] [--root <dir>]`. It prints `CLOSURE OK` and exits 0 when
-every file the diff touches is listed and no pin-search candidate
-lives outside the list; otherwise it prints one line per candidate
-(file, line, pin class, changed identifier) and exits 1. A candidate
+[--tip <sha>] [--root <dir>] [--verbose]`. It prints `CLOSURE OK` and
+exits 0 when every file the diff touches is listed and no pin-search
+candidate lives outside the list; otherwise it prints one line per
+candidate (file, line, pin class, changed identifier) and exits 1.
+With `--verbose` on a pass it additionally prints one `FOUND-INSIDE
+<file>:<line> <class> <identifier>` line per pin found inside a
+listed file — that is what arm 3 observes, so the pass reason is
+measured, never asserted. At least one arm invokes the CLI itself
+(flags and exit codes), not only imported functions: a CLI whose
+contract is tested only by reading it is not tested. A candidate
 is a tripwire the reviewer judges, not an automatic verdict — the
 brief that ships this instrument passes it on its own Files list over
 its own diff (self-hosting, re-run by the reviewer), which is the
@@ -145,13 +167,15 @@ test) plus corrected-list variants you construct and declare. Required
 arms, each with its baseline colour recorded **before** any mutation:
 
 1. The B2 shape is **refused**, naming the review-blog-bar pin with
-   its line range and the changed identifier.
-2. The E shape is **refused**, naming both key-set pins with lines
-   and the three added keys.
+   its line range (at tip `5fb9b2b`) and the changed identifier, via
+   the CLI (exit 1).
+2. The E shape is **refused**, naming both shape pins with lines (at
+   tip `db10eac`), each pin's form (exact vs comparative), and the
+   three added keys, via the CLI (exit 1).
 3. The F shape **passes** — and the arm asserts the pass is for the
    closure reason (every pin file listed or reasoned), not because the
-   search found nothing: it names the pin files the search did find
-   inside the list.
+   search found nothing: with `--verbose` it names the pin files the
+   search did find inside the list. Via the CLI (exit 0).
 4. The corrected-list variants (B2/E lists plus the missing pin
    files, constructed and stated) **pass**.
 5. The portability-style escape holds: a file building its own
@@ -175,11 +199,14 @@ verified byte-identical. State collected/pass/fail for the baseline
 and for each mutation. Node caches modules: re-import under a
 cache-busting query for mutation observations, documented in the test
 — measuring the old code and calling it the mutation is the failure
-round 2b recorded. Node runs test FILES in parallel subprocesses: if
-your tests rewrite a tree file and revert it, hold the
-`loop/tests/lib-mutate.mjs` lock from the pre-mutation read to the
-reverted byte-identical assert — the cross-file race it exists for
-was measured on round 1's merge gate.
+round 2b recorded. Node runs test FILES in parallel subprocesses:
+your mutations here touch only your own new file, which no other
+file's tests rewrite — intra-file tests run sequentially, so the
+`loop/tests/lib-mutate.mjs` lock (which serializes mutators of
+`loop/lib/brief.mjs`) is NOT required for these arms. If you rewrite
+`loop/lib/brief.mjs` you must hold it; if you do not, say so in one
+line and move on rather than holding a lock against a race that does
+not exist.
 
 ## Verification
 
@@ -203,14 +230,16 @@ and run it. Name each property and its arm in `RESULT2.md`.
 Name the class — *a brief's Files list treated as the whole closure
 over the merge-base diff* — and sweep it: run the instrument over this
 brief's own Files list against your own diff (the self-hosting row),
-and enumerate every pin-class instance your patterns cover in the
-current tree, dispositioning each as BIND (covered: in a listed file,
-or the corrected-list variant you construct) or DELETE (not a true
-pin, with the reason stated). The enumeration comes back in your
-report. The sweep terminates when every candidate has a disposition,
-not when no candidate can be imagined — that is the stop rule, and a
-candidate you decline to sweep is a scope decision for me, stated, not
-taken.
+and enumerate every pin-class instance your patterns cover that your
+diff's changed identifiers touch, dispositioning each as BIND
+(covered: in a listed file, or the corrected-list variant you
+construct), DELETE (not a true pin, with the reason stated), or
+TRUE-BUT-UNTOUCHED (a true pin whose identifier your diff does not
+change — not a candidate, recorded so a later reader knows it was
+seen). The enumeration comes back in your report. The sweep
+terminates when every candidate has a disposition, not when no
+candidate can be imagined — that is the stop rule, and a candidate
+you decline to sweep is a scope decision for me, stated, not taken.
 
 ## Ground rules — these apply to you and are not inherited by working here
 
