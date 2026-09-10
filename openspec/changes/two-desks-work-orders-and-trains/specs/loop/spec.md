@@ -948,7 +948,7 @@ one front/back partition, and the two cases are never interchangeable.
 - Both desks SHALL be gated by the same rules: the ceilings, the floor, the shed
   levels, the runner clearance and the review gate apply identically. A desk
   decides which work is reached; it never decides what may be afforded.
-- **Once both desks exist — that is, once `budget.bounds.back_desk_ceiling_pct`
+- **Once both desks exist — that is, once `budget.back_desk_ceiling_pct`
   is present in `data/config.json` — the bound on the machine's work on
   itself SHALL be restated as the back desk's share of total effort**, a
   declared configuration bound whose starting value is taken from the measured
@@ -975,7 +975,7 @@ one front/back partition, and the two cases are never interchangeable.
 
 #### Scenario: The bound follows the work when the desks exist
 
-- **WHEN** `budget.bounds.back_desk_ceiling_pct` is present in
+- **WHEN** `budget.back_desk_ceiling_pct` is present in
   `data/config.json` and the back desk's global share of the effort both
   desks recorded over the `budget.window_days` rolling window
   reaches its configured bound
@@ -2354,7 +2354,7 @@ words, "machinery crowds out visitor value".
 
 **A ceiling on the Desk's share is the wrong quantity once there are two desks,
 and it SHALL be restated rather than removed.** When the front and back desks
-exist — that is, once `budget.bounds.back_desk_ceiling_pct` is present in
+exist — that is, once `budget.back_desk_ceiling_pct` is present in
 `data/config.json` — the ledger sees both, and the bound becomes the **back
 desk's share of total effort** — a declared configuration bound whose starting
 value is taken from the measured drain, measured **globally over the
@@ -2392,17 +2392,27 @@ denominator therefore has a floor of its own.
   would be a second place to state a bound that is already stated, and the two
   would drift. Implemented by `warmUpMm()` and `largestCapMinutes()` in
   `loop/lib/budget.mjs`; measured by `loop/tests/budget.test.mjs`.
-- **"The tightest configured ceiling percentage" in that formula SHALL mean the
-  tightest of the CATEGORY ceilings** — the ones this requirement's bounds
-  section states, `new_writing_ceiling_pct` and `machinery_ceiling_pct` — and
-  SHALL NOT read a bound stated on a different axis, `back_desk_ceiling_pct`
-  among them. Every key under `budget.bounds` whose name ends in `_ceiling_pct`
-  is not automatically an input to this derivation. Otherwise adding a bound on
-  one axis would silently retune the denominator of the bounds on another: were
-  the back-desk ceiling tighter than 30, its mere presence would widen the
-  warm-up window for new-writing and machinery alike, with no number edited and
-  nothing in the change naming it. That is the same invisible coupling the
-  anti-key rule above exists to prevent, arriving by the other door.
+- **`budget.bounds` SHALL hold the CATEGORY bounds and nothing else; a bound
+  stated on a different axis SHALL NOT be placed there.** The back-desk ceiling
+  is therefore `budget.back_desk_ceiling_pct` — a sibling of `budget.bounds` and
+  `budget.window_days` — and never `budget.bounds.back_desk_ceiling_pct`.
+  **This is a placement rule because the derivation above reads by PATTERN
+  rather than by name.** `tightestCeilingPct()` in `loop/lib/budget.mjs` takes
+  every key under `budget.bounds` ending in `_ceiling_pct` and returns the
+  smallest. That is deliberate and SHALL be kept: it is what makes a THIRD
+  CATEGORY's ceiling count from the day it is added, with no code change and no
+  chance of the derivation silently reading only the two that exist today. The
+  same pattern is exactly why a bound on another axis must not sit within its
+  reach — placed under `budget.bounds`, a back-desk ceiling tighter than the
+  tightest category ceiling becomes the value the whole derivation reads, and
+  the warm-up window for new-writing and machinery widens **on the day that key
+  is added, with no number edited, no code changed, and no diff naming the
+  effect**. That is the invisible coupling the anti-key rule above exists to
+  prevent, arriving by the other door, and unlike that rule's hazard this one is
+  live in the shipped implementation rather than latent in the text. Keeping the
+  bound outside `budget.bounds` settles it structurally: the suffix match stays
+  as permissive as it should be, because everything within its reach is a
+  category bound by construction.
 - The unit of "the largest per-type wall-clock cap" in that formula SHALL be
   one **invocation's** cap, NOT one whole job's bounded total under `A job's
   total spend is measured, and the cap is named for what it is` — a job's total
@@ -2414,7 +2424,7 @@ denominator therefore has a floor of its own.
   SHALL NOT borrow the category ceilings' denominator.** It SHALL be measured
   against the larger of the effort both desks recorded over
   `budget.window_days` and a warm-up window of its own, derived as
-  (100 ÷ `budget.bounds.back_desk_ceiling_pct`) × the largest per-type
+  (100 ÷ `budget.back_desk_ceiling_pct`) × the largest per-type
   wall-clock cap — the same formula, read on the denominator this bound
   actually divides by. The hazard is identical to the one above: on a
   near-empty window a single machinery job is 100% of all recorded effort, and
