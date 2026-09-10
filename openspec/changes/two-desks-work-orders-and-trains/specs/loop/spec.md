@@ -2392,6 +2392,17 @@ denominator therefore has a floor of its own.
   would be a second place to state a bound that is already stated, and the two
   would drift. Implemented by `warmUpMm()` and `largestCapMinutes()` in
   `loop/lib/budget.mjs`; measured by `loop/tests/budget.test.mjs`.
+- **"The tightest configured ceiling percentage" in that formula SHALL mean the
+  tightest of the CATEGORY ceilings** — the ones this requirement's bounds
+  section states, `new_writing_ceiling_pct` and `machinery_ceiling_pct` — and
+  SHALL NOT read a bound stated on a different axis, `back_desk_ceiling_pct`
+  among them. Every key under `budget.bounds` whose name ends in `_ceiling_pct`
+  is not automatically an input to this derivation. Otherwise adding a bound on
+  one axis would silently retune the denominator of the bounds on another: were
+  the back-desk ceiling tighter than 30, its mere presence would widen the
+  warm-up window for new-writing and machinery alike, with no number edited and
+  nothing in the change naming it. That is the same invisible coupling the
+  anti-key rule above exists to prevent, arriving by the other door.
 - The unit of "the largest per-type wall-clock cap" in that formula SHALL be
   one **invocation's** cap, NOT one whole job's bounded total under `A job's
   total spend is measured, and the cap is named for what it is` — a job's total
@@ -2399,6 +2410,20 @@ denominator therefore has a floor of its own.
   way would silently widen the window without any number changing. Implemented
   in `loop/lib/budget.mjs`; measured by the `dyw the warm-up denominator
   measures one invocation` test in `loop/tests/budget.test.mjs`.
+- **The back-desk ceiling SHALL take the same protection on its own axis, and
+  SHALL NOT borrow the category ceilings' denominator.** It SHALL be measured
+  against the larger of the effort both desks recorded over
+  `budget.window_days` and a warm-up window of its own, derived as
+  (100 ÷ `budget.bounds.back_desk_ceiling_pct`) × the largest per-type
+  wall-clock cap — the same formula, read on the denominator this bound
+  actually divides by. The hazard is identical to the one above: on a
+  near-empty window a single machinery job is 100% of all recorded effort, and
+  a back desk refused at its ceiling before either desk had done enough work
+  for a share to mean anything is the rounding artifact, not the bound. The
+  denominator is what differs, and it is why the bullets above do not already
+  cover this: they read **one tier's** observed rolling total, and this bound
+  reads **both desks'**. Deriving this window rather than declaring a second
+  configuration key keeps the anti-key rule intact.
 
 #### Scenario: Writing cannot crowd out upkeep
 
