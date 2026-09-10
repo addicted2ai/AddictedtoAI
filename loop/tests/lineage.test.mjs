@@ -22,8 +22,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   CORROBORATION_DISPOSITION,
@@ -290,22 +290,46 @@ test('arm 6: the review-brief template carries the corroboration question and th
 });
 
 // ---------------------------------------------------------------------------
-// Arms 7 and 8 — mutations. Applied, run under a cache-busting re-import,
-// reverted, and the revert verified byte-identical by hash.
+// Arms 7 and 8 — mutations. Copy-based (P0-1 repair): the tracked
+// `loop/lib/lineage.mjs` is NEVER written — mutants are same-directory
+// `*.mut-*.mjs` copies observed through cache-busting re-imports, then
+// removed with absence asserted.
 // ---------------------------------------------------------------------------
 
 const lineageFile = fileURLToPath(new URL('../lib/lineage.mjs', import.meta.url));
-const sha256 = (s) => createHash('sha256').update(s, 'utf8').digest('hex');
 const freshLineage = (tag) =>
   import(`${pathToFileURL(lineageFile).href}?round1-mut=${tag}`);
 
 // Both mutations below touch only this round's own new file
-// (`loop/lib/lineage.mjs`), which no other file's tests rewrite — so no lock
-// is held; the pattern is read, mutate, observe fresh, revert, hash-compare.
+// (`loop/lib/lineage.mjs`), which no other file's tests rewrite. The
+// mutant is a same-directory copy (the module imports only builtins, so
+// no relative import can break), never the tracked file.
+
+let linMutSeq = 0;
+function writeLineageMutant(mutatedText) {
+  linMutSeq += 1;
+  const copyPath = join(
+    dirname(lineageFile),
+    `lineage.mut-${process.pid}-${linMutSeq}.mjs`,
+  );
+  writeFileSync(copyPath, mutatedText, 'utf8');
+  return copyPath;
+}
+async function freshLineageCopy(copyPath, tag) {
+  return import(`${pathToFileURL(copyPath).href}?round1-mut=${tag}`);
+}
+function removeLineageCopy(copyPath) {
+  rmSync(copyPath, { force: true });
+  assert.ok(!existsSync(copyPath), 'mutant copy removed — no residue in the tree');
+}
+
+test('no mutant-copy residue: a killed run must be cleaned by hand', () => {
+  const leftovers = readdirSync(dirname(lineageFile)).filter((n) => n.includes('.mut-'));
+  assert.deepEqual(leftovers, [], `delete these inert copies, then re-run: ${leftovers.join(', ')}`);
+});
 
 test('arm 7 (mutation A): lineage attach neutered — producer dropped from the record — and the defect goes green', async () => {
   const pristine = readFileSync(lineageFile, 'utf8');
-  const pristineHash = sha256(pristine);
   const anchor =
     '  if (!checked.ok) return checked;\n' +
     '  const id = `m-${store.seq + 1}`;\n' +
@@ -314,9 +338,9 @@ test('arm 7 (mutation A): lineage attach neutered — producer dropped from the 
     '    id,\n' +
     '    producer: checked.producer,\n';
   assert.ok(pristine.includes(anchor), 'the mutation anchor is present exactly where recordMeasurement attaches');
-  writeFileSync(lineageFile, pristine.replace(anchor, anchor.replace('    producer: checked.producer,\n', '    producer: undefined,\n')), 'utf8');
+  const copyPath = writeLineageMutant(pristine.replace(anchor, anchor.replace('    producer: checked.producer,\n', '    producer: undefined,\n')));
   try {
-    const mutated = await freshLineage('a');
+    const mutated = await freshLineageCopy(copyPath, 'a');
     const store = mutated.createLineageStore({ resolve: bankedResolve, resolver: LINEAGE_RESOLVER_GIT });
     mutated.recordMeasurement(store, {
       producer: PRODUCER_COUNT,
@@ -337,9 +361,9 @@ test('arm 7 (mutation A): lineage attach neutered — producer dropped from the 
       'UNDER MUTATION: the same-producer pair goes green as independent — and that green is the defect',
     );
   } finally {
-    writeFileSync(lineageFile, pristine, 'utf8');
+    removeLineageCopy(copyPath);
   }
-  assert.equal(sha256(readFileSync(lineageFile, 'utf8')), pristineHash, 'the revert is byte-identical (hash compare)');
+  assert.equal(readFileSync(lineageFile, 'utf8'), pristine, 'the tracked file was never written (bytes still pristine)');
   const revived = await freshLineage('a-reverted');
   const store = revived.createLineageStore({ resolve: bankedResolve, resolver: LINEAGE_RESOLVER_GIT });
   revived.recordMeasurement(store, {
@@ -360,12 +384,11 @@ test('arm 7 (mutation A): lineage attach neutered — producer dropped from the 
 
 test('arm 8 (mutation B): disposition weakened — shared instrument allowed as corroboration — and the defect goes green', async () => {
   const pristine = readFileSync(lineageFile, 'utf8');
-  const pristineHash = sha256(pristine);
   const anchor = "      record: 'agreement',";
   assert.ok(pristine.includes(anchor), 'the mutation anchor is present in the disposition branch');
-  writeFileSync(lineageFile, pristine.replace(anchor, "      record: 'corroboration',"), 'utf8');
+  const copyPath = writeLineageMutant(pristine.replace(anchor, "      record: 'corroboration',"));
   try {
-    const mutated = await freshLineage('b');
+    const mutated = await freshLineageCopy(copyPath, 'b');
     const verdict = mutated.recordCorroboration({ sharedInstrument: true, detail: 'twin agreement direction' });
     assert.equal(
       verdict.record,
@@ -373,9 +396,9 @@ test('arm 8 (mutation B): disposition weakened — shared instrument allowed as 
       'UNDER MUTATION: the twin agreement direction goes green as corroboration — and that green is the defect',
     );
   } finally {
-    writeFileSync(lineageFile, pristine, 'utf8');
+    removeLineageCopy(copyPath);
   }
-  assert.equal(sha256(readFileSync(lineageFile, 'utf8')), pristineHash, 'the revert is byte-identical (hash compare)');
+  assert.equal(readFileSync(lineageFile, 'utf8'), pristine, 'the tracked file was never written (bytes still pristine)');
   const revived = await freshLineage('b-reverted');
   assert.equal(
     revived.recordCorroboration({ sharedInstrument: true }).record,

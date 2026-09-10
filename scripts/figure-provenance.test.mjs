@@ -76,10 +76,10 @@
  * go stale silently.
  *
  * MUTATIONS (procedure, recorded in RESULT1.md): Mutation A drops one figure's
- * patterns; Mutation B counts any noun phrase as a pointer. Both touch only
- * this file, which no other file's tests rewrite; arms in one file run in
- * sequence, so no lock is needed. Applied, run, reverted, revert verified
- * byte-identical by hash compare.
+ * patterns; Mutation B counts any noun phrase as a pointer. Both were
+ * one-time author procedures on this file, observed and restored before
+ * merge — no arm in this file writes the tracked tree. Copy-based
+ * mutation (P0-1 repair) applies to the test files that mutate, not here.
  */
 
 import test from 'node:test';
@@ -395,9 +395,20 @@ function exempted(rel, lineNo, figureId, lineText) {
   );
 }
 
+// Transient mutant-copy marker (P0-1 repair). Exported so the exclusion
+// below carries an arm; the call site itself is one line the reviewer reads.
+export function isMutantCopy(basename) {
+  return String(basename ?? '').includes('.mut-');
+}
+
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'out', 'fixtures-out', '.beads', '.agents', '.claude', '.opencode', '.job']);
 const SKIP_BASENAMES = new Set(['package-lock.json', 'RESULT1.md', 'figure-provenance.test.mjs']);
 const SWEPT_EXTS = new Set(['.md', '.mdx', '.mjs', '.js', '.ts', '.tsx', '.json']);
+// Transient mutant copies (P0-1 repair: tests observe mutants through
+// same-directory `*.mut-*.mjs` copies, never the tracked file) are never
+// sweep candidates: they are deleted after each block and carry no live
+// claim. A real restatement hiding behind a `.mut-` name would escape —
+// that dodge is visible by name, unlike a missed figure.
 
 function sweepFiles(dir, out = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -410,6 +421,7 @@ function sweepFiles(dir, out = []) {
       if (rel.startsWith('wisdom/briefs/')) continue;
       if (rel.startsWith('data/') && rel !== 'data/README.md') continue;
       if (rel.split('/').includes('tests')) continue;
+      if (isMutantCopy(entry.name)) continue;
       if (SKIP_BASENAMES.has(entry.name)) continue;
       if (![...SWEPT_EXTS].some((ext) => entry.name.endsWith(ext))) continue;
       out.push(join(dir, entry.name));
@@ -457,6 +469,13 @@ export function sweepLiveRestatements() {
 test('live sweep: every declared figure is sourced where the tree restates it', () => {
   const violations = sweepLiveRestatements();
   assert.deepEqual(violations, [], 'live unsourced restatements — file, line and reason above — are scope decisions, reported not edited here');
+});
+
+test('mutant-copy marker: .mut- names are never sweep candidates', () => {
+  assert.equal(isMutantCopy('brief.mut-12345-1.mjs'), true);
+  assert.equal(isMutantCopy('lint-deferrals.mut-12345-2.mjs'), true);
+  assert.equal(isMutantCopy('brief.mjs'), false);
+  assert.equal(isMutantCopy('mutants.md'), false);
 });
 
 test('exemption is exact-text and live: restored text exempt, tampered text fires', () => {

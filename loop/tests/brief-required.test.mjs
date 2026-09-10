@@ -50,27 +50,31 @@
  * stays silent and every refusal below is 3a's. Counts from the
  * runner's own summary. Node caches modules: mutation observations
  * re-import under a cache-busting query — measuring the old code and
- * calling it the mutation is the failure round 2b recorded. Node also
- * runs test FILES in parallel subprocesses, and 2b's file mutates the
- * same brief.mjs on disk: every file-mutation block below holds the
- * lib-mutate.mjs lock from the pre-mutation read to the reverted
- * byte-identical assert, or the other file's window deletes our anchor
- * (measured on the merge gate: 2032/2033, the single red).
+ * calling it the mutation is the failure round 2b recorded. Copy-based
+ * mutation (P0-1 repair): no block below writes the tracked
+ * `loop/lib/brief.mjs` — mutants are same-directory `*.mut-*.mjs`
+ * copies, observed through fresh imports, removed with absence
+ * asserted. The old cross-file lock is gone with the shared write it
+ * existed for.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { assembleBrief, briefSourceText, reconcileRequiredCoverage } from '../lib/brief.mjs';
 import { makeRepo } from './helpers.mjs';
-import { withLibMutation } from './lib-mutate.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BRIEF_LIB = resolve(HERE, '..', 'lib', 'brief.mjs');
+
+test('no mutant-copy residue: a killed run must be cleaned by hand', () => {
+  const leftovers = readdirSync(resolve(HERE, '..', 'lib')).filter((n) => n.includes('.mut-'));
+  assert.deepEqual(leftovers, [], `delete these inert copies, then re-run: ${leftovers.join(', ')}`);
+});
 
 // Constructed authority fixture: three numbered requirements, then the
 // ACCEPTANCE block after a marked truncation boundary.
@@ -114,9 +118,22 @@ function freshDir(t) {
 }
 
 let freshSeq = 0;
-async function freshBriefLib() {
+let mutSeq = 0;
+function writeMutantCopy(mutatedText) {
+  // Same-directory copy (relative imports resolve), `*.mut-*.mjs` name
+  // nothing collects or sweeps, removed with absence asserted.
+  mutSeq += 1;
+  const copyPath = join(dirname(BRIEF_LIB), `brief.mut-${process.pid}-${mutSeq}.mjs`);
+  writeFileSync(copyPath, mutatedText, 'utf8');
+  return copyPath;
+}
+async function freshCopy(copyPath) {
   freshSeq += 1;
-  return import(`../lib/brief.mjs?fresh=${freshSeq}`);
+  return import(`${pathToFileURL(copyPath).href}?fresh=${freshSeq}`);
+}
+function removeCopy(copyPath) {
+  rmSync(copyPath, { force: true });
+  assert.ok(!existsSync(copyPath), 'mutant copy removed — no residue in the tree');
 }
 
 // Declarative required detail: content sentences with no list shape,
@@ -204,28 +221,28 @@ test('arm 5 — contradiction is detected but NOT wired to the dispatch refusal'
 
 test('mutation A — completeness reduced to any-token presence turns the truncated arm green', async () => {
   const cut = `${beforeBoundary()}\n\nACCEPTANCE: the floor is restored, every auto`;
-  await withLibMutation(async () => {
+  {
     const original = readFileSync(BRIEF_LIB, 'utf8');
     const anchor = '    if (hits.length === sig.length) continue;';
     assert.ok(original.includes(anchor), 'mutation anchor present');
     // Any-token presence: one shared word carries the sentence. The cut
     // shares vocabulary with the items, so it passes — and that green is
     // the defect. A simulation would prove nothing about the wire; this
-    // mutates the file, observes through a fresh import (Node caches
+    // mutates a copy, observes through a fresh import (Node caches
     // modules — the static binding would measure the old code), and
-    // reverts byte-identical.
+    // removes the copy with absence asserted.
     const mutated = original.replace(anchor, '    if (hits.length > 0) continue;');
     assert.notEqual(mutated, original);
-    writeFileSync(BRIEF_LIB, mutated, 'utf8');
+    const copyPath = writeMutantCopy(mutated);
     try {
-      const fresh = await freshBriefLib();
+      const fresh = await freshCopy(copyPath);
       const r = fresh.reconcileRequiredCoverage(AUTHORITY, cut);
       assert.deepEqual(r.truncated, [], 'any-token presence passes the truncation — the defect, shown on the wire');
     } finally {
-      writeFileSync(BRIEF_LIB, original, 'utf8');
+      removeCopy(copyPath);
     }
-    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
-  });
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the tracked file was never written');
+  }
   assert.equal(
     reconcileRequiredCoverage(AUTHORITY, cut).truncated.length,
     2,
@@ -234,7 +251,7 @@ test('mutation A — completeness reduced to any-token presence turns the trunca
 });
 
 test('mutation B — the reconcile call moved dead lets the incomplete brief through to a write', async (t) => {
-  const original = await withLibMutation(async () => {
+  const original = await (async () => {
     const original = readFileSync(BRIEF_LIB, 'utf8');
     const anchor = '  const coverage = reconcileRequiredCoverage(briefSourceText(job), text);';
     assert.ok(original.includes(anchor), 'mutation anchor present');
@@ -251,9 +268,9 @@ test('mutation B — the reconcile call moved dead lets the incomplete brief thr
       'job.detail && job.detail !== job.title ? \'\' : \'\'',
     );
     assert.notEqual(dropped, deadCheck);
-    writeFileSync(BRIEF_LIB, dropped, 'utf8');
+    const copyPath = writeMutantCopy(dropped);
     try {
-      const fresh = await freshBriefLib();
+      const fresh = await freshCopy(copyPath);
       const dir = freshDir(t);
       const file = join(dir, 'brief.md');
       let text = null;
@@ -265,24 +282,24 @@ test('mutation B — the reconcile call moved dead lets the incomplete brief thr
       if (text !== null) writeFileSync(file, text, 'utf8');
       assert.equal(existsSync(file), true, 'dead refusal lets the incomplete brief through — the defect, shown');
     } finally {
-      writeFileSync(BRIEF_LIB, original, 'utf8');
+      removeCopy(copyPath);
     }
-    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the tracked file was never written');
     return original;
-  });
+  })();
   // Correct order on the IDENTICAL dropped-detail pair: live assembly
   // refuses first, so nothing is written. This calls the real
   // `assembleBrief`, not a hand-rolled mirror — the mirror alone could
   // pass while the wire it claims to model stays dead.
-  await withLibMutation(async () => {
+  {
     const droppedOnly = original.replace(
       'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
       'job.detail && job.detail !== job.title ? \'\' : \'\'',
     );
     assert.notEqual(droppedOnly, original);
-    writeFileSync(BRIEF_LIB, droppedOnly, 'utf8');
+    const copyPath = writeMutantCopy(droppedOnly);
     try {
-      const live = await freshBriefLib();
+      const live = await freshCopy(copyPath);
       const dir2 = freshDir(t);
       const file2 = join(dir2, 'brief.md');
       let text2 = null;
@@ -295,34 +312,34 @@ test('mutation B — the reconcile call moved dead lets the incomplete brief thr
       assert.equal(text2, null, 'live assembly refuses the same dropped-detail pair the dead check let through');
       assert.equal(existsSync(file2), false, 'correct order writes nothing on refusal');
     } finally {
-      writeFileSync(BRIEF_LIB, original, 'utf8');
+      removeCopy(copyPath);
     }
-    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
-  });
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the tracked file was never written');
+  }
 });
 
 test('liveness — dropping the detail embed makes assembly throw', async (t) => {
   const job = declarativeJob();
   const faithful = assembleFor(t, job);
   assert.ok(faithful.length > 0, 'faithful assembly returns text');
-  await withLibMutation(async () => {
+  {
     const original = readFileSync(BRIEF_LIB, 'utf8');
     const dropped = original.replace(
       'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
       'job.detail && job.detail !== job.title ? \'\' : \'\'',
     );
     assert.notEqual(dropped, original);
-    writeFileSync(BRIEF_LIB, dropped, 'utf8');
+    const copyPath = writeMutantCopy(dropped);
     try {
-      const fresh = await freshBriefLib();
+      const fresh = await freshCopy(copyPath);
       assert.throws(
         () => assembleFor(t, job, fresh.assembleBrief),
         /brief refuses/,
         'dropping the detail embed makes assembly refuse — the wire is live',
       );
     } finally {
-      writeFileSync(BRIEF_LIB, original, 'utf8');
+      removeCopy(copyPath);
     }
-    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
-  });
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the tracked file was never written');
+  }
 });

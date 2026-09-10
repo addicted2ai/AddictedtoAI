@@ -16,14 +16,16 @@
  *   arm 5  — a missing file, an unparseable file, a non-array top level,
  *            and a missing argument each refuse (non-zero, path named)
  *            rather than reporting zero rows.
+ *   arm 5b — an unroutable issue with no id still fails `--strict`
+ *            visibly (announced on stderr), never silently.
  *   mutation A — the reporter skips unroutable issues silently; the arm-2
- *            reporting assertion fails. Applied, run, reverted, revert
- *            verified byte-identical, report re-run after the revert.
+ *            reporting assertion fails. Mutant observed through a
+ *            same-directory copy (the tracked reporter is never written),
+ *            copy removed with absence asserted.
  *   B1 baseline — the source check over `scripts/lint-deferrals.mjs` alone
  *            (no subprocess import, no tracker invocation) is GREEN.
  *   mutation B — the reporter spawns the tracker instead of reading the
- *            file; B1 goes RED. Applied, run, reverted, revert verified
- *            byte-identical, B1 re-run green after the revert.
+ *            file; B1 goes RED. Copy-based likewise; tracked file untouched.
  *   B2 — the standing boundary assertion (nothing under `lib/`, and no step
  *            registered in the prebuild's `STEPS` array, imports or spawns
  *            the tracker) is GREEN at baseline and stays GREEN under
@@ -41,6 +43,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  existsSync,
   mkdtempSync,
   writeFileSync,
   readFileSync,
@@ -57,6 +60,27 @@ const REPO = resolve(HERE, '..', '..');
 const REPORTER = join(REPO, 'scripts', 'lint-deferrals.mjs');
 const PREBUILD = join(REPO, 'scripts', 'prebuild.mjs');
 const LIB_DIR = join(REPO, 'lib');
+
+test('no mutant-copy residue: a killed run must be cleaned by hand', () => {
+  const leftovers = readdirSync(join(REPO, 'scripts')).filter((n) => n.includes('.mut-'));
+  assert.deepEqual(leftovers, [], `delete these inert copies, then re-run: ${leftovers.join(', ')}`);
+});
+
+// Copy-based mutation (P0-1 repair): the tracked reporter is NEVER
+// written. The mutant is a same-directory `*.mut-*.mjs` copy (no imports
+// to resolve beyond builtins, and a name no sweep or test glob matches),
+// spawned or read, then removed with absence asserted.
+let mutSeq = 0;
+function writeMutantCopy(mutatedText) {
+  mutSeq += 1;
+  const copyPath = join(REPO, 'scripts', `lint-deferrals.mut-${process.pid}-${mutSeq}.mjs`);
+  writeFileSync(copyPath, mutatedText, 'utf8');
+  return copyPath;
+}
+function removeCopy(copyPath) {
+  rmSync(copyPath, { force: true });
+  assert.ok(!existsSync(copyPath), 'mutant copy removed — no residue in the tree');
+}
 
 /** The five-issue fixture: one per routing outcome the arms pin. */
 function fixtureIssues() {
@@ -117,7 +141,11 @@ function writeRaw(t, name, body) {
 }
 
 function runReporter(...args) {
-  return spawnSync(process.execPath, [REPORTER, ...args], {
+  return runReporterAt(REPORTER, ...args);
+}
+
+function runReporterAt(reporterPath, ...args) {
+  return spawnSync(process.execPath, [reporterPath, ...args], {
     encoding: 'utf8',
   });
 }
@@ -339,20 +367,20 @@ test('mutation A — skipping unroutable issues silently breaks the arm-2 assert
   assert.ok(original.includes(anchor), 'mutation anchor present in the reporter');
   const mutated = original.replace(anchor, 'return issues.filter(() => false);');
   assert.notEqual(mutated, original);
-  writeFileSync(REPORTER, mutated, 'utf8');
+  const copyPath = writeMutantCopy(mutated);
   try {
-    const res = runReporter(file);
+    const res = runReporterAt(copyPath, file);
     assert.equal(res.status, 0, 'the mutant still exits 0 — the silence is the defect');
     assert.ok(
       !stdoutIds(res).includes('issue-vague-1'),
       'arm 2 fails under the mutation: the vague issue is no longer reported',
     );
   } finally {
-    writeFileSync(REPORTER, original, 'utf8');
+    removeCopy(copyPath);
   }
-  assert.equal(readFileSync(REPORTER, 'utf8'), original, 'the revert is byte-identical');
+  assert.equal(readFileSync(REPORTER, 'utf8'), original, 'the tracked reporter was never written');
   const after = runReporter(file);
-  assert.ok(stdoutIds(after).includes('issue-vague-1'), 'the revert restores the report');
+  assert.ok(stdoutIds(after).includes('issue-vague-1'), 'the shipped reporter still reports');
 });
 
 test('mutation B — a tracker-spawning reporter turns B1 red', (t) => {
@@ -367,21 +395,21 @@ test('mutation B — a tracker-spawning reporter turns B1 red', (t) => {
       "let trackerProbe = '';\n  try { trackerProbe = execFileSync('bd', ['list', '--json'], { encoding: 'utf8' }); } catch {} // eslint-disable-line\n  void trackerProbe;\n  const unroutable = findUnroutable(parsed);",
     );
   assert.notEqual(mutated, original);
-  writeFileSync(REPORTER, mutated, 'utf8');
+  const copyPath = writeMutantCopy(mutated);
   try {
-    const reasons = reporterSpawnReasons(readFileSync(REPORTER, 'utf8'));
+    const reasons = reporterSpawnReasons(readFileSync(copyPath, 'utf8'));
     assert.ok(
       reasons.length > 0,
       `B1 goes red under mutation B (reasons: ${reasons.join('; ') || 'none'})`,
     );
   } finally {
-    writeFileSync(REPORTER, original, 'utf8');
+    removeCopy(copyPath);
   }
-  assert.equal(readFileSync(REPORTER, 'utf8'), original, 'the revert is byte-identical');
+  assert.equal(readFileSync(REPORTER, 'utf8'), original, 'the tracked reporter was never written');
   assert.deepEqual(
     reporterSpawnReasons(readFileSync(REPORTER, 'utf8')),
     [],
-    'B1 is green again after the revert',
+    'B1 reads green on the shipped reporter',
   );
 });
 
@@ -394,15 +422,16 @@ test('B2 — the lib/ and prebuild boundary holds at baseline and under mutation
       'const unroutable = findUnroutable(parsed);',
       "let trackerProbe = '';\n  try { trackerProbe = execFileSync('bd', ['list', '--json'], { encoding: 'utf8' }); } catch {}\n  void trackerProbe;\n  const unroutable = findUnroutable(parsed);",
     );
-  writeFileSync(REPORTER, mutated, 'utf8');
+  const copyPath = writeMutantCopy(mutated);
   try {
     assert.deepEqual(
       checkTrackerBoundary(),
       [],
       'B2 stays green under mutation B — the task-16 module lives outside both halves of the boundary',
     );
+    void copyPath;
   } finally {
-    writeFileSync(REPORTER, original, 'utf8');
+    removeCopy(copyPath);
   }
-  assert.equal(readFileSync(REPORTER, 'utf8'), original, 'the revert is byte-identical');
+  assert.equal(readFileSync(REPORTER, 'utf8'), original, 'the tracked reporter was never written');
 });

@@ -24,22 +24,26 @@
  *   mutation B — the reconcile call moved after the return (dead code):
  *            the harness mirroring production order (assemble, write to a
  *            temp file only on success) writes the file, so the arm goes
- *            RED. Applied, run, reverted byte-identical.
+ *            RED. Mutant observed through a same-directory copy, copy
+ *            removed with absence asserted.
  *
  * Every property above is enforced by an arm in this file, so a reviewer
  * finds each by lookup. Counts are read from the runner's own summary.
- * Node runs test FILES in parallel subprocesses, and item 3a's file
- * mutates the same brief.mjs on disk: every file-mutation block below
- * holds the lib-mutate.mjs lock from the pre-mutation read to the
- * reverted byte-identical assert.
+ * Copy-based mutation (P0-1 repair): no block below writes the tracked
+ * `loop/lib/brief.mjs` — the mutant is a same-directory copy (so the
+ * module's relative imports still resolve) under a `*.mjs.mut-*` name no
+ * sweep or test glob matches, observed through a cache-busting fresh
+ * import, and removed afterwards with its absence asserted. A kill
+ * mid-window can only leave an inert, visibly-named copy behind — the
+ * tracked file is never inconsistent for a moment.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
   assembleBrief,
@@ -49,10 +53,14 @@ import {
   reconcileBriefImperatives,
 } from '../lib/brief.mjs';
 import { makeRepo } from './helpers.mjs';
-import { withLibMutation } from './lib-mutate.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BRIEF_LIB = resolve(HERE, '..', 'lib', 'brief.mjs');
+
+test('no mutant-copy residue: a killed run must be cleaned by hand', () => {
+  const leftovers = readdirSync(resolve(HERE, '..', 'lib')).filter((n) => n.includes('.mut-'));
+  assert.deepEqual(leftovers, [], `delete these inert copies, then re-run: ${leftovers.join(', ')}`);
+});
 
 // The x2jl requirement structure, transcribed (not paraphrased) from
 // `bd show addictedtoai-x2jl`: three numbered requirements, then the prose
@@ -98,15 +106,30 @@ function assembleFor(t, job, assemble = assembleBrief) {
 
 let freshSeq = 0;
 /**
- * Node caches modules, so rewriting `brief.mjs` on disk changes nothing
- * for the already-imported binding — a mutation test that reuses the
- * static import measures the old code and calls it the mutation. Fresh
- * imports under a cache-busting query are what make the mutated file
- * observable at all.
+ * Node caches modules, so importing the tracked path always measures the
+ * shipped code. Mutants are observed through same-directory COPIES:
+ * `writeMutantCopy` writes the mutant text beside the tracked file (never
+ * into it) under a name nothing collects or sweeps; `freshCopy` imports
+ * the copy under a cache-busting query; `removeCopy` deletes it and
+ * asserts its absence, so residue is loud, not silent.
  */
-async function freshBriefLib() {
+let mutSeq = 0;
+function writeMutantCopy(mutatedText) {
+  // Ends in .mjs (the loader requires a known extension) with a `.mut-`
+  // infix no sweep collects: figure-provenance skips `.mut-` names, test
+  // discovery matches `*.test.mjs` only.
+  mutSeq += 1;
+  const copyPath = join(dirname(BRIEF_LIB), `brief.mut-${process.pid}-${mutSeq}.mjs`);
+  writeFileSync(copyPath, mutatedText, 'utf8');
+  return copyPath;
+}
+async function freshCopy(copyPath) {
   freshSeq += 1;
-  return import(`../lib/brief.mjs?fresh=${freshSeq}`);
+  return import(`${pathToFileURL(copyPath).href}?fresh=${freshSeq}`);
+}
+function removeCopy(copyPath) {
+  rmSync(copyPath, { force: true });
+  assert.ok(!existsSync(copyPath), 'mutant copy removed — no residue in the tree');
 }
 
 function freshDir(t) {
@@ -155,7 +178,7 @@ test('arm 1b — the refusal fires at assembly, before anything is written', asy
   const faithful = assembleFor(t, job);
   assert.ok(faithful.length > 0, 'a faithful assembly returns text');
   assert.ok(faithful.includes('free-memory figure'), 'detail carried verbatim');
-  await withLibMutation(async () => {
+  {
     const original = readFileSync(BRIEF_LIB, 'utf8');
     const anchor = '${job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'}';
     assert.ok(original.includes('job.detail && job.detail !== job.title'), 'detail-embed anchor present');
@@ -164,19 +187,19 @@ test('arm 1b — the refusal fires at assembly, before anything is written', asy
       'job.detail && job.detail !== job.title ? \'\' : \'\'',
     );
     assert.notEqual(dropped, original);
-    writeFileSync(BRIEF_LIB, dropped, 'utf8');
+    const copyPath = writeMutantCopy(dropped);
     try {
-      const fresh = await freshBriefLib();
+      const fresh = await freshCopy(copyPath);
       assert.throws(
         () => assembleFor(t, job, fresh.assembleBrief),
         /brief refuses/,
         'dropping the detail embed makes assembly refuse — the throw is reachable, not dead code',
       );
     } finally {
-      writeFileSync(BRIEF_LIB, original, 'utf8');
+      removeCopy(copyPath);
     }
-    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
-  });
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the tracked file was never written');
+  }
   assert.equal(guardedAssembleAndWrite(t, job), true, 'faithful pair writes');
 });
 
@@ -224,7 +247,7 @@ test('mutation B — the reconcile call moved after the return never fires, and 
     title: 'Classify spawn failures',
     detail: X2JL_SOURCE,
   };
-  const original = await withLibMutation(async () => {
+  const original = await (async () => {
     const original = readFileSync(BRIEF_LIB, 'utf8');
     const anchor = '  const missing = reconcileBriefImperatives(briefSourceText(job), text);';
     assert.ok(original.includes(anchor), 'mutation anchor present');
@@ -239,16 +262,17 @@ test('mutation B — the reconcile call moved after the return never fires, and 
       + '  void reconcileBriefImperatives; // mutation B: refusal dead\n'
       + original.slice(checkEnd);
     // The drop makes the refusal reachable (arm 1b); under the dead check
-    // the same dropped tree assembles silently. Both mutations are applied
-    // together here and the tree is reverted byte-identical afterwards.
+    // the same dropped tree assembles silently. Both mutations are observed
+    // through the same copy, which is removed with absence asserted
+    // afterwards.
     const dropped = deadCheck.replace(
       'job.detail && job.detail !== job.title ? `\\n${job.detail}\\n` : \'\'',
       'job.detail && job.detail !== job.title ? \'\' : \'\'',
     );
     assert.notEqual(dropped, deadCheck);
-    writeFileSync(BRIEF_LIB, dropped, 'utf8');
+    const copyPath = writeMutantCopy(dropped);
     try {
-      const fresh = await freshBriefLib();
+      const fresh = await freshCopy(copyPath);
       const dir = freshDir(t);
       const file = join(dir, 'brief.md');
       // Mirrored production order: assemble, write only on success.
@@ -262,11 +286,11 @@ test('mutation B — the reconcile call moved after the return never fires, and 
       assert.equal(existsSync(file), true, 'dead refusal lets the incomplete brief through to a write — the defect, shown');
       assert.ok(!readFileSync(file, 'utf8').includes('free-memory figure'), 'the written brief lacks the fourth');
     } finally {
-      writeFileSync(BRIEF_LIB, original, 'utf8');
+      removeCopy(copyPath);
     }
-    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the revert is byte-identical');
+    assert.equal(readFileSync(BRIEF_LIB, 'utf8'), original, 'the tracked file was never written');
     return original;
-  });
+  })();
   // Correct order on the same pair refuses first, so nothing is written.
   const missing = reconcileBriefImperatives(X2JL_SOURCE, briefCarryingThree());
   assert.ok(missing.length > 0);
