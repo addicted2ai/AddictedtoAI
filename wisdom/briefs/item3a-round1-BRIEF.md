@@ -1,4 +1,4 @@
-# WISDOM ITEM 3, ROUND 1 OF 2 — the required text, carried completely and uncontradicted
+# WISDOM ITEM 3, ROUND 1 OF 2 — the required text, carried completely; contradiction detected, not dispatched
 
 authority: two-desks-work-orders-and-trains@f1e75c2
 
@@ -20,8 +20,12 @@ about it in your report beyond that sentence.
 ## The one sentence this round exists for
 
 **A dispatch-time check that the brief carries its required source text
-COMPLETELY — every content word present, no sentence cut mid-way, no
-sentence negated — and refuses before the brief is written anywhere.**
+COMPLETELY — every content word present, no sentence cut mid-way — and
+refuses before the brief is written anywhere. Negation is DETECTED and
+reported by the same reconciler but does NOT refuse at dispatch (arm
+3's disposition below): wiring the detector to refuse false-fires on
+35 existing tests, so polarity is judged by a review-time reader
+(round 3b's question), not by this dispatch.**
 
 ## What "required" and "complete" mean is the whole difficulty
 
@@ -65,7 +69,8 @@ an authority fixture in the shape of a bead: a description with three
 numbered requirements and an ACCEPTANCE block placed AFTER a marked
 truncation boundary. The truncated brief (cut before the boundary)
 must be refused as missing; the mid-sentence cut must be refused as
-truncated; the negated brief must be refused as contradicted; the
+truncated; the negated brief must be detected as contradicted
+(naming the sentence) without refusing at dispatch, per arm 3; the
 complete brief must pass. State in your report that the control is
 constructed and why no wild one exists.
 
@@ -76,7 +81,10 @@ brief and returning `{ missing, truncated, contradicted }` arrays of
 the offending required sentences. The dispatch refusal calls it
 inside `assembleBrief` before the return — the same placement as 2b's,
 for its reason: `run.mjs` writes `.job/brief.md` only after assembly
-returns, and a guard placed after the write is decoration.
+returns, and a guard placed after the write is decoration. The
+dispatch refuses on missing+truncated; the contradicted array is
+returned, tested function-level, and reported, but does not refuse at
+dispatch — see arm 3 for the measured reason.
 
 ## Files
 
@@ -102,13 +110,23 @@ any mutation:
 2. A brief cut mid-sentence inside a required sentence is **refused**
    as truncated, naming the sentence. A brief carrying the complete
    block **passes**.
-3. A brief negating a required sentence is **refused** as
-   contradicted, naming the sentence.
+3. A brief negating a required sentence is **detected** as
+   contradicted, naming the sentence (function-level red/green), but
+   does NOT refuse at dispatch. Wiring the detector to refuse was
+   measured unshippable: 35 existing tests go red
+   (brief-acceptance, excerpt-budget, reconcile arm 1b), because the
+   template's own scope sentence negates work vocabulary and ordinary
+   titles sharing two content words false-fire. Contradiction ships
+   detected-reported-unwired, pinned by an arm asserting the detector
+   is live at assembly level; judging polarity needs a review-time
+   reader, which is round 3b's question, not this round's.
 4. Required text with no content sentences behaves as your documented
    choice says, and the arm asserts that choice.
 5. **Mutation A** — completeness reduced to any-token presence (the
-   bag check). The truncated arm must go green, and that green is the
-   defect. Show it.
+   bag check), applied as a real FILE mutation of the completeness
+   line and observed through a cache-busting re-import — a simulation
+   proves nothing about the wire. The truncated arm must go green,
+   and that green is the defect. Show it.
 6. **Mutation B** — the reconcile call moved dead (whole block, not
    one line: neutralizing only the binding crashes on the use, which
    is a finding recorded in round 2b's report, not a discovery here).
