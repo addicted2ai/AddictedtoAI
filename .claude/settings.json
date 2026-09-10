@@ -19,6 +19,12 @@
             "statusMessage": "checking the command for the forbidden shell token",
             "timeout": 15,
             "type": "command"
+          },
+          {
+            "command": "node D:/AddictedtoAI/scripts/output-shortener-guard.mjs",
+            "statusMessage": "checking for an enumeration piped through a shortener",
+            "timeout": 15,
+            "type": "command"
           }
         ],
         "matcher": "Bash|PowerShell"
