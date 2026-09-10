@@ -979,7 +979,7 @@ the brief under `evidence/reviews/`.
       `parseCarry`'s loop, and the five-entry arm must go red. A mutation that
       reinstates a bound no version of the file ever had cannot go red for the
       reason the task states.
-- [ ] 16. `scripts/lint-deferrals.mjs` (new, standalone): take **a JSON export path
+- [x] 16. **Done 2026-09-10 — merged `358e00d`.** `scripts/lint-deferrals.mjs` (new, standalone): take **a JSON export path
       as its argument** and report every open issue that names neither a subject
       path nor a specification requirement, exiting non-zero only under a
       `--strict` flag. **It SHALL NOT spawn the tracker**: the delta reserves
@@ -989,7 +989,7 @@ the brief under `evidence/reviews/`.
       `evidence/scripts/machinery-share.mjs` and `open-by-day.mjs` already use.
       Implements: *A deferral becomes its own bead only when it names a subject or
       a requirement*, the reporting bullet.
-- [ ] 17. `scripts/tests/lint-deferrals.test.mjs`: a fixture export in which an
+- [x] 17. **Done 2026-09-10 — merged `358e00d`, 12/12 with B1 witness + B2 standing + arm 5b no-id strict visibility.** `scripts/tests/lint-deferrals.test.mjs`: a fixture export in which an
       issue naming a path is not reported and one naming neither is reported by id.
       **Mutation A**: skip unroutable issues silently and confirm the reporting
       assertion fails. **Mutation B**: have the script spawn the tracker instead of
