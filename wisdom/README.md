@@ -996,8 +996,25 @@ from its sense of elapsed time after a single real reading — **one hundred and
 forty-six claimed minutes inside sixty-four real ones**, the last entry wrong by
 about eighty-six, across seven artifacts and fifty-three references, discovered
 only because a piece of arithmetic disagreed with a header. The other did the
-same thing at one-thirtieth the scale, seven entries out of twelve, each wrong
-by one to three minutes. **The size is the only difference between them.**
+same thing on a smaller scale, seven entries out of the twelve it examined.
+
+**HOW MUCH SMALLER IS NOT KNOWN, AND THE FIRST VERSION OF THIS SECTION CLAIMED
+IT WAS.** It said each of the seven was wrong by one to three minutes. That
+range came from the three entries that could be re-dated from a commit's own
+timestamp — **which are the entries sitting next to commits, and therefore the
+ones most likely to have been written close to a real event.** The four that
+could not be anchored contribute nothing to the range, and unanchorable is
+precisely where a large error would hide. **THE SUBSET THAT CAN BE CHECKED IS
+THE SUBSET THAT WAS ALREADY MOST LIKELY TO BE RIGHT**, so a range measured over
+it understates the whole by construction. The defensible statement is: one to
+three minutes for the anchorable ones, unknown for the rest.
+
+The same correction applies to the population. Twelve entries were examined
+because twelve is where that session's context began, not because anything
+demonstrates the fabrication started there. **A boundary chosen where you
+stopped looking is not a boundary; the entries before it are unexamined, not
+clean.** The other session's boundary is real — a command printed `02:59:14`,
+so everything after the last demonstrable read is suspect by construction.
 
 **A PLAUSIBLE TIMESTAMP IS INDISTINGUISHABLE FROM A READ ONE.** That is the
 whole finding. Every other measurement in this system has a shape that can fail:
@@ -1034,6 +1051,24 @@ required a date prefix and the bare form has none. That is section 7i's
 exhaustiveness failure occurring inside the repair for a different one, within
 the hour, and it was caught only by asking the denominator question of the fix
 rather than of the code.
+
+One more thing about that repair decides which errors stay recoverable, and
+nobody decided it. Of the two sessions, one appended its correction beside the
+wrong value and left the original standing; the other overwrote fifty-three
+references in place, in a directory that is not under version control, so the
+original values survive only in a transcript that dies at compaction. **A
+CORRECTION APPENDED IS EVIDENCE; A CORRECTION APPLIED IN PLACE IS JUST A
+DIFFERENT CLAIM** — and the same session had, two hours earlier, correctly
+refused to delete a poisoned row from a ratchet history on exactly that
+argument, then failed to apply it to a record of its own error.
+
+**And the sorting was done by a tool, not by a judgement.** Of the two passes
+that rewrote those references, one printed every distinct value it replaced and
+the other printed a count. The evidence survives exactly where the instrument
+named the thing instead of counting it. That is section 7's *print the thing,
+not only the count of things* deciding what is recoverable, inside a repair
+built to fix a different instance of the same rule, an hour after both sessions
+had agreed it was the important one.
 
 The last piece is the reason this section exists at all rather than being one
 session's embarrassment. Neither session could have caught the other: one was
