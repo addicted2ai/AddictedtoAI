@@ -1300,6 +1300,84 @@ the order of the two. The mechanism is worth building because it closes the
 window it covers, not because it closes the condition; claiming the latter would
 be this section's own defect committed inside it.
 
+### 7n. THE GUARD THAT PASSED USELESSLY, AND WHY THAT IS WORSE THAN ONE THAT FAILED
+
+Two sessions built the same guard from the same lesson within an hour of each
+other on 2026-09-10, and the pair is worth more than either half, because the two
+copies failed in opposite ways and only one of the failures was visible.
+
+The guard refuses to mutate a git worktree somebody else is working in: a
+modified tracked file means a worker is mid-edit, and a verifier that writes to
+a tracked file and restores it afterwards has no business there.
+
+**The first defect: it refused its primary subject, permanently.** Pointed at the
+repository root it refused unconditionally, because twelve `.agents/skills/**`
+deletions are the maintainer's and have stood there all night. Orch found this
+in its own copy immediately, because Orch's callers point at the repository root.
+Mine has the identical predicate and **never showed it**, because my callers
+point only at fresh worktrees.
+
+The difference between the two copies was not care. It was **which subject each
+of us happened to have**, and that generalises past guards:
+
+**A MECHANISM PROVED ONLY AGAINST THE SUBJECTS IT HAPPENS TO BE USED ON IS
+PROVED AGAINST A SAMPLE CHOSEN BY THE PERSON WHO WROTE IT** — drawn from the
+same intuition that wrote the code, and therefore precisely the sample least
+likely to contain the case that breaks it.
+
+Orch's copy failed usefully. Mine passed uselessly. **Passing uselessly is the
+one that ships**, and it ships with a clean record behind it, which is the whole
+problem: nothing about a latent defect looks different from an absent one.
+
+It also names the repair. The remedy for a guard that refuses standing
+background state is **an allowlist the CALLER supplies**, never a path list
+hidden inside the guard, because **an allowlist nobody can see is
+indistinguishable from a guard that does not work**. Declared paths are counted
+and printed as *standing* separately from the *unexplained*, on every call
+including the allowing ones.
+
+**The second defect is one level in, and it is the sharper of the two.** Orch
+took the sample rule above, applied it to the guard it had just finished, and
+asked which subject class it had never pointed the thing at. Answer: it had
+proved the allowlist across three *trees* and never across a *prefix*. The
+parameter it had added an hour earlier was the only thing in the file with no
+adversarial case against it.
+
+**A PARAMETER JUST ADDED IS, BY CONSTRUCTION, THE PART WITH THE LEAST EVIDENCE
+AND THE MOST CONFIDENCE BEHIND IT.** It is new, so nothing has attacked it; it
+was just written, so its author believes it; and it is the newest thing in the
+file, so it is the first thing a reader assumes was thought about.
+
+The measured case: one plausible caller typo — an empty-string prefix — matches
+every path, so every modification counts as declared and the guard reports the
+tree quiet while a worker is mid-write. And the printed line said `1 []`, because
+an unquoted join renders an empty prefix as an empty list. **The output read as
+NOTHING DECLARED at the exact moment one prefix was matching everything.** Both
+copies had it; mine printed `declared: ` and was no better.
+
+**The repair is asymmetric, and the asymmetry is the substance.** Too broad
+refuses, from an enumerated token list rather than from a clever
+matches-everything predicate — a predicate like that would itself need proving
+and nothing would prove it. Too narrow does **not** refuse: a prefix that matches
+nothing leaves the guard strict, so it fails safe and is only reported. Refusing
+both directions would have been the over-broad arm a third time in one night,
+which is the failure mode both copies had already committed once.
+
+**The third, in the instrument rather than the guard.** Verifying a control by
+mutation, I removed a line with a regex and got `pass 0 fail 1` with the failing
+test named as the file — the strongest-looking red the runner can produce. It was
+my substitution leaving `if (rec.id)` with no statement: a syntax error. **A FILE
+THAT FAILS TO PARSE AND A CONTROL THAT FIRES ARE THE SAME COUNTS FROM OUTSIDE**,
+and the counts were what I was reading. Removing the exact line gave the honest
+result — a named test with a real assertion, expected and actual — and the
+control does bite. Orch committed the same family of error in the same hour,
+reading a test's exit code through a pipe and reporting the pipe's status.
+
+The common shape under all three, and it is §7l's rule arriving from a new
+direction: **the strongest-looking evidence is the most dangerous to get wrong,
+because its strength is what stops anyone looking further.** A guard with a clean
+record, a parameter nobody has attacked, and a total red are all of that kind.
+
 ---
 
 ## 8. THE PHASED PLAN
