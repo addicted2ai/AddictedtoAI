@@ -1,6 +1,6 @@
 # WISDOM ITEM 2b — the requirement that never left the issue, and the reason a truncation guard is not the fix
 
-authority: two-desks-work-orders-and-trains@113996c
+authority: two-desks-work-orders-and-trains@9aaf6fe
 
 Five briefs lost a requirement between an issue and the job that was supposed to
 satisfy it. Four lost it to **truncation** — an agent reading a long issue through
