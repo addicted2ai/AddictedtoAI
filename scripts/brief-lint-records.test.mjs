@@ -25,11 +25,20 @@
  *
  * Dates: bare ISO calendar dates, compared as strings (lexicographic equals
  * chronological for YYYY-MM-DD). The expiry day itself still passes; the day
- * after fails. Today is the machine local calendar date (local getters, never
- * UTC), matching the corpus convention. BRIEF_RECORDS_NOW pins the clock for
+ * after fails. Today is the machine system local calendar date via a fresh
+ * child whose environment carries no caller zone override, never UTC,
+ * matching the corpus convention. BRIEF_RECORDS_NOW pins the clock for
  * controls only; the live expiry check ignores the pin entirely and always
- * reads the local date, so a pinned pass can never green the live wall.
- * The pin stays available to the controls, which need day-independence.
+ * reads the system local date, so a pinned pass can never green the live wall.
+ * The pin stays available to the controls, which need day-independence. A
+ * caller zone override cannot green the live wall at one stroke: the child
+ * strips it, so the live verdict is a function of this file plus the machine
+ * real calendar only. What remains in the source, said plainly as required:
+ * the machine clock remains (allowed — time passing is the real calendar the
+ * wall is a function of) and the machine system zone remains (local dates are
+ * zone-dependent by corpus convention and UTC conversion is forbidden, so a
+ * system zone change moves the wall; the repo-wide zone dependence is filed
+ * separately and this file does not touch it).
  *
  * Round 2 ruling: a RECORD without a twin by its date is debt, not a
  * disposition. Anchors pin substrings but cannot pin behaviour (flags,
@@ -39,10 +48,26 @@
  * reason why neither happened — not a re-decision prompt. This round builds
  * one twin and binds the mechanism itself.
  *
- * Count: twenty-four records. A future BIND or DELETE that retires a record
- * must update EXPECTED_COUNT and EXPECTED_IDS in the same edit with its
- * justification; a silent deletion fails here first, which is the point.
- * Every refusal names the record or records responsible, never only a count.
+ * Round 3: the class was restated wider as any outside state that changes a
+ * verdict without this file being edited. The zone override is the floor.
+ * The live wall now reads the system local date via a stripped child, so the
+ * caller override is ignored. Two furniture controls are bound (local date
+ * sanity via an independent read; duplicate detection via the shared shape
+ * path). Field ties: identity to arm plus count is pinned by a second map;
+ * owner presence stays checkable but owner suitability and reason prose have
+ * no mechanisable tie and stay with review, said plainly below. Detail-line
+ * twins bind the two star arms against the printed detail (status alone
+ * cannot, since either conjunct alone refuses the same input); both bind, so
+ * both RECORDs retire here with this justification, count 24 to 22.
+ *
+ * Count: twenty-two records. Retired I4star and J2star by detail-line twins
+ * (see twin section): each twin asserts the printed detail for the bare form
+ * (numbered false), and flipping its arm to the star form flips the detail to
+ * true while status stays refusing, so the twin binds the arm and the RECORD
+ * is debt paid. A future BIND or DELETE that retires a record must update
+ * EXPECTED_COUNT and EXPECTED_IDS in the same edit with its justification; a
+ * silent deletion fails here first, which is the point. Every refusal names
+ * the record or records responsible, never only a count.
  */
 
 import test from 'node:test';
@@ -58,22 +83,61 @@ const REPO = resolve(HERE, '..');
 const LINTER = resolve(REPO, 'scripts', 'brief-lint.mjs');
 const SRC = readFileSync(LINTER, 'utf8');
 
-const EXPECTED_COUNT = 24;
+const EXPECTED_COUNT = 22;
 
 // The ordered identity of the wall. The count pin alone reports a number;
 // the identity pin names the thing, so a deletion is accused rather than
 // inferred. A future BIND or DELETE updates this list with its justification
-// in the same edit that updates EXPECTED_COUNT.
+// in the same edit that updates EXPECTED_COUNT. Round 3 retires I4star and
+// J2star by detail-line twins (both bind, see twin section), 24 to 22 here.
 const EXPECTED_IDS = [
   'B2', 'B3', 'B6trim', 'C5i', 'C6lines', 'C4', 'D5', 'E2chg', 'E3del',
   'E5res', 'E7sfx', 'F3i', 'F4e', 'F5b', 'F6lines', 'G7hy', 'G8sent',
-  'H2i', 'H4dist', 'H6b', 'I4star', 'J2star', 'K5diff', 'Nsplit',
+  'H2i', 'H4dist', 'H6b', 'K5diff', 'Nsplit',
 ];
 
 // The batch that shares one expiry. B3 is the outlier with its own later
 // date. Pinning the batch identity lets the batch control name the absent
 // record instead of listing survivors for inference.
 const EXPECTED_BATCH_IDS = EXPECTED_IDS.filter((id) => id !== 'B3');
+
+// The identity-to-arm tie: for each identity, the pinned arm substring plus
+// its expected count. Anchor counts alone cannot tell that a record still
+// points at the arm its own identity claims: swapping two identities between
+// two records of the same batch, or moving one anchor plus its count together
+// to a different arm at the same count, keeps every count green while the
+// record guards the wrong arm. This second map names the arm per identity, so
+// such a move fails here. It duplicates the substrings on purpose (a second
+// source, like the count and identity pins); it does not lengthen them.
+// Owner and reason have no such tie, said plainly: owner presence is checked
+// but no roster exists in the tree to judge suitability, and a tie between a
+// record and its own prose is not mechanisable — filler with a space passes
+// shape, and pretending otherwise would be worse than the gap. A reader is
+// therefore trusting review for those two, and mechanism for this one.
+const EXPECTED_ANCHOR_FOR_ID = {
+  B2: { anchor: ".replace(/\\s*(\\.\\.\\.|…)$/, '')", expect: 1 },
+  B3: { anchor: 'blob.length > 0', expect: 1 },
+  B6trim: { anchor: "replace(/\\s+/g, ' ').trim()", expect: 1 },
+  C5i: { anchor: '/enforced by|enforces/i', expect: 1 },
+  C6lines: { anchor: 'const instLines = prose.filter', expect: 1 },
+  C4: { anchor: '(?:mjs|js|ps1|sh)', expect: 1 },
+  D5: { anchor: '(?:—|-)', expect: 2 },
+  E2chg: { anchor: 'change|changes', expect: 1 },
+  E3del: { anchor: 'delete from', expect: 1 },
+  E5res: { anchor: 'READ|reserved|leave', expect: 1 },
+  E7sfx: { anchor: 'q.endsWith(p) || p.endsWith(q)', expect: 1 },
+  F3i: { anchor: '/\\bonce\\b/i', expect: 1 },
+  F4e: { anchor: '/iteration|attempt/i', expect: 1 },
+  F5b: { anchor: '\\bonce\\b', expect: 1 },
+  F6lines: { anchor: 'const onceBad = prose.filter', expect: 1 },
+  G7hy: { anchor: '[^A-Za-z0-9_-]', expect: 2 },
+  G8sent: { anchor: 'proseLines.filter((l) => /(^|', expect: 1 },
+  H2i: { anchor: '/\\bsweep/i', expect: 1 },
+  H4dist: { anchor: '{0,60}', expect: 1 },
+  H6b: { anchor: '\\bclass\\b', expect: 1 },
+  K5diff: { anchor: '^[+-][^+-]', expect: 1 },
+  Nsplit: { anchor: '(?<=[.;])', expect: 1 },
+};
 
 // Re-derived anchors (content substrings, never line numbers). Each was
 // located in the current linter source by substring search; the expected
@@ -206,7 +270,7 @@ const RECORDS = [
     expect: 2,
     owner: 'orchestrator',
     expiry: '2026-10-10',
-    reason: "No hyphen-adjacent twin. Hyphen as part of word vs boundary is subtle; dropping hyphen from the class flips hyphen-adjacent outcomes. Keep.",
+    reason: "KEEP. Deleting the hyphen from the class makes a hyphen a word boundary, so any kebab-case identifier carrying these two letters as a segment newly refuses, and it catches nothing real: a token flanked by hyphens is an identifier and not a command. Re-decided 2026-09-10 from the arm rather than from the previous reason.",
   },
   {
     id: 'G8sent',
@@ -214,7 +278,7 @@ const RECORDS = [
     expect: 1,
     owner: 'orchestrator',
     expiry: '2026-10-10',
-    reason: "No wrapping twin for this check. Sentence normalisation vs physical lines matters where wrapping splits token context. Keep.",
+    reason: "KEEP. The cost sits in the exclusion, not the match. Evaluated per physical line, a prohibition that wraps between the excusing word and the token refuses falsely; evaluated per sentence, the false refusal goes and a `never` anywhere in a sentence excuses a token anywhere in it. A whitelist evaluated over a longer unit is a larger whitelist, so the tighter unit wins: a false refusal is visible and costs one edit, and the hole is invisible. Re-decided 2026-09-10.",
   },
   {
     id: 'H2i',
@@ -239,22 +303,6 @@ const RECORDS = [
     owner: 'orchestrator',
     expiry: '2026-10-10',
     reason: "No embedded-`class` twin (e.g. `subclass` not satisfying the arm; sweep-only red does not isolate the boundary). Removing boundaries would newly treat embedded as satisfying (loosening). Keep.",
-  },
-  {
-    id: 'I4star',
-    anchor: 'RESULT\\d+',
-    expect: 1,
-    owner: 'orchestrator',
-    expiry: '2026-10-10',
-    reason: "Bare still refused via `!bare`, so `\\\\d*` vs `\\\\d+` has no colour change. Binding needs a twin asserting `numbered=false` for the bare form, not just status. Low risk. Keep.",
-  },
-  {
-    id: 'J2star',
-    anchor: 'numberedReview = /\\bREVIEW\\d+',
-    expect: 1,
-    owner: 'orchestrator',
-    expiry: '2026-10-10',
-    reason: "Same in the review branch via `!bareReview`. Needs detail assertion. Keep.",
   },
   {
     id: 'K5diff',
@@ -296,11 +344,42 @@ function effectiveNow() {
   return localToday();
 }
 
-// The live wall clock. It always reads the machine local date and never
-// consults the pin, so an outer environment value cannot green the wall at
-// one stroke. Controls keep using effectiveNow; the live check uses this.
+// The system wall clock: machine system local date via a fresh child whose
+// environment carries no caller zone override. A caller override cannot green
+// the wall at one stroke because the child never sees it. The helper writes
+// nothing into the working tree; each call uses a fresh area under the OS
+// temp area and removes it after. Fail-closed: a helper failure throws, so a
+// broken clock refuses rather than passing silently.
+function systemToday() {
+  const dir = mkdtempSync(join(tmpdir(), 'brief-live-'));
+  try {
+    const helper = join(dir, 'today.mjs');
+    writeFileSync(helper, "const d=new Date();const p=(n)=>String(n).padStart(2,'0');console.log(`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`);", 'utf8');
+    const env = { ...process.env };
+    delete env.TZ;
+    const r = spawnSync(process.execPath, [helper], { encoding: 'utf8', env });
+    if (r.status !== 0) throw new Error(`system date helper failed: ${(r.stderr || '').slice(0, 200)}`);
+    const out = (r.stdout || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(out)) throw new Error(`system date helper bad output: ${out.slice(0, 100)}`);
+    return out;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// The live wall clock. It always reads the machine system local date via
+// systemToday and never consults the pin nor any caller zone override, so an
+// outer environment value cannot green the wall at one stroke. Controls keep
+// using effectiveNow; the live check uses this. What remains, said plainly in
+// the source as required: the machine clock remains (allowed — the verdict is
+// a function of this file plus the machine real calendar, and time passing
+// moving expiries from pass to fail is that function working) and the machine
+// system zone remains (local dates are zone-dependent by corpus convention
+// and UTC conversion is forbidden, so a system zone change moves the wall;
+// the repo-wide zone dependence is filed separately and untouched here).
+// The caller zone override does NOT remain: it is stripped for the child.
 function liveNow() {
-  return localToday();
+  return systemToday();
 }
 
 function isExpired(rec, now) {
@@ -354,6 +433,30 @@ function anchorBad(records, src) {
 function checkAnchors(records, src) {
   const bad = anchorBad(records, src);
   assert.equal(bad.length, 0, `stale anchors (arm moved, changed, or vanished — re-derive, re-decide):\n${bad.join('\n')}`);
+}
+
+// Shared identity-to-arm logic. Both the gate check and the binding controls
+// call this, so a break inside it turns a binding control red. A swap of two
+// identities between same-batch records, or a joint move of one anchor plus
+// its count to a different arm at the same count, keeps anchorBad green while
+// the record guards the wrong arm; this names the drift per identity.
+function identityTieBad(records) {
+  const bad = [];
+  for (const rec of records) {
+    const pinned = EXPECTED_ANCHOR_FOR_ID[rec.id];
+    if (!pinned) {
+      bad.push(`${rec.id}: no pinned arm (extra identity)`);
+      continue;
+    }
+    if (rec.anchor !== pinned.anchor) bad.push(`${rec.id}: anchor drift (record points away from its pinned arm)`);
+    if (rec.expect !== pinned.expect) bad.push(`${rec.id}: expect drift for ${rec.id}`);
+  }
+  return bad;
+}
+
+function checkIdentityTies(records) {
+  const bad = identityTieBad(records);
+  assert.equal(bad.length, 0, `identity to arm drift (record points away from the arm its identity claims):\n${bad.join('\n')}`);
 }
 
 // Shared expiry logic. The late list carries the full per-record line, so
@@ -452,7 +555,8 @@ test('records: every anchor resolves with its expected count', () => {
 
 /* Check E — expiries refuse. Hard fail: exit non-zero, gate red, push bar
    holds. The expiry day passes; the day after refuses. The live wall always
-   reads the local date and ignores the pin; the pin is for controls only. */
+   reads the system local date and ignores the pin and any caller zone
+   override; the pin is for controls only. */
 test('records: no record is expired', () => {
   checkExpiry(RECORDS, liveNow());
 });
@@ -460,8 +564,18 @@ test('records: no record is expired', () => {
 /* Check S — shape. Fail-closed: an unparsable record refuses rather than
    passing silently. Count is pinned with identity; retiring a record updates
    the count and the identity list in the same edit with justification. */
-test('records: shape holds and the count is twenty-four', () => {
+test('records: shape holds and the count is twenty-two', () => {
   checkShape(RECORDS);
+});
+
+/* Check T — identity to arm. Each identity stays tied to the arm substring
+   plus count it claims. A swap of two identities between same-batch records,
+   or a joint move of one anchor plus its count to a different arm at the same
+   count, keeps anchor counts green while guarding the wrong arm; this fails.
+   Owner suitability and reason prose have no mechanisable tie and stay with
+   review (see map comment). */
+test('records: identity stays tied to its arm', () => {
+  checkIdentityTies(RECORDS);
 });
 
 /* Controls, clock pinned. None of these read the live clock. */
@@ -476,14 +590,14 @@ test('records control: batch expires at pinned 2026-10-11, outlier holds until 2
   const batchAt = RECORDS.filter((rec) => isExpired(rec, '2026-10-11')).map((r) => r.id).sort();
   const batchMissing = EXPECTED_BATCH_IDS.filter((id) => !batchAt.includes(id)).sort();
   const batchExtra = batchAt.filter((id) => !EXPECTED_BATCH_IDS.includes(id)).sort();
-  assert.equal(batchAt.length, 23, `want 23 expired at 2026-10-11, got ${batchAt.length} (expired: ${batchAt.join(',') || 'none'}; missing: ${batchMissing.join(',') || 'none'}; extra: ${batchExtra.join(',') || 'none'})`);
+  assert.equal(batchAt.length, 21, `want 21 expired at 2026-10-11, got ${batchAt.length} (expired: ${batchAt.join(',') || 'none'}; missing: ${batchMissing.join(',') || 'none'}; extra: ${batchExtra.join(',') || 'none'})`);
   assert.deepEqual(batchMissing, [], `batch absent records at 2026-10-11: ${batchMissing.join(',')}`);
   assert.deepEqual(batchExtra, [], `batch unexpected records at 2026-10-11: ${batchExtra.join(',')}`);
   assert.ok(!batchAt.includes('B3'), 'outlier B3 must not expire with the batch');
   const allAt = RECORDS.filter((rec) => isExpired(rec, '2026-12-02')).map((r) => r.id).sort();
   const allMissing = EXPECTED_IDS.filter((id) => !allAt.includes(id)).sort();
   const allExtra = allAt.filter((id) => !EXPECTED_IDS.includes(id)).sort();
-  assert.equal(allAt.length, 24, `want 24 expired at 2026-12-02, got ${allAt.length} (expired: ${allAt.join(',') || 'none'}; missing: ${allMissing.join(',') || 'none'}; extra: ${allExtra.join(',') || 'none'})`);
+  assert.equal(allAt.length, 22, `want 22 expired at 2026-12-02, got ${allAt.length} (expired: ${allAt.join(',') || 'none'}; missing: ${allMissing.join(',') || 'none'}; extra: ${allExtra.join(',') || 'none'})`);
 });
 
 test('records control: expiry boundary day passes, next day refuses', () => {
@@ -559,7 +673,7 @@ test('records bind: expect zero refuses, one holds', () => {
 
 test('records bind: shared expiry check throws on the expired wall', () => {
   assert.equal(expiryLate(RECORDS, '2026-09-10').length, 0, 'pre-batch wall holds no late');
-  assert.equal(expiryLate(RECORDS, '2026-12-02').length, 24, 'full wall is late at the outlier day after');
+  assert.equal(expiryLate(RECORDS, '2026-12-02').length, 22, 'full wall is late at the outlier day after');
   assert.throws(() => checkExpiry(RECORDS, '2026-12-02'), /expired record judgements/, 'shared expiry check throws when the wall is late');
   checkExpiry(RECORDS, '2026-09-10');
 });
@@ -581,9 +695,9 @@ test('records control: live wall ignores the pin while controls honor it', () =>
   try {
     process.env.BRIEF_RECORDS_NOW = '2026-12-02';
     assert.equal(effectiveNow(), '2026-12-02', 'controls honor the pin');
-    assert.equal(liveNow(), localToday(), 'live wall ignores the pin');
+    assert.equal(liveNow(), systemToday(), 'live wall ignores the pin');
     assert.equal(expiryLate(RECORDS, liveNow()).length, 0, 'live wall stays green under a far-future pin');
-    assert.equal(expiryLate(RECORDS, effectiveNow()).length, 24, 'pinned view is fully late at the far-future pin');
+    assert.equal(expiryLate(RECORDS, effectiveNow()).length, 22, 'pinned view is fully late at the far-future pin');
     checkExpiry(RECORDS, liveNow());
   } finally {
     if (prev === undefined) delete process.env.BRIEF_RECORDS_NOW;
@@ -612,5 +726,123 @@ test('twin E7sfx: distinct cite refuses (twin)', () => {
     assert.equal(r.status, 1, `distinct twin must refuse:\n${r.out}`);
     assert.match(r.out, /FAIL.*no instruction directs an edit/);
     assert.match(r.out, /loop\/other\.mjs/);
+  });
+});
+
+/* Zone: the live wall ignores the caller override. Direct reads are tainted;
+   system reads via a stripped child are not. This mutates the override in
+   this process and restores via the system zone, which leaves direct clean
+   again (deleting straight from the override would stick tainted). */
+test('records control: live wall ignores the caller zone override', () => {
+  const parentDirect = localToday();
+  const parentSystem = systemToday();
+  assert.equal(parentSystem, parentDirect, 'with no override in this process, system and direct agree');
+  assert.equal(liveNow(), parentSystem, 'live reads the system date');
+  const systemZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const prev = process.env.TZ;
+  try {
+    process.env.TZ = 'Pacific/Niue';
+    const directNiue = localToday();
+    const systemNiue = systemToday();
+    assert.equal(systemNiue, parentSystem, 'system date ignores the caller override');
+    assert.notEqual(directNiue, parentSystem, 'direct read is tainted, proving the override reaches direct reads');
+    assert.equal(directNiue, '2026-09-09', 'overridden direct is one day behind on this date, as measured');
+    assert.equal(liveNow(), parentSystem, 'live still reads the system date under the override');
+  } finally {
+    if (systemZone) process.env.TZ = systemZone;
+    if (prev === undefined) delete process.env.TZ;
+    else process.env.TZ = prev;
+  }
+  assert.equal(localToday(), parentSystem, 'restore leaves direct clean again');
+  assert.equal(systemToday(), parentSystem, 'restore leaves system clean');
+});
+
+/* Furniture 1: local date sanity via an independent read. Replacing localToday
+   by a fixed past date leaves the live wall green (it reads the system date)
+   and leaves pinned controls green (both arms read the same broken value), so
+   this independent read is the binder. Under a caller override both reads are
+   tainted the same way, so no false red there. */
+test('records bind: localToday matches an independent date read', () => {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const direct = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  assert.equal(localToday(), direct, 'localToday must read the direct date; a fixed past stub must fail here');
+});
+
+/* Furniture 2: duplicate detection via the shared shape path. The malformed
+   control exercises shapeErrors directly with its own external set and never
+   goes through shapeBad, so moving the seen set inside the loop blinds
+   duplicates silently. This exercises the shared path itself. */
+test('records bind: duplicate ids refuse via shared shape path', () => {
+  const tinyWall = [{ ...RECORDS[0], id: '__dupe_a__' }, { ...RECORDS[0], id: '__dupe_a__' }];
+  assert.ok(shapeBad(tinyWall).some((e) => e.includes('duplicate')), 'duplicate via shared path must surface');
+  const dupeWall = RECORDS.map((r, i) => (i === 1 ? { ...r, id: RECORDS[0].id } : r));
+  assert.ok(shapeBad(dupeWall).some((e) => e.includes('duplicate')), 'duplicate in the wall must surface via shared path');
+  assert.throws(() => checkShape(dupeWall), /retire with justification|malformed records fail closed/, 'shared shape check must throw on the duplicate wall');
+  checkShape(RECORDS);
+});
+
+/* Field ties: identity to arm. Anchor counts alone stay green when two
+   identities swap between same-batch records or when one anchor plus its
+   count moves jointly to a different arm at the same count. */
+test('records bind: swapped identities refuse via identity tie', () => {
+  const swapped = RECORDS.map((r) => {
+    if (r.id === 'B2') return { ...r, id: 'B6trim' };
+    if (r.id === 'B6trim') return { ...r, id: 'B2' };
+    return r;
+  });
+  assert.deepEqual(anchorBad(swapped, SRC), [], 'swapped wall keeps anchor counts green');
+  const bad = identityTieBad(swapped);
+  assert.ok(bad.some((m) => m.startsWith('B2:')) && bad.some((m) => m.startsWith('B6trim:')), `swap must name both drifted identities, got: ${bad.join(';') || 'none'}`);
+  assert.throws(() => checkIdentityTies(swapped), /identity to arm drift/, 'shared identity check throws on swap');
+  checkIdentityTies(RECORDS);
+});
+
+test('records bind: joint anchor move refuses via identity tie', () => {
+  const b3 = RECORDS.find((r) => r.id === 'B3');
+  const moved = RECORDS.map((r) => (r.id === 'B2' ? { ...r, anchor: b3.anchor, expect: b3.expect } : r));
+  assert.deepEqual(anchorBad(moved, SRC), [], 'joint move keeps anchor counts green (same count, different arm)');
+  const bad = identityTieBad(moved);
+  assert.ok(bad.some((m) => m.startsWith('B2:')), `move must name B2 drift, got: ${bad.join(';') || 'none'}`);
+  assert.throws(() => checkIdentityTies(moved), /B2/, 'shared identity check names the drifted record when it throws');
+  checkIdentityTies(RECORDS);
+});
+
+/* Detail-line twins for the two retired star arms. Either conjunct alone
+   refuses the same bare input, so status alone cannot bind them separately.
+   The printed detail already distinguishes them: numbered false for the bare
+   form, true when the arm is loosened to the star form. */
+test('twin RESULT detail: bare form reports numbered false (vehicle plus twin)', () => {
+  const sha = linterHeadSha();
+  const numberedText = twinBaseBrief(sha).replace('`RESULT2.md`', '`RESULT9.md`');
+  withBriefTemp(numberedText, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, `numbered vehicle must pass:\n${r.out}`);
+    assert.match(r.out, /numbered=true bare=false/);
+  });
+  const bareText = twinBaseBrief(sha).replace('`RESULT2.md`', '`RESULT.md`');
+  withBriefTemp(bareText, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, `bare twin must refuse:\n${r.out}`);
+    assert.match(r.out, /FAIL.*report file is a numbered/);
+    assert.match(r.out, /numbered=false bare=true/);
+  });
+});
+
+test('twin REVIEW detail: bare form reports numbered false (vehicle plus twin)', () => {
+  const sha = linterHeadSha();
+  const base = twinBaseBrief(sha);
+  const numberedText = `${base}\nYour review is \`REVIEW9.md\`.\n`;
+  withBriefTemp(numberedText, (p) => {
+    const r = runLint(p, sha, ['--review']);
+    assert.equal(r.status, 0, `numbered review vehicle must pass:\n${r.out}`);
+    assert.match(r.out, /review numbered=true/);
+  });
+  const bareText = `${base}\nYour review is \`REVIEW.md\`.\n`;
+  withBriefTemp(bareText, (p) => {
+    const r = runLint(p, sha, ['--review']);
+    assert.equal(r.status, 1, `bare review twin must refuse:\n${r.out}`);
+    assert.match(r.out, /FAIL.*review output is a numbered/);
+    assert.match(r.out, /review numbered=false/);
   });
 });
