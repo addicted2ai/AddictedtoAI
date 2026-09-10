@@ -1109,6 +1109,30 @@ Unlike a commit timestamp it carries no history, so it is evidence only for a
 file nobody has touched since — and whether anybody has touched it is exactly
 what an mtime cannot say. Section 7d's own anchor is of this kind.
 
+**And the recovered anchors are strong only for as long as the session that
+recovered them.** Those nine mtimes are trustworthy because that session can say
+nothing rewrote those directories, and it can say that only because it knows
+what its own repair touched. That is session knowledge, not filesystem
+knowledge. It does not survive compaction, and the anchors will not look any
+weaker once it is gone. **AN ANCHOR WHOSE VALIDITY RESTS ON KNOWLEDGE HELD ONLY
+IN A SESSION IS EXACTLY AS DURABLE AS THAT SESSION, AND NOTHING ABOUT IT CHANGES
+APPEARANCE WHEN IT EXPIRES.** So write beside every anchor what would invalidate
+it and how the writer knows it has not happened: a successor can check the first
+clause and can never reconstruct the second.
+
+That is the same shape as this project's oldest warning about itself — a session
+holding a rule it loaded at start is holding a claim whose expiry date is
+invisible from inside. Here the claim is a timestamp and the expiry is a
+compaction, and what evaporates is not the number but the reason to believe it.
+
+**One more property was nearly filed as luck and is worth stating as a rule.**
+The evidence that survived the repair is exactly the evidence the repair had no
+story about: nine decoy directories the fixer had no reason to open. So —
+**everything a repair rewrites stops being able to testify about the thing it
+repaired.** A repair should touch the narrowest set it can, not for scope
+discipline but for that reason, and it should expect its own record of what
+happened to survive only in the places it did not go.
+
 One discipline held through the recovery and is worth copying. With nine
 anchored times and a list of subjects in hand, the obvious next step is to
 assign them to entries line by line. That was declined: **matching a recovered
