@@ -32,4 +32,6 @@ facts:
     volatility: fast
 timeline: [ { date: "2026-09-09", event: arrived, source_url: https://openrouter.ai/api/v1/models } ]
 mentions: []
+domains_seeded:
+  - image
 ---

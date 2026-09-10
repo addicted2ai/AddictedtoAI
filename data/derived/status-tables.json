@@ -1,6 +1,167 @@
 {
   "changed_30d": [
     {
+      "date": "2026-09-10",
+      "display_name": "Qwen: Qwen3.8 27B",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "qwen/qwen3.8-27b-20260814",
+        "context_length": 1048576,
+        "created": 1786722910,
+        "expiration_date": null,
+        "id": "qwen/qwen3.8-27b",
+        "name": "Qwen: Qwen3.8 27B",
+        "pricing.completion": "0.000003",
+        "pricing.prompt": "0.00000042"
+      },
+      "field": "context_window",
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|qwen/qwen3.8-27b|context_window",
+      "kind": "field_change",
+      "new": "1048576",
+      "old": "1000000",
+      "row_id": "qwen/qwen3.8-27b",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-10",
+      "display_name": "Nous: Hermes 4 70B",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "nousresearch/hermes-4-70b",
+        "context_length": 131072,
+        "created": 1756236182,
+        "expiration_date": null,
+        "id": "nousresearch/hermes-4-70b",
+        "name": "Nous: Hermes 4 70B",
+        "pricing.completion": "0.0000004",
+        "pricing.prompt": "0.00000013"
+      },
+      "field": null,
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|nousresearch/hermes-4-70b|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "nousresearch/hermes-4-70b",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-10",
+      "display_name": "Mistral: Mistral Small 4 (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/mistral-small-2603",
+        "context_length": 262144,
+        "created": 1773695685,
+        "expiration_date": null,
+        "id": "mistralai/mistral-small-2603:batch",
+        "name": "Mistral: Mistral Small 4 (batch)",
+        "pricing.completion": "0.0000003",
+        "pricing.prompt": "0.000000075"
+      },
+      "field": null,
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|mistralai/mistral-small-2603:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "mistralai/mistral-small-2603:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-10",
+      "display_name": "Mistral: Mistral Medium 3.1 (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/mistral-medium-3.1",
+        "context_length": 131072,
+        "created": 1755095639,
+        "expiration_date": null,
+        "id": "mistralai/mistral-medium-3.1:batch",
+        "name": "Mistral: Mistral Medium 3.1 (batch)",
+        "pricing.completion": "0.000001",
+        "pricing.prompt": "0.0000002"
+      },
+      "field": null,
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|mistralai/mistral-medium-3.1:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "mistralai/mistral-medium-3.1:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-10",
+      "display_name": "Mistral: Mistral Large 3 2512 (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/mistral-large-2512",
+        "context_length": 262144,
+        "created": 1764624472,
+        "expiration_date": null,
+        "id": "mistralai/mistral-large-2512:batch",
+        "name": "Mistral: Mistral Large 3 2512 (batch)",
+        "pricing.completion": "0.00000075",
+        "pricing.prompt": "0.00000025"
+      },
+      "field": null,
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|mistralai/mistral-large-2512:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "mistralai/mistral-large-2512:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-10",
+      "display_name": "Mistral: Ministral 3 8B 2512 (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/ministral-8b-2512",
+        "context_length": 262144,
+        "created": 1764681654,
+        "expiration_date": null,
+        "id": "mistralai/ministral-8b-2512:batch",
+        "name": "Mistral: Ministral 3 8B 2512 (batch)",
+        "pricing.completion": "0.000000075",
+        "pricing.prompt": "0.000000075"
+      },
+      "field": null,
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|mistralai/ministral-8b-2512:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "mistralai/ministral-8b-2512:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-10",
+      "display_name": "Mistral: Codestral 2508 (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/codestral-2508",
+        "context_length": 256000,
+        "created": 1754079630,
+        "expiration_date": null,
+        "id": "mistralai/codestral-2508:batch",
+        "name": "Mistral: Codestral 2508 (batch)",
+        "pricing.completion": "0.00000045",
+        "pricing.prompt": "0.00000015"
+      },
+      "field": null,
+      "key": "openrouter-models|5881134797f7ecd5|3d1c8f5345193719|mistralai/codestral-2508:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "mistralai/codestral-2508:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
       "date": "2026-09-09",
       "display_name": "Z.ai: GLM 5.3 (batch)",
       "excerpt": {
@@ -3470,75 +3631,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://microsoft.ai/news/mai-code-1-1-flash-br-better-faster-at-a-quarter-of-the-cost/"
-    },
-    {
-      "date": "2026-08-10",
-      "display_name": "Upstage unveils Solar Pro 4",
-      "excerpt": {
-        "description": "Upstage - Upstage released Solar Pro 4, an agent-first reasoning workhorse with a 524K-token context and up to 131K output tokens, priced at $0.30/$1.20 per Mtok (launch promo $0.03/$0.12). Upstage is the first Korean company registered as an official model provider.",
-        "guid": "f5bb488c-1686-4027-be08-0b24ac2bb0ba",
-        "link": "https://llm-releases.com/models/solar-pro-4",
-        "pubDate": "Mon, 10 Aug 2026 00:00:00 GMT",
-        "source_name": "Upstage",
-        "source_url": "https://www.upstage.ai/blog/en/solar-pro-4",
-        "title": "Upstage unveils Solar Pro 4"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/solar-pro-4",
-      "key": "seed|llm-releases|f5bb488c-1686-4027-be08-0b24ac2bb0ba",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "f5bb488c-1686-4027-be08-0b24ac2bb0ba",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://www.upstage.ai/blog/en/solar-pro-4"
-    },
-    {
-      "date": "2026-08-10",
-      "display_name": "OpenAI launches GPT-5.6-Cyber",
-      "excerpt": {
-        "description": "OpenAI - OpenAI launched GPT-5.6-Cyber, a cybersecurity-specialized model built on GPT-5.6-Sol with a lower refusal rate on dual-use security tasks, reporting a 95% completion rate on advanced exploit-chain prompts. Access is gated to vetted defenders through the new Daybreak Red tier; the model is not generally available and weights are not released.",
-        "guid": "1c89550b-4e66-4de4-9b79-f98066dcb759",
-        "link": "https://llm-releases.com/models/gpt-5-6-cyber",
-        "pubDate": "Mon, 10 Aug 2026 00:00:00 GMT",
-        "source_name": "OpenAI",
-        "source_url": "https://www.securityweek.com/openai-unveils-new-cybersecurity-model-gpt-5-6-cyber/",
-        "title": "OpenAI launches GPT-5.6-Cyber"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/gpt-5-6-cyber",
-      "key": "seed|llm-releases|1c89550b-4e66-4de4-9b79-f98066dcb759",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "1c89550b-4e66-4de4-9b79-f98066dcb759",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://www.securityweek.com/openai-unveils-new-cybersecurity-model-gpt-5-6-cyber/"
-    },
-    {
-      "date": "2026-08-10",
-      "display_name": "Meta releases the open-weight Muse Glimmer",
-      "excerpt": {
-        "description": "Meta AI - Meta released Muse Glimmer, a ~30B dense agentic model with a ~1.8B vision encoder, under Apache 2.0 — its first open-weight model after the closed Muse Spark line. Multimodal (text + image input, text output) across 100+ languages, 131K context, and tuned to run on a single consumer GPU or a Mac.",
-        "guid": "09583132-f733-4f2b-b6ac-cdf0feb1768a",
-        "link": "https://llm-releases.com/models/muse-glimmer",
-        "pubDate": "Mon, 10 Aug 2026 00:00:00 GMT",
-        "source_name": "Meta AI",
-        "source_url": "https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model",
-        "title": "Meta releases the open-weight Muse Glimmer"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/muse-glimmer",
-      "key": "seed|llm-releases|09583132-f733-4f2b-b6ac-cdf0feb1768a",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "09583132-f733-4f2b-b6ac-cdf0feb1768a",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model"
     }
   ],
   "deprecations": [
@@ -3571,7 +3663,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-09",
+  "generated_on": "2026-09-10",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",
