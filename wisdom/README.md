@@ -738,7 +738,10 @@ option the disposition rule forbids.
 Every record in `phase-0-RESULT3.md` section 5 pins its arm by LINE NUMBER in
 `scripts/brief-lint.mjs`. On 2026-09-10 at 02:47 I read all twenty-four pins out
 of the committed report and compared what stood at each line when the report was
-committed with what stands there now. **Zero of twenty-four still resolve.
+committed with what stands there now. (That time is anchored by the mtime of the
+script that did the reading, `02:47:22`, rather than by anyone's memory — and
+section 7j records why an mtime is a weaker anchor than a commit timestamp: any
+later edit to that file would silently replace it, and nothing would say so.) **Zero of twenty-four still resolve.
 Twenty-four of twenty-four moved**, most by twenty-three lines, and `B3` cannot
 be located by its own text at all because the same edit rewrote that line.
 
