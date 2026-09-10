@@ -876,7 +876,7 @@ the brief under `evidence/reviews/`.
       (vii) TWO GUARDS DIE WITH THIS CHANGE AND ARE REMOVED HERE:
       `carry.mjs:98`'s `entry.subject &&` (today a MISSING subject skips the
       orphan check entirely, which is the hole this task closes) and `:114`'s
-      conditional `subject:` spread. Both are unreachable once (i)-(ii) land,
+      conditional `subject:` spread. Both become unreachable when (i)-(ii) land,
       because `transcribeCarriedFindings` calls `parseVerdict` itself at
       `carry.mjs:84` — every caller, production or direct-from-a-test, goes
       through the parser. Dead defensive code around an invariant is
