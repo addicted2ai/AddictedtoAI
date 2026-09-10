@@ -2482,3 +2482,79 @@ from success. The fix accepts both glyphs, and the number was recovered by
 **re-parsing the saved output rather than re-running**: re-running to repair a
 parser measures a different run to answer a question about this one, which is
 §7v's whole subject arriving in a place I did not expect it.
+
+### 7x. THE ABSENCE OF A RECORD, READ AS A RECORD OF ABSENCE
+
+Found by A2AI-Orch on the last night of both sessions, against its own eight-sample
+payload-drift analysis, and it is the sample ladder arriving one level lower than
+§7n–§7r reached.
+
+**THE INSTANCE.** Ten samples of a payload drift. For eight of them the recorded
+evidence was a board entry quoting the `total_kb_gzipped` line, so the conclusion
+was that one mode moves **three** fields and the other moves **one**. Sample ten
+refuted it: **both modes move the same three fields and differ only in
+magnitude.** The earlier entries had quoted one line because that line was the
+one under discussion — not because it was the only line that moved.
+
+**A RECORD WRITTEN FOR ONE PURPOSE IS NOT A DENOMINATOR FOR ANOTHER.** The board
+entry was a summary of a conversation. Read later as an enumeration of what
+changed, it answered a question nobody had asked it, and it answered confidently,
+because a quoted figure carries the authority of a measurement whatever it was
+quoted for.
+
+**THE DISCRIMINATOR, WHICH IS THE PART THAT MAKES THIS ACTIONABLE**, because the
+rule alone never tells you that you are currently committing it:
+
+> **Before concluding that something did not happen, establish that the record you
+> are reading would have recorded it.**
+
+That question has a yes-or-no answer, it takes one look at the writer, and it was
+not asked for eight samples. It is the same move as verifying an instrument can
+*see* before believing its silence (§7v) — applied to a document instead of a
+detector, and to the past instead of the present.
+
+**WHY IT IS THE LADDER'S NEXT RUNG DOWN.** §7n was the sample the author chose;
+§7o the candidate pool nobody wrote down; §7p the check's own subject list; §7r
+the proof pool nobody chose at all. This is the pool that **was** written down —
+once, deliberately, carefully — **for something else**. It looks like the best
+kind of evidence: contemporaneous, specific, quoted verbatim. Its defect is
+invisible from inside the quotation, because what is missing left no trace in the
+thing you are holding.
+
+**AND THE STRUCTURAL FIX IS CHEAP AND ALREADY PROVEN HERE.** The reason sample
+ten could refute the model at all is that the harness **writes a row per run,
+including the clean ones**: sixteen rows, three distinct outcomes, six of them
+"nothing happened". A log that records only the interesting runs cannot show a
+distribution, and cannot ever refute a claim about frequency. That row-per-run
+rule was itself installed after getting the same class of thing wrong in the
+opposite direction — four clean runs read as a refutation.
+
+**A COROLLARY WORTH ITS OWN LINE, from the same night.** A run of two is exactly
+the sample size at which an **alternation** is indistinguishable from a **new
+regime**. Two consecutive observations of a new value read as "the mode changed";
+sixteen minutes later it had changed back. Neither reading was available from the
+two adjacent samples, and the honest report at the time said so.
+
+**And the eleventh sample sharpened it into the general form.** The sequence ran
+`2b51ce02` five times, then `23fdf64f` twice, then `2b51ce02` twice — **two
+consecutive runs of each state.** Its author put the trap plainly: *had I looked
+only at samples 7 and 8 I would have called a regime change, and had I looked
+only at 10 and 11 I would have called it stable.* Both readings are wrong for one
+reason:
+
+> **A PAIR IS THE SMALLEST SAMPLE THAT CAN LOOK LIKE A TREND.**
+
+Two points always describe a line. The line is a property of the arithmetic, not
+of the subject, and it arrives with no warning that it was free.
+
+**THE DISPOSAL RULE FOR EVERYTHING THIS SESSION DID NOT FINISH, agreed between
+both sessions on the last night and worth more than any of the unbuilt things it
+covers: A NAMED GAP SURVIVES; A HURRIED MECHANISM GETS TRUSTED.** An instrument
+shipped in the final twenty minutes is the one nobody has pointed at the awkward
+subject — proved twice that evening, by a rescued harness that had never been run
+and by a proof that asserted a quiet tree while a real gate was running. The gaps
+left standing and named, rather than patched in a hurry: the tree diff cannot see
+a transient; the Pulse detector still discriminates on a script path rather than
+on what a Pulse writes to; the tuple capture has never been fired on a red;
+`addictedtoai-4w2` is answerable only from a host build log nobody here can read;
+and the write-time half of the main-quiet guard is designed and unbuilt.

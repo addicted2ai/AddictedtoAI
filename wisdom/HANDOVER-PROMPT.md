@@ -87,8 +87,9 @@ Stage 1.
   persistent knowledge.
 - **Every date you write is the local date of this machine**, never UTC.
 - **Draft into a scratchpad and copy into the repository only between gate
-  runs.** The previous session broke this three times and each break cost a full
-  gate run.
+  runs.** The previous session broke this **four** times and each break cost a
+  full gate run. All four happened when a new instruction arrived mid-run — that
+  is the moment to check the lock, and it is exactly the moment nobody does.
 
 **How work is dispatched.** Implementation runs go to Muse Spark 1.3 at `xhigh`
 on `opencode-go` — the maintainer's routing, and it spends no Anthropic quota,
