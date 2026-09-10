@@ -22,7 +22,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, readFileSync, utimesSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { cleanup, makeRoot, runPulse } from './helpers.mjs';
@@ -58,6 +58,30 @@ function writeStaleLease(root, contents = leaseBody()) {
 
 function queueFile(root) {
   return join(root, 'data', 'derived', 'queue.json');
+}
+
+function snapshotTree(root) {
+  const seen = new Map();
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile()) {
+        const st = statSync(full);
+        seen.set(full, st.size + ':' + st.mtimeMs);
+      }
+    }
+  };
+  walk(root);
+  return seen;
+}
+
+function treeAdded(before, after) {
+  const added = [];
+  const changed = [];
+  for (const k of after.keys()) if (!before.has(k)) added.push(k);
+  for (const [k, v] of after) if (before.has(k) && before.get(k) !== v) changed.push(k);
+  return { added, changed };
 }
 
 // ---------------------------------------------------------------------------
@@ -128,6 +152,7 @@ test('fresh lease: the Pulse refuses, names the holder, exits 0, writes nothing'
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   writeFreshLease(root);
+  const treeBefore = snapshotTree(root);
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, 'a refused Pulse is an instruction obeyed, not an error: ' + run.out);
@@ -142,6 +167,7 @@ test('fresh lease: the Pulse refuses, names the holder, exits 0, writes nothing'
   assert.equal(leaseWordLines(run.out).length, 1, 'exactly one lease-word line: ' + run.out);
   assert.doesNotMatch(run.out, /STOP file present/, 'the refusal must not read like STOP');
   assert.equal(existsSync(queueFile(root)), false, 'no derived state was written under a live gate run');
+  assert.deepEqual(treeAdded(treeBefore, snapshotTree(root)), { added: [], changed: [] }, 'a refused run leaves the tree identical, not only queue.json absent: ' + run.out);
   assert.equal(existsSync(leasePath(root)), true, 'the Pulse never removes the lease');
 });
 
@@ -329,7 +355,12 @@ test('boundary arithmetic: at the max age it is fresh; one millisecond past it i
   assert.ok(pastMax.ageMs > LEASE_MAX_AGE_MS);
 });
 
-test('timing read that fails is never a refusal: it proceeds loudly', () => {
+test('timing read that fails maps to stat-failed in the reader (does not prove the run proceeds loudly)', () => {
+  // RECORD 2026-09-10 owner maintainer: this pins the reader mapping only
+  // (EACCES and missing mtime map to stat-failed, ENOENT maps to absent). It
+  // does not run the shipped guard and never shows the WARN-proceed line or
+  // the queue. The run-proceeds half has no live trial on this machine; review
+  // carries it with the guard text pin above.
   const denied = checkLease(tmpdir(), {
     statSyncImpl: () => {
       throw Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' });
@@ -439,6 +470,7 @@ test('one hour ahead: refuses as future, nothing written', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   writeLease(root, leaseBody(), -3600 * 1000);
+  const treeBefore = snapshotTree(root);
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, run.out);
@@ -450,6 +482,7 @@ test('one hour ahead: refuses as future, nothing written', async (t) => {
   assert.match(gl[0], new RegExp(`^pulse: GATE_LEASE future at ${escapeRegExp(leasePath(root))} \\(mtime (?:\\d+m \\d+s|\\d+h \\d+m) ahead of now, beyond tolerance 60s, holder ${escapeRegExp(HOLDER)}\\) — a gate run with a fast writer clock may hold the tree, refusing this run, nothing done\\. Delete the file only when no gate run is active, or correct the writer clock\\.$`), 'whole future-hour line: ' + run.out);
   assert.equal(nonEmptyLines(run.out).length, 1, run.out);
   assert.equal(existsSync(queueFile(root)), false);
+  assert.deepEqual(treeAdded(treeBefore, snapshotTree(root)), { added: [], changed: [] }, 'an hour-ahead refusal leaves the tree identical: ' + run.out);
   assert.equal(checkLease(root).state, 'future');
 });
 
@@ -457,6 +490,7 @@ test('one day ahead: refuses as future, nothing written', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
   writeLease(root, leaseBody(), -24 * 3600 * 1000);
+  const treeBefore = snapshotTree(root);
 
   const run = await runPulse(root, ARGS);
   assert.equal(run.status, 0, run.out);
@@ -467,13 +501,25 @@ test('one day ahead: refuses as future, nothing written', async (t) => {
   assert.match(gl[0], new RegExp(`^pulse: GATE_LEASE future at ${escapeRegExp(leasePath(root))} \\(mtime (?:\\d+h \\d+m|\\d+d \\d+h) ahead of now, beyond tolerance 60s, holder ${escapeRegExp(HOLDER)}\\) — a gate run with a fast writer clock may hold the tree, refusing this run, nothing done\\. Delete the file only when no gate run is active, or correct the writer clock\\.$`), 'whole future-day line: ' + run.out);
   assert.equal(nonEmptyLines(run.out).length, 1, run.out);
   assert.equal(existsSync(queueFile(root)), false);
+  assert.deepEqual(treeAdded(treeBefore, snapshotTree(root)), { added: [], changed: [] }, 'a day-ahead refusal leaves the tree identical: ' + run.out);
   assert.equal(checkLease(root).state, 'future');
 });
 
 test('ten years ahead, the threatening end: refuses as future', async (t) => {
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
-  const tenYearsMs = 10 * 365 * 24 * 3600 * 1000;
+  // THE MARGIN IS THE POINT, AND IT IS A REPAIR TO A MEASURED FLAKE.
+  // Ten years is an EXACT multiple of the year unit, so `10y 0d` sits on a knife
+  // edge: the mtime is set here and read after the Pulse has spawned, and the
+  // seconds that pass in between shave the interval below 3650 days. The
+  // formatter floors, so it renders `9y 364d` and this trial fails while nothing
+  // is wrong. Round 5 caught it as collateral under an unrelated mutation and it
+  // did NOT reproduce in five consecutive baseline runs afterwards — which is
+  // exactly what an intermittent looks like, and is why it is repaired rather
+  // than watched. An hour of margin keeps the interval inside [3650d, 3651d) for
+  // any plausible spawn, so the rendering it asserts is unchanged: anything in
+  // that whole day renders `10y 0d`. The pin is the same; only the edge is gone.
+  const tenYearsMs = 10 * 365 * 24 * 3600 * 1000 + 3600 * 1000;
   writeLease(root, leaseBody(), -tenYearsMs);
 
   const run = await runPulse(root, ARGS);
@@ -728,6 +774,11 @@ test('display edge pinned exactly: 119 renders seconds, 120 and 121 render minut
   // balanced-brace scan, and evaluates the shipped bytes. A threshold drift to
   // 1200 makes 120 render 120s instead of 2m 0s and fails; a rendering flip
   // fails the same way.
+  // RECORD 2026-09-10 owner maintainer: this pins the helper bytes only. It
+  // does not prove the live line uses the helper (a bypass at the call site
+  // leaves this green while live trials go red), and the brace scan fails on
+  // a comment holding a brace while live behaviour is unchanged. Review carries
+  // the live-line half; this trial carries the exact 119/120/121 rendering.
   const src = readFileSync(new URL('../run.mjs', import.meta.url), 'utf8');
   const threshMatch = /LEASE_AHEAD_DISPLAY_THRESHOLD_S\s*=\s*(\d+)/.exec(src);
   assert.ok(threshMatch, 'threshold literal present in shipped source');
@@ -825,7 +876,18 @@ test('stat-failed guard text pins WARN-proceed (gap: no live timing failure indu
   //   (Windows does not fail timing reads via permission bits).
   // - 1600-char deep path: stat still ok, fresh (long paths supported).
   // - junction to own parent: stat ok as directory, fresh with holder null.
-  // Every attempt landed on absent or fresh, never stat-failed.
+  // - Round 5: 300-char single component: setup throws ENOENT, never reaches any arm.
+  // - Round 5: junction to a file: stat throws ENOENT, absent.
+  // - Round 5: dir link to missing target: setup throws privilege, never reaches any arm.
+  // - Round 5: ADS suffix root: absent.
+  // - Round 5: icacls deny read on the lease file: stat still ok, fresh with holder null.
+  // Every attempt landed on absent, fresh, or setup-throw, never stat-failed.
+  //
+  // RECORD 2026-09-10 owner maintainer: this pins the guard text only. It does
+  // not prove the arm fires or that the run proceeds: keeping all three strings
+  // while forcing the condition to never leaves this green with the arm dead,
+  // and keeping the strings while adding exit after the WARN flips proceed into
+  // refuse-forever with this still green. Review carries the behaviour half.
   //
   // Closest pin: the shipped guard must contain the stat-failed WARN-proceed
   // arm. Silencing the arm (condition to never) removes the first string and
