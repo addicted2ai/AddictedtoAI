@@ -155,7 +155,10 @@ first review to run under it.
 - `loop/lib/ledger.mjs` — (existing) the line builder and reader the lineage attaches beside; additive-only, E-closure applies.
 - `loop/run.mjs` — (existing) the telemetry call sites (`appendLedger`/`makeLedgerLine` callers); wiring-only, additive-only, nothing else in the file changes.
 - `loop/lib/review.mjs` — (existing) the record-writer lineage and the reader-question wiring seam.
-- `loop/tests/breakers.test.mjs`, `loop/tests/issues.test.mjs`, `loop/tests/portability.test.mjs`, `loop/tests/gate-transport-retry.test.mjs` — (existing) exact-shape pins over ledger lines; additive-key/varies-set updates only, in the same diff as any wiring that invalidates them.
+- `loop/tests/breakers.test.mjs` — (existing) comparative-shape pin over ledger lines; additive-key/varies-set updates only, in the same diff as any wiring that invalidates it.
+- `loop/tests/issues.test.mjs` — (existing) `LEDGER_FIELDS` array pin; same terms.
+- `loop/tests/portability.test.mjs` — (existing) `Object.keys(line)` shape pin; same terms.
+- `loop/tests/gate-transport-retry.test.mjs` — (existing) exact additive-key list pin; same terms.
 
 Everything else is read-only for this round. Do not edit `pulse/`,
 anything under `openspec/changes/`, `scripts/brief-lint.mjs`,
