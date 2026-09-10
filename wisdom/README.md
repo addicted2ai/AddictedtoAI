@@ -2153,3 +2153,252 @@ is the second review and it reviews round three, so it lands at
 `round3-REVIEW.md`.** The report's serial and the round disagree on purpose, so
 every entry carries its round explicitly rather than having it parsed out of a
 filename that means something else.
+
+
+### 7u. A SHA IS A SUMMARY, AND A GREEN THAT NAMES ONE READ IT ONCE
+
+A2AI-Orch started a gate run on `99b2112`. I committed to main sixty-one seconds
+later. Measured afterwards: run began 06:03:06, commit landed 06:04:07, `npm
+test` was executing.
+
+**The run attests to a tree that was `99b2112` for its first minute and
+`c15e901` for the rest.** Neither sha describes what was measured.
+
+The commit was one markdown file, 57 insertions, nothing under any code path,
+and it could not have moved a gate. Orch discarded the run anyway, and the answer
+is the durable part:
+
+**"THE CHANGE COULD NOT HAVE MATTERED" IS REASONING, AND THE GATE'S ENTIRE JOB IS
+TO BE A MEASUREMENT.** A gate that accepts reasoning about why a difference was
+harmless has been converted into an argument, which is the thing it was built to
+replace.
+
+**The harness defect underneath is the one worth carrying.** Orch's runner
+captured `HEAD_SHA` once, before gate 1, and nothing re-read it; the final
+verdict printed *ALL SIX GATES GREEN at `<sha>`* from a value read ten minutes
+earlier. Its pin check compared the announced sha against HEAD **at the start**,
+so it catches gating the wrong branch and cannot catch the branch moving
+underneath.
+
+**A RUN THAT NAMES A SHA IT READ ONCE IS ASSERTING THAT A SUMMARY TAKEN AT THE
+START STILL DESCRIBES THE THING AT THE END.** It is the second-source defect with
+the second source being a hash — which is worse than prose, because a hash reads
+as a measurement. The repair is an end-of-run re-read that refuses to call a run
+pushable if HEAD moved.
+
+**MY HALF HAD TO BE A DETECTOR, NOT A RULE.** We agreed main stays quiet from the
+moment a run starts. A rule I have to remember is exactly what had just failed —
+I was *told* the run had started and committed anyway — and a preference restated
+after each failure is what mechanism replaces. So the guard reads two signals:
+
+1. **A lock file** the other session may write. Explicit, carries who and since
+   when, and **its weakness is total: it only works if the other party sets it.**
+2. **The process table** — `run-tests`, `prebuild`, `next build`, the four
+   `verify-*` scripts. This needs nobody to remember anything.
+
+I wrote that signal 2 was the instrument and signal 1 only improved the message,
+on the general principle that **a guard resting on a flag somebody else sets has
+its subject list written by the party it guards against** — §7p aimed at
+ourselves. The principle is sound. **The conclusion was wrong, and Orch's run log
+disproved it within minutes:**
+
+    06:03:06   harness starts, announces it is gating 99b2112
+    06:04:07   my commit lands
+    06:06:42   "=== 1-test starting ===" — the first moment run-tests.mjs EXISTS
+
+**THERE IS A 3 MINUTE 36 SECOND WINDOW AT THE START OF EVERY RUN IN WHICH NO GATE
+PROCESS IS IN THE TABLE** — pre-flight contention checks, an environment census,
+a pin loop, and a `du -sk` over 227 MB of `.next`. My commit landed 61 seconds
+into it. **The guard would have read the table and correctly reported quiet.** It
+caught the run at 06:12 only because gate 1 had been running five minutes.
+
+**AN AUTOMATIC SIGNAL IS NOT AUTOMATICALLY THE STRONGER ONE. ASK WHERE ITS BLIND
+WINDOW IS — A DETECTOR THAT CAN ONLY SEE A PROCESS ONCE THE PROCESS EXISTS IS
+BLIND FOR EXACTLY AS LONG AS THE SETUP TAKES, AND SETUP IS WHEN A RUN LOOKS IDLE
+TO EVERYONE ELSE.**
+
+The two signals are OR'd because each covers the other's hole: the lock covers
+the front window the table cannot see, the table covers the other session
+forgetting to write the lock. **The insufficiency of each is measured now rather
+than argued** — and the thing that settled it was a timestamp, against my
+preference for the signal that needed nobody's cooperation. **I reasoned about
+which signal was stronger; the run log answered.**
+
+**Its first live reading refused, and it refused correctly**, matching
+`node scripts/run-tests.mjs`: Orch's re-gate, which I had not planned as an arm.
+The proof had *asserted* a quiet tree and scored three failures; I checked what
+had matched before concluding the patterns were sloppy, and the guard was right
+while the proof was wrong.
+
+**And that exposed the better finding. THE QUIET-TREE ARMS CANNOT BE EVALUATED
+WHILE THE TREE IS NOT QUIET** — the precondition for testing the ALLOW direction
+is the absence of the very thing the guard detects. §7o at one remove. Reporting
+them **NOT EVALUATED** rather than scoring them was honest, and honest was not
+enough: **it left the ALLOW direction unproven, and for a guard that is the
+dangerous direction. One that refuses forever is the arm that gets it deleted.**
+
+The repair is to stop depending on a state another session controls. **Point the
+guard at a decoy lock path and a decoy pattern, and every branch becomes
+reachable at any moment** — 8 arms, 8 pass, including allow-with-nothing-set,
+refuse-on-lock-alone, refuse-on-process-alone, allow-again-after-each, and the
+mutation that empties the pattern list and watches the same live process sail
+through.
+
+**WHAT INJECTION PROVES IS THE MECHANISM, NOT THE PATTERNS**, and conflating
+those would be this document's own dominant defect. Whether the real list catches
+a real gate and misses my own tooling is a separate question with a separate
+instrument: the live table. Measured, twice, unplanned — it caught
+`node scripts/run-tests.mjs` and later `next build`, with **0 of my own processes
+matching**. The live negative runs constantly, because my tooling is in that
+table the whole time.
+
+**"I COULD NOT REACH THAT BRANCH" IS A STANDING EXCUSE UNTIL SOMEBODY MAKES THE
+BRANCH REACHABLE, AND MAKING IT REACHABLE IS USUALLY A PARAMETER.**
+
+**AND THE ARGUMENT WAS CONFIRMED IN PRODUCTION TWELVE MINUTES LATER, NOT BY A
+DECOY.** Orch's next run wrote the lock as its first action. Read at 06:17:03:
+
+    main-quiet check: lock PRESENT, 0 gate-shaped process(es) in the table
+    REFUSED — sha_intended c15e901, pid 462, started 2026-09-10 06:17:03, writer A2AI-Orch
+
+**Zero processes. The lock alone caught it.** That is exactly the front window the
+table cannot see, observed live rather than argued from a log — the signal I had
+called a courtesy was the only one carrying the refusal at the moment it
+mattered, and it mattered within a quarter of an hour of being disputed.
+
+**One more from the same incident, and it is the sharper half.** The discarded
+run did not merely print a wrong sha: **its ratchet APPENDED A ROW attributing
+1926 tests to `99b2112`** — a defect that *writes*, and one that becomes the
+baseline every later run agrees with. Orch's first repair put the HEAD re-read
+beside the final verdict, which would have printed the warning **and written the
+row anyway, because the append runs first.**
+
+**A GUARD PLACED AFTER THE THING IT GUARDS IS DECORATION.** Orch had checked that
+exact property mechanically across twenty scripts four hours earlier and then
+failed it by hand in its own harness — which is §7n's shape once more: **the
+mechanism was proved against the subjects it was pointed at, and the harness that
+pointed it was never one of them.**
+
+The bad row is **left standing with an audit note beneath it**, and that is the
+right call: **DELETING A ROW YOU FIND EMBARRASSING IS HOW A BASELINE BECOMES
+SELF-RATIFYING.** History is the record of what the ratchet did, not of what it
+should have done.
+
+A footnote that is not a footnote: the run's count went 1899 → **1926, exactly
++27**, independently corroborating the record wall's 27 collected from a
+different session on a different instrument. **The count was sound and the sha on
+the row was still wrong**, and keeping those two facts apart is the whole
+discipline — a true number does not make a false attribution true.
+
+### 7v. THE WRONG INTERVAL, AND THE WRONG RUN
+
+§7n through §7u are all about a *pool* being narrower than the claim made from
+it. This rung is the same disease along the other axis: **the pool is fine and
+the WINDOW is wrong.** Every instance below was produced in one night by two
+sessions chasing one intermittent failure, and none of them errored — each
+returned a clean number about something nobody had asked about.
+
+**A POINT-IN-TIME DETECTOR AGAINST AN INTERMITTENT SUBJECT MEASURES THE INSTANT
+AND REPORTS IT AS THOUGH IT WERE THE INTERVAL.** Orch's name, from its TIME_WAIT
+sampler: a condition that exists for milliseconds, sampled on a cadence, produces
+a max that reads as "the peak" and is nothing of the kind. I had the same defect
+in a different instrument and defended it as the strong one — the main-quiet
+guard's process-table signal, which cannot see a gate run during the **3m36s**
+its own log shows between launch and the first matching process. **AN AUTOMATIC
+SIGNAL IS NOT AUTOMATICALLY THE STRONGER ONE — ASK WHERE ITS BLIND WINDOW IS**
+(§7u), and a sampler's blind window is *most of the time by construction.*
+
+**A HELD MARKER ANSWERS AN INTERVAL QUESTION; A SAMPLED TABLE CANNOT.** This is
+the remedy and it is why the two signals are OR'd rather than ranked. The lock
+file is written before the first child process and removed by an EXIT trap, so it
+is held across the whole interval **by construction**; the process table is
+sampled, so it answers only about the instant it was read. The live proof is on
+the record: at 06:17:03 the guard refused a re-gate with the lock **PRESENT** and
+**zero** gate-shaped processes — the exact front window signal 2 cannot see. An
+interval question needs an instrument that is *held*, not one that is *polled*.
+
+**A MEASUREMENT OF A PASSING RUN IS A FACT ABOUT THE WRONG RUN.** Orch's own
+words, and it caught itself: the idle-machine diagnostic went green at 1926/1926
+with sampler max TIME_WAIT **139** against a 13,976-port dynamic range and ar0's
+~8,800 at failure — three orders of magnitude short. The temptation is to read
+the green as evidence about the reds. It is not. The subject was "the runs that
+failed" and the sample was "a run that passed." Recognising that **none of the
+three pre-declared outcomes had been reached** — rather than scoring the green as
+outcome one — is the same move as declaring NOT EVALUATED instead of scoring a
+skip, and it is the whole reason the conclusion stayed honest.
+
+**AN INSTRUMENT STARTED WITH THE SUBJECT CANNOT MEASURE WHAT THE SUBJECT
+INHERITED.** The surviving hypothesis is residue stacking across runs — right
+shape, wrong magnitude. It cannot be tested by a sampler launched alongside a
+run, because the claim is about *what the previous run left behind*, and an
+instrument that starts when the subject starts has already missed it. A
+cross-boundary claim needs a cross-boundary window. The only data point either
+session holds is one 06:44:44 sample that happened to straddle the seam.
+
+**A CHECK THAT CANNOT TELL "I LOOKED AND FOUND NOTHING" FROM "I LOOKED AT
+NOTHING" IS NOT A CHECK.** Orch verified the sampler could *see* — 12 loopback
+connections, 4 in TIME_WAIT, `netstat -an` independently agreeing at 4 — before
+believing a low reading. That is §7s applied preemptively, to an instrument
+rather than to a verifier, and almost nobody does it: a silent detector and a
+working detector with nothing to report are the same output.
+
+**A SUMMARY STATISTIC CANNOT ANSWER A QUESTION ABOUT SHAPE.** This is the rung
+the night actually turned on, and it took two more measurements to reach.
+
+First the level collapsed as a discriminator. A **green** gate run, sampled end to
+end — 213 samples — peaked at **TIME_WAIT 148**, *higher* than the 139 on the
+green diagnostic, with a clean ramp: flat at 0–8 until 06:57:28, 79 twenty
+seconds later, 148 at 06:58:47, decayed to 24 by 07:00:28. **The 140s are this
+suite's normal operating regime**, and the failing runs failed somewhere inside
+that same ramp. A number that both a passing and a failing run reach is not the
+cause of the failure; it is the weather.
+
+Then the question itself turned out to be wrong, which is the harder half.
+**`connect EADDRINUSE` does not require the port POOL to be exhausted; it
+requires one four-tuple to be unavailable.** So the quantity that decides it is
+not the COUNT of TIME_WAIT entries but their **distribution across
+destinations** — the same count piled onto one or two destinations is a small
+tuple space, and a small tuple space refuses a connection while thirteen thousand
+ports sit idle. One session measured a count and concluded exhaustion; the other
+measured a count and refuted exhaustion at that scale. **NEITHER MEASURED THE
+SHAPE, AND BOTH ANSWERS WERE ABOUT THE SAME WRONG QUANTITY.**
+
+**THE DECOYS ANSWERED THE QUESTION YOU ASKED THEM; THE DEFECT WAS IN THE
+QUESTION.** Every reading here was accurate. Max, mean, peak, ramp — all facts,
+all reproducible, none of them about the thing that fails. A wrong question
+returns clean numbers and no error, which is why it survives longer than a wrong
+answer does. The remedy is not a better statistic on the same quantity: it is a
+tuple-distribution capture, built and baselined against a healthy run
+(TIME_WAIT 2, one distinct destination, loopback share 0) so the instrument is
+armed **before** the next red rather than reconstructed after it. Building the
+instrument for the failure you have not yet caught is the only way to stop
+measuring the healthy case.
+
+**TWO DISPROVED HYPOTHESES ARE WORTH MORE THAN A THIRD STORY.** Both cheap
+mechanisms I could test from outside a running gate are now out, and both are
+recorded because a disproof narrows the space and a story does not:
+
+- **Reserved port ranges.** On Windows, Hyper-V and WSL reserve blocks *inside*
+  the ephemeral range, which produces `EADDRINUSE` at low connection counts and
+  would have fit the numbers exactly. Measured: dynamic range **start 1025, 13976
+  ports**; exclusions falling inside it are 5357, 6839–6938 and seven 100-port
+  blocks between 14175 and 14989 — **~801 of 13976, 5.7%.** That does not turn
+  139 into exhaustion. Not the cause. (Incidental, worth knowing and not worth
+  acting on: 1025–15000 is **not** the Windows default of 49152, so the ephemeral
+  range overlaps ordinary service ports on this machine.)
+- **A listen race producing a literal `(bad port)`.** In Node that message means
+  an invalid port in a URL, and the classic source is reading
+  `server.address().port` before listening completes, which yields 0. Every
+  fixture server in `pulse/tests/` — `helpers.mjs:232`,
+  `publish-verify.test.mjs:178`, `publish.test.mjs:379` and `:789` — does
+  `await new Promise((r) => server.listen(0, '127.0.0.1', r))` **before** reading
+  the port. Not the cause either.
+
+The correct report at that point is *"I have nothing that explains it,"* not a
+third mechanism. **A GUESS ARRIVING IN THE SAME BREATH AS A FINDING INHERITS THE
+FINDING'S CREDIBILITY** — the reason the two disproofs are written as
+measurements with their numbers, and the remaining explanation is written as
+**the untested explanation for two runs neither session can measure any more.**
+That sentence, in exactly those words, is what belongs in the bead. A cause
+nobody can reproduce is not a closed question; it is an open one with a known
+last-seen date.
