@@ -115,6 +115,22 @@ change-path rules were "both enforced by tests" and named only
 reported a property nothing they ran had tested; the first real violation
 (B1's fixture referencing a change directory) was invisible to the review
 that read that very diff and was caught by a full suite run by hand.
+
+**THE "SEVEN" AND THE "SIX" IN THAT PARAGRAPH ARE NOT RECONCILED, and saying so
+is better than picking a number.** Counted from the artefacts rather than from
+the prose: packet A has **six** sealed reviews on disk (`round1-`…`round6-
+REVIEW.md`) and packet B1 has **seven** (`round1-`…`round7-REVIEW.md`) — thirteen
+between them. So "packet A's six rounds and B1's" cannot be a count of briefs,
+which would be thirteen; the seven and the six must be counts of the DEFECTIVE
+CLAIM's occurrences, over two different domains (briefs that made it, sealed
+reviews that repeated it) — and the paragraph names neither domain. The
+paragraph then implies a seventh review by saying the violation "was invisible
+to the review that read that very diff", which the six does not include.
+
+Left as a stated inconsistency rather than repaired, deliberately: repairing it
+needs a sweep of thirteen briefs and thirteen reviews for one sentence, the
+figures are historical and load-bearing for nothing downstream, and **a number
+guessed to make a paragraph tidy is the exact failure this paragraph is about.**
 Detection came from a violation, not from an audit, and the instrument that
 caught it is the only one in the chain whose scope is not set by a brief.
 Therefore: **no Stage 0 packet merges without a COMPLETED full suite on its
@@ -206,8 +222,24 @@ to get wrong: cheap to write, reads as rigour, falsified only by the one member
 nobody enumerated (A2AI-Orch, 2026-09-08; `addictedtoai-xrsg`'s diagnostic —
 name one member of the domain that would not appear in the list). Checked on
 the text frozen at 658625d: six gates, two spawners, six swept directories,
-three named seams, seven packets — every quantifier's domain is enumerated in
+three named seams — every one of those quantifiers' domains is enumerated in
 the sentence that uses it.
+
+**AND THIS CERTIFICATION FAILED ITS OWN TEST, which is recorded here rather
+than quietly repaired, because the instance is worth more than the sentence.**
+It used to end "…, seven packets — every quantifier's domain is enumerated in
+the sentence that uses it." **No packet list appears in that sentence, and no
+seven packets are enumerated anywhere in this document** — a search for
+`packet <letter>` returns four distinct ones. So the sentence certifying
+quantifier hygiene was itself an unenumerated quantifier, and it sat two lines
+below the diagnostic that defeats it. The false member is removed above rather
+than an enumeration invented for it: the honest repair for a certification that
+overclaims is to certify less, never to manufacture the domain that would have
+made it true.
+
+The lesson generalises past this paragraph and is the reason it stays: **a
+sentence that certifies a rule is not exempt from the rule it certifies**, and
+it is the sentence least likely to be checked, because it reads as the check.
 
 **Every brief is reviewed by a second model before it is dispatched (the
 maintainer, 2026-09-09 about 08:00: "Let's try adding a review step for the
