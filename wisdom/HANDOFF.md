@@ -1,5 +1,13 @@
 # HANDOFF — the Desk redesign and the wisdom conversion
 
+> SUPERSEDED 2026-09-10 (A2AI-Spark): this document records the state at
+> handover time (~07:55 local). Items 2b, 3, 5 and 6 have since merged
+> (shas f1e75c2, 224e31f/bcbe26e, bdf0c56, d319a31; evidence under
+> `openspec/changes/two-desks-work-orders-and-trains/evidence/reviews/`),
+> Stage 0 tasks 16/17 merged, and an audit remediation is in flight (see
+> the coordinator board). The body below is left untouched as the record
+> of that moment; do not follow its worktable or worktree paths.
+
 **Written 2026-09-10, ~07:55 local (Mountain), by A2AI-Fable-Arch, because the
 maintainer is handing this work to a different agent or harness before his rate
 limit ends the session.** Everything below is written for a reader who was not

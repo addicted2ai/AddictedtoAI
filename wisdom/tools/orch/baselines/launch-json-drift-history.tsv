@@ -28,3 +28,4 @@
 2026-09-10 06:43:27	c15e901	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 06:27:48 size_kb=227206
 2026-09-10 07:00:40	c15e901	clean	2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 06:42:27 size_kb=227214
 2026-09-10 07:39:31	113996c	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 23fdf64fde303a6b1c10bf0fb637b19683470c42	present mtime=2026-09-10 06:59:40 size_kb=227214
+2026-09-10 16:55:00	1334b9b	DRIFTED	9c272f4 -> 1b11315	unknown	aggregate-after-fact: cumulative js_payload drift across five gated pushes (four numeric moves plus three date rolls in data launch.json), recorded after revert per 6dpj protocol; per-run rows were never written, so this row does not attribute drift to any single push

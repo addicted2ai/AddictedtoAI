@@ -276,8 +276,12 @@ item has two halves that must ship together:
 - **2b — the brief generator reconciles the brief against EVERY IMPERATIVE in the
   source issue, not against its enumerated list.** Covers the fifth, and it is
   the half that would otherwise be quietly dropped because the other half looks
-  like the whole fix. The note wrote this remedy down at the time; it is being
-  re-derived here, which is itself an instance of the thing this report is about.
+   like the whole fix. The note wrote this remedy down at the time; it is being
+   re-derived here, which is itself an instance of the thing this report is about.
+   **Status 2026-09-10:** shipped and merged, then REOPENED — a later review
+   showed the reconciler cannot fire on its wired path (the assembly embeds
+   the source verbatim) and the hand-written path has no reconciliation at
+   all. Re-scope in progress under the original bead.
 - **SECONDARY host — `scripts/*.test.mjs`** scanning `scripts/`, `loop/`,
   `pulse/` for the truncation shape committed into code. Different population,
   still worth having, and cheap.
@@ -300,8 +304,12 @@ item has two halves that must ship together:
   diff touches.
 - **Negative control:** an authority fixture placing the acceptance paragraph
   *after* the truncation boundary — the truncated brief must be refused and the
-  complete one must pass; the B2/E/F round-1 brief shapes must be refused and
-  their corrected shapes pass.
+   complete one must pass; the B2/E/F round-1 brief shapes must be refused and
+   their corrected shapes pass.
+   **Status 2026-09-10:** missing and truncated ship as dispatch refusals;
+   contradicted ships detected-but-unwired with a measured reason, and the
+   plan text above still demands its refusal — that gap is a filed
+   follow-up for a review-time polarity reader, not a silent narrowing.
 
 ### 4. ~~One floor-checked build-record writer, and immutable per-run gate evidence~~ — **STRUCK. The change already ships it.** (§5)
 
@@ -331,6 +339,9 @@ Luna's finding is real and its negative control is well designed. It is also
 - **5b — prose corroboration is a reader's question**, not a regex's. It goes in
   the second-model review prompt plus a disposition rule. Muse's refutation of
   putting it in the linter is accepted.
+  **Status 2026-09-10:** shipped (machine module plus prompt question, both
+  tested); no production producer carries lineage yet — wiring the first
+  producer is a filed follow-up.
 
 ### 6. Figure provenance — **the one genuine split verdict, resolved by narrowing**
 
@@ -344,8 +355,10 @@ not every historical sentence."*
 than to pick a winner.** My ruling: the check applies to a figure that **a later
 decision reads** — a count that gates something, a measurement recorded as
 authority — and **not** to every historical sentence in a log. Luna's objection
-kills the broad form; Muse's wild controls all fall inside the narrow form.
-**Tonight supplied the decisive instance for the narrow form (§7).**
+  kills the broad form; Muse's wild controls all fall inside the narrow form.
+  **Tonight supplied the decisive instance for the narrow form (§7).**
+  **Status 2026-09-10:** shipped as a tree sweep with constructed fixtures;
+  two hardening follow-ups filed (declaration floor, word-order pattern).
 
 ### 7. ~~Top-ranked clearance and starvation~~ — **STRUCK, and this is the most instructive strike in the list.** (§5)
 

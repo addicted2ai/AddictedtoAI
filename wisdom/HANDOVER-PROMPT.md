@@ -1,5 +1,10 @@
 # The handover prompt
 
+> SUPERSEDED 2026-09-10 (A2AI-Spark): this prompt was consumed at takeover
+> time (~09:27 local) and its work is done — Stage 0 tasks 16/17 and items
+> 2b, 3, 5, 6 all merged, worktrees torn down. The body below is left
+> untouched as the record of that moment; do not follow its action list.
+
 Paste everything below the line into the new agent or harness as its first
 message. It is deliberately short on content and long on pointers: the substance
 lives in committed documents, and **a prompt that restates them becomes a second
