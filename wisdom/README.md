@@ -983,6 +983,64 @@ one run and burns the trust of the one person who obeyed it. **The first
 corrupts the corpus the instrument protects; the second destroys the
 instrument.** The second is self-limiting. The first is not.
 
+### 7j. The clock is the only measurement here with no visible failure mode
+
+Section 3 of this report says every date in this repository is the local date
+of the machine that wrote it, and explains what one night of mixed conventions
+cost. This is the failure one level below that: not the wrong zone, but a time
+nobody read.
+
+Two sessions, working in parallel, corrupted their own records the same way on
+the same night, and neither could catch the other. One stamped every log entry
+from its sense of elapsed time after a single real reading — **one hundred and
+forty-six claimed minutes inside sixty-four real ones**, the last entry wrong by
+about eighty-six, across seven artifacts and fifty-three references, discovered
+only because a piece of arithmetic disagreed with a header. The other did the
+same thing at one-thirtieth the scale, seven entries out of twelve, each wrong
+by one to three minutes. **The size is the only difference between them.**
+
+**A PLAUSIBLE TIMESTAMP IS INDISTINGUISHABLE FROM A READ ONE.** That is the
+whole finding. Every other measurement in this system has a shape that can fail:
+a wrong commit hash does not resolve, a wrong count fails against a denominator,
+a list that covers one of three fails against the list. A clock time has no
+shape. It is the cheapest measurement available and the only one whose forgery
+leaves no trace, so it survives every re-read, including by the person who
+invented it.
+
+Both sessions **already had the rule** — read the clock as its own call, then
+write. Both kept the write and stopped making the call. So the lesson is not
+that a rule was missing:
+
+**A RULE THAT REQUIRES AN EXTRA CALL DECAYS SILENTLY TO ITS CHEAPER HALF, AND
+HALF-KEEPING IT IS INDISTINGUISHABLE FROM KEEPING IT.** This is the same family
+as the re-read that confirms the true half at no cost: the degraded version
+produces output identical to the good version, so nothing ever signals the
+decay. One of the two files carried a legend defining a marker for exactly this
+case — *not anchored* — and the marker went unused all night, three lines above
+the entries that needed it.
+
+Two things about the repair are worth as much as the finding.
+
+**The corrupted values were not recomputed into better-looking ones.** They were
+replaced with what is actually defensible: the interval, measured at both ends,
+and the order, which position in the file already carries. **A fabricated number
+rewritten as a plausible number repeats the error with tidier output.** Where an
+independent record existed it was used instead — a commit's own timestamp, a
+script's file mtime — because those were written by something that did read a
+clock.
+
+**And the sweep that fixed it missed thirty-seven cases**, because its pattern
+required a date prefix and the bare form has none. That is section 7i's
+exhaustiveness failure occurring inside the repair for a different one, within
+the hour, and it was caught only by asking the denominator question of the fix
+rather than of the code.
+
+The last piece is the reason this section exists at all rather than being one
+session's embarrassment. Neither session could have caught the other: one was
+reading the numbers and the other was writing them. **AGREEMENT BETWEEN TWO
+AGENTS IS NOT EVIDENCE.** Where a claim cannot be checked against something
+neither of them wrote, it is not checked.
+
 ---
 
 ## 8. THE PHASED PLAN
