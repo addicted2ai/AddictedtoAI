@@ -53,7 +53,27 @@ if (!briefPath || !authority) {
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const brief = readFileSync(briefPath, 'utf8');
 const _changeName = (brief.match(/authority:\s*([A-Za-z0-9_.\-]+)@([0-9a-f]{7,40})/) || [])[1];
-const TASKS = _changeName ? `openspec/changes/${_changeName}/tasks.md` : 'openspec/changes/<unknown-change>/tasks.md';
+// THE CHANGE ROOT IS NAMED HERE; NO CHANGE INSIDE IT IS.
+// `scripts/no-change-dir-refs.test.mjs` refuses a source reference to an
+// unarchived change directory, because archiving moves it and the reference
+// becomes a delayed failure. This file was refusing that guard at the gate on
+// 2026-09-10 and the guard was right: the linter had entered `scripts/` and
+// brought a change path with it.
+//
+// The repair names the ROOT and derives everything below it from the brief's
+// own authority line, which is where the change identity belongs. The guard's
+// own control records that a bare root "designates no change, so archiving
+// never moves it".
+//
+// THE COST, SAID OUT LOUD RATHER THAN LEFT FOR SOMEONE TO FIND: a path built
+// this way is invisible to that detector, so a change NAMED as
+// `${CHANGE_ROOT}/some-change/` in this file would not be caught. A change
+// named the ordinary way still would be.
+const CHANGE_ROOT = 'openspec/changes';
+const TASKS = _changeName ? `${CHANGE_ROOT}/${_changeName}/tasks.md` : null;
+// With no authority line there is no change to resolve, and the message says
+// exactly that rather than naming a placeholder path that reads like one.
+const TASKS_NAME = TASKS || '(no authority line, so no change to resolve)';
 const lines = brief.split(/\r?\n/);
 const norm = (s) => s.replace(/\s+/g, ' ').trim();
 let fails = 0;
@@ -141,7 +161,10 @@ report(pf(!!auth && reachable && sameSha), 'authority line present, reachable, e
 // 2. quotes
 let blob = '';
 let tasksMissing = false;
-try { blob = norm(execFileSync('git', ['-C', REPO, 'show', `${authority}:${TASKS}`], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 })); } catch { blob = ''; tasksMissing = true; }
+if (!TASKS) tasksMissing = true;
+else {
+  try { blob = norm(execFileSync('git', ['-C', REPO, 'show', `${authority}:${TASKS}`], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 })); } catch { blob = ''; tasksMissing = true; }
+}
 const quotes = [];
 let cur = [];
 for (const l of lines) {
@@ -149,7 +172,7 @@ for (const l of lines) {
   else if (cur.length) { quotes.push(norm(cur.join(' '))); cur = []; }
 }
 if (cur.length) quotes.push(norm(cur.join(' ')));
-if (tasksMissing) report('FAIL', `quotes verbatim against ${TASKS}@${authority}`, `task file does not resolve: ${TASKS}@${authority}`);
+if (tasksMissing) report('FAIL', `quotes verbatim against ${TASKS_NAME}@${authority}`, `task file does not resolve: ${TASKS_NAME}@${authority}`);
 else if (!quotes.length) report('WARN', 'quotes', 'no > blocks — the brief quotes no frozen standard');
 else {
   let bad = 0;
@@ -157,7 +180,7 @@ else {
     const core = q.replace(/^(\.\.\.|…)\s*/, '').replace(/\s*(\.\.\.|…)$/, '');
     if (!blob.includes(core)) { bad += 1; console.log(`      NOT VERBATIM: "${core.slice(0, 90)}…"`); }
   }
-  report(pf(bad === 0 && blob.length > 0), `quotes verbatim against ${TASKS}@${authority}`, `${quotes.length - bad}/${quotes.length}`);
+  report(pf(bad === 0 && blob.length > 0), `quotes verbatim against ${TASKS_NAME}@${authority}`, `${quotes.length - bad}/${quotes.length}`);
 }
 
 // 3. instruments
@@ -226,9 +249,9 @@ else {
   const strayEdits = [];
   for (const s of prose) {
     // The verb test runs on the sentence with its CITED PATHS REMOVED. A path
-    // is not a verb: `openspec/changes/two-desks-…/tasks.md` made every
-    // sentence citing the change directory read as an edit instruction,
-    // because "changes" is in EDIT_VERB and the path carries it. The paths are
+    // is not a verb: a cited path under the openspec change tree carries the
+    // word "changes" as a directory segment, and "changes" is in EDIT_VERB, so
+    // every sentence citing one read as an edit instruction. The paths are
     // still matched below — they are removed from the VERB test only.
     const verbText = s.replace(CITE, ' ');
     if (!EDIT_VERB.test(verbText) || PROHIBIT.test(s)) continue;

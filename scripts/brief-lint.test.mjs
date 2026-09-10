@@ -21,17 +21,54 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, readdirSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, dirname, resolve } from 'node:path';
+import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync, spawnSync } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..');
 const LINTER = join(REPO, 'scripts', 'brief-lint.mjs');
-const CHANGE = 'two-desks-work-orders-and-trains';
-const TASKS_REL = `openspec/changes/${CHANGE}/tasks.md`;
+// THE CHANGE UNDER TEST IS DISCOVERED, NOT NAMED.
+//
+// A bare constant naming one in-flight change is invisible to
+// `scripts/no-change-dir-refs.test.mjs` — a constant is not a path — and it
+// rots the day that change is archived, which is a delayed failure this
+// repository has already paid for three times. Deleting the visible path while
+// keeping the constant would have removed the alarm and kept the defect.
+//
+// The anchor is what the fixtures actually NEED, not alphabetical order: the
+// pointer trials below assert that a live phrase resolves inside the change's
+// `tasks.md`, so the change is whichever unarchived one carries that phrase.
+// Measured 2026-09-10: of the four unarchived changes, exactly one does, and
+// none carries the deliberately-wrong twin. The trial directly below asserts
+// that uniqueness, so an ambiguous anchor fails loudly and by name rather than
+// silently selecting the wrong corpus.
+const LIVE_PHRASE = 'Stage 0 ships first and alone';
+const CHANGE_ROOT = resolve(REPO, 'openspec', 'changes');
+const CHANGE_CANDIDATES = readdirSync(CHANGE_ROOT, { withFileTypes: true })
+  .filter((e) => e.isDirectory() && e.name !== 'archive')
+  .map((e) => e.name)
+  .filter((name) => {
+    const tasks = join(CHANGE_ROOT, name, 'tasks.md');
+    return existsSync(tasks) && readFileSync(tasks, 'utf8').replace(/\s+/g, ' ').includes(LIVE_PHRASE);
+  })
+  .sort();
+const CHANGE = CHANGE_CANDIDATES[0];
+// Computed from the discovered directory rather than written as a path literal,
+// so no change is named in this file either.
+const TASKS_REL = CHANGE
+  ? relative(REPO, join(CHANGE_ROOT, CHANGE, 'tasks.md')).replace(/\\/g, '/')
+  : null;
+
+test('fixtures: exactly one unarchived change carries the live phrase', () => {
+  assert.equal(
+    CHANGE_CANDIDATES.length,
+    1,
+    `the pointer fixtures anchor on "${LIVE_PHRASE}"; ${CHANGE_CANDIDATES.length} unarchived change(s) carry it: ${CHANGE_CANDIDATES.join(', ') || 'none'}`,
+  );
+});
 
 // Assembled at runtime so this file never spells the guarded two-letter token.
 const DIR_TOKEN = String.fromCharCode(99, 100);
@@ -424,10 +461,16 @@ test('tasks file: unknown change refuses with path named', () => {
 test('move: no hard-coded root or task path remains', () => {
   const src = readFileSync(LINTER, 'utf8');
   assert.ok(!src.includes(`const REPO = 'D:/AddictedtoAI'`), 'hard-coded root is gone');
-  assert.ok(
-    !src.includes(`const TASKS = 'openspec/changes/two-desks-work-orders-and-trains/tasks.md'`),
-    'hard-coded task path is gone',
-  );
+  // The prefix is assembled because this assertion IS the pattern it looks for,
+  // and a checker that spells its own pattern matches itself. The repository's
+  // change-directory guard assembles the same prefix for the same reason.
+  // Stronger than the string equality this replaced: that one refused ONE exact
+  // literal, so any other spelling of a named change passed it.
+  const namedChanges = [
+    ...src.matchAll(new RegExp(`${['openspec', 'changes', ''].join('/')}([^\\s/'"\\x60]+)/`, 'g')),
+  ].map((m) => m[1]);
+  assert.deepEqual(namedChanges, [], 'no change directory is named in the linter source');
+  assert.ok(src.includes('CHANGE_ROOT'), 'the change root is a constant and the change name derives from the brief');
   assert.ok(src.includes('import.meta.url'), 'root derives from script location');
   assert.ok(src.includes('_changeName'), 'change name derives from authority line');
 });
@@ -684,8 +727,13 @@ test('scope: cited path without verb stays green', () => {
   // Without cited-path removal the verb test would read it as an edit
   // instruction. Keep an example with such a word here; a path without one
   // (for instance loop/run.mjs) would stay green either way and prove nothing.
+  // The ARCHIVED form is used deliberately: it carries the same word, and it is
+  // the one shape archiving can never move, so this fixture cannot rot. It also
+  // names no unarchived change, which `scripts/no-change-dir-refs.test.mjs`
+  // refuses — including in fixtures, which is how this file failed the gate on
+  // 2026-09-10.
   const sha = headSha();
-  const text = `${baseBrief(sha)}\nSee \`openspec/changes/two-desks-work-orders-and-trains/tasks.md\` for context.\n`;
+  const text = `${baseBrief(sha)}\nSee \`openspec/changes/archive/2026-09-07-a-finished-change/tasks.md\` for context.\n`;
   withTemp(text, (p) => {
     const r = runLint(p, sha);
     assert.equal(r.status, 0, r.out);
