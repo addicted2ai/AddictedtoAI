@@ -852,8 +852,19 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
   }
 
   // Findings a reviewer carried but did not block on (beads addictedtoai-2bo).
-  // One item per file under data/carried/ — see `carriedFindingItems` above
-  // for why the rank is low and how an item retires.
+  // One item per SUBJECT — `carriedFindingItems` groups the directory by each
+  // file's `subject`, so several findings about one path become one item. A
+  // finding with NO subject falls back to a key of its own file path and so
+  // can never group, which is the reason the fallback exists rather than an
+  // accident of it. See `carriedFindingItems` above for why the rank is low
+  // and how an item retires.
+  //
+  // This comment said "one item per file" until 2026-09-09, which was the
+  // behaviour BEFORE grouping was added and false afterwards. It sits at the
+  // call site, so a reader checking whether the merge exists reads the comment,
+  // concludes it does not, and builds a second grouping beside the shipped one
+  // — which would pass its own tests. Fixed while scoping the change that makes
+  // `subject` required, when it would have caused exactly that.
   for (const it of carriedFindingItems(root)) items.push(it);
 
   // A page the learn curriculum declares and the corpus does not publish.
