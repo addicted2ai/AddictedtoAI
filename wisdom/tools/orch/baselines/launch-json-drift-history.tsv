@@ -1,0 +1,30 @@
+# data/launch.json drift, one row per gate run. Columns:
+#   timestamp	gated_sha	verdict	blob (before -> after when DRIFTED)	.next state before the run
+#
+# EVERY RUN GETS A ROW, INCLUDING THE CLEAN ONES. A history that records only the
+# drifted runs cannot answer "how often", and "how often" is the question that
+# turned this from noise into two states. I got it wrong the other way on
+# 2026-09-09 by reading a streak of four clean runs as a refutation rather than
+# as four samples (addictedtoai-6dpj).
+#
+# THE ROWS BELOW MARKED `backfilled` WERE RECONSTRUCTED BY HAND on 2026-09-09
+# 23:45 from the board log and the per-run directories under gate-runs/, AFTER
+# the fact and after each drifted file had already been reverted. They are
+# weaker evidence than the rows the harness writes, and the `.next` column is
+# UNKNOWN for all of them because nothing sampled it at the time — which is the
+# whole reason the harness now samples it before gate 2 can change it. Do not
+# treat an unknown as a cold build.
+2026-09-09 17:54:07	1b34667	no-verdict	run killed by the 17:59:47 reboot, mid-flight	unknown	backfilled
+2026-09-09 18:46:01	53779c3	DRIFTED	9c272f4 -> 03e2207	unknown	backfilled
+2026-09-09 19:08:29	53779c3	clean	9c272f4	unknown	backfilled
+2026-09-09 19:17:39	53779c3	clean	9c272f4	unknown	backfilled
+2026-09-09 21:06:59	7f50b95	clean	9c272f4	unknown	backfilled
+2026-09-09 21:27:40	1b34667	clean	9c272f4	unknown	backfilled
+2026-09-09 23:26:02	95bb03e	DRIFTED	9c272f4 -> 03e2207	unknown	backfilled
+2026-09-10 02:28:10	88244a3	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 00:00:40 size_kb=227142
+2026-09-10 02:54:06	3c46e46	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 02:27:10 size_kb=227210
+2026-09-10 06:13:54	99b2112	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 06:00:36 size_kb=227206
+2026-09-10 06:28:49	c15e901	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 06:12:51 size_kb=227210
+2026-09-10 06:43:27	c15e901	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 06:27:48 size_kb=227206
+2026-09-10 07:00:40	c15e901	clean	2b51ce023d0aac0542e900759dffde765b26d120	present mtime=2026-09-10 06:42:27 size_kb=227214
+2026-09-10 07:39:31	113996c	DRIFTED	9c272f425a1204a6da87aad34b5c85657adaf029 -> 23fdf64fde303a6b1c10bf0fb637b19683470c42	present mtime=2026-09-10 06:59:40 size_kb=227214

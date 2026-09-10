@@ -1,0 +1,56 @@
+2026-09-08 19:02:17	0ed3448	1734	baseline established
+2026-09-09 00:11:02	de400f7	1753
+2026-09-09 06:16:44	9c1d980	1773
+2026-09-09 10:25:12	f74f606	1784
+2026-09-09 13:42:05	08ae8b0	1797
+2026-09-09 18:51:21	53779c3	1817
+2026-09-09 19:13:33	53779c3	1817
+2026-09-09 19:22:22	53779c3	1817
+2026-09-09 21:11:44	7f50b95	1817
+2026-09-09 21:32:30	1b34667	1817
+2026-09-09 23:31:14	95bb03e	1819
+2026-09-10 02:26:18	88244a3	1897
+2026-09-10 02:52:12	3c46e46	1899
+# AUDIT NOTE, 2026-09-10 (clock NOT read; between 02:59 and 04:03), hand-written by A2AI-Orch. NOT a count line.
+# The row `2026-09-10 02:26:18  88244a3  1897` WAS RECORDED BY A RED RUN: that
+# run's 1-test gate exited 1 (scripts/no-change-dir-refs.test.mjs refused the
+# brief linter) and 88244a3 was never pushed. The harness appended immediately
+# after gate 1, so it considered neither the other five gates nor gate 1's own
+# exit code, while the comment beside it called the recorded value "the last
+# known-good one". Fixed (clock not read): the append is now deferred to the end of the run
+# and happens only when all six gates are green.
+# LEFT IN PLACE DELIBERATELY rather than deleted. It is superseded by the green
+# 3c46e46 row at 1899, so it is inert; and the history is the evidence for how
+# the ratchet has behaved, which a silent deletion would destroy. Had 88244a3
+# been abandoned instead of repaired, this row would have refused the next
+# honest run as a decrease 1897 -> 1819.
+2026-09-10 06:13:52	99b2112	1926
+#
+# AUDIT NOTE, appended 2026-09-10 06:15 by A2AI-Orch. THE ROW ABOVE
+# (06:13:52  99b2112  1926) ATTRIBUTES A COUNT TO A SHA WHOSE TREE THE RUN
+# STOPPED MEASURING SIXTY-ONE SECONDS IN. The run started 06:03:06 against
+# HEAD 99b2112; c15e901 was committed to main at 06:04:07, while gate 1 was
+# still executing; HEAD read c15e901 for the rest of the run and at its end.
+# The delta itself is sound and independently corroborated -- 1899 -> 1926 is
+# +27, and A2AI-Fable-Arch measured W3's record wall at 27 collected / 27
+# passed on main -- and c15e901 adds one .md file with no .mjs/.json/.yml in
+# its diff, so it cannot have moved a count. NEITHER FACT MAKES THE SHA ON
+# THIS ROW THE SHA THAT WAS MEASURED.
+#
+# THE ROW IS LEFT STANDING, exactly as the 88244a3 row above it was, and for
+# the same reason: the history is the record of what the ratchet did, and a
+# silent deletion destroys the only evidence that it did it. Deleting a row I
+# find embarrassing is how a baseline becomes self-ratifying.
+#
+# CAUSE, and it is a defect in the harness rather than in anybody's judgement:
+# orch-gates-only.sh captures HEAD_SHA once, before gate 1, and NOTHING
+# RE-READS IT. The final verdict printed "ALL SIX GATES GREEN at 99b2112"
+# from a value read ten minutes earlier. A RUN THAT NAMES A SHA IT READ ONCE
+# IS ASSERTING THAT A SUMMARY TAKEN AT THE START STILL DESCRIBES THE THING AT
+# THE END. Being fixed now: an end-of-run re-read that refuses to call a run
+# pushable if HEAD moved, and a GATE-RUNNING lock written as the harness's
+# first action so a peer can see a run that has not yet spawned a process.
+#
+# NOTHING WAS PUSHED ON THIS ROW. The re-gate at c15e901 is the run that will
+# carry a pushable verdict.
+2026-09-10 07:00:40	c15e901	1926
