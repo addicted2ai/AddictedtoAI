@@ -59,7 +59,7 @@ import {
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
 import { isDiffRefusal, isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
-import { acquireWorkerSlot, mergeJobBranch, releaseWorkerSlot, runTripwire } from './lib/train.mjs';
+import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
 import {
   brakeScan,
   brakeState,
@@ -69,7 +69,8 @@ import {
   startGate,
 } from './lib/breakers.mjs';
 import { publishStep } from './lib/publish.mjs';
-import { rederiveStep, DERIVED_PATHS, dirtyDerivedInputs } from './lib/rederive.mjs';
+import { DERIVED_PATHS, dirtyDerivedInputs } from './lib/rederive.mjs';
+import { readQueue } from './lib/queue.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
 import { localDate } from './lib/dates.mjs';
 import { isIssueId, mergeIssueIds } from './lib/issues.mjs';
@@ -1752,19 +1753,49 @@ export async function runLoop(ctx, opts = {}) {
     // operator override keeps its pre-train meaning).
     let tripwireBaseTip = null;
     let tripwireBlocked = null;
-    if (!opts.noGates) {
-      const trip = runTripwire(ctx, { worktree, baseRef: base, gates: opts.gates });
+    // Stage-1 U2 (tasks 35+36): merges land on the `train` integration
+    // branch; `main` stays frozen between trains. Ensure it from `base`
+    // and move the checkout onto it, so the merge, the per-job records
+    // and (later) the train's own commits all land on `train` with the
+    // merges they describe. A checkout failure is environmental: the
+    // merge must not land.
+    let admissionBlocked = null;
+    const trainPrep = ensureTrainBranch(ctx.repoRoot, base);
+    if (!trainPrep.ok) {
+      ctx.log(`train branch unavailable (${trainPrep.reason}) — booking interrupted, nothing merges`);
+      admissionBlocked = 'interrupted';
+    } else {
+      const co = checkoutTrain(ctx.repoRoot);
+      if (!co.ok) {
+        ctx.log(`train checkout failed (${co.reason}) — booking interrupted, nothing merges`);
+        admissionBlocked = 'interrupted';
+      }
+    }
+    // Admission disjointness (row 35): the incoming job's subjects (the
+    // branch diff vs `base`, the run's existing measurement) against the
+    // admitted set's, measured live from git — no pending-state file
+    // exists to go stale. Overlap waits: resumable, never a failure.
+    if (admissionBlocked == null) {
+      const incoming = joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
+      const disj = admissionOverlap(ctx.repoRoot, incoming);
+      if (disj.overlap) {
+        ctx.log(`subjects overlap a merge on the train (${disj.with.join(', ')}) — waiting, nothing merges`);
+        admissionBlocked = 'interrupted';
+      }
+    }
+    if (!opts.noGates && admissionBlocked == null) {
+      const trip = runTripwire(ctx, { worktree, baseRef: TRAIN_BRANCH, gates: opts.gates });
       tripwireBaseTip = trip.baseTip ?? null;
       if (!trip.ok) {
         if (trip.environmental) {
-          ctx.log(`tripwire: branch+base togetherness unverified (${trip.reason}) — booking interrupted, nothing merges`);
+          ctx.log(`tripwire: branch+train togetherness unverified (${trip.reason}) — booking interrupted, nothing merges`);
           tripwireBlocked = 'interrupted';
         } else {
-          ctx.log(`tripwire: branch+base red together (${trip.reason}) — ordinary gate failure, nothing merges`);
+          ctx.log(`tripwire: branch+train red together (${trip.reason}) — ordinary gate failure, nothing merges`);
           tripwireBlocked = 'failed';
         }
       } else {
-        ctx.log(`tripwire: branch+base green together at ${String(trip.baseTip).slice(0, 8)}`);
+        ctx.log(`tripwire: branch+train green together at ${String(trip.baseTip).slice(0, 8)}`);
       }
     }
     const merged = proposals.refused.length
@@ -1775,12 +1806,12 @@ export async function runLoop(ctx, opts = {}) {
             `the branch adds ${proposals.refused.length === 1 ? 'does' : 'do'} not carry what a ` +
             `declined story must record (specs/loop): ${proposals.refused.join(' | ')}`,
         }
-      : tripwireBlocked
-        ? { ok: false, quiet: true, blocked: tripwireBlocked }
+      : (tripwireBlocked || admissionBlocked)
+        ? { ok: false, quiet: true, blocked: tripwireBlocked || admissionBlocked }
         : await mergeJobBranch(ctx, {
             repo: ctx.repoRoot,
             branch,
-            baseRef: base,
+            baseRef: TRAIN_BRANCH,
             message: `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`,
             tripwireBaseTip,
             gates: opts.gates,
@@ -1800,7 +1831,7 @@ export async function runLoop(ctx, opts = {}) {
     } else {
       mergedSha = merged.sha;
       outcome = 'done';
-      ctx.log(`merged ${branch} into ${base} locally as ${mergedSha.slice(0, 8)} — nothing is pushed`);
+      ctx.log(`merged ${branch} into ${TRAIN_BRANCH} locally as ${mergedSha.slice(0, 8)} — nothing is pushed`);
 
       // Recompute the derived tree from the MERGED state (addictedtoai-942).
       // Without this the queue keeps advertising the work this job just
@@ -1818,10 +1849,9 @@ export async function runLoop(ctx, opts = {}) {
       // ledger — `scoutRanToday` is read straight out of it — so a rederive
       // that ran before the append would recompute the queue from a record of
       // the world that omits the job that just finished, and re-advertise its
-      // work. See `recordOutcome` above for the measurement.
+      // work. See `recordOutcome` above for the measurement. The rederive is
+      // the train's single one (row 50); the ordering is what this preserves.
       recordOutcome();
-      const rederiveResult = await rederiveStep(ctx);
-      rederived = rederiveResult.ok;
 
       // The record says what it reviewed, now that "what it reviewed" is a
       // settled fact: these files are on `${base}`. Without this the record
@@ -1932,7 +1962,10 @@ export async function runLoop(ctx, opts = {}) {
       // merged tip cannot reach main through THIS path (the tripwire refuses
       // it, the rebuild reverts it); what U1 stops seeing is redness that
       // arrives any other way.
-      publishAfterRecords = merged.verified === true;
+      // Row 36 / S2: the per-job publish is gone — the ordered run ends at
+      // the publish HANDOFF (verified SHA declared, no invocation); U5 owns
+      // the push. `merged.verified` still drives the honesty logs above.
+      publishAfterRecords = false;
       if (job.source === 'directive' && job.lineNumber) {
         // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
         // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
@@ -2247,6 +2280,59 @@ export async function runLoop(ctx, opts = {}) {
   // on a merge, which is the same condition the old call site was nested under.
   // -------------------------------------------------------------------------
   if (publishAfterRecords) await publishStep(ctx, { cfg, owned: staged });
+
+  // Stage-1 U2 (tasks 35+36): after the merge phase, evaluate the
+  // triggers and run the ordered train synchronously when one fires. K/T
+  // evaluate on done AND interrupted runs (a refused job must not strand
+  // met triggers); idle additionally needs an empty queue with nothing
+  // admitted this run, so fresh solo merges never shortcut K. A train
+  // failure is NOT a job failure — the job merged fine; the merges wait
+  // on `train` for the next evaluation. So this logs loudly and never
+  // touches `outcome` (red-path classification is U3).
+  if ((outcome === 'done' || outcome === 'interrupted') && !opts.dryRun) {
+    let queueEmpty = false;
+    try {
+      // `.items`: readQueue returns `{items, warnings, ...}`, never an
+      // array — `.length` on the object is undefined and the idle trigger
+      // below would be dead in production (caught by the sealed review;
+      // the unit arm passes queueEmpty directly and cannot see this).
+      queueEmpty = (readQueue(ctx).items || []).length === 0;
+    } catch {
+      queueEmpty = false;
+    }
+    const bounds = trainBounds(cfg);
+    const pending = pendingMerges(ctx.repoRoot);
+    const trig = evaluateTriggers({
+      pending, bounds, nowS: Math.floor(Date.now() / 1000),
+      queueEmpty, admittedThisRun: Boolean(mergedSha),
+    });
+    if (trig.fire) {
+      ctx.log(`train trigger (${trig.reason}) — assembling the ordered run`);
+      const oldest = pending[0].sha;
+      const asm = assembleTrain(ctx.repoRoot, {
+        trainId: `t-${String(oldest).slice(0, 8)}`,
+        bounds,
+      });
+      if (!asm.ok) {
+        ctx.log(`train assembly refused: ${asm.reason} — merges wait on train`);
+      } else {
+        let tr = null;
+        try {
+          tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: opts.gates });
+        } catch (e) {
+          // runTrain returns {ok:false} for every named failure, but a seam
+          // throwing past it (disk full under appendLedger, a reviewer
+          // harness dying) must not escape the run: log loudly, merges wait.
+          ctx.log(`train threw (${e.message ?? String(e)}) — merges wait on train, nothing publishes`);
+        }
+        if (tr && !tr.ok) {
+          ctx.log(`train failed: ${tr.reason} — merges wait on train, nothing publishes`);
+        } else if (tr) {
+          ctx.log(`train verified ${String(tr.sha).slice(0, 8)} — publish handoff: no invocation; U5 owns the push`);
+        }
+      }
+    }
+  }
 
   // The run's last word, unconditionally.
   //

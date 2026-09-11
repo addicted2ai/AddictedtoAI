@@ -22,9 +22,10 @@
  *           TRAIN_GATES holds the frozen six in Q-S15 order, the frozen set
  *           is immutable from job code.
  *   arm 5 — the post-merge build block is absent by symbol
- *           (`postMergeGateOptions` nowhere in `run.mjs`) while the single
- *           rederive (`await rederiveStep(ctx)`) stands.
- *   arm 6 — green gates with a broken cleanup book environmental, not
+ *           (`postMergeGateOptions` nowhere in `run.mjs`) and the per-job
+ *           rederive is gone by row 50 (Stage-1 U2); the single rederive
+ *           lives in the train.
+ *   arm 6 — green gates with a failed cleanup book environmental, not
  *           ordinary: the gates stub deletes the worktree's gitfile after
  *           the green run, so `discardProvisional` fails and togetherness —
  *           verified green — must refuse the merge as `interrupted`.
@@ -236,12 +237,18 @@ test('arm 4 — gate-set pins: tripwire two, frozen six in Q-S15 order', () => {
   assert.equal(Object.isFrozen(TRAIN_GATES), true, 'the frozen set is immutable from job code');
 });
 
-test('arm 5 — post-merge block absent by symbol, single rederive stands', () => {
+test('arm 5 — post-merge block absent by symbol, per-job rederive gone by row', () => {
   const src = readFileSync(RUN, 'utf8');
   // The declaration, not the name: comments may cite the removed symbol for
   // archaeology, but no code may construct it.
   assert.equal(src.includes('postMergeGateOptions ='), false, 'the symbol-anchored post-merge build block is gone');
-  assert.match(src, /await rederiveStep\(ctx\)/, 'the single rederive stands');
+  // Row 50 (Stage-1 U2): the per-job `rederiveStep` worker call goes away;
+  // the train's single rederive replaces it. This pin moved with the row
+  // (U1 scope-addendum rule: stale pins move minimally with reason) — the
+  // single rederive that stands lives in train.mjs, asserted behaviorally
+  // (exactly one call) by the train suite.
+  assert.equal(src.includes('await rederiveStep(ctx)'), false, 'no per-job rederive remains in run.mjs');
+  assert.match(readFileSync(LIB, 'utf8'), /await rederive\(ctx, repo\)/, 'the single rederive lives in the train');
 });
 
 test('arm 6 — green gates with a failed cleanup book environmental', () => {

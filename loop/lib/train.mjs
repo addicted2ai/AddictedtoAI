@@ -20,8 +20,11 @@
 import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildLockDir } from '../../scripts/build-lock.mjs';
-import { gitTry, mergeLocal } from './git.mjs';
-import { gatesHitEnvironmentalFailure, runGates } from './gates.mjs';
+import { branchExists, changedPathsWithStatus, gitTry, headSha, mergeLocal } from './git.mjs';
+import { gatesHitEnvironmentalFailure, runGates, TRAIN_GATES } from './gates.mjs';
+import { joinableSubjects } from './review.mjs';
+import { appendLedger, makeLedgerLine } from './ledger.mjs';
+import { rederiveStep } from './rederive.mjs';
 
 /** `rev-parse` a ref to a sha, or null when git cannot resolve it. */
 function revParse(dir, rev) {
@@ -405,4 +408,491 @@ export function releaseWorkerSlot(handle) {
   } catch (e) {
     return { ok: false, reason: e && e.message ? e.message : String(e) };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Train assembly + ordered run (tasks 35, 36; U2, bead 938e).
+//
+// Shape of the world this code assumes (stated, not hidden): the Desk's
+// checkout sits ON the `train` branch from the first admission until a
+// later unit fast-forwards `main` to a verified SHA (U5). Merges land on
+// `train`; per-job records land on `train`; `main` is frozen between
+// trains. The train runs in this same checkout (it IS the train's tree),
+// never in a second worktree: gates, rederive, review seam, records
+// commit and re-gate all read the tip they declare.
+// ---------------------------------------------------------------------------
+
+/** The integration branch merges land on. */
+export const TRAIN_BRANCH = 'train';
+
+/** The manifest's path inside the train checkout (machinery, row 35). */
+export const MANIFEST_PATH = '.train/manifest.json';
+
+/** Bounds keys, read from `data/config.json` — never literals (row 35). */
+export function trainBounds(cfg) {
+  const t = (cfg && cfg.train) || {};
+  return {
+    merges: t.merges,
+    minutes: t.minutes,
+    maxReviewedBytes: t.max_reviewed_bytes,
+    maxSubjects: t.max_subjects,
+    lockWaitSeconds: t.lock_wait_seconds,
+  };
+}
+
+/**
+ * Create the `train` branch from `baseRef` when missing. Never moves an
+ * existing branch. Returns `{ok:true, created}` or `{ok:false, reason}`.
+ */
+export function ensureTrainBranch(repo, baseRef) {
+  if (branchExists(repo, TRAIN_BRANCH)) return { ok: true, created: false };
+  const r = gitTry(repo, ['branch', TRAIN_BRANCH, baseRef]);
+  if (!r.ok) {
+    return { ok: false, reason: String(r.stderr ?? r.stdout ?? '').trim() || 'could not create train branch' };
+  }
+  return { ok: true, created: true };
+}
+
+/**
+ * Move the checkout onto the `train` branch. The merge phase calls this
+ * before the tripwire so merges, per-job records and (later) the train's
+ * own commits all land on `train`; `main` stays frozen between trains.
+ * A checkout failure is environmental — the merge must not land.
+ */
+export function checkoutTrain(repo) {
+  const r = gitTry(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+  if (!r.ok) {
+    return { ok: false, environmental: true, reason: `could not check out ${TRAIN_BRANCH}: ${String(r.stderr ?? r.stdout ?? '').trim() || 'checkout failed'}` };
+  }
+  return { ok: true };
+}
+
+/**
+ * Merges on `train` that `main` does not have, oldest first. Each entry
+ * carries the committer timestamp: the `T` trigger reads the oldest.
+ */
+export function pendingMerges(repo, mainRef = 'main') {
+  const r = gitTry(repo, ['log', '--reverse', '--merges', '--format=%H %ct', `${mainRef}..${TRAIN_BRANCH}`]);
+  if (!r.ok) return [];
+  return String(r.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+    const [sha, ts] = l.split(' ');
+    return { sha, ts: Number(ts) || 0 };
+  });
+}
+
+/** Parse `job <id> (<type>): ...` merge messages (mergeJobBranch's shape). */
+export function mergeJobId(message) {
+  const m = /^job (\S+) \(/.exec(String(message ?? '').split('\n')[0] ?? '');
+  return m ? m[1] : null;
+}
+
+/**
+ * Names changed by one merge: first-parent diff. (`git diff-tree` on a
+ * merge sha alone prints nothing — combined diffs are suppressed without
+ * `-m` — so a bare diff-tree silently measures zero bytes and every merge
+ * fits every bound. Caught during authoring: seven 25KB merges admitted
+ * seven.)
+ */
+export function mergeDiffNames(repo, sha) {
+  const r = gitTry(repo, ['diff', '--name-only', `${sha}^`, sha]);
+  if (!r.ok) return [];
+  return String(r.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+}
+
+/**
+ * A merge's subjects: the content paths its diff touches, measured first
+ * parent to merge (the merge's own content). The joinableSubjects seam is
+ * the in-tree subject source (review.mjs); Stage 2 replaces the measure,
+ * not the call sites (T13).
+ */
+export function mergeSubjects(repo, sha) {
+  let changed = [];
+  try {
+    changed = changedPathsWithStatus(repo, `${sha}^`, sha);
+  } catch {
+    return [];
+  }
+  return joinableSubjects(changed);
+}
+
+/** Union of subjects over merges, preserving first-seen order. */
+export function unionSubjects(lists) {
+  const out = [];
+  for (const list of lists) {
+    for (const s of list || []) {
+      if (!out.includes(s)) out.push(s);
+    }
+  }
+  return out;
+}
+
+/**
+ * The counted set (row 36, Q-S4): content and code — everything except
+ * `data/derived/**` and `.train/**`. ONE helper backs BOTH the
+ * `B_train`/`S_train` measurement and the post-rederive assertion, so the
+ * two cannot drift; two implementations is a defect.
+ */
+export function countedPaths(paths) {
+  return (paths || []).filter((p) => {
+    const n = String(p).replace(/\\/g, '/');
+    return !n.startsWith('data/derived/') && n !== 'data/derived' && !n.startsWith('.train/') && n !== '.train';
+  });
+}
+
+/**
+ * Blob bytes of a counted path at a tip. `B_train` counts BYTES (row 36:
+ * `max_reviewed_bytes`), and the only byte measure that cannot drift from
+ * what the reviewer reads is the blob the tip carries.
+ */
+export function blobBytes(repo, tip, path) {
+  const r = gitTry(repo, ['cat-file', '-s', `${tip}:${String(path).replace(/\\/g, '/')}`]);
+  const n = Number(String(r.stdout ?? '').trim());
+  return r.ok && Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Measure one pending merge for the bounds: bytes over its counted paths
+ * at the measuring tip, subjects from its own diff. Returns
+ * `{sha, jobId, subjects, bytes}`.
+ */
+export function measureMerge(repo, tip, sha) {
+  const names = mergeDiffNames(repo, sha);
+  const counted = countedPaths(names);
+  let bytes = 0;
+  for (const p of counted) bytes += blobBytes(repo, tip, p);
+  let jobId = null;
+  try {
+    const m = gitTry(repo, ['log', '-1', '--format=%B', sha]);
+    jobId = m.ok ? mergeJobId(m.stdout) : null;
+  } catch {
+    jobId = null;
+  }
+  return { sha, jobId, subjects: mergeSubjects(repo, sha), bytes };
+}
+
+/**
+ * Prefix-that-fits (row 35): oldest pending first, accumulate bytes and
+ * distinct subjects, cut at the first merge that would breach either
+ * bound. Returns `{admitted, remainder}` — the remainder waits for the
+ * next train, it is never force-fit.
+ */
+export function selectFittingPrefix(measured, bounds) {
+  const admitted = [];
+  let bytes = 0;
+  let subjects = [];
+  for (const m of measured) {
+    const nextSubjects = unionSubjects([subjects, m.subjects]);
+    if (bytes + m.bytes > bounds.maxReviewedBytes || nextSubjects.length > bounds.maxSubjects) {
+      return { admitted, remainder: measured.slice(admitted.length) };
+    }
+    bytes += m.bytes;
+    subjects = nextSubjects;
+    admitted.push(m);
+  }
+  return { admitted, remainder: [] };
+}
+
+/**
+ * Should a train run now? `K` (pending count), `T` (oldest pending age in
+ * minutes), idle (pending work with nothing else queued and nothing
+ * admitted this run — the loop would otherwise strand it). Returns
+ * `{fire, reason}`; `{fire:false}` names nothing.
+ */
+export function evaluateTriggers({ pending, bounds, nowS, queueEmpty, admittedThisRun }) {
+  if (!pending.length) return { fire: false };
+  if (pending.length >= bounds.merges) {
+    return { fire: true, reason: `K trigger: ${pending.length} pending merges >= ${bounds.merges}` };
+  }
+  const oldestAgeMin = (nowS - (pending[0].ts || nowS)) / 60;
+  if (oldestAgeMin >= bounds.minutes) {
+    return { fire: true, reason: `T trigger: oldest pending merge ${oldestAgeMin.toFixed(1)}min >= ${bounds.minutes}min` };
+  }
+  if (queueEmpty && !admittedThisRun) {
+    return { fire: true, reason: 'idle trigger: merges pending with nothing else queued' };
+  }
+  return { fire: false };
+}
+
+/** Records-commit allow-list (row 36, Q-S5): prefixes, machine-checked. */
+export const RECORDS_ALLOW = ['data/ledger.jsonl', 'data/reviews/', 'data/carried/', 'data/proposals/'];
+
+/** True when a repo-relative path may ride the train's records commit. */
+export function recordsPathAllowed(path) {
+  const n = String(path).replace(/\\/g, '/');
+  return RECORDS_ALLOW.some((a) => (a.endsWith('/') ? n.startsWith(a) : n === a));
+}
+
+/**
+ * The machine check (row 36): EVERY dirty path must be allow-listed, or
+ * the train fails — a records commit that touches a content path is the
+ * defect, wherever the path came from.
+ */
+export function checkRecordsPaths(dirtyPaths) {
+  const bad = (dirtyPaths || []).map((p) => String(p).replace(/\\/g, '/')).filter((p) => !recordsPathAllowed(p));
+  if (bad.length) {
+    return { ok: false, reason: `records commit refuses non-allow paths: ${bad.join(', ')}` };
+  }
+  return { ok: true };
+}
+
+/** Dirty (uncommitted) repo-relative paths in a checkout. */
+export function dirtyPaths(repo) {
+  const r = gitTry(repo, ['status', '--porcelain=v1', '-uall']);
+  if (!r.ok) return [];
+  return String(r.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => l.slice(3).trim().replace(/^"(.+)"$/, '$1'));
+}
+
+/**
+ * Default train review (production until U4 wires the assembly): FAIL
+ * CLOSED. There is no honest approval without the 41–42 assembly, and an
+ * honest refusal beats a borrowed one — merges wait, nothing publishes.
+ */
+export async function unreviewedTrain() {
+  return { verdict: 'reject', reason: 'train review assembly lands in U4 (tasks 41-42); no train is approved without it' };
+}
+
+/** Default rederive: the real single rederive over the train checkout. */
+export async function trainRederive(ctx, dir) {
+  return rederiveStep({ ...ctx, repoRoot: dir });
+}
+
+/**
+ * Append the train's own ledger line: at the records commit, after the
+ * rederive (row 36). `LEDGER_FIELDS` stays frozen — `train` is the ONE
+ * row-declared additive key (E-closure holds: base set untouched, no
+ * other writer touched). Figures that do not exist until the review ends
+ * ride this line, never a per-job one.
+ */
+export function appendTrainLine(ctx, { id, runner, provider, tier, mm, gateSeconds, train }) {
+  const line = makeLedgerLine({
+    id, type: 'train', runner, provider, tier, mm, outcome: 'done',
+    gate_seconds: gateSeconds, ts: ctx && typeof ctx.now === 'function' ? ctx.now().toISOString() : new Date().toISOString(),
+  });
+  line.train = train;
+  return appendLedger(ctx, line);
+}
+
+/**
+ * The ordered run (row 36): full set → one rederive → review over the
+ * whole diff including rederived data → path-restricted records commit →
+ * post-records re-gate (build lock, never merge lock) → declared SHA →
+ * publish HANDOFF (no publish invocation — S2, U5 owns the push).
+ *
+ * Seams (tests inject; production defaults): `gates` (gateRunner shape),
+ * `rederive` (single call), `review` (41–42 contract shape). Returns
+ * `{ok:true, sha, manifest, ...}` or `{ok:false, reason}` — every refusal
+ * names its step.
+ */
+export async function runTrain(ctx, {
+  repo, trainId, manifest, gates, rederive = trainRederive, review = unreviewedTrain, now = Date.now,
+}) {
+  const fn = gateRunner(gates);
+  const tip = headSha(repo);
+  // 1. Manifest FIRST, before any gate runs (row 35): the reviewed tree
+  // carries it. It is already written by the caller (assembleTrain);
+  // here assert it is committed — an uncommitted manifest is a stop.
+  const m = gitTry(repo, ['status', '--porcelain=v1', '-uall', '--', MANIFEST_PATH]);
+  if (m.ok && String(m.stdout ?? '').trim()) {
+    return { ok: false, reason: 'train manifest is dirty at run start — commit it first (task 35 commits it before any gate runs)' };
+  }
+  // 2. Full TRAIN_GATES set over the train tip.
+  const gateSeconds = {};
+  let g = null;
+  try {
+    const t0 = now();
+    g = fn(ctx, repo, { scripts: [...TRAIN_GATES] });
+    gateSeconds.full = Math.round(((now() - t0) / 1000) * 100) / 100;
+  } catch (e) {
+    return { ok: false, reason: `train gates threw (${e.message ?? String(e)}); merge stands, nothing publishes` };
+  }
+  if (!g || !g.ok) {
+    return { ok: false, reason: `train gates red: ${g && g.output ? String(g.output).split(/\r?\n/).filter(Boolean).slice(-3).join(' | ') : 'no gate result'}` };
+  }
+  // 3. ONE rederive. The counted baseline is frozen at assembly (the
+  // manifest's baselinePaths over mainTip...assemblyTip); after the
+  // rederive the tip must be unmoved and the baseline identical — a
+  // mid-train merge would review a different set than the bounds
+  // admitted. One helper backs both sides (Q-S4).
+  let rd = null;
+  try {
+    rd = await rederive(ctx, repo);
+  } catch (e) {
+    return { ok: false, reason: `train rederive threw (${e.message ?? String(e)}); merge stands, nothing publishes` };
+  }
+  if (!rd || !rd.ok) {
+    return { ok: false, reason: `train rederive failed: ${rd ? rd.reason : 'no result'}` };
+  }
+  const tipNow = headSha(repo);
+  if (tipNow !== manifest.assemblyTip) {
+    return { ok: false, reason: `train tip moved mid-run (${String(manifest.assemblyTip).slice(0, 8)} → ${String(tipNow).slice(0, 8)}) — the reviewed set is no longer what the bounds admitted` };
+  }
+  const nowNames = gitTry(repo, ['diff', '--name-only', `${manifest.mainTip}...HEAD`]);
+  const nowPaths = countedPaths(String(nowNames.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean)).sort();
+  const basePaths = [...(manifest.baselinePaths || [])].sort();
+  const extra = nowPaths.filter((p) => !basePaths.includes(p));
+  const missing = basePaths.filter((p) => !nowPaths.includes(p));
+  if (extra.length || missing.length) {
+    return { ok: false, reason: `counted paths changed since the bound was measured (+${extra.join(',') || 'none'} -${missing.join(',') || 'none'})` };
+  }
+  // 4. Review over the whole diff INCLUDING rederived data (uncommitted
+  // rederive output rides along). Fail closed on anything but approve —
+  // eviction is U3; on the happy path a non-approval fails the train.
+  const base = manifest.mainTip;
+  const committed = gitTry(repo, ['diff', '--name-only', `${base}...${tip}`]);
+  // Uncommitted rederive output is UNTRACKED, which `git diff` never
+  // lists — read the status instead, so regenerated data provably rides
+  // the reviewed diff (mutation B fails here when it does not).
+  const uncommitted = dirtyPaths(repo);
+  const diffNames = [...new Set([
+    ...String(committed.stdout ?? '').split('\n'),
+    ...uncommitted,
+  ].map((l) => String(l).trim()).filter(Boolean))].sort();
+  const diffText = `--- reviewed diff for train ${trainId} ---\nfiles:\n${diffNames.join('\n')}\n`;
+  const reviewStart = now();
+  let vr = null;
+  try {
+    vr = await review({ diffText, manifest, repo });
+  } catch (e) {
+    return { ok: false, reason: `train review threw (${e.message ?? String(e)}); merge stands, nothing publishes` };
+  }
+  const mm = Math.round((((now() - reviewStart) / 60000) + Number.EPSILON) * 100) / 100;
+  if (!vr || !['approve', 'revise', 'reject'].includes(vr.verdict)) {
+    return { ok: false, reason: 'train review record absent or malformed — fail closed: no fast-forward, no publish' };
+  }
+  if (vr.verdict !== 'approve') {
+    return { ok: false, reason: `train review did not approve (${vr.verdict}): ${vr.reason || 'no reason given'} — eviction is U3; the happy path stops here` };
+  }
+  // 5. Train's own line at the records commit, after the rederive (row
+  // 36): review model-minutes summed over every re-review (one review on
+  // the happy path), gate seconds, the row-36 shape.
+  const trainLine = appendTrainLine(ctx, {
+    id: trainId,
+    runner: vr.runner ?? 'unwired-reviewer',
+    provider: vr.provider ?? 'unwired-provider',
+    tier: vr.tier ?? 'unwired-tier',
+    mm,
+    gateSeconds,
+    train: {
+      id: trainId,
+      merges: manifest.merges.map((x) => x.sha),
+      gate_seconds: gateSeconds,
+      evictions: [],
+      pre_existing_hold: false,
+      findings_not_in_any_record: vr.findingsNotInAnyRecord ?? 0,
+      review_rounds: 1,
+    },
+  });
+  void trainLine;
+  // 6. Records commit, path-restricted with the machine check (row 36):
+  // stage the allow-listed dirt, then check WHAT THE COMMIT WILL
+  // CONTAIN (`git diff --cached --name-only`) — rederive output and any
+  // other working-tree dirt stays unstaged and uncommitted, which is
+  // exactly what the allow-list governs. The manifest is NOT part of
+  // this commit (task 35 committed it first).
+  const dirty = dirtyPaths(repo);
+  const staged = dirty.filter((p) => recordsPathAllowed(p));
+  const add = gitTry(repo, ['add', '--', ...staged]);
+  if (!add.ok) {
+    return { ok: false, reason: `records staging failed: ${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}` };
+  }
+  const cached = gitTry(repo, ['diff', '--cached', '--name-only']);
+  const willCommit = String(cached.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+  const check = checkRecordsPaths(willCommit);
+  if (!check.ok) return { ok: false, reason: check.reason };
+  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: records`]);
+  if (!cm.ok) {
+    return { ok: false, reason: `records commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+  }
+  // 7. Post-records re-gate: build + verify-launch (reusing that build) +
+  // verify-surfaces on the post-records tip — build lock, NEVER merge lock
+  // (the merge lock guards the branch's tip; this runs on the declared
+  // tip). The tip this produces is the SHA the train declares verified.
+  let rb = null;
+  try {
+    rb = fn(ctx, repo, { scripts: ['build', 'verify-launch', 'verify-surfaces'] });
+  } catch (e) {
+    return { ok: false, reason: `post-records re-gate threw (${e.message ?? String(e)}); records stand committed, nothing publishes` };
+  }
+  if (!rb || !rb.ok) {
+    return { ok: false, reason: `post-records re-gate red: ${rb && rb.output ? String(rb.output).split(/\r?\n/).filter(Boolean).slice(-3).join(' | ') : 'no gate result'}` };
+  }
+  const sha = headSha(repo);
+  return {
+    ok: true, sha, manifest, mm, gateSeconds,
+    note: `train ${trainId} verified at ${sha} — publish handoff (S2): no publish invocation; U5 owns the push`,
+  };
+}
+
+/**
+ * Assemble a train from pending merges: measure, cut the fitting prefix,
+ * write + commit the manifest FIRST. Returns `{ok:true, manifest}` or
+ * `{ok:false, reason}`. An unparseable merge message fails the assembly —
+ * gating unknown content is the safe direction. The manifest freezes the
+ * assembly baseline (tip + counted paths over mainTip...tip) that the
+ * post-rederive assert re-checks.
+ */
+export function assembleTrain(repo, { trainId, bounds, mainRef = 'main' }) {
+  const pending = pendingMerges(repo, mainRef);
+  if (!pending.length) return { ok: false, reason: 'no pending merges on train' };
+  const tip = headSha(repo);
+  const mainTipR = gitTry(repo, ['rev-parse', mainRef]);
+  const mainTip = mainTipR.ok ? String(mainTipR.stdout ?? '').trim() : null;
+  if (!mainTip) return { ok: false, reason: `cannot resolve ${mainRef}` };
+  const measured = pending.map((p) => measureMerge(repo, tip, p.sha));
+  const unknown = measured.filter((x) => !x.jobId);
+  if (unknown.length) {
+    return { ok: false, reason: `cannot admit merge(s) with unparseable job id: ${unknown.map((x) => String(x.sha).slice(0, 8)).join(', ')}` };
+  }
+  const { admitted, remainder } = selectFittingPrefix(measured, bounds);
+  if (!admitted.length) {
+    return { ok: false, reason: 'no pending merge fits the bounds — first merge alone breaches them' };
+  }
+  const baseNames = gitTry(repo, ['diff', '--name-only', `${mainTip}...${tip}`]);
+  const manifest = {
+    train: trainId,
+    mainTip,
+    baselinePaths: countedPaths(String(baseNames.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean)),
+    merges: admitted.map((x) => ({ sha: x.sha, jobId: x.jobId, subjects: x.subjects })),
+    measuredPaths: unionSubjects([countedPaths(admitted.flatMap((x) => mergeDiffNames(repo, x.sha)))]),
+    bounds: { maxReviewedBytes: bounds.maxReviewedBytes, maxSubjects: bounds.maxSubjects },
+    remainder: remainder.map((x) => String(x.sha).slice(0, 8)),
+  };
+  try {
+    mkdirSync(join(repo, '.train'), { recursive: true });
+    writeFileSync(join(repo, MANIFEST_PATH), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  } catch (e) {
+    return { ok: false, reason: `could not write manifest: ${e.message ?? String(e)}` };
+  }
+  const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
+  if (!add.ok) {
+    return { ok: false, reason: `manifest staging failed: ${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}` };
+  }
+  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: manifest (${admitted.length} merges)`]);
+  if (!cm.ok) {
+    return { ok: false, reason: `manifest commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+  }
+  // The assembly tip is the MANIFEST COMMIT, not the pre-commit tip: the
+  // reviewed tree carries the manifest, and the immobility assert must
+  // span it. (Caught during authoring: pinning the pre-commit tip made
+  // every green train refuse itself as moved.) It equals the manifest
+  // commit's own sha, so a post-mortem re-derives it from the log
+  // (`train <id>: manifest`) — it is deliberately not written back into
+  // the committed file, which would dirty the tree the gates run over.
+  manifest.assemblyTip = headSha(repo);
+  return { ok: true, manifest };
+}
+
+/**
+ * Admission disjointness (row 35): the incoming job's subjects against
+ * the admitted set's. Overlap waits — resumable, never a failure. The
+ * incoming subjects ride the run's existing measurement (run.mjs measures
+ * the branch diff vs main); the admitted set is measured live from git,
+ * so no pending-state file exists to go stale.
+ */
+export function admissionOverlap(repo, incomingSubjects) {
+  const pending = pendingMerges(repo);
+  if (!pending.length || !(incomingSubjects || []).length) return { overlap: false, with: [] };
+  const admitted = unionSubjects(pending.map((p) => mergeSubjects(repo, p.sha)));
+  const overlap = (incomingSubjects || []).filter((s) => admitted.includes(s));
+  return { overlap: overlap.length > 0, with: overlap };
 }

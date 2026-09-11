@@ -34,17 +34,30 @@
  * is a job that is NOT a scout, whose witness must still read `scoutItems: 1` —
  * because a mechanism that suppressed the scout unconditionally would pass the
  * first test and would silently retire the daily sweep forever.
+ *
+ * REWORKED Stage-1 U2 (bead 938e): row 50 removes the per-job rederive — the
+ * recomputation these tests stood inside of no longer runs per job. The
+ * property moved with it: lines are appended at merge time (recordOutcome,
+ * unchanged) and the SINGLE recomputation is the train's. So these tests
+ * now admit a merge, append its line through the REAL ledger instrument,
+ * assemble, and run the train with the DEFAULT rederive seam — the real
+ * `rederiveStep`, which discovers this same witness module through the
+ * same production seam. The methodology is untouched (real discovery,
+ * real `scoutItems` decision, recorded at the moment of recomputation);
+ * only the driver changed, from per-job to per-train, with the row.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { runLoop } from '../run.mjs';
+import { appendLedger, makeLedgerLine } from '../lib/ledger.mjs';
+import { assembleTrain, ensureTrainBranch, runTrain, TRAIN_BRANCH } from '../lib/train.mjs';
 import { DEFAULT_REPO_ROOT } from '../lib/paths.mjs';
-import { makeRepo, writeQueue, runnersYaml, mockCommand } from './helpers.mjs';
+import { makeRepo, writeQueue, runnersYaml, mockCommand, git } from './helpers.mjs';
 
 const REAL_QUEUE = pathToFileURL(join(DEFAULT_REPO_ROOT, 'pulse', 'lib', 'queue.mjs')).href;
 
@@ -104,12 +117,49 @@ function witness(ctx) {
   return JSON.parse(readFileSync(p, 'utf8'));
 }
 
+const TRAIN_BOUNDS = { merges: 5, minutes: 90, maxReviewedBytes: 150000, maxSubjects: 12, lockWaitSeconds: 1200 };
+const GREEN_GATES = () => ({ ok: true, results: [], output: '' });
+const APPROVE_REVIEW = async () => ({ verdict: 'approve', runner: 'stub', provider: 'stub', tier: 'stub', findingsNotInAnyRecord: 0 });
+
+/**
+ * Admit one merge onto `train` and append its line through the REAL ledger
+ * instrument (recordOutcome's path: appendLedger + makeLedgerLine). Returns
+ * the assembled manifest. The train runs with the DEFAULT rederive seam —
+ * the real `rederiveStep` discovering the witness above.
+ */
+async function trainWithWitness(ctx, { id, type }) {
+  const repo = ctx.repoRoot;
+  ensureTrainBranch(repo, 'main');
+  git(repo, ['checkout', '--quiet', '-b', `job/${id}`, 'main']);
+  mkdirSync(join(repo, 'content'), { recursive: true });
+  writeFileSync(join(repo, 'content', `${id}.md`), `# ${id}\n`, 'utf8');
+  git(repo, ['add', '--', `content/${id}.md`]);
+  git(repo, ['commit', '--quiet', '--no-verify', '-m', `work ${id}`]);
+  git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+  git(repo, ['merge', '--quiet', '--no-ff', '--no-verify', '-m', `job ${id} (${type}): ${id} work`, `job/${id}`]);
+  appendLedger(ctx, makeLedgerLine({
+    id, type, runner: 'mock-frontier', provider: 'provider-a', tier: 'frontier',
+    // Real clock, not a pinned string: `scoutRanToday` compares LOCAL
+    // calendar days, and a pinned UTC midnight is yesterday in MDT —
+    // which reads as "no scout today" for exactly the wrong reason
+    // (caught during authoring: witness read ledgerLines 1, scoutItems 1).
+    mm: 1, outcome: 'done', ts: new Date().toISOString(),
+  }));
+  const asm = assembleTrain(repo, { trainId: `t-${id}`, bounds: TRAIN_BOUNDS });
+  assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+  const tr = await runTrain(ctx, {
+    repo, trainId: asm.manifest.train, manifest: asm.manifest,
+    gates: GREEN_GATES, review: APPROVE_REVIEW,
+  });
+  assert.equal(tr.ok, true, tr.reason ?? 'witness train refused');
+  return asm;
+}
+
 test('the ledger line exists before the queue is recomputed from it', async (t) => {
   const ctx = repoWithWitness('scout');
   t.after(() => ctx.cleanup());
 
-  const res = await go(ctx);
-  assert.equal(res.outcome, 'done', ctx.output());
+  await trainWithWitness(ctx, { id: 'j-20260911-01', type: 'scout' });
 
   const w = witness(ctx);
   assert.equal(
@@ -122,7 +172,7 @@ test('the ledger line exists before the queue is recomputed from it', async (t) 
     1,
     'the derivation ran against a ledger with no record of the job that had just finished',
   );
-  assert.equal(w.ledger[0].id, res.jobId);
+  assert.equal(w.ledger[0].id, 'j-20260911-01');
   assert.equal(w.ledger[0].type, 'scout');
   assert.equal(w.ledger[0].outcome, 'done', 'the recorded line is the real outcome, not a placeholder');
 });
@@ -134,8 +184,7 @@ test('POSITIVE CONTROL — a non-scout job leaves the daily scout due', async (t
   const ctx = repoWithWitness('repair');
   t.after(() => ctx.cleanup());
 
-  const res = await go(ctx);
-  assert.equal(res.outcome, 'done', ctx.output());
+  await trainWithWitness(ctx, { id: 'j-20260911-02', type: 'repair' });
 
   const w = witness(ctx);
   assert.equal(w.ledgerLines, 1, 'the ordering holds for every job type, not only the scout');
