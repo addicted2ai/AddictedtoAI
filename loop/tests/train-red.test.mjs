@@ -261,8 +261,12 @@ async function withMutant(tag, search, replacement, fn) {
     rmSync(copyPath, { force: true });
   }
   assert.equal(existsSync(copyPath), false, 'the mutant copy is gone');
-  const residue = readdirSync(resolve(HERE, '..', 'lib')).filter((f) => f.startsWith('train.mut-'));
-  assert.deepEqual(residue, [], 'no mutant residue in loop/lib');
+  // Residue scan scoped to THIS file's tag family (`-red*`): the full
+  // suite runs test files in parallel processes sharing one pid space,
+  // and sibling suites keep same-directory `train.mut-<pid>-*` copies of
+  // their own — an unscoped scan flakes on their transients (measured).
+  const residue = readdirSync(resolve(HERE, '..', 'lib')).filter((f) => f.startsWith(`train.mut-${process.pid}-red`));
+  assert.deepEqual(residue, [], 'no mutant residue of this file in loop/lib');
 }
 
 /** The audit assertion (row 40): the replay verdict is ON the ledger. */
