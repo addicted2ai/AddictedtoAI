@@ -1913,10 +1913,14 @@ the brief under `evidence/reviews/`.
       'verify-surfaces', 'verify-design', 'verify-launch', 'verify-analytics']`,
       with `verify-launch` reusing the train's build. On the tripwire path
       `verify-surfaces` reads the tripwire's own export; one build per job.
-      `loop/run.mjs` drops the post-merge build call site (`:1750-1755`, the
-      `postMergeGateOptions`/`runGates` block — RE-PINNED 2026-09-09 from the
-      stale `:1661`, which is the REDERIVE call and would have had a worker
-      delete the single rederive). Implements:
+      `loop/run.mjs` drops the post-merge build call site — **anchor on the
+      symbol, not the line**: the block that declares `postMergeGateOptions`
+      and calls `runGates(ctx, ctx.repoRoot, postMergeGateOptions)` (at
+      `:1869-1874` on 2026-09-10; it was `:1750-1755` on 2026-09-09 and the
+      file has moved twice since, so a worker that finds no such symbol stops
+      and reports rather than deleting by line). The `await rederiveStep(ctx)`
+      call (`:1780` on 2026-09-10) is the single rederive and must stand; an
+      earlier pin at `:1661` would have had a worker delete it. Implements:
       *A job's gates are a tripwire…*, bullets 1 and 3.
 - [ ] 33. `loop/run.mjs` and `loop/lib/train.mjs` (new): **the tripwire builds the
       merged tip**, not the branch; a red merged tip reverts the merge at once with
@@ -1961,11 +1965,22 @@ the brief under `evidence/reviews/`.
 - [ ] 35b. `loop/run.mjs`: **one worker is a mechanism, not a discipline** (Q-S19,
       2026-09-10; the design's own warning at "a discipline standing in for a
       mechanism is invisible until it lapses"). A run takes a worker slot —
-      `mkdir` of `data/.locks/worker-<n>` for `n` in `1..config.workers`, atomic,
-      released on exit, reclaimed when the recorded pid is dead — and **refuses to
-      start when no slot is free**, naming the pids holding them. `workers` is 1
-      through Stage 1 and 2; task 54 raises it. Test: with `workers: 1` a second
-      run refuses; **mutation**: skip the slot and confirm two runs start.
+      `mkdir` of `worker-<n>` for `n` in `1..config.workers` under the **same
+      per-user OS-temp directory the build lock uses** (`scripts/build-lock.mjs`
+      `buildLockDir()`, `<os.tmpdir()>/atai-build-locks[-u<uid>]/`; CORRECTED
+      2026-09-10 from `data/.locks/`, because `data/` is committed in full and a
+      lock there is an untracked file a records commit could sweep), atomic,
+      holding a `pid` file (`<pid>\n<started ISO>\n`), released on exit, reclaimed
+      when the recorded pid is dead (reclaim = rename the dead slot to
+      `worker-<n>.stale-<ts>` then `mkdir`, so two reclaimers cannot both win)
+      — and **refuses to start when no slot is free**, naming the pids holding
+      them. The refusal reuses the loop's environmental classification
+      (`gates.mjs` `environmentalCondition`: the test-lock and build-lock
+      refusals) and is booked `interrupted`, resumable, never a breaker input.
+      `workers` is 1 through Stage 1 and 2; task 54 raises it. Test: with
+      `workers: 1` a second run refuses naming the holder, a stale-pid slot is
+      reclaimed, a single run proceeds; **mutation**: skip the slot and confirm
+      two runs start.
 - [ ] 36. `loop/lib/train.mjs`: the ordered run — full gate set; **one rederive**;
       **then the train review over the whole diff including the rederived data**;
       then the records commit **path-restricted to the review records, the ledger, the
