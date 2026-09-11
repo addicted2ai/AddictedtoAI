@@ -195,6 +195,18 @@ correctly, with nothing in the corpus able to adjudicate. Freshness measures
 *intervals* between these dates, so one convention beats a more precise one.
 A run that crosses midnight keeps the local date throughout.
 
+**Read the clock as its own command before writing any time or date; never
+infer, reconstruct or carry one forward.** `date`, `Get-Date`, git's `%ci` —
+any of these; a value from your own sense of "roughly when" is not one. The
+machine's zone is Mountain (UTC−6 in summer) and the local day rolls over at
+18:00 UTC, so an evening session that writes the UTC day is a day off.
+Measured twice on 2026-09-10: a session's board stamped five entries from an
+internal sense of elapsed time and drifted to 96 minutes early, and the commit
+archiving the audit that found it dated its own README `2026-09-11` at 18:42
+local. Board entries, evidence files, `measured_on` fields and commit messages
+are records someone later compares to other records; an invented time reads
+exactly like a read one and cannot be corrected afterwards.
+
 ### The swap — a different model, provider or harness
 
 `runners.yml` is the only file in the machinery that names a model, a provider

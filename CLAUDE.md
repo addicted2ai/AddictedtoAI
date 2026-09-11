@@ -462,6 +462,18 @@ disagree, the spec wins.**
   `reverify_days` and the overdue-fact sweep measure *intervals*, and an
   interval computed across two conventions is off by a day for no reason a
   later reader can reconstruct.
+- **Read the clock as its own command before writing any time or date; never
+  infer, reconstruct or carry one forward.** `date` in Bash, `Get-Date` in
+  PowerShell, `%ci` from git — any of these; a value from your own memory of
+  "roughly when" is not one. This machine's zone is Mountain (UTC−6 in
+  summer), and the local day rolls over at 18:00 UTC, so an evening session
+  that writes the UTC day is wrong by one. Measured twice on 2026-09-10: a
+  session's board stamped its last five entries from an internal sense of
+  elapsed time and drifted to 96 minutes early, and the commit archiving the
+  audit that found it dated its own README `2026-09-11` at 18:42 local. Every
+  board entry, evidence file, `measured_on`, and commit message you write is a
+  record someone will later compare to another record; an invented time
+  reads exactly like a read one and cannot be corrected afterwards.
 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
