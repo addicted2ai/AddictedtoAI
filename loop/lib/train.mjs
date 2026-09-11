@@ -1369,7 +1369,8 @@ export function rejectTrain(ctx, { repo, trainId, manifest, gateSeconds = {}, ev
  * leave-one-out path names the gate the removal cleared, the
  * review-findings path names the train review (row 43, reason `review`).
  * Same revert, same marks, same manifest rewrite — one vocabulary, two
- * triggers; `revertMerge` is called from nowhere else.
+ * triggers; `revertMerge` has no other eviction caller (the tip-moved
+ * rebuild at `mergeJobBranch` reverts through it outside eviction).
  */
 function evictMerge({ repo, trainId, manifest, clearer, reason }) {
   const short = String(clearer.sha).slice(0, 8);

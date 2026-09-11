@@ -1573,9 +1573,12 @@ export async function runLoop(ctx, opts = {}) {
    */
   let mergedBranch = null;
   /**
-   * Set on a merge, and read at the FOOT of this function — after the job's own
-   * records are written and committed — because that is where the publish now
-   * happens. See the call site for the measurement (addictedtoai-tqpq).
+   * Pinned-dead pre-U5 per-job publish flag (Stage-1 U5): always false —
+   * the merge lands on train and the TRAIN's scoped push (publishTrain)
+   * owns the push — retained because `publish-after-records` +
+   * `ledger-before-publish` pin the single `publishStep(` call site and
+   * its order after the records. See the call site for the measurement
+   * (addictedtoai-tqpq).
    */
   let publishAfterRecords = false;
   /** Both halves of the consumed-proposal move, staged with the job's records. */
@@ -1981,9 +1984,9 @@ export async function runLoop(ctx, opts = {}) {
       // merged tip cannot reach main through THIS path (the tripwire refuses
       // it, the rebuild reverts it); what U1 stops seeing is redness that
       // arrives any other way.
-      // Row 36 / S2: the per-job publish is gone — the ordered run ends at
-      // the publish HANDOFF (verified SHA declared, no invocation); U5 owns
-      // the push. `merged.verified` still drives the honesty logs above.
+      // Row 36 / S2: the per-job publish is gone — the merge lands on train
+      // with main frozen; the TRAIN's scoped push (U5 publishTrain inside
+      // finishTrainRun) owns the push. `merged.verified` still drives the honesty logs above.
       publishAfterRecords = false;
       if (job.source === 'directive' && job.lineNumber) {
         // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
@@ -2261,7 +2264,11 @@ export async function runLoop(ctx, opts = {}) {
   commitJobRecords(ctx, { staged, jobId, outcome });
 
   // -------------------------------------------------------------------------
-  // PUBLISH — HERE, after the records above are committed, and declaring them.
+  // PUBLISH — PINNED-DEAD per-job call site (Stage-1 U5): `publishAfterRecords`
+  // is always false — the merge lands on train and the TRAIN's scoped push
+  // (publishTrain) owns the push. Retained because `publish-after-records` +
+  // `ledger-before-publish` pin this single `publishStep(` call site and its
+  // order after the records; the history below explains the ordering it pins.
   //
   // It used to run at the merge, ~280 lines above: before the directive
   // completion marker, before the reviewer's noted proposal, before the carried
@@ -2284,9 +2291,12 @@ export async function runLoop(ctx, opts = {}) {
   //      -06).
   //
   // Moving the call fixes (1); declaring `owned` fixes (2). The invariant needs
-  // BOTH, and it is one sentence: a job's content and that job's own records
-  // reach the remote in ONE push, and the publish step never stages a file the
-  // job did not produce.
+  // BOTH, and it is one sentence (pre-U5 wording, kept for the pin): a job's
+  // content and that job's own records reached the remote in ONE per-job push,
+  // and the publish step never stages a file the job did not produce. Since
+  // U5 the per-job push is gone — the merge lands on train and the TRAIN's
+  // scoped push carries it — but the ordering this pinned (records before any
+  // push) still holds through the train.
   //
   // `owned` is `staged` — the exact paths this run wrote or moved. Everything
   // the job authored is already IN the merge commit, not in the working tree,
@@ -2295,8 +2305,10 @@ export async function runLoop(ctx, opts = {}) {
   // when it could not (a concurrent Pulse holding `.git/index.lock`) phase 1
   // commits them by exact path, and they still leave in this run's push.
   //
-  // Not conditional on the outcome by itself: `publishAfterRecords` is set only
-  // on a merge, which is the same condition the old call site was nested under.
+  // Not conditional on the outcome by itself (pre-U5): `publishAfterRecords`
+  // was set only on a merge, which is the same condition the old call site was
+  // nested under. Now always false — the condition is dead but the call site
+  // stays for the ordering pin above; the live push is the train's scoped push.
   // -------------------------------------------------------------------------
   if (publishAfterRecords) await publishStep(ctx, { cfg, owned: staged });
 
@@ -2377,7 +2389,7 @@ export async function runLoop(ctx, opts = {}) {
             else ctx.log(`breaker 2: post-records re-gate red classified ${classification} — excluded, no halt`);
           }
         } else if (tr) {
-          ctx.log(`train verified ${String(tr.sha).slice(0, 8)} — publish handoff: no invocation; U5 owns the push`);
+          ctx.log(`train verified ${String(tr.sha).slice(0, 8)} — scoped push already ran inside the train (publishTrain); consuming its publish result`);
           // Stage-1 U6 (task 49, row 49), second trigger: the Pulse's deploy
           // confirmation window, observed through the shared publish step's
           // missed-deploy result — never a live deploy from here.
