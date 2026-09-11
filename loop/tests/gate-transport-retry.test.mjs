@@ -306,19 +306,29 @@ function repo() {
 /**
  * A gate stub that answers from a script and records where each call ran.
  *
- * `runLoop` uses the same hook twice for different things: the branch gates in
- * the job's worktree, and — after a merge — the post-merge build, which runs at
- * the repository root. Only the first is what the retry is about, so the tests
- * below count the calls made in the worktree rather than every call.
+ * `runLoop` uses the same hook for three things now: the branch gates in
+ * the job's worktree (no options — the default set runs), the tripwire over
+ * the provisionally merged tip (explicit `{scripts}`), and — after a merge
+ * whose tip moved — the merge-time rebuild at the repository root (explicit
+ * `{scripts}`). Only the first is what the retry is about. Branch calls
+ * consume the script; merge-path calls answer green without consuming, so
+ * every script below keeps meaning what it meant before Stage-1 U1 added
+ * the other two consumers (the old post-merge consumer is gone with task
+ * 32; a scripted third answer stays a never-consumed trap).
  */
 function stub(...answers) {
   const calls = [];
-  const fn = (ctx, dir) => {
-    calls.push(dir);
-    return answers[Math.min(calls.length - 1, answers.length - 1)];
+  const fn = (ctx, dir, options) => {
+    const mergePath = dir === ctx.repoRoot || !!options;
+    calls.push({ dir, mergePath });
+    if (mergePath) return PASSING;
+    const n = calls.filter((c) => !c.mergePath).length;
+    return answers[Math.min(n - 1, answers.length - 1)];
   };
   fn.calls = calls;
-  fn.branchCalls = (ctx) => calls.filter((d) => d !== ctx.repoRoot);
+  // Same shape as before (an array of dirs): merge-path calls are excluded,
+  // so every consumer keeps reading branch runs.
+  fn.branchCalls = (ctx) => calls.filter((c) => !c.mergePath).map((c) => c.dir);
   return fn;
 }
 

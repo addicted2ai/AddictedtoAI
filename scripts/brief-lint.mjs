@@ -140,7 +140,11 @@ const proseLines = isPacket && reportIdx > 0 ? lines.slice(0, reportIdx) : lines
 // refused C1's brief on wrapping: check 3 lost a delegation to a line break,
 // and check 5 read "Do\n  not edit" as prose that was not a prohibition,
 // because `\bdo not\b` does not match "do   not".
-const prose = proseLines.join('\n').replace(/\s+/g, ' ').split(/(?<=[.;])\s+/);
+// One spelling of the sentence split, shared by `prose` (every check) and
+// `ownProse` (check 5's Authority-source hatch below): the split pattern is
+// written exactly once, so the Nsplit anchor keeps resolving exactly once.
+const toSentences = (ls) => ls.join('\n').replace(/\s+/g, ' ').split(/(?<=[.;])\s+/);
+const prose = toSentences(proseLines);
 
 // 0. PACKET STRUCTURE — the one packet check that CAN fail in the bad
 //    direction, which is the entire justification for this mode existing.
@@ -391,7 +395,26 @@ else {
 // 5. once — on SENTENCES, for the reason given at `prose`. "run twice: once as
 //    an\n  iteration before you start" satisfies this rule and failed it,
 //    because the wrap fell between "once" and the word that disambiguates it.
-const onceBad = prose.filter((l) => /\bonce\b/i.test(l) && !/iteration|attempt/i.test(l));
+//
+// HATCH (Stage-1 U1, reason beside it): lines inside a blockquote (`> ...`)
+// within the "Authority source" section are task rows quoted VERBATIM — the
+// architect forbids rewording the authority, so a "once" there is the ROW's
+// word, never the author's. The skip is narrow by construction: quoted lines
+// only, inside that one section. A bare "once" in author prose still fires
+// (arm below), and so does a bare "once" quoted anywhere else. Skipped lines
+// drop out before sentence-splitting; a sentence broken across the drop
+// rejoins at the boundary, and a rejoined bare "once" still fires — the skip
+// hides nothing the author wrote.
+let inAuthority = false;
+const ownLines = [];
+for (const l of proseLines) {
+  const hm = /^##\s+(.*)\s*$/.exec(l);
+  if (hm) { inAuthority = /^authority\b/i.test(hm[1].trim()); continue; }
+  if (inAuthority && /^\s*>/.test(l)) continue;
+  ownLines.push(l);
+}
+const ownProse = toSentences(ownLines);
+const onceBad = ownProse.filter((l) => /\bonce\b/i.test(l) && !/iteration|attempt/i.test(l));
 report(pf(onceBad.length === 0), '"once" always says iteration or attempt', onceBad.length ? onceBad[0].trim().slice(0, 100) : '');
 
 // 6. cd token (prohibition lines exempt)

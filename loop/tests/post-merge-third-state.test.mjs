@@ -1,8 +1,18 @@
 /**
- * post-merge-third-state.test.mjs — a post-merge build that NEVER RAN is
- * neither red nor green (addictedtoai-ml25).
+ * post-merge-third-state.test.mjs — an UNVERIFIED merge is neither red nor
+ * green (addictedtoai-ml25), now proved through the Stage-1 U1 tripwire.
+ *
+ * REWORKED Stage-1 task 32 (U1, bead avs5): the post-merge build block this
+ * file pinned is deleted — verification-before-publish now comes from the
+ * tripwire (same tip) or the merge-time rebuild (moved tip). What survives
+ * unchanged is the property: an unverified merge never reaches the remote,
+ * and the proof still reads off a real bare origin. What is GONE by the
+ * rows' sequence, stated not to hide it: the red-post-merge-build breaker
+ * feed (breaker 2 retarget is task 49, U6) and the job's-cap inheritance on
+ * the post-merge call (no such call exists anymore).
  *
  * ## THE DEFECT, measured through a real runLoop fixture on 2026-09-07
+ * (kept: it is why the publish half reads off a remote)
  *
  *   branch gate passed, review approved, the POST-MERGE gate returned a NAMED
  *   build-lock refusal  ->  {"outcome":"done","calls":2,"hold":true}
@@ -132,20 +142,37 @@ async function repo(t) {
 }
 
 /**
- * Answers the branch gates green and the POST-MERGE build (the call at the
- * repository root) from `postMerge`, recording the OPTIONS each call received so
- * the lock-wait budget is observable rather than inferred.
+ * Answers every gate call in a run. Branch gates AND the tripwire both run
+ * in the job worktree with the same two scripts, so the hook counts
+ * worktree calls: the first is the branch gate run, the second is the
+ * tripwire (single-pass fixture: the mock reviewer approves first try, so
+ * no revision re-runs the branch gates — each test asserts the observed
+ * sequence). Repo-root calls are the merge-time rebuild. `moveTip` advances
+ * main DURING the tripwire call, so the merge sees a moved tip and takes
+ * the rebuild path.
  */
-function gatesWithPostMerge(postMerge) {
+function routingGates({ branch = GREEN, tripwire = GREEN, rebuild = GREEN, moveTip = false } = {}) {
   const calls = [];
+  // The hook contract differs by call site: the branch-gate runner calls
+  // `gates(ctx, worktree)` with no options (the default set runs), while the
+  // tripwire and the merge-time rebuild pass explicit `{scripts}`.
   const fn = (ctx, dir, options) => {
-    calls.push({ dir, options });
-    return dir === ctx.repoRoot ? postMerge : { ok: true, results: [], output: '' };
+    const atRoot = dir === ctx.repoRoot;
+    calls.push({ where: atRoot ? 'root' : 'worktree', scripts: options ? options.scripts : null });
+    if (!atRoot) {
+      const wtCall = calls.filter((c) => c.where === 'worktree').length;
+      if (wtCall === 2 && moveTip) {
+        git(ctx.repoRoot, ['commit', '--allow-empty', '--quiet', '--no-verify', '-m', 'concurrent main advance']);
+      }
+      return wtCall === 1 ? branch : tripwire;
+    }
+    return rebuild;
   };
   fn.calls = calls;
-  fn.postMergeOptions = (ctx) => calls.find((c) => c.dir === ctx.repoRoot)?.options;
   return fn;
 }
+
+const GREEN = { ok: true, results: [], output: '' };
 
 const LOCK_REFUSAL = {
   ok: false,
@@ -164,80 +191,73 @@ const ORDINARY_RED = {
   output: 'Error: build failed on /wiki/x',
 };
 
-test('a post-merge build that could not take the lock writes no HOLD.md', async (t) => {
-  const ctx = await repo(t);
-  const res = await runLoop(ctx, {
-    runner: 'mock-frontier', reviewer: 'mock-reviewer', gates: gatesWithPostMerge(LOCK_REFUSAL),
-  });
-  assert.equal(res.outcome, 'done', ctx.output());
-  assert.equal(existsSync(ctx.holdPath), false, `HOLD.md was written:\n${ctx.output()}`);
-  assert.match(ctx.output(), /post-merge build DID NOT RUN/);
-  ctx.cleanup();
-});
+function sequence(fn) {
+  let wt = 0;
+  return fn.calls.map((c) => {
+    if (c.where === 'root') return `root:${(c.scripts ?? []).join('+')}`;
+    wt += 1;
+    return `worktree#${wt}`;
+  }).join(' | ');
+}
 
-test('and NOTHING REACHES THE REMOTE — read off the bare origin, with publish: true', async (t) => {
-  const ctx = await repo(t);
-  const before = ctx.remoteHead();
-  await runLoop(ctx, {
-    runner: 'mock-frontier', reviewer: 'mock-reviewer', gates: gatesWithPostMerge(LOCK_REFUSAL),
-  });
-  assert.equal(
-    ctx.remoteHead(), before,
-    'an unverified merge reached the remote: the publish gate was not applied',
-  );
-  assert.equal(ctx.remoteHead(), null, 'the fixture remote should still be empty');
-  ctx.cleanup();
-});
-
-test('CONTROL: a GREEN post-merge build DOES reach the remote, so the check above can fail', async (t) => {
+test('CONTROL: green-together merges and reaches the remote, so the checks below can fail', async (t) => {
   // Without this, "nothing reached the remote" passes on a fixture that could
   // never publish at all — which is precisely how the first version of this file
   // was wrong.
   const ctx = await repo(t);
-  await runLoop(ctx, {
-    runner: 'mock-frontier', reviewer: 'mock-reviewer',
-    gates: gatesWithPostMerge({ ok: true, results: [], output: '' }),
-  });
+  const gates = routingGates();
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.equal(
+    sequence(gates),
+    'worktree#1 | worktree#2',
+    `single branch-gate run, then the tripwire (no rebuild: the tip never moved):\n${ctx.output()}`,
+  );
   assert.notEqual(
     ctx.remoteHead(), null,
-    `a green post-merge build must publish, or this file proves nothing:\n${ctx.output()}`,
+    `a green-together merge must publish, or this file proves nothing:\n${ctx.output()}`,
   );
   ctx.cleanup();
 });
 
-test('CONTROL: a post-merge build that RAN and failed is still red — hold written, nothing published', async (t) => {
-  // The third state must not swallow the second. An ordinary build failure has
-  // no environmental marker and must keep tripping breaker 2.
+test('red-together is an ordinary failure: nothing merges, nothing publishes', async (t) => {
   const ctx = await repo(t);
-  await runLoop(ctx, {
-    runner: 'mock-frontier', reviewer: 'mock-reviewer', gates: gatesWithPostMerge(ORDINARY_RED),
-  });
-  assert.equal(existsSync(ctx.holdPath), true, `a real red build must write HOLD.md:\n${ctx.output()}`);
-  assert.match(ctx.output(), /BREAKER: the post-merge build is red/);
-  assert.equal(ctx.remoteHead(), null, 'a red build must publish nothing');
+  const gates = routingGates({ tripwire: ORDINARY_RED });
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.equal(ctx.remoteHead(), null, 'a red-together pair must publish nothing');
+  const merges = git(ctx.repoRoot, ['log', '--merges', '--oneline', 'main']);
+  assert.equal(merges, '', `the refused branch must not be merged; main carries merges:\n${merges}`);
   ctx.cleanup();
 });
 
-test('the post-merge build gets THIS JOB\'S cap, not runGates\'s 20-minute default', async (t) => {
-  // Measured, not inferred: the hook records the options it was handed. Before
-  // this, the call passed no timeout, so a 120-minute job waited 900,000 ms for
-  // the build lock here and 5,400,000 ms in its branch gates — same job, two
-  // budgets, no stated reason.
-  // Driven with the REFUSAL rather than a green build on purpose: the hook
-  // records the options either way, and a green build publishes, which costs a
-  // 20-second poll interval this assertion has no use for. Only the control
-  // above needs to pay that, because only the control is about publishing.
+test('tip moved and rebuild red: the merge is reverted immediately, nothing publishes', async (t) => {
   const ctx = await repo(t);
-  const gates = gatesWithPostMerge(LOCK_REFUSAL);
-  await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
-
-  const options = gates.postMergeOptions(ctx);
-  assert.ok(options, 'the post-merge gate call passed no options at all');
-  const capMinutes = DEFAULT_CONFIG.job_caps_minutes.repair;
+  const gates = routingGates({ rebuild: ORDINARY_RED, moveTip: true });
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+  assert.equal(res.outcome, 'failed', ctx.output());
   assert.equal(
-    options.timeoutMs, capMinutes * 60 * 1000,
-    `the post-merge build must carry the repair cap (${capMinutes}m), not a default`,
+    sequence(gates),
+    'worktree#1 | worktree#2 | root:build',
+    `branch gates, tripwire, then the merge-time rebuild:\n${ctx.output()}`,
   );
-  assert.deepEqual(options.scripts, ['build']);
+  const log = git(ctx.repoRoot, ['log', '--oneline', 'main']);
+  assert.match(log, /Revert /, `the just-made merge was reverted immediately:\n${ctx.output()}`);
+  assert.equal(ctx.remoteHead(), null, 'a reverted merge must publish nothing');
+  ctx.cleanup();
+});
+
+test('tip moved and rebuild environmental: the merge stands UNVERIFIED — no hold, nothing published', async (t) => {
+  // The old third state, moved with the tripwire: the merge stays local
+  // until something verifies it. What changed is what watches redness —
+  // nothing Desk-side until task 49 retargets breaker 2, by the rows'
+  // sequence — so this asserts the absence loudly rather than assuming it.
+  const ctx = await repo(t);
+  const gates = routingGates({ rebuild: LOCK_REFUSAL, moveTip: true });
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.equal(existsSync(ctx.holdPath), false, `no breaker feed exists in U1 to write HOLD.md:\n${ctx.output()}`);
+  assert.match(ctx.output(), /UNVERIFIED/, 'the log says the merge stands unverified');
+  assert.equal(ctx.remoteHead(), null, 'an unverified merge must publish nothing');
   ctx.cleanup();
 });

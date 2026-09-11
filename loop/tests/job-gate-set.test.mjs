@@ -68,13 +68,17 @@ const BOTH_PASS = {
 };
 const NPM_OK = { test: 'node --version', build: 'node --version' };
 
-test('THE PER-JOB GATE SET NAMES verify-surfaces AND verify-design, AFTER the build', () => {
+test('THE PER-JOB TRIPWIRE GATE SET IS build THEN verify-surfaces', () => {
   // Order is load-bearing and not incidental: both check the exported site in
   // `out/`, which only exists once `build` has run.
-  assert.deepEqual(DEFAULT_GATES, ['test', 'build', 'verify-surfaces', 'verify-design']);
+  // RE-PINNED Stage-1 task 32 (U1, bead avs5): the per-job set shrank 4 -> 2
+  // (the tripwire proves the branch alone; together is proved over the merged
+  // tip). The full six live frozen in TRAIN_GATES (see tripwire.test.mjs);
+  // this pin follows the default, it does not duplicate that one.
+  assert.deepEqual(DEFAULT_GATES, ['build', 'verify-surfaces']);
 });
 
-test('both verify gates really run, as node scripts rather than npm scripts', (t) => {
+test('both tripwire gates really run, surfaces as a node script rather than npm', (t) => {
   const ctx = makeRepo();
   t.after(() => ctx.cleanup());
   const dir = gateTree(ctx, { scripts: NPM_OK, files: BOTH_PASS });
@@ -84,15 +88,17 @@ test('both verify gates really run, as node scripts rather than npm scripts', (t
   assert.equal(r.ok, true, r.output);
   assert.deepEqual(
     r.results.map((x) => x.script),
-    ['test', 'build', 'verify-surfaces', 'verify-design'],
-    'all four gates ran, in order',
+    ['build', 'verify-surfaces'],
+    'the tripwire two ran, in order (Stage-1 task 32 shrank the default; the full six run only in explicit sets — see tripwire.test.mjs arm 4)',
   );
   // `package.json` carries no `verify:design`/`verify:surfaces` script and never
   // will — this repository does not edit `package.json` — so the command a
   // reader would paste has to be the node invocation, not an npm one.
   const surfaces = r.results.find((x) => x.script === 'verify-surfaces');
   assert.match(gateCommand(surfaces), /^node scripts\/verify-surfaces\.mjs out$/);
-  assert.match(r.output, /--- node scripts\/verify-design\.mjs out \d+ \(PASS\)/, r.output);
+  // verify-design's own output shape is no longer observable in a default
+  // run (it left the default set); its command mapping stays pinned at the
+  // name-resolution test below.
 });
 
 test('A FAILING verify-surfaces FAILS THE GATE RUN — the escape this closes', (t) => {
@@ -124,7 +130,7 @@ test('A MISSING gate script is a FAILURE, not a silent skip', (t) => {
   t.after(() => ctx.cleanup());
   const dir = gateTree(ctx, { scripts: NPM_OK, files: { 'scripts/verify-design.mjs': PASSES } });
 
-  const r = runGates(ctx, dir, { timeoutMs: 120000 });
+  const r = runGates(ctx, dir, { scripts: ['build', 'verify-surfaces', 'verify-design'], timeoutMs: 120000 });
 
   assert.equal(r.ok, false);
   const missing = r.results.find((x) => x.script === 'verify-surfaces');
@@ -134,7 +140,7 @@ test('A MISSING gate script is a FAILURE, not a silent skip', (t) => {
   assert.equal(
     r.results.some((x) => x.script === 'verify-design'),
     true,
-    'a gate that could not run does not stop the ones after it — only a gate that RAN and failed does',
+    'a gate that could not run does not stop the ones after it — only a gate that RAN and failed does (explicit set here: the shrunken default ends at verify-surfaces)',
   );
 });
 
@@ -161,7 +167,10 @@ test('verify-design is run with the record suppressed, so a gate never writes da
   });
   rmSync(join(dir, 'data'), { recursive: true, force: true });
 
-  const r = runGates(ctx, dir, { timeoutMs: 120000 });
+  // Explicit set: verify-design left the shrunken default (Stage-1 task 32),
+  // so the default run would pass this vacuously without ever executing the
+  // gate under test.
+  const r = runGates(ctx, dir, { scripts: ['build', 'verify-surfaces', 'verify-design'], timeoutMs: 120000 });
 
   assert.equal(r.ok, true, r.output);
   assert.equal(
@@ -172,8 +181,8 @@ test('verify-design is run with the record suppressed, so a gate never writes da
 });
 
 test('an explicit script list still overrides the default, and old npm-only results still read right', (t) => {
-  // `run.mjs` runs `['build']` alone after the merge; that call must not grow
-  // two browser gates by accident.
+  // The tripwire and the merge-time rebuild both pass explicit sets; those
+  // calls must not grow browser gates by accident.
   const ctx = makeRepo();
   t.after(() => ctx.cleanup());
   const dir = gateTree(ctx, { scripts: NPM_OK, files: BOTH_PASS });
