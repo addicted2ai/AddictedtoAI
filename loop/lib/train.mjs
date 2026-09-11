@@ -28,6 +28,12 @@ import { joinableSubjects, makeReviewTrain, trainFindingsNamingMerges } from './
 import { appendLedger, makeLedgerLine, readLedger } from './ledger.mjs';
 import { localDate } from './dates.mjs';
 import { rederiveStep } from './rederive.mjs';
+// Stage-1 U5 (tasks 45-48): the train publishes its verified SHA through the
+// loop's delegation shim — the SAME shared step the Pulse uses, never a
+// second implementation. `config.mjs` is already imported across `loop/lib/`
+// and imports only `node:fs`, so this adds no cycle.
+import { publishStep as shimPublishStep } from './publish.mjs';
+import { loadConfig } from './config.mjs';
 
 /** `rev-parse` a ref to a sha, or null when git cannot resolve it. */
 function revParse(dir, rev) {
@@ -494,16 +500,34 @@ export function checkoutTrain(repo) {
 }
 
 /**
+ * Marker carried by the train's own `main`-merges (task 47). `pendingMerges`
+ * below excludes them: they are the train absorbing the other publisher's
+ * work before its gates run, not admitted job work waiting for a train — and
+ * their messages carry no job id, so admission would refuse the whole train
+ * on them. The marker is matched as a substring of the merge subject.
+ */
+export const MAIN_MERGE_MARKER = '(train-main-merge)';
+
+/** True when a merge subject is the train's own main-merge, not job work. */
+export function isMainMergeSubject(subject) {
+  return String(subject ?? '').includes(MAIN_MERGE_MARKER);
+}
+
+/**
  * Merges on `train` that `main` does not have, oldest first. Each entry
  * carries the committer timestamp: the `T` trigger reads the oldest.
+ *
+ * The train's own main-merges (task 47, carrying MAIN_MERGE_MARKER) are
+ * excluded: they are base absorption, not waiting work. The returned shape
+ * stays `{sha, ts}` — the subject is read only to filter.
  */
 export function pendingMerges(repo, mainRef = 'main') {
-  const r = gitTry(repo, ['log', '--reverse', '--merges', '--format=%H %ct', `${mainRef}..${TRAIN_BRANCH}`]);
+  const r = gitTry(repo, ['log', '--reverse', '--merges', '--format=%H %ct %s', `${mainRef}..${TRAIN_BRANCH}`]);
   if (!r.ok) return [];
   return String(r.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
-    const [sha, ts] = l.split(' ');
-    return { sha, ts: Number(ts) || 0 };
-  });
+    const [sha, ts, ...rest] = l.split(' ');
+    return { sha, ts: Number(ts) || 0, subject: rest.join(' ') };
+  }).filter((p) => p.sha && !isMainMergeSubject(p.subject)).map(({ sha, ts }) => ({ sha, ts }));
 }
 
 /** Parse `job <id> (<type>): ...` merge messages (mergeJobBranch's shape). */
@@ -714,6 +738,7 @@ export function appendTrainLine(ctx, { id, runner, provider, tier, mm, gateSecon
 async function finishTrainRun(ctx, {
   repo, trainId, manifest, gates, review = unreviewedTrain, now = Date.now,
   gateSeconds = {}, evictions = [], reviewRounds = 0, mmPrior = 0,
+  rederive = trainRederive, publish = null, lockWaitMs,
 }) {
   const fn = gateRunner(gates);
   // 4. Review over the whole diff INCLUDING rederived data (uncommitted
@@ -889,9 +914,20 @@ async function finishTrainRun(ctx, {
     return { ok: false, reason: `post-records re-gate red: ${rb && rb.output ? String(rb.output).split(/\r?\n/).filter(Boolean).slice(-3).join(' | ') : 'no gate result'}` };
   }
   const sha = headSha(repo);
+  // Stage-1 U5 (tasks 45-47): the ordered run ends by PUBLISHING the declared
+  // SHA through the loop shim — `<sha>:main` with descendant refusal — not by
+  // handing it off. A scope refusal re-merges `main` and re-gates inside
+  // `publishTrain` (bounded); any other outcome rides along with the
+  // verification verdict, which stays the ordered run's contract.
+  const pub = await publishTrain(ctx, { repo, trainId, manifest, gates: fn, publish, rederive, lockWaitMs });
+  if (!pub.ok) {
+    return { ok: false, reason: pub.reason, reviewer: reviewer ?? {} };
+  }
   return {
-    ok: true, sha, manifest, mm, gateSeconds, reviewer,
-    note: `train ${trainId} verified at ${sha} — publish handoff (S2): no publish invocation; U5 owns the push`,
+    ok: true, sha, manifest, mm, gateSeconds, reviewer, publish: pub,
+    note: pub.published
+      ? `train ${trainId} verified at ${sha} — published ${String(pub.sha ?? sha).slice(0, 8)} to main`
+      : `train ${trainId} verified at ${sha} — publish pending (${pub.reason ?? pub.attempts.map((a) => a.reason).join('; ')})`,
   };
 }
 
@@ -1514,6 +1550,7 @@ function auditEvictions(ctx, { repo, trainId, manifest, evictions, gate, gates, 
 async function runRedPath(ctx, {
   repo, trainId, manifest, gates, review = unreviewedTrain, now = Date.now,
   gateResult, gateSeconds = {}, redDetail = 'no gate result',
+  rederive = trainRederive, publish = null, lockWaitMs,
 }) {
   const fn = gateRunner(gates);
   // 1. Classification FIRST. An unavailable verdict fails closed with
@@ -1575,6 +1612,7 @@ async function runRedPath(ctx, {
   // gate-eviction path credits none prior.
   const done = await finishTrainRun(ctx, {
     repo, trainId, manifest, gates: fn, review, now, gateSeconds, evictions,
+    rederive, publish, lockWaitMs,
   });
   if (!done.ok) {
     const short = String(search.clearer.sha).slice(0, 8);
@@ -1602,18 +1640,24 @@ async function runRedPath(ctx, {
 }
 
 /**
- * The ordered run (row 36): full set → one rederive → review over the
- * whole diff including rederived data → path-restricted records commit →
+ * The ordered run (row 36, publish wired by Stage-1 U5 tasks 45-47): merge
+ * `main` before the gates (row 47) → full set → one rederive → review over
+ * the whole diff including rederived data → path-restricted records commit →
  * post-records re-gate (build lock, never merge lock) → declared SHA →
- * publish HANDOFF (no publish invocation — S2, U5 owns the push).
+ * publish through the loop shim (`<sha>:main`, bounded re-merge on a scope
+ * refusal).
  *
  * Seams (tests inject; production defaults): `gates` (gateRunner shape),
- * `rederive` (single call), `review` (41–42 contract shape). Returns
+ * `rederive` (single call), `review` (41–42 contract shape), `publish`
+ * (shim-shaped publish call; default is the real loop shim bound to `repo`),
+ * `lockWaitMs` (merge-lock wait for the train's own main-merges; default
+ * resolves from config). Returns
  * `{ok:true, sha, manifest, ...}` or `{ok:false, reason}` — every refusal
  * names its step.
  */
 export async function runTrain(ctx, {
   repo, trainId, manifest, gates, rederive = trainRederive, review = makeReviewTrain(ctx), now = Date.now,
+  publish = null, lockWaitMs,
 }) {
   const fn = gateRunner(gates);
   // 1. Manifest FIRST, before any gate runs (row 35): the reviewed tree
@@ -1623,7 +1667,25 @@ export async function runTrain(ctx, {
   if (m.ok && String(m.stdout ?? '').trim()) {
     return { ok: false, reason: 'train manifest is dirty at run start — commit it first (task 35 commits it before any gate runs)' };
   }
-  // 2. Full TRAIN_GATES set over the train tip.
+  // 1b. The train merges `main` BEFORE its gates run (row 47, Stage-1 U5):
+  // the declared SHA descends from `main` and the gates examine the Pulse's
+  // work alongside the train's own. A no-op when `main` is already contained
+  // (the ordinary state — the tip does not move and no baseline changes); a
+  // real merge re-freezes the manifest baseline over the merged tip (OQ6),
+  // leaving the admitted set — and therefore the bounds — untouched.
+  const mm0 = await mergeMainForGates(repo, { trainId, lockWaitMs: resolveLockWaitMs(ctx, lockWaitMs) });
+  if (!mm0.ok) {
+    return { ok: false, reason: mm0.reason };
+  }
+  if (mm0.merged) {
+    const fr = refreezeManifestForMain(repo, manifest, mm0.mainTip);
+    if (!fr.ok) {
+      return { ok: false, reason: fr.reason };
+    }
+  }
+  // 2. Full TRAIN_GATES set over the train tip (which now carries the merged
+  // `main` from step 1b, so the gates examine the Pulse's work alongside the
+  // train's own).
   const gateSeconds = {};
   let g = null;
   try {
@@ -1644,6 +1706,7 @@ export async function runTrain(ctx, {
     // `{ok:false}` (logs it, merges wait); held/rejected only add detail.
     return runRedPath(ctx, {
       repo, trainId, manifest, gates: fn, review, now, gateResult: g, gateSeconds, redDetail,
+      rederive, publish, lockWaitMs,
     });
   }
   // 3. ONE rederive. The counted baseline is frozen at assembly (the
@@ -1674,8 +1737,9 @@ export async function runTrain(ctx, {
   }
   // 4-7. Shared finish: review → the train's own line → the
   // path-restricted records commit → the post-records re-gate → the
-  // declared SHA. The red path re-enters the same tail after eviction.
-  return finishTrainRun(ctx, { repo, trainId, manifest, gates: fn, review, now, gateSeconds });
+  // declared SHA → the publish through the loop shim (Stage-1 U5). The red
+  // path re-enters the same tail after eviction.
+  return finishTrainRun(ctx, { repo, trainId, manifest, gates: fn, review, now, gateSeconds, rederive, publish, lockWaitMs });
 }
 
 /**
@@ -1802,4 +1866,252 @@ export function admissionOverlap(repo, incomingSubjects) {
   const admitted = unionSubjects(pending.map((p) => mergeSubjects(repo, p.sha)));
   const overlap = (incomingSubjects || []).filter((s) => admitted.includes(s));
   return { overlap: overlap.length > 0, with: overlap };
+}
+
+// ---------------------------------------------------------------------------
+// Stage-1 U5 (tasks 45-47): the train merges `main` before its gates run and
+// publishes its verified SHA through the loop shim, re-merging on a
+// scope refusal. `main` therefore carries only trees some actor's gates
+// passed — the Pulse's own gated commit, or a train tip whose gates examined
+// the Pulse's work alongside the train's own.
+// ---------------------------------------------------------------------------
+
+/**
+ * How many publish attempts a train makes before it stops (initial attempt
+ * plus re-merges). The row bounds nothing and the Pulse advances on
+ * schedule, so an unbounded re-merge is a livelock: one retry, then the
+ * verified tree stays local and the next train carries it. Nothing is ever
+ * widened to get a refused publish through.
+ */
+export const TRAIN_PUBLISH_MAX_ATTEMPTS = 2;
+
+/**
+ * The merge-lock wait for the train's own main-merges. Explicit when the
+ * caller threads it; otherwise the configured `train.lock_wait_seconds`
+ * (row 35: bounds keys, never literals); 0 when no config is readable
+ * (fixture contexts), which tries once — the no-op fast path below usually
+ * needs no lock at all.
+ */
+export function resolveLockWaitMs(ctx, explicit) {
+  if (Number.isFinite(explicit)) return explicit;
+  try {
+    const cfg = loadConfig(ctx);
+    const s = cfg && cfg.train && cfg.train.lock_wait_seconds;
+    if (Number.isFinite(s)) return s * 1000;
+  } catch {
+    // Fixture contexts carry no config file; fall through to try-once.
+  }
+  return 0;
+}
+
+/**
+ * Merge `mainRef` into the train checkout BEFORE the gates run (row 47), so
+ * the SHA the train later declares descends from `main` and its gates
+ * examine the Pulse's work alongside its own.
+ *
+ * A no-op when `mainRef` is already contained in the tip — the ordinary
+ * state, and every existing fixture: no lock is taken (there is no work to
+ * serialise) and the tip does not move, so assembly pins hold untouched.
+ * Otherwise the merge runs under the merge lock (the same lock a worker's
+ * merge takes, per the row's spec: the two must not interleave) via
+ * `mergeLocal`, which aborts on conflict. A conflict refuses the train —
+ * merges wait, nothing publishes — rather than forcing anything.
+ *
+ * Returns `{ok:true, merged, sha, mainTip}` or `{ok:false, reason,
+ * environmental?}`. The merge commit carries MAIN_MERGE_MARKER, which
+ * `pendingMerges` excludes from waiting work.
+ */
+export async function mergeMainForGates(repo, { trainId, mainRef = 'main', lockWaitMs } = {}) {
+  const head = headSha(repo);
+  const mainTipR = gitTry(repo, ['rev-parse', mainRef]);
+  const mainTip = mainTipR.ok ? String(mainTipR.stdout ?? '').trim() : null;
+  if (!head || !mainTip) {
+    return { ok: false, merged: false, reason: `cannot resolve HEAD or ${mainRef} for the pre-gate main merge — merges wait on train, nothing publishes` };
+  }
+  if (gitTry(repo, ['merge-base', '--is-ancestor', mainTip, head]).ok) {
+    return { ok: true, merged: false, sha: head, mainTip };
+  }
+  const lock = await acquireMergeLock({ waitMs: lockWaitMs });
+  if (!lock.ok) {
+    return { ok: false, merged: false, environmental: true, reason: `pre-gate main merge refused: ${lock.reason} — merges wait on train, nothing publishes` };
+  }
+  try {
+    const headNow = headSha(repo);
+    if (headNow && gitTry(repo, ['merge-base', '--is-ancestor', mainTip, headNow]).ok) {
+      return { ok: true, merged: false, sha: headNow, mainTip };
+    }
+    const m = mergeLocal(repo, mainRef, `train ${trainId}: merge ${mainRef} for gates ${MAIN_MERGE_MARKER}`);
+    if (!m.ok) {
+      return { ok: false, merged: false, reason: `pre-gate main merge would not apply cleanly (${m.reason}) — merges wait on train, nothing publishes` };
+    }
+    return { ok: true, merged: true, sha: m.sha, mainTip };
+  } finally {
+    releaseMergeLock(lock);
+  }
+}
+
+/**
+ * Re-freeze the manifest baseline after a main-merge (OQ6): the merge lands
+ * AFTER assembly (which `run.mjs` owns and this round cannot move), so the
+ * frozen `mainTip`, `baselinePaths` and `assemblyTip` are rewritten over the
+ * merged tip and recommitted — otherwise the immobility assert below refuses
+ * the train for the merge the row requires.
+ *
+ * The bounds stay truthful through the rewrite rather than despite it: the
+ * admitted merge SET is unchanged (same SHAs, same measured bytes and
+ * subjects), and the merged-in `main` side is the Pulse's deterministic
+ * machinery output, which the row's spec exempts from review — so the
+ * re-frozen baseline counts the same admitted set over the new base, and the
+ * post-rederive assert still compares like with like.
+ */
+export function refreezeManifestForMain(repo, manifest, mainTip) {
+  manifest.mainTip = mainTip;
+  const baseNames = gitTry(repo, ['diff', '--name-only', `${mainTip}...HEAD`]);
+  manifest.baselinePaths = countedPaths(String(baseNames.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean));
+  const w = writeManifest(repo, manifest);
+  if (!w.ok) {
+    return { ok: false, reason: `main-merged but the manifest re-freeze failed (${w.reason}) — merges wait on train, nothing publishes` };
+  }
+  const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
+  if (!add.ok) {
+    return { ok: false, reason: `main-merged but the re-frozen manifest could not be staged (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}) — merges wait on train, nothing publishes` };
+  }
+  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${manifest.train}: re-freeze baseline after merging main`]);
+  if (!cm.ok) {
+    return { ok: false, reason: `main-merged but the re-freeze commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}) — merges wait on train, nothing publishes` };
+  }
+  manifest.assemblyTip = headSha(repo);
+  return { ok: true };
+}
+
+/**
+ * Advance the local `main` ref to a published SHA (fast-forward only). The
+ * `<sha>:refs/heads/main` send updates the REMOTE; without this the local
+ * `main` rots behind it and the next assembly re-admits already-published
+ * merges. A non-fast-forward (or unresolvable) local ref is left alone with
+ * a note — never forced — and the publish still stands on the remote.
+ */
+export function fastForwardMain(repo, sha, mainRef = 'main') {
+  const cur = gitTry(repo, ['rev-parse', mainRef]);
+  if (!cur.ok) {
+    const br = gitTry(repo, ['branch', mainRef, sha]);
+    return br.ok
+      ? { ok: true, note: `created local ${mainRef} at ${String(sha).slice(0, 8)}` }
+      : { ok: false, note: `could not create local ${mainRef} (${String(br.stderr ?? br.stdout ?? '').trim() || 'git branch failed'}) — the remote still carries the publish` };
+  }
+  const oldTip = String(cur.stdout ?? '').trim();
+  if (oldTip === sha) return { ok: true, note: `local ${mainRef} already at the published SHA` };
+  if (!gitTry(repo, ['merge-base', '--is-ancestor', oldTip, sha]).ok) {
+    return { ok: false, note: `local ${mainRef} is not an ancestor of the published SHA — leaving it for the next train; the remote still carries the publish` };
+  }
+  const up = gitTry(repo, ['update-ref', `refs/heads/${mainRef}`, sha, oldTip]);
+  return up.ok
+    ? { ok: true, note: `fast-forwarded local ${mainRef} ${oldTip.slice(0, 8)} → ${String(sha).slice(0, 8)}` }
+    : { ok: false, note: `could not fast-forward local ${mainRef} (${String(up.stderr ?? up.stdout ?? '').trim() || 'update-ref failed'}) — the remote still carries the publish` };
+}
+
+/**
+ * Publish the train's verified SHA through the loop shim (tasks 45-46) with
+ * refusal-driven re-merge and re-gate (row 47).
+ *
+ * The declaration is the post-records tip with a clean handoff: `owned: []`
+ * (nothing dirty is this caller's to stage) and `phase1Commit: false` (the
+ * train committed its own records already; recomputed data stays
+ * uncommitted per row 50). `preExistingRed: false` is stated, not omitted:
+ * a green train carries no classification, so it never suppresses the
+ * step's own deploy-hold write.
+ *
+ * On a scope refusal — the Pulse advanced `main` while the train was
+ * verifying — the train merges `main` in again and re-runs its gates (one
+ * rederive plus the full TRAIN_GATES set over the merged tip; the review is
+ * not re-run, per the row's letter, and the merged-in side is exempt
+ * machinery output) rather than widening anything. Bounded by
+ * TRAIN_PUBLISH_MAX_ATTEMPTS; when the bound is hit the verified tree stays
+ * local and the next train carries it.
+ *
+ * Seams: `publish` (default: the real shim, bound to `repo`), `rederive`
+ * (default: the real single rederive). Returns `{ok:true, sha, published,
+ * attempts, remerges, ...}` — `ok` is the VERIFICATION verdict (the ordered
+ * run's contract); the publish outcome rides along. `ok:false` only when the
+ * re-merged tree itself fails (rederive threw/failed, re-gate threw/red).
+ */
+export async function publishTrain(ctx, {
+  repo, trainId, manifest, gates, publish = null, rederive = trainRederive, lockWaitMs,
+} = {}) {
+  const fn = gateRunner(gates);
+  const waitMs = resolveLockWaitMs(ctx, lockWaitMs);
+  const doPublish = publish ?? (async (c, o) => {
+    const base = { ...(c ?? {}) };
+    if (typeof base.log !== 'function') base.log = () => {};
+    if (!base.repoRoot) base.repoRoot = repo;
+    if (!base.configPath) base.configPath = join(repo, 'data', 'config.json');
+    return shimPublishStep(base, o);
+  });
+  const attempts = [];
+  let remerges = 0;
+  for (let attempt = 1; attempt <= TRAIN_PUBLISH_MAX_ATTEMPTS; attempt += 1) {
+    const sha = headSha(repo);
+    if (!sha) {
+      return { ok: true, sha, published: false, attempts, remerges, reason: 'cannot resolve HEAD for publish — the verified tree stays local and the next train carries it' };
+    }
+    let res = null;
+    try {
+      res = await doPublish(ctx, { verifiedSha: sha, owned: [], phase1Commit: false, preExistingRed: false });
+    } catch (e) {
+      return { ok: true, sha, published: false, attempts, remerges, reason: `publish threw (${e.message ?? String(e)}) — the verified tree stays local and the next train carries it` };
+    }
+    const published = Boolean(res && res.published);
+    const resReason = (res && (res.reason ?? (res.result && res.result.reason))) || 'unknown';
+    attempts.push({ sha, published, reason: resReason });
+    if (published) {
+      const ff = fastForwardMain(repo, sha);
+      return { ok: true, sha, published: true, attempts, remerges, mainForward: ff, note: `published ${String(sha).slice(0, 8)} to main (${attempts.length} attempt(s)); ${ff.note}` };
+    }
+    const scopeRefused = resReason === 'scope-refused' || (res && res.result && res.result.reason === 'scope-refused');
+    const lastAttempt = attempt >= TRAIN_PUBLISH_MAX_ATTEMPTS;
+    if (!scopeRefused || lastAttempt) {
+      const why = scopeRefused
+        ? `publish refused (scope) after ${attempts.length} attempt(s) — the retry bound (${TRAIN_PUBLISH_MAX_ATTEMPTS}) is hit; the verified tree stays local and the next train carries it; nothing widened`
+        : `publish did not complete (${resReason}) — the verified tree stays local and the next train carries it; nothing widened`;
+      return { ok: true, sha, published: false, attempts, remerges, reason: why };
+    }
+    // Refusal-driven re-merge (row 47): merge `main` again, re-derive over
+    // the merged tip, re-run the FULL gate set. No review re-run (the row
+    // says gates) and no widening (the declaration stays a SHA).
+    const mm = await mergeMainForGates(repo, { trainId, lockWaitMs: waitMs });
+    if (!mm.ok) {
+      return { ok: true, sha, published: false, attempts, remerges, reason: `publish refused (scope) and the re-merge failed (${mm.reason})` };
+    }
+    if (mm.merged) {
+      if (manifest) {
+        const fr = refreezeManifestForMain(repo, manifest, mm.mainTip);
+        if (!fr.ok) {
+          return { ok: true, sha, published: false, attempts, remerges, reason: `publish refused (scope) and ${fr.reason}` };
+        }
+      }
+      remerges += 1;
+      let rd = null;
+      try {
+        rd = await rederive(ctx, repo);
+      } catch (e) {
+        return { ok: false, reason: `publish refused (scope); re-merge succeeded but the re-derive threw (${e.message ?? String(e)}) — merges wait on train, nothing publishes` };
+      }
+      if (!rd || !rd.ok) {
+        return { ok: false, reason: `publish refused (scope); re-merge succeeded but the re-derive failed (${rd ? rd.reason : 'no result'}) — merges wait on train, nothing publishes` };
+      }
+      let g = null;
+      try {
+        g = fn(ctx, repo, { scripts: [...TRAIN_GATES] });
+      } catch (e) {
+        return { ok: false, reason: `publish refused (scope); re-merge succeeded but the re-gate threw (${e.message ?? String(e)}) — merges wait on train, nothing publishes` };
+      }
+      if (!g || !g.ok) {
+        const tail = g && g.output ? String(g.output).split(/\r?\n/).filter(Boolean).slice(-3).join(' | ') : 'no gate result';
+        return { ok: false, reason: `publish refused (scope); re-merged but still red: ${tail} — merges wait on train, nothing publishes` };
+      }
+    }
+    // Unchanged tip (nothing new on main after all): loop around and let the
+    // bound terminate it — the next attempt re-reads the refusal honestly.
+  }
+  return { ok: true, sha: headSha(repo), published: false, attempts, remerges, reason: `publish refused (scope) after ${TRAIN_PUBLISH_MAX_ATTEMPTS} attempts — the retry bound is hit; the verified tree stays local and the next train carries it; nothing widened` };
 }

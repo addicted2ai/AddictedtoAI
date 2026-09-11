@@ -172,7 +172,12 @@ test('--dry-run with publish assumed prints the exact commands and the poll targ
   assert.match(run.out, /DRY RUN — publish would run/);
   assert.match(run.out, /would run: git -C .* add /);
   assert.match(run.out, /would run: git -C .* commit -m "pulse: \d{4}-\d{2}-\d{2} data and content update"/);
-  assert.match(run.out, /would run: git -C .* push origin main/);
+  // Stage-1 U5 (task 45): the printed push is a SHA push
+  // (`<sha>:refs/heads/main` — fully qualified, so it also creates `main` on
+  // an empty remote) in every flow — the branch form is gone. This fixture
+  // has no commit yet, so the line carries the no-tip placeholder.
+  assert.match(run.out, /would run: git -C .* push origin \S+:refs\/heads\/main/);
+  assert.doesNotMatch(run.out, /would run: git -C .* push origin main(\s|$)/, 'the branch push form is gone');
   assert.match(run.out, /would poll: https:\/\/www\.addictedtoai\.net\/status\.json every 20s for up to 10 minutes/);
   assert.match(run.out, /would write .*HOLD\.md if the stamp does not advance/);
   assert.match(run.out, /DRY RUN — nothing was committed and nothing was pushed/);

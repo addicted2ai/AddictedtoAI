@@ -176,6 +176,30 @@ const CONFIRM_WINDOW_MULTIPLE = 3;
 /** The three directories a publish has ever staged from. */
 export const STAGE_DIRS = ['data', 'content', 'public'];
 
+/**
+ * Read the remote tip of `origin/main` WITHOUT touching local state.
+ *
+ * A fresh `ls-remote` rather than the local `origin/main` tracking ref: a
+ * push decision on a stale tip is how a non-descendant push gets attempted
+ * (and, on a forked local history, how it gets pushed). Returns
+ * `{ok:false}` when the remote cannot be read at all and `{ok:true,
+ * tip:null}` when it reads but carries no `main` yet (an empty remote —
+ * anything is a descendant of nothing).
+ */
+export function readRemoteTip(root) {
+  let out;
+  try {
+    out = execFileSync('git', ['-C', root, 'ls-remote', 'origin', 'main'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return { ok: false, tip: null };
+  }
+  const m = /^([0-9a-f]{40})\t/m.exec(out);
+  return { ok: true, tip: m ? m[1].toLowerCase() : null };
+}
+
 export function siteUrl() {
   return (process.env.SITE_URL || DEFAULT_SITE).replace(/\/+$/, '');
 }
@@ -675,6 +699,30 @@ function commitOwned(root, ownedPaths, message, say) {
  *   a declaring caller has its state committed on every run, publishing or
  *   not. `null` — the default — means the caller declared nothing and gets the
  *   old wholesale behaviour, announced on every run, on publishing runs only.
+ * @param {string|null} opts.verifiedSha  the commit SHA the caller's gates ran
+ *   over (Stage-1 task 45). When declared, the step pushes exactly that tree —
+ *   or the phase-1 commit on top of it when phase 1 committed this run's own
+ *   attributed work — as `<sha>:main`, and refuses unless it descends from the
+ *   remote tip (scope refusal: no push, no `HOLD.md`, both SHAs named). A
+ *   declared SHA equal to the remote tip reports "nothing to publish" (not a
+ *   refusal, no hold). `null` — the default — keeps the legacy tip scope: the
+ *   post-commit HEAD is pushed and polled exactly as before, with no scope
+ *   check. Both production callers declare; the default exists so older
+ *   callers keep their behaviour while the row-48 arms pin the declared flow.
+ *   A declared value that is not a resolvable 40-hex commit refuses outright
+ *   (`no-verified-sha`): a scope the step cannot resolve is not one it pushes.
+ * @param {boolean} opts.phase1Commit  whether phase 1 may commit (default
+ *   true). The train passes false: its records are already committed by its
+ *   own path-restricted records commit, and recomputed-but-uncommitted
+ *   `data/derived/` must stay uncommitted (row 50: nothing commits
+ *   `data/derived/` anymore) — so the step stages and commits nothing and
+ *   pushes the declared SHA as is.
+ * @param {boolean} opts.preExistingRed  whether the published tree was
+ *   classified `pre-existing` red (default false). Suppresses the step's OWN
+ *   deploy-hold write when the deploy poll fails: a hold there would re-halt
+ *   what the classification left un-halted (task 49 Q-S13 excludes
+ *   pre-existing red from breaker 2). The run still reports the missed
+ *   deploy and publishes nothing further.
  * @param {number}  opts.pollBudgetMs    how long to wait for the deploy (tests only)
  * @param {number}  opts.confirmBudgetMs the confirmation window (tests only). Floored
  *   at three times `pollBudgetMs`, which is the spec's minimum ratio.
@@ -687,6 +735,9 @@ export async function publishStep(
     assumePublish = false,
     log,
     owned = null,
+    verifiedSha = null,
+    phase1Commit = true,
+    preExistingRed = false,
     // The poll window is a constant for every real run. It is injectable only
     // so a test can exercise the deploy-did-not-land path in milliseconds
     // instead of ten minutes; no caller in `pulse/` or `loop/` passes either.
@@ -739,7 +790,17 @@ export async function publishStep(
   /** Set when phase 1 could not do its job, so phase 2 must not push either. */
   let commitBlocked = null;
 
-  if (declared === null) {
+  if (!phase1Commit) {
+    // The train path (task 46): the caller committed its own records before
+    // calling, and recomputed-but-uncommitted data must stay uncommitted (row
+    // 50). The step stages and commits nothing; the declared SHA below is
+    // pushed as is. `owned` is still honoured for the phase-2 shape (a passed
+    // list keeps the caller declared), but nothing is staged from it here.
+    say('commit', 'skipped by caller option — the caller committed its own records; the step stages and commits nothing');
+    ownedPaths = [];
+    stagePaths = [];
+    commit = { attempted: false, committed: false, paths: [], reason: 'skipped' };
+  } else if (declared === null) {
     stagePaths = STAGE_DIRS.filter((d) => existsSync(`${root}/${d}`));
   } else {
     const tree = classifyWorkingTree(root, declared);
@@ -840,6 +901,27 @@ export async function publishStep(
     return { published: false, reason: commitBlocked, commit, ...(commit.foreign ? { foreign: commit.foreign } : {}) };
   }
 
+  // ---- SHA scope (task 45): the SHA the caller's gates ran over. ----
+  //
+  // Declared (a string was passed): validated here — present, 40-hex, and
+  // resolving to a commit in this repository — and governing below: the step
+  // pushes exactly that tree (or the phase-1 commit on top of it) and checks
+  // it against the remote tip. Anything unresolvable refuses outright
+  // (`no-verified-sha`, no push, no hold): a scope the step cannot resolve is
+  // not one it pushes. Undeclared (null): the legacy tip scope, validated by
+  // nothing and checked by nothing — the post-commit HEAD is pushed and
+  // polled exactly as before.
+  let scopeSha = null;
+  if (verifiedSha != null) {
+    const v = String(verifiedSha).trim().toLowerCase();
+    const resolves = /^[0-9a-f]{40}$/.test(v) && gitTry(root, ['cat-file', '-e', `${v}^{commit}`]).ok;
+    if (!resolves) {
+      say('publish', `no verified SHA was declared (${String(verifiedSha).slice(0, 32)}) — it is absent, malformed, or resolves to no commit here; nothing pushed and no HOLD written`);
+      return { published: false, reason: 'no-verified-sha', commit };
+    }
+    scopeSha = v;
+  }
+
   if (declared === null) {
     say(
       'publish',
@@ -855,15 +937,30 @@ export async function publishStep(
     }
   }
 
+  // Task 45: the push is a SHA push in every flow — the branch form is gone.
+  // No commit is made on a dry run, so the line shows the declared SHA; on
+  // the legacy flow it shows the current tip (best effort, read-only), or a
+  // placeholder where no commit exists yet. A real declared run pushes this
+  // SHA — or the phase-1 commit on top of it when phase 1 commits — and only
+  // when it descends from the remote tip (see the real path below).
+  const dryTip = gitTry(root, ['rev-parse', 'HEAD']);
+  const drySha =
+    scopeSha ?? (dryTip.ok && /^[0-9a-f]{40}$/.test(dryTip.out) ? dryTip.out : '<post-commit-HEAD>');
   const commands = [
     `git -C ${root} add ${stagePaths.length ? stagePaths.join(' ') : '(nothing — this run wrote nothing of its own)'}`,
     `git -C ${root} commit -m "${message}"`,
-    `git -C ${root} push origin main`,
+    `git -C ${root} push origin ${drySha}:refs/heads/main`,
   ];
 
   if (dryRun) {
     say('publish', `DRY RUN — publish would run (config publish: ${config.publish}${assumePublish ? ', overridden to true for this dry run' : ''})`);
     for (const c of commands) process.stdout.write(`pulse: publish   would run: ${c}\n`);
+    if (scopeSha) {
+      process.stdout.write(
+        `pulse: publish   declared verified SHA ${scopeSha} — a real run pushes it (or the phase-1 commit on top of it) ` +
+          'only when it descends from the remote tip, and refuses naming both otherwise\n',
+      );
+    }
     process.stdout.write(`pulse: publish   would poll: ${statusUrl()} every ${POLL_INTERVAL_MS / 1000}s for up to ${POLL_BUDGET_MS / 60000} minutes\n`);
     process.stdout.write(
       `pulse: publish   would then poll a confirmation window of ${(POLL_BUDGET_MS * CONFIRM_WINDOW_MULTIPLE) / 60000} ` +
@@ -896,11 +993,63 @@ export async function publishStep(
 
   // A run that attributed nothing to itself and holds nothing the remote does
   // not already have has nothing to publish. Saying so is the whole outcome:
-  // the alternative is the no-op `git push origin main` that made `npm test`
+  // the alternative is the no-op push that made `npm test`
   // a command capable of reaching the live remote (addictedtoai-64y).
-  if (ownedPaths !== null && ownedPaths.length === 0 && !aheadOfOrigin(root)) {
+  //
+  // Legacy flow only: a caller that declared its scope is governed by the
+  // scope checks below instead — a declared SHA equal to the remote tip
+  // reports "nothing to publish" there, and a declared SHA behind it is a
+  // scope refusal, not a heuristic shrug.
+  if (scopeSha === null && ownedPaths !== null && ownedPaths.length === 0 && !aheadOfOrigin(root)) {
     say('publish', 'nothing of this run\'s own to publish — no attributable change in the working tree and nothing here that origin/main lacks; not pushing');
     return { published: false, reason: 'nothing-owned', commit };
+  }
+
+  // ---- Task 45: WHAT gets pushed + WHETHER it may be (declared flow). ----
+  //
+  // A caller that declared its verified SHA gets exactly that tree — unless
+  // phase 1 committed this run's own attributed work just above, in which
+  // case the pushed tree is the new tip whose content is exactly what the
+  // rebuild examined (the declaration pins the gated base; the commit carries
+  // only attributed paths, so nothing ungated rides).
+  //
+  // Resolved BEFORE the baseline read below, so refusals, equal-SHAs and
+  // unreadable remotes cost no live read at all. Checked against a FRESH read
+  // of the remote (`ls-remote`), never local tracking: a push decision on a
+  // stale tip is how a non-descendant gets attempted, and the remote
+  // re-checks the fast-forward atomically at push time regardless. The legacy
+  // flow (no declaration) keeps its behaviour — a no-op push still pushes
+  // and polls, which `publish-verify.test.mjs` pins — and resolves its tip
+  // after its wholesale commit further below.
+  let pushSha = null;
+  if (scopeSha !== null) {
+    pushSha = commit.committed && commit.sha ? String(commit.sha).toLowerCase() : scopeSha;
+    const remote = readRemoteTip(root);
+    if (!remote.ok) {
+      say('publish', 'cannot read the remote tip of origin/main — the scope of a declared SHA cannot be verified against an unreadable remote; nothing pushed and no HOLD written');
+      return { published: false, reason: 'remote-unreadable', sha: pushSha, declaredSha: scopeSha, commit };
+    }
+    if (remote.tip === null) {
+      say('publish', `the remote has no main yet — pushing declared tree ${pushSha.slice(0, 12)} as the first commit`);
+    } else {
+      if (pushSha === remote.tip) {
+        say('publish', `declared SHA ${pushSha} equals the remote tip ${remote.tip} — nothing to publish (not a scope refusal, no HOLD written)`);
+        return { published: false, reason: 'nothing-to-publish', sha: pushSha, declaredSha: scopeSha, remoteTip: remote.tip, commit };
+      }
+      // The tip object may be absent locally (another actor pushed it), so
+      // one read-only fetch before resolving — the same fetch the stamp
+      // check already performs for the same reason. Still unresolvable
+      // afterwards is fail-closed: the scope cannot be proven.
+      if (!gitTry(root, ['cat-file', '-e', `${remote.tip}^{commit}`]).ok) {
+        gitTry(root, ['fetch', 'origin', 'main']);
+      }
+      const tipKnown = gitTry(root, ['cat-file', '-e', `${remote.tip}^{commit}`]).ok;
+      const descends = tipKnown && gitTry(root, ['merge-base', '--is-ancestor', remote.tip, pushSha]).ok;
+      if (!descends) {
+        say('publish', `scope refusal: declared tree ${pushSha} is not a descendant of the remote tip ${remote.tip} — nothing pushed and no HOLD written`);
+        return { published: false, reason: 'scope-refused', sha: pushSha, declaredSha: scopeSha, remoteTip: remote.tip, commit };
+      }
+    }
   }
 
   const before = await fetchLiveStamp();
@@ -926,10 +1075,48 @@ export async function publishStep(
   // not exist until the commit does. When there was nothing to commit this is
   // the unchanged HEAD, which is still the right answer — it is the commit the
   // live site is required to be serving when this step returns.
-  const expected = git(root, ['rev-parse', 'HEAD']).toLowerCase();
+  //
+  // The legacy flow resolves its tip here, after its wholesale commit above.
+  // The declared flow resolved its SHA before the baseline read (see above),
+  // so refusals and equal-SHAs cost no live read at all.
+  //
+  // Either way the refspec below names the SHA — the branch form is gone in
+  // every flow.
+  if (scopeSha === null) {
+    pushSha = git(root, ['rev-parse', 'HEAD']).toLowerCase();
+  }
 
-  git(root, ['push', 'origin', 'main']);
-  say('publish', `pushed origin main at ${expected.slice(0, 12)}; polling the live build stamp for that commit`);
+  // `expected` is the pushed SHA: what the host will serve is what left here.
+  const expected = pushSha;
+
+  let pushErr = null;
+  try {
+    // Fully-qualified destination: a bare `<sha>:main` refspec fails when
+    // the remote has no `main` yet (git cannot guess the namespace for a raw
+    // SHA source). The fast-forward is still enforced by the remote.
+    git(root, ['push', 'origin', `${expected}:refs/heads/main`]);
+  } catch (err) {
+    pushErr = err;
+  }
+  if (pushErr) {
+    // A push the pre-check cleared can still lose a race with the other
+    // publisher between the check and the push. Re-read once: a tip that
+    // moved past the pushed SHA reads as scope staleness (the train's
+    // re-merge trigger); anything else re-throws exactly as before.
+    const again = readRemoteTip(root);
+    const first = String(pushErr?.message ?? pushErr).split('\n')[0];
+    if (again.ok && again.tip !== null && again.tip !== expected) {
+      const stillDescends =
+        gitTry(root, ['cat-file', '-e', `${again.tip}^{commit}`]).ok &&
+        gitTry(root, ['merge-base', '--is-ancestor', again.tip, expected]).ok;
+      if (!stillDescends) {
+        say('publish', `scope refusal: declared tree ${expected} is not a descendant of the remote tip ${again.tip} (the remote advanced during the push) — nothing published and no HOLD written`);
+        return { published: false, reason: 'scope-refused', sha: expected, declaredSha: scopeSha, remoteTip: again.tip, raced: true, commit };
+      }
+    }
+    throw pushErr;
+  }
+  say('publish', `pushed ${expected.slice(0, 12)} to origin main; polling the live build stamp for that commit`);
 
   // One checker for the whole run, so the read-only `git fetch` that resolves a
   // stamp another actor pushed happens at most once rather than once per poll.
@@ -1011,6 +1198,25 @@ export async function publishStep(
     readings: readings.count,
     everyReadingWasBaseline: readings.everyOneWasBaseline,
   });
+  // Task 48 item 5 (orchestrator-sanctioned): a tree classified
+  // `pre-existing` red suppresses the step's OWN deploy-hold write. A hold
+  // here would re-halt what that classification left un-halted (task 49 Q-S13
+  // excludes pre-existing red from breaker 2) — and, since HOLD suspends the
+  // whole publish phase, it would shut the Pulse's door on every later run.
+  // The missed deploy is still reported, and nothing further is published.
+  if (preExistingRed === true) {
+    say('publish', `deploy did not land (${classification}) — NOT writing a deploy hold: the published tree was classified pre-existing red, so a hold here would re-halt what that classification left un-halted; nothing further published`);
+    return {
+      published: false,
+      reason: 'stamp-did-not-advance',
+      suppressedHold: 'pre-existing',
+      expected,
+      classification,
+      last_seen: readings.last,
+      windows: { first_ms: pollBudgetMs, confirmation_ms: confirmMs },
+      commit,
+    };
+  }
   const file = writeHold(root, {
     expected,
     lastSeen: readings.last,

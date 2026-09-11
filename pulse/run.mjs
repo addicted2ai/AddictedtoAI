@@ -32,7 +32,7 @@
  */
 
 import { existsSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { makeLogger, paths, readJson, readJsonl, repoRoot, today, checkLease, LEASE_MAX_AGE_MS, LEASE_FUTURE_TOLERANCE_MS } from './lib/core.mjs';
 import { loadRegistry, sortedSources } from './lib/registry.mjs';
@@ -426,7 +426,31 @@ if (!buildFailed) {
     ...domainSeeding.appended.map((s) => s.path),
     ...vanishedPaths,
   ];
-  await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
+  // Stage-1 task 46: the Pulse constructs the SHA its gates ran over and
+  // declares it to the shared step, which pushes `<sha>:main` and refuses a
+  // non-descendant naming both. The declaration is the pre-commit HEAD: the
+  // step commits this run's attributed work on top of it (phase 1) and pushes
+  // that tip, whose content is exactly what the rebuild above examined — so
+  // the declared base plus the attributed commit is the gated tree, and a
+  // later ungated commit is simply not pushed. Unresolvable here (this root
+  // is not a repository in some fixtures) declares nothing: the step keeps
+  // its legacy tip scope, which is today's behaviour exactly.
+  //
+  // `preExistingRed: false` is stated rather than omitted: the Pulse does not
+  // classify (classification is the train's, task 38), so it never suppresses
+  // the step's own deploy-hold write. Phase 1 stays on (default): the commit
+  // half is the Pulse's own path.
+  let gatedSha = null;
+  try {
+    const head = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim().toLowerCase();
+    if (/^[0-9a-f]{40}$/.test(head)) gatedSha = head;
+  } catch {
+    gatedSha = null;
+  }
+  await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned, verifiedSha: gatedSha, preExistingRed: false });
 
   const feedLines = readJsonl(p.changes).length;
   log.step('done', `changed feed holds ${feedLines} line(s); queue holds ${queue.count} item(s)`);
