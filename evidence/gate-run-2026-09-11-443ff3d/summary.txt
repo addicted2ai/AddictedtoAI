@@ -1,0 +1,25 @@
+gate-run 2026-09-11 443ff3d
+pin 443ff3d16bdcee0ad3d6aa3e0baf114d409bb3ae
+short 443ff3d
+repo D:\AddictedtoAI
+evidence D:\AddictedtoAI\evidence
+date 2026-09-11 (machine-local)
+gating HEAD 443ff3d at 14:14:16
+
+=== 1-test starting ===
+1-test EXIT=0 759s duration_ms=758711
+1-test counts: 2234 passed
+=== 2-build starting ===
+2-build EXIT=0 41s duration_ms=40736
+=== 3-launch starting ===
+3-launch EXIT=0 30s duration_ms=29834
+=== 4-design starting ===
+4-design EXIT=0 34s duration_ms=34081
+=== 5-surfaces starting ===
+5-surfaces EXIT=0 3s duration_ms=3474
+=== 6-analytics starting ===
+6-analytics EXIT=0 20s duration_ms=19833
+
+ALL SIX GATES GREEN at 443ff3d
+pin OK: pinned and HEAD agree at 443ff3d
+THIS SCRIPT NEVER PUSHES. A green result is a report, not a deploy.
