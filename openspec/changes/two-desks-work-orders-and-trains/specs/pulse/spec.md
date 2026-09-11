@@ -116,16 +116,18 @@ controlled by the `publish` flag in `data/config.json`:
   engines reach this step and the flag is a reserved-path value either of them
   may find changed since it started; a permission read once and carried is a
   permission that can be stale in the direction that publishes.
-- **A run SHALL continue to commit its data and content changes to `main` and to
-  publish on its own schedule**, gated by its own rebuild and by nothing the Desk
+- **A run SHALL continue to commit its data and content changes to `main` on
+  its own schedule**, gated by its own rebuild and by nothing the Desk
   does. Its output is deterministic machinery output and is exempt from review on
   the terms `review` already states; and the Desk's brakes are brakes on the Desk.
   `STOP`, a `HOLD.md` from any breaker, a held train or simply no qualifying work
-  halt workers and trains — they SHALL NOT halt publication of the freshness
-  layer, exactly as today. A brake that froze the live site because the Desk was
-  stopped would make the maintainer's own stop button an outage, and it would do it
-  silently, since a publish step that is never called never reports that it
-  published nothing.
+  halt workers and trains — they do not halt the run's own phase-1 commits.
+  The PUSH is governed separately: the step SHALL NOT push while `HOLD.md`
+  stands, whatever brake wrote it, so under a standing hold the live site
+  keeps serving the last published tree until the hold clears. A brake that
+  froze committing because the Desk was stopped would make the maintainer's
+  own stop button an outage, and it would do it silently, since a publish
+  step that is never called never reports that it published nothing.
 - `main` therefore has **two** writers, and each pushes only a tree its own gates
   ran over: a passing train's fast-forward, and the Pulse's own gated commit. That
   is a narrower claim than "exactly one writer" and it is the true one. The
