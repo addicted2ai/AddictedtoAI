@@ -272,6 +272,13 @@ export async function mergeJobBranch(ctx, {
     if (admission && admission.held === true && Number.isFinite(admission.maxMerges)) {
       const waiting = pendingMerges(repo, admission.mainRef ?? 'main').length;
       if (waiting >= admission.maxMerges) {
+        // NOTE for the deferred `admission` threading unit: this hold-refusal
+        // returns plain `{ok:false}` with no `blocked`/`environmental` marker —
+        // a waiting merge merely waits, it did not fail. When the owning unit
+        // threads `admission` through the `run.mjs:1811` `mergeJobBranch` call,
+        // give this arm a marker (e.g. `blocked: 'interrupted'`) or the
+        // `run.mjs:1830` fallback books the waiting worker `failed` where
+        // `interrupted` fits. Comment only: no behavior change until then.
         return { ok: false, reason: `train held (pre-existing red): ${waiting} merges already wait (limit ${admission.maxMerges}) — this merge is refused and waits for the hold to clear; nothing merged` };
       }
       heldNote = ` (train held: pre-existing red; ${waiting} merge(s) ahead, within the ${admission.maxMerges}-merge limit — this merge waits for the hold to clear)`;
@@ -681,9 +688,9 @@ export async function trainRederive(ctx, dir) {
  * other writer touched). Figures that do not exist until the review ends
  * ride this line, never a per-job one.
  */
-export function appendTrainLine(ctx, { id, runner, provider, tier, mm, gateSeconds, train, outcome = 'done' }) {
+export function appendTrainLine(ctx, { id, runner, provider, tier, mm, gateSeconds, train, outcome = 'done', note }) {
   const line = makeLedgerLine({
-    id, type: 'train', runner, provider, tier, mm, outcome,
+    id, type: 'train', runner, provider, tier, mm, outcome, note,
     gate_seconds: gateSeconds, ts: ctx && typeof ctx.now === 'function' ? ctx.now().toISOString() : new Date().toISOString(),
   });
   line.train = train;
@@ -730,10 +737,10 @@ async function finishTrainRun(ctx, {
   const roundMm = Math.round((((now() - reviewStart) / 60000) + Number.EPSILON) * 100) / 100;
   const mm = Math.round(((mmPrior + roundMm) + Number.EPSILON) * 100) / 100;
   if (!vr || !['approve', 'revise', 'reject'].includes(vr.verdict)) {
-    return { ok: false, reason: 'train review record absent or malformed — fail closed: no fast-forward, no publish' };
+    return { ok: false, reason: 'train review record absent or malformed — fail closed: no fast-forward, no publish', reviewer: { runner: vr?.runner ?? 'unwired-reviewer', provider: vr?.provider ?? 'unwired-provider', tier: vr?.tier ?? 'unwired-tier' } };
   }
   if (vr.verdict !== 'approve') {
-    return { ok: false, reason: `train review did not approve (${vr.verdict}): ${vr.reason || 'no reason given'}` };
+    return { ok: false, reason: `train review did not approve (${vr.verdict}): ${vr.reason || 'no reason given'}`, reviewer: { runner: vr.runner ?? 'unwired-reviewer', provider: vr.provider ?? 'unwired-provider', tier: vr.tier ?? 'unwired-tier' } };
   }
   const reviewer = { runner: vr.runner ?? 'unwired-reviewer', provider: vr.provider ?? 'unwired-provider', tier: vr.tier ?? 'unwired-tier' };
   // 5. Train's own line at the records commit, after the rederive (row
@@ -1361,9 +1368,18 @@ async function runRedPath(ctx, {
     repo, trainId, manifest, gates: fn, review, now, gateSeconds, evictions, reviewRounds: 1,
   });
   if (!done.ok) {
+    const short = String(search.clearer.sha).slice(0, 8);
+    // A post-eviction review refusal is not a red gate: name it as a
+    // review verdict, not as still-red gates, so the rejection line reads
+    // honestly. Every other finish refusal (re-gate red, records failure)
+    // keeps the still-red wording. The reviewer rides along either way —
+    // `finishTrainRun` refusal shapes carry it (review arms above).
+    const reviewRefusal = /train review/i.test(done.reason ?? '');
     const rej = rejectTrain(ctx, {
       repo, trainId, manifest, gateSeconds, evictions,
-      reason: `still red after evicting ${String(search.clearer.sha).slice(0, 8)}: ${done.reason}`,
+      reason: reviewRefusal
+        ? `review did not approve after evicting ${short}: ${done.reason}`
+        : `still red after evicting ${short}: ${done.reason}`,
       reviewer: done.reviewer ?? {},
     });
     rej.replay = auditEvictions(ctx, { repo, trainId, manifest, evictions, gate: failingGate, gates: fn, reviewer: done.reviewer ?? {} });

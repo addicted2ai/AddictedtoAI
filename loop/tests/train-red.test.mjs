@@ -33,11 +33,22 @@
  *   main untouched, no replay ref.
  * - no-single-removal: whole-train rejection, nothing reverted, outcome
  *   `failed`, merges stay.
+ * - post-eviction red (fix round): the failing gate clears but a later
+ *   full-set gate stays red → whole-train rejection, eviction stands,
+ *   no review runs, replay audits the standing eviction.
+ * - environmental (fix round): a full-gate result the tree marks
+ *   environmental (build-lock refusal vocabulary) never classifies, holds,
+ *   or reverts — one gate call, no line.
+ * - review wording (fix round, nit A): post-eviction review refusal is
+ *   named as a review verdict, never `still red`, with the reviewer on
+ *   the rejection line instead of the unwired fallback.
  * - date-change: begun-date recorded, mid-search change refuses, nothing
  *   evicted.
  * - lock: admits up to size with a note, refuses beyond naming hold+size
  *   (the telling), legacy without admission.
- * - units: begunDate/failingGateOf/appendTrainLine-outcome arms.
+ * - units: begunDate/failingGateOf/appendTrainLine-outcome arms (the outcome
+ *   arm also pins the fix-round `note` forwarding: a note lands on the
+ *   line and in the ledger, absent stays absent).
  * - mutation A (assume-a-merge): only the pre-existing case fails.
  * - mutation B (newest-first): isolates the WRONG merge; the replay audit
  *   then flags `wrongly: true` on the mutant run.
@@ -561,6 +572,186 @@ test('no single removal clears it: whole-train rejection, nothing reverted, merg
 });
 
 // ---------------------------------------------------------------------------
+// F5 (fix round): eviction clears the failing gate but the FULL set stays red.
+// ---------------------------------------------------------------------------
+
+test('eviction clears the failing gate but the full set stays red: rejection, eviction stands, replay audits', async () => {
+  const fx = trainRepo();
+  try {
+    const { repo } = fx;
+    ensureTrainBranch(repo, 'main');
+    admitJob(repo, 'job-1', { 'content/build-defect.md': '# build defect\n', 'content/j1.md': '# one\n' });
+    admitJob(repo, 'job-2', { 'content/surfaces-defect.md': '# surfaces defect\n', 'content/j2.md': '# two\n' });
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const asm = assembleTrain(repo, { trainId: 't-postred', bounds: BOUNDS, now: () => T0 });
+    assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+    const earliest = asm.manifest.merges[0].sha;
+    // Two-gate stub: `build` fails while build-defect.md is present,
+    // `verify-surfaces` fails while surfaces-defect.md is present. The first
+    // failure in the requested order stops the run (runGates' shape), so the
+    // initial full set fails on `build` while the post-eviction full set —
+    // build defect gone, surfaces defect still there — fails later.
+    const calls = [];
+    const gates = (ctx, dir, options) => {
+      const scripts = options && options.scripts ? [...options.scripts] : [];
+      let head = null;
+      try {
+        head = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+      } catch {
+        head = null;
+      }
+      calls.push({ scripts, dir, head });
+      const fails = (s) =>
+        (s === 'build' && existsSync(join(dir, 'content', 'build-defect.md'))) ||
+        (s === 'verify-surfaces' && existsSync(join(dir, 'content', 'surfaces-defect.md')));
+      const first = scripts.find(fails);
+      if (first === undefined) {
+        return { ok: true, results: scripts.map((s) => ({ script: s, ok: true, status: 0, output: `${s} ok` })), output: '' };
+      }
+      const ran = scripts.slice(0, scripts.indexOf(first) + 1);
+      return {
+        ok: false,
+        results: ran.map((s, i) => ({ script: s, ok: i < ran.length - 1, status: i < ran.length - 1 ? 0 : 1, output: i < ran.length - 1 ? `${s} ok` : `${s} FAILED` })),
+        output: `${ran[ran.length - 1]} FAILED`,
+      };
+    };
+    const review = stubReview();
+    const tr = await runTrain(ctxFor(repo), {
+      repo, trainId: asm.manifest.train, manifest: asm.manifest,
+      gates, rederive: stubRederive(), review, now: () => T0,
+    });
+    assert.equal(tr.ok, false);
+    assert.equal(tr.rejected, true);
+    assert.match(tr.reason, /post-eviction full gates red/);
+    assert.match(tr.reason, /verify-surfaces FAILED/);
+    assert.deepEqual(tr.evictions.map((e) => e.merge), [earliest], 'the build-clearing merge is evicted');
+    // The eviction stands: revert + mark committed, nothing un-reverted.
+    const log = trainLog(repo);
+    assert.ok(log.some((l) => l.startsWith('Revert "job job-1')), `the eviction revert is committed:\n${log.slice(0, 6).join('\n')}`);
+    assert.ok(log.some((l) => l.startsWith(`train ${asm.manifest.train}: evict`)), 'the eviction mark is recommitted');
+    // Gate order proves the shape: full, classify-full, failing-gate trial,
+    // post-eviction full, solo replay on the gate of eviction — no review.
+    assert.deepEqual(calls.map((c) => c.scripts), [
+      [...TRAIN_GATES],
+      [...TRAIN_GATES],
+      ['build'],
+      [...TRAIN_GATES],
+      ['build'],
+    ]);
+    assert.equal(review.seen.length, 0, 'no review runs on a train the full set still rejects');
+    // The rejection line carries the eviction; the manifest carries the
+    // verdict; the replay audits exactly the standing eviction.
+    const head = git(repo, ['rev-parse', TRAIN_BRANCH]);
+    const lines = ledgerLines(readCommitted(repo, head, 'data/ledger.jsonl'));
+    const rej = lines.find((l) => l.id === asm.manifest.train);
+    assert.ok(rej, 'the rejection line is committed');
+    assert.equal(rej.outcome, 'failed');
+    assert.equal(rej.train.evictions.length, 1);
+    assert.equal(rej.train.evictions[0].merge, earliest);
+    const manifest = JSON.parse(readCommitted(repo, head, '.train/manifest.json'));
+    assert.equal(manifest.evictions.length, 1);
+    assert.equal(manifest.evictions[0].merge, earliest);
+    assert.equal(manifest.evictions[0].wrongly, false, 'the replay verdict rides the manifest');
+    assert.equal(tr.replay.length, 1);
+    assert.equal(tr.replay[0].merge, earliest);
+    assert.equal(tr.replay[0].wrongly, false, 'the evicted merge alone still fails its gate');
+    assert.equal(tr.replay[0].recorded, true);
+    assertAuditRecorded(repo, asm.manifest.train, earliest, false);
+    assert.equal(existsSync(join(repo, 'HOLD.md')), false);
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Environmental guard (fix round): a full-gate result the tree marks
+// environmental never classifies, holds, or reverts.
+// ---------------------------------------------------------------------------
+
+test('environmental full-gate red never classifies, holds, or reverts', async () => {
+  const fx = trainRepo();
+  try {
+    const { repo } = fx;
+    ensureTrainBranch(repo, 'main');
+    admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const asm = assembleTrain(repo, { trainId: 't-env', bounds: BOUNDS, now: () => T0 });
+    assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+    // The tree's own environmental vocabulary (`gatesHitEnvironmentalFailure`):
+    // a build-lock refusal, not a red diff.
+    const out = 'another build holds the lock. Waited 5s.';
+    const calls = [];
+    const gates = (ctx, dir, options) => {
+      const scripts = options && options.scripts ? [...options.scripts] : [];
+      let head = null;
+      try {
+        head = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+      } catch {
+        head = null;
+      }
+      calls.push({ scripts, dir, head });
+      return { ok: false, results: [{ script: scripts[0] ?? 'test', ok: false, status: 1, output: out }], output: out };
+    };
+    const tr = await runTrain(ctxFor(repo), {
+      repo, trainId: asm.manifest.train, manifest: asm.manifest,
+      gates, rederive: stubRederive(), review: stubReview(), now: () => T0,
+    });
+    assert.equal(tr.ok, false);
+    assert.equal(tr.held, undefined, 'an environmental red never holds');
+    assert.equal(tr.rejected, undefined, 'an environmental red never rejects');
+    assert.match(tr.reason, /could not run/);
+    assert.match(tr.reason, /classification deferred/);
+    assert.equal(calls.length, 1, 'classification never runs a second gate set');
+    assert.ok(!trainLog(repo).some((l) => l.startsWith('Revert')), 'no revert on an environmental red');
+    assert.deepEqual(readLedger(repo).filter((l) => l.id === asm.manifest.train), [], 'no hold/rejection line for an environmental red');
+    assert.equal(existsSync(join(repo, 'HOLD.md')), false);
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Review wording (fix round, nit A): a post-eviction review refusal is named
+// as a review verdict — never `still red` — with the reviewer on the line.
+// ---------------------------------------------------------------------------
+
+test('post-eviction review refusal is named as a review verdict, with the reviewer on the line', async () => {
+  const { fx, repo, asm, earliest } = buildEarlyLatent();
+  try {
+    const gates = stubGates((dir) => existsSync(join(dir, 'content', 'defect.md')));
+    const review = stubReview({ verdict: 'reject', reason: 'probe refusal' });
+    const tr = await runTrain(ctxFor(repo), {
+      repo, trainId: asm.manifest.train, manifest: asm.manifest,
+      gates, rederive: stubRederive(), review, now: () => T0,
+    });
+    assert.equal(tr.ok, false);
+    assert.equal(tr.rejected, true);
+    assert.match(tr.reason, /review did not approve after evicting/);
+    assert.doesNotMatch(tr.reason, /still red/, 'an unapproved train is not mislabelled red');
+    assert.deepEqual(tr.evictions.map((e) => e.merge), [earliest]);
+    // The rejection line names the real reviewer, not the unwired fallback.
+    const head = git(repo, ['rev-parse', TRAIN_BRANCH]);
+    const lines = ledgerLines(readCommitted(repo, head, 'data/ledger.jsonl'));
+    const rej = lines.find((l) => l.id === asm.manifest.train);
+    assert.ok(rej, 'the rejection line is committed');
+    assert.equal(rej.outcome, 'failed');
+    assert.equal(rej.runner, 'stub-reviewer', 'the reviewer identity rides the line');
+    // The eviction stands and the replay still audits it.
+    assert.ok(trainLog(repo).some((l) => l.startsWith('Revert "job job-1')), 'the eviction revert stands');
+    assert.equal(tr.replay.length, 1);
+    assert.equal(tr.replay[0].merge, earliest);
+    assert.equal(tr.replay[0].wrongly, false);
+    assert.equal(tr.replay[0].recorded, true);
+    assertAuditRecorded(repo, asm.manifest.train, earliest, false);
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ---------------------------------------------------------------------------
 // F4: date change mid-search refuses.
 // ---------------------------------------------------------------------------
 
@@ -631,6 +822,12 @@ test('appendTrainLine: outcome rides through, default done, unknown refused', ()
     assert.equal(appendTrainLine(ctx, { ...base, id: 't-o2', outcome: 'blocked' }).outcome, 'blocked');
     assert.equal(appendTrainLine(ctx, { ...base, id: 't-o3', outcome: 'failed' }).outcome, 'failed');
     assert.throws(() => appendTrainLine(ctx, { ...base, id: 't-o4', outcome: 'held' }), /not one of/, 'outside the frozen vocabulary refuses');
+    // Fix round (finding 1): the `note` the hold/reject/replay callers pass
+    // lands on the line and in the ledger — it was silently dropped before.
+    const noted = appendTrainLine(ctx, { ...base, id: 't-o5', note: 'rejected: probe note' });
+    assert.equal(noted.note, 'rejected: probe note');
+    assert.equal(readLedger(repo).find((l) => l.id === 't-o5').note, 'rejected: probe note');
+    assert.equal('note' in appendTrainLine(ctx, { ...base, id: 't-o6' }), false, 'no note in, no note out');
   } finally {
     cleanup();
   }
