@@ -38,6 +38,14 @@
     "machinery": 120,
     "scout": 60
   },
+  "train": {
+    "merges": 5,
+    "minutes": 90,
+    "max_reviewed_bytes": 150000,
+    "max_subjects": 12,
+    "lock_wait_seconds": 1200
+  },
+  "workers": 1,
   "degradation": {
     "window_hours": 48,
     "shed_levels": [
