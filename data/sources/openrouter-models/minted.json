@@ -369,6 +369,11 @@
     "entry_id": "model/deepseek-deepseek-v4-pro-0813-batch",
     "path": "content/wiki/model/deepseek-deepseek-v4-pro-0813-batch.md"
   },
+  "deepseek/deepseek-v4.1-flash": {
+    "date": "2026-09-11",
+    "entry_id": "model/deepseek-deepseek-v4-1-flash",
+    "path": "content/wiki/model/deepseek-deepseek-v4-1-flash.md"
+  },
   "dots-studio/dots-3-note-preview:free": {
     "date": "2026-08-28",
     "entry_id": "model/dots-studio-dots-3-note-preview-free",
@@ -643,6 +648,16 @@
     "date": "2026-09-05",
     "entry_id": "model/inclusionai-ling-3-0-flash-sante-free",
     "path": "content/wiki/model/inclusionai-ling-3-0-flash-sante-free.md"
+  },
+  "inclusionai/ling-3.0-flash-vl": {
+    "date": "2026-09-11",
+    "entry_id": "model/inclusionai-ling-3-0-flash-vl",
+    "path": "content/wiki/model/inclusionai-ling-3-0-flash-vl.md"
+  },
+  "inclusionai/ling-3.0-flash-vl:free": {
+    "date": "2026-09-11",
+    "entry_id": "model/inclusionai-ling-3-0-flash-vl-free",
+    "path": "content/wiki/model/inclusionai-ling-3-0-flash-vl-free.md"
   },
   "kwaipilot/kat-coder-air-v2.5": {
     "date": "2026-08-28",
@@ -1919,10 +1934,20 @@
     "entry_id": "model/relace-relace-search",
     "path": "content/wiki/model/relace-relace-search.md"
   },
+  "sakana/fugu-max": {
+    "date": "2026-09-11",
+    "entry_id": "model/sakana-fugu-max",
+    "path": "content/wiki/model/sakana-fugu-max.md"
+  },
   "sakana/fugu-ultra": {
     "date": "2026-08-28",
     "entry_id": "model/sakana-fugu-ultra",
     "path": "content/wiki/model/sakana-fugu-ultra.md"
+  },
+  "sakana/fugu-ultra-v2": {
+    "date": "2026-09-11",
+    "entry_id": "model/sakana-fugu-ultra-v2",
+    "path": "content/wiki/model/sakana-fugu-ultra-v2.md"
   },
   "sakana/sakana-namazu": {
     "date": "2026-08-28",
@@ -2229,15 +2254,35 @@
     "entry_id": "model/moonshotai-kimi-latest",
     "path": "content/wiki/model/moonshotai-kimi-latest.md"
   },
+  "~openai/gpt-astra-latest": {
+    "date": "2026-09-11",
+    "entry_id": "model/openai-gpt-astra-latest",
+    "path": "content/wiki/model/openai-gpt-astra-latest.md"
+  },
   "~openai/gpt-latest": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-latest",
     "path": "content/wiki/model/openai-gpt-latest.md"
   },
+  "~openai/gpt-luna-latest": {
+    "date": "2026-09-11",
+    "entry_id": "model/openai-gpt-luna-latest",
+    "path": "content/wiki/model/openai-gpt-luna-latest.md"
+  },
   "~openai/gpt-mini-latest": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-mini-latest",
     "path": "content/wiki/model/openai-gpt-mini-latest.md"
+  },
+  "~openai/gpt-sol-latest": {
+    "date": "2026-09-11",
+    "entry_id": "model/openai-gpt-sol-latest",
+    "path": "content/wiki/model/openai-gpt-sol-latest.md"
+  },
+  "~openai/gpt-terra-latest": {
+    "date": "2026-09-11",
+    "entry_id": "model/openai-gpt-terra-latest",
+    "path": "content/wiki/model/openai-gpt-terra-latest.md"
   },
   "~x-ai/grok-latest": {
     "date": "2026-08-28",

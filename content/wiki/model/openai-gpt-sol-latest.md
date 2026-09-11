@@ -1,14 +1,14 @@
 ---
-id: model/openai-gpt-latest
+id: model/openai-gpt-sol-latest
 kind: model
-display_name: OpenAI GPT Latest
+display_name: OpenAI GPT Sol Latest
 status: active
 maintenance: living
 aliases:
-  - name: OpenAI GPT Latest
+  - name: OpenAI GPT Sol Latest
     class: manual
 feeds:
-  openrouter-models: ~openai/gpt-latest
+  openrouter-models: ~openai/gpt-sol-latest
 facts:
   - field: price_input
     source: feed
@@ -30,7 +30,7 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-11", event: retired, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: [ { date: "2026-09-11", event: arrived, source_url: https://openrouter.ai/api/v1/models } ]
 mentions: []
 domains_seeded:
   - image

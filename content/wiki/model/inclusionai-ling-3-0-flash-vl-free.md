@@ -1,14 +1,14 @@
 ---
-id: model/openai-gpt-latest
+id: model/inclusionai-ling-3-0-flash-vl-free
 kind: model
-display_name: OpenAI GPT Latest
+display_name: "inclusionAI: Ling 3.0 Flash VL (free)"
 status: active
 maintenance: living
 aliases:
-  - name: OpenAI GPT Latest
+  - name: "inclusionAI: Ling 3.0 Flash VL (free)"
     class: manual
 feeds:
-  openrouter-models: ~openai/gpt-latest
+  openrouter-models: inclusionai/ling-3.0-flash-vl:free
 facts:
   - field: price_input
     source: feed
@@ -30,8 +30,11 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-11", event: retired, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: [ { date: "2026-09-11", event: arrived, source_url: https://openrouter.ai/api/v1/models } ]
 mentions: []
 domains_seeded:
+  - agents
+  - coding
   - image
+  - video
 ---

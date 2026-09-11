@@ -1,6 +1,282 @@
 {
   "changed_30d": [
     {
+      "date": "2026-09-11",
+      "display_name": "OpenAI GPT Terra Latest",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "~openai/gpt-terra-latest",
+        "context_length": 1050000,
+        "created": 1789130925,
+        "expiration_date": null,
+        "id": "~openai/gpt-terra-latest",
+        "name": "OpenAI GPT Terra Latest",
+        "pricing.completion": "0.000012",
+        "pricing.prompt": "0.000002"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|~openai/gpt-terra-latest|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "~openai/gpt-terra-latest",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "OpenAI GPT Sol Latest",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "~openai/gpt-sol-latest",
+        "context_length": 1050000,
+        "created": 1789130928,
+        "expiration_date": null,
+        "id": "~openai/gpt-sol-latest",
+        "name": "OpenAI GPT Sol Latest",
+        "pricing.completion": "0.00001",
+        "pricing.prompt": "0.000002"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|~openai/gpt-sol-latest|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "~openai/gpt-sol-latest",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "OpenAI GPT Luna Latest",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "~openai/gpt-luna-latest",
+        "context_length": 1050000,
+        "created": 1789130922,
+        "expiration_date": null,
+        "id": "~openai/gpt-luna-latest",
+        "name": "OpenAI GPT Luna Latest",
+        "pricing.completion": "0.0000012",
+        "pricing.prompt": "0.0000002"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|~openai/gpt-luna-latest|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "~openai/gpt-luna-latest",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "OpenAI GPT Latest",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "~openai/gpt-latest",
+        "context_length": 1050000,
+        "created": 1777318334,
+        "expiration_date": null,
+        "id": "~openai/gpt-latest",
+        "name": "OpenAI GPT Latest",
+        "pricing.completion": "0.00001",
+        "pricing.prompt": "0.000002"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|~openai/gpt-latest|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "~openai/gpt-latest",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "OpenAI GPT Astra Latest",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "~openai/gpt-astra-latest",
+        "context_length": 1050000,
+        "created": 1789130932,
+        "expiration_date": null,
+        "id": "~openai/gpt-astra-latest",
+        "name": "OpenAI GPT Astra Latest",
+        "pricing.completion": "0.00005",
+        "pricing.prompt": "0.00001"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|~openai/gpt-astra-latest|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "~openai/gpt-astra-latest",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "Z.ai: GLM 4.7 Flash",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "z-ai/glm-4.7-flash-20260119",
+        "context_length": 200000,
+        "created": 1768833913,
+        "expiration_date": null,
+        "id": "z-ai/glm-4.7-flash",
+        "name": "Z.ai: GLM 4.7 Flash",
+        "pricing.completion": "0.0000004",
+        "pricing.prompt": "0.0000000605"
+      },
+      "field": "context_window",
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|z-ai/glm-4.7-flash|context_window",
+      "kind": "field_change",
+      "new": "200000",
+      "old": "202752",
+      "row_id": "z-ai/glm-4.7-flash",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "Sakana: Fugu Ultra v2",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "sakana/fugu-ultra-v2-20260911",
+        "context_length": 1000000,
+        "created": 1789105383,
+        "expiration_date": null,
+        "id": "sakana/fugu-ultra-v2",
+        "name": "Sakana: Fugu Ultra v2",
+        "pricing.completion": "0.00003",
+        "pricing.prompt": "0.000005"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|sakana/fugu-ultra-v2|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "sakana/fugu-ultra-v2",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "Sakana: Fugu Max",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "sakana/fugu-max-20260911",
+        "context_length": 1000000,
+        "created": 1789104771,
+        "expiration_date": null,
+        "id": "sakana/fugu-max",
+        "name": "Sakana: Fugu Max",
+        "pricing.completion": "0.000006",
+        "pricing.prompt": "0.000002"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|sakana/fugu-max|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "sakana/fugu-max",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "Qwen: Qwen3.8 27B",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "qwen/qwen3.8-27b-20260814",
+        "context_length": 1000000,
+        "created": 1786722910,
+        "expiration_date": null,
+        "id": "qwen/qwen3.8-27b",
+        "name": "Qwen: Qwen3.8 27B",
+        "pricing.completion": "0.000003",
+        "pricing.prompt": "0.00000042"
+      },
+      "field": "context_window",
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|qwen/qwen3.8-27b|context_window",
+      "kind": "field_change",
+      "new": "1000000",
+      "old": "1048576",
+      "row_id": "qwen/qwen3.8-27b",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "inclusionAI: Ling 3.0 Flash VL",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "inclusionai/ling-3.0-flash-vl-20260910",
+        "context_length": 131072,
+        "created": 1789056114,
+        "expiration_date": null,
+        "id": "inclusionai/ling-3.0-flash-vl",
+        "name": "inclusionAI: Ling 3.0 Flash VL",
+        "pricing.completion": "0.00000018",
+        "pricing.prompt": "0.00000006"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|inclusionai/ling-3.0-flash-vl|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "inclusionai/ling-3.0-flash-vl",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "inclusionAI: Ling 3.0 Flash VL (free)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "inclusionai/ling-3.0-flash-vl-20260910",
+        "context_length": 262144,
+        "created": 1789056114,
+        "expiration_date": null,
+        "id": "inclusionai/ling-3.0-flash-vl:free",
+        "name": "inclusionAI: Ling 3.0 Flash VL (free)",
+        "pricing.completion": "0",
+        "pricing.prompt": "0"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|inclusionai/ling-3.0-flash-vl:free|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "inclusionai/ling-3.0-flash-vl:free",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-11",
+      "display_name": "DeepSeek: DeepSeek V4.1 Flash",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "deepseek/deepseek-v4.1-flash-20260910",
+        "context_length": 1048576,
+        "created": 1789021285,
+        "expiration_date": null,
+        "id": "deepseek/deepseek-v4.1-flash",
+        "name": "DeepSeek: DeepSeek V4.1 Flash",
+        "pricing.completion": "0.0000006",
+        "pricing.prompt": "0.00000015"
+      },
+      "field": null,
+      "key": "openrouter-models|3d1c8f5345193719|52ce6a56aa7d8ada|deepseek/deepseek-v4.1-flash|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "deepseek/deepseek-v4.1-flash",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
       "date": "2026-09-10",
       "display_name": "Qwen: Qwen3.8 27B",
       "excerpt": {
@@ -3562,75 +3838,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://www.liquid.ai/blog/lfm2-5-vl-3b"
-    },
-    {
-      "date": "2026-08-11",
-      "display_name": "NVIDIA releases Nemotron 3.5 Lightning",
-      "excerpt": {
-        "description": "NVIDIA - NVIDIA released Nemotron 3.5 Lightning, a hybrid Mamba-2 + MoE + Attention model (~31.6B total / ~3.6B active) with a 1M-token context, under OpenMDW-1.1 with weights, data, and recipes — shipped alongside the NeMo Switchyard router.",
-        "guid": "e7986935-32a2-44da-a52a-c37fa23cc920",
-        "link": "https://llm-releases.com/models/nemotron-3-5-lightning",
-        "pubDate": "Tue, 11 Aug 2026 00:00:00 GMT",
-        "source_name": "NVIDIA",
-        "source_url": "https://developer.nvidia.com/blog/nvidia-nemotron-3-5-lightning-delivers-fast-accurate-specialized-task-execution-for-long-running-agents/",
-        "title": "NVIDIA releases Nemotron 3.5 Lightning"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/nemotron-3-5-lightning",
-      "key": "seed|llm-releases|e7986935-32a2-44da-a52a-c37fa23cc920",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "e7986935-32a2-44da-a52a-c37fa23cc920",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://developer.nvidia.com/blog/nvidia-nemotron-3-5-lightning-delivers-fast-accurate-specialized-task-execution-for-long-running-agents/"
-    },
-    {
-      "date": "2026-08-11",
-      "display_name": "Sakana AI opens Namazu as an API",
-      "excerpt": {
-        "description": "Sakana AI - Sakana AI released Namazu, a Japanese-specialized reasoning/agent model built on Moonshot's open-weight Kimi K2.6, over a 262K context with native web-search and code-execution tools, priced at $0.95/$4.00 per Mtok. Not available in the EU/EEA, UK, or Switzerland.",
-        "guid": "69cd68b0-f57f-4ff4-95da-eeaf7fd12ed3",
-        "link": "https://llm-releases.com/models/namazu",
-        "pubDate": "Tue, 11 Aug 2026 00:00:00 GMT",
-        "source_name": "Sakana AI",
-        "source_url": "https://openrouter.ai/sakana/namazu",
-        "title": "Sakana AI opens Namazu as an API"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/namazu",
-      "key": "seed|llm-releases|69cd68b0-f57f-4ff4-95da-eeaf7fd12ed3",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "69cd68b0-f57f-4ff4-95da-eeaf7fd12ed3",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://openrouter.ai/sakana/namazu"
-    },
-    {
-      "date": "2026-08-11",
-      "display_name": "Microsoft releases MAI-Code-1.1-Flash in GitHub Copilot",
-      "excerpt": {
-        "description": "Microsoft - Microsoft released MAI-Code-1.1-Flash, an efficiency-focused agentic coding model rolling out across GitHub Copilot (CLI and VS Code). Microsoft reports +22% on Terminal-Bench 2.1 and +15% on .NET over MAI-Code-1.0, with 25% greater token efficiency at roughly a quarter of the cost.",
-        "guid": "47666f8e-8ed0-4ee8-9b7e-a927354eea33",
-        "link": "https://llm-releases.com/models/mai-code-1-1-flash",
-        "pubDate": "Tue, 11 Aug 2026 00:00:00 GMT",
-        "source_name": "Microsoft",
-        "source_url": "https://microsoft.ai/news/mai-code-1-1-flash-br-better-faster-at-a-quarter-of-the-cost/",
-        "title": "Microsoft releases MAI-Code-1.1-Flash in GitHub Copilot"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/mai-code-1-1-flash",
-      "key": "seed|llm-releases|47666f8e-8ed0-4ee8-9b7e-a927354eea33",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "47666f8e-8ed0-4ee8-9b7e-a927354eea33",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://microsoft.ai/news/mai-code-1-1-flash-br-better-faster-at-a-quarter-of-the-cost/"
     }
   ],
   "deprecations": [
@@ -3663,7 +3870,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-10",
+  "generated_on": "2026-09-11",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",

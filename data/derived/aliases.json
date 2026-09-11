@@ -1419,6 +1419,16 @@
       ]
     },
     {
+      "name": "DeepSeek: DeepSeek V4.1 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-1-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "DeepSeek: R1",
       "linkable": false,
       "claimed_by": [
@@ -4059,6 +4069,16 @@
       ]
     },
     {
+      "name": "OpenAI GPT Astra Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-astra-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "OpenAI GPT Latest",
       "linkable": false,
       "claimed_by": [
@@ -4069,11 +4089,41 @@
       ]
     },
     {
+      "name": "OpenAI GPT Luna Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-luna-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "OpenAI GPT Mini Latest",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/openai-gpt-mini-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI GPT Sol Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-sol-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI GPT Terra Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-terra-latest",
           "class": "manual"
         }
       ]
@@ -6049,11 +6099,31 @@
       ]
     },
     {
+      "name": "Sakana: Fugu Max",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sakana-fugu-max",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Sakana: Fugu Ultra",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/sakana-fugu-ultra",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sakana: Fugu Ultra v2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sakana-fugu-ultra-v2",
           "class": "manual"
         }
       ]
@@ -7144,6 +7214,26 @@
       "claimed_by": [
         {
           "id": "model/inclusionai-ling-3-0-flash-sante-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "inclusionAI: Ling 3.0 Flash VL",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inclusionai-ling-3-0-flash-vl",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "inclusionAI: Ling 3.0 Flash VL (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inclusionai-ling-3-0-flash-vl-free",
           "class": "manual"
         }
       ]

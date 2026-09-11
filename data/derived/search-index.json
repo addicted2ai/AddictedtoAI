@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 682,
+  "count": 691,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -2346,6 +2346,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/deepseek-deepseek-v4-1-flash",
+      "t": "DeepSeek: DeepSeek V4.1 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-1-flash",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/deepseek-deepseek-v4-flash",
       "t": "DeepSeek: DeepSeek V4 Flash 0423",
       "k": "entry",
@@ -3015,6 +3025,26 @@
       "d": "model",
       "s": "active",
       "i": "model/inclusionai-ling-3-0-flash-sante-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inclusionai-ling-3-0-flash-vl",
+      "t": "inclusionAI: Ling 3.0 Flash VL",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inclusionai-ling-3-0-flash-vl",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inclusionai-ling-3-0-flash-vl-free",
+      "t": "inclusionAI: Ling 3.0 Flash VL (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inclusionai-ling-3-0-flash-vl-free",
       "a": [],
       "b": true
     },
@@ -4668,6 +4698,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-astra-latest",
+      "t": "OpenAI GPT Astra Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-astra-latest",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-audio",
       "t": "OpenAI: GPT Audio",
       "k": "entry",
@@ -4704,6 +4744,16 @@
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-luna-latest",
+      "t": "OpenAI GPT Luna Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-luna-latest",
       "a": [],
       "b": true
     },
@@ -4764,6 +4814,26 @@
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-oss-safeguard-20b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-sol-latest",
+      "t": "OpenAI GPT Sol Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-sol-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-terra-latest",
+      "t": "OpenAI GPT Terra Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-terra-latest",
       "a": [],
       "b": true
     },
@@ -5618,12 +5688,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/sakana-fugu-max",
+      "t": "Sakana: Fugu Max",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sakana-fugu-max",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/sakana-fugu-ultra",
       "t": "Sakana: Fugu Ultra",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/sakana-fugu-ultra",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/sakana-fugu-ultra-v2",
+      "t": "Sakana: Fugu Ultra v2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sakana-fugu-ultra-v2",
       "a": [],
       "b": true
     },
