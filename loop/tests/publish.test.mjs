@@ -216,7 +216,7 @@ test('with publish: true the handoff reaches the true path — pointed at the fi
   const commands = res.result?.commands ?? [];
   assert.equal(res.result?.reason, 'dry-run');
   assert.ok(
-    commands.includes(`git -C ${ctx.repoRoot} push origin main`),
+    commands.includes(`git -C ${ctx.repoRoot} push origin ${head}:refs/heads/main`),
     `the true path was printed against the fixture root; got:\n${commands.join('\n')}`,
   );
   for (const c of commands) {
@@ -240,7 +240,7 @@ test('armed and not dry — the push it attempts is the fixture\'s, and there is
   await assert.rejects(
     () => publishStep(ctx, {}),
     (err) => {
-      assert.match(err.message, /push origin main/, err.message);
+      assert.match(err.message, /push origin \S+:refs\/heads\/main/, err.message);
       assert.ok(err.message.includes(ctx.repoRoot), `the push was aimed at the fixture: ${err.message}`);
       assert.ok(!err.message.includes(DEFAULT_REPO_ROOT), `the push named this repository: ${err.message}`);
       return true;

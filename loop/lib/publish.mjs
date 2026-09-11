@@ -65,9 +65,18 @@ export function findSharedStep(repoRoot) {
  *   verbatim to the shared step. `null` — the default — is the undeclared
  *   caller, which the shared step stages wholesale. `loop/run.mjs` always
  *   declares; the default is kept only so a future caller has to choose it.
+ * @param {string|null} [opts.verifiedSha] the commit SHA the caller's gates
+ *   ran over (Stage-1 task 45/46), forwarded verbatim. The train passes its
+ *   post-records tip; the step pushes `<sha>:main` and refuses a
+ *   non-descendant naming both. `null` keeps the legacy tip scope.
+ * @param {boolean} [opts.phase1Commit] forwarded verbatim (default true). The
+ *   train passes false: its records are already committed and recomputed data
+ *   must stay uncommitted, so the step stages and commits nothing.
+ * @param {boolean} [opts.preExistingRed] forwarded verbatim (default false).
+ *   Suppresses the shared step's own deploy-hold write on a missed deploy.
  * @returns {Promise<{published: boolean, skipped: boolean, reason: string}>}
  */
-export async function publishStep(ctx, { cfg, dryRun = false, owned = null } = {}) {
+export async function publishStep(ctx, { cfg, dryRun = false, owned = null, verifiedSha = null, phase1Commit = true, preExistingRed = false } = {}) {
   const shared = findSharedStep(ctx.repoRoot);
 
   if (!shared) {
@@ -95,9 +104,13 @@ export async function publishStep(ctx, { cfg, dryRun = false, owned = null } = {
     return { published: false, skipped: true, reason };
   }
 
-  // The shared step's signature is `publishStep(root, { dryRun, log, owned })`,
-  // with `log` a logger object exposing `step(name, detail)`. Adapting to it
+  // The shared step's signature is `publishStep(root, { dryRun, log, owned,
+  // verifiedSha, phase1Commit, preExistingRed })`, with `log` a logger object
+  // exposing `step(name, detail)`. Adapting to it
   // here, rather than asking it to adapt to the loop, is what keeps it one step.
+  // Every scope option is forwarded verbatim: a shim that defaulted any of
+  // them would be a second reading of the scope, and the row-45/46 contract
+  // is that the caller declares and the step decides.
   const log = { step: (name, detail) => ctx.log(`${name}${detail ? ' — ' + detail : ''}`) };
   // THE DEPLOY POLL BUDGET IS FORWARDED ONLY WHEN THE CONTEXT CARRIES ONE, and
   // no production caller sets it — `pulse/` and `loop/` both leave it undefined,
@@ -113,7 +126,7 @@ export async function publishStep(ctx, { cfg, dryRun = false, owned = null } = {
   const budgets = {};
   if (ctx.pollBudgetMs !== undefined) budgets.pollBudgetMs = ctx.pollBudgetMs;
   if (ctx.confirmBudgetMs !== undefined) budgets.confirmBudgetMs = ctx.confirmBudgetMs;
-  const res = await fn(ctx.repoRoot, { dryRun, log, owned, ...budgets });
+  const res = await fn(ctx.repoRoot, { dryRun, log, owned, verifiedSha, phase1Commit, preExistingRed, ...budgets });
   return {
     published: Boolean(res?.published),
     skipped: !res?.published,
