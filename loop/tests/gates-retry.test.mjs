@@ -488,6 +488,60 @@ test('structural: failingGateScript twins train.mjs failingGateOf', () => {
   assert.equal(failingGateScript(probe), 'test', 'both answer the same question the same way');
 });
 
+/* ---------------------------------------------------------------------------
+ * THIRD MUTATION (sweep rule: every changed function carries a red arm):
+ * run.mjs without the tripwire pair retry. The mutant drops the second run;
+ * the red-then-green behavioral arm must FAIL on it. Copy-based,
+ * hash-restored, residue-free — the same harness, one directory up.
+ * ------------------------------------------------------------------------ */
+
+async function withRunMutant(tag, search, replacement, fn) {
+  const runLib = resolve(HERE, '..', 'run.mjs');
+  const before = readFileSync(runLib, 'utf8');
+  assert.ok(before.includes(search), 'mutant anchor present in the shipped file');
+  const mutant = before.replace(search, replacement);
+  assert.notEqual(mutant, before, 'the mutant must differ from the shipped file');
+  const sha = createHash('sha256').update(before, 'utf8').digest('hex');
+  const copyPath = resolve(HERE, '..', `run.mut-${process.pid}-${tag}.mjs`);
+  writeFileSync(copyPath, mutant, 'utf8');
+  try {
+    await fn(await import(`./../run.mut-${process.pid}-${tag}.mjs`));
+    assert.equal(
+      createHash('sha256').update(readFileSync(runLib, 'utf8'), 'utf8').digest('hex'),
+      sha,
+      'tracked run.mjs hash-identical after the mutant run',
+    );
+    assert.equal(readFileSync(runLib, 'utf8'), before, 'tracked run.mjs byte-identical after the mutant run');
+  } finally {
+    rmSync(copyPath, { force: true });
+  }
+  assert.equal(existsSync(copyPath), false, 'the mutant copy is gone');
+}
+
+test('MUTATION no-tripwire-retry: without the pair retry the red-then-green arm fails', async () => {
+  await withRunMutant(
+    'notrip',
+    '        const again = runTripwire(ctx, { worktree, baseRef: TRAIN_BRANCH, gates: opts.gates });',
+    '        const again = trip;',
+    async (mutantRun) => {
+      const ctx = jobRepo();
+      try {
+        const gates = tripwireSequenceStub([redOn('build', 'tripwire red together'), GREEN]);
+        const res = await mutantRun.runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+        assert.equal(tripwireCalls(gates).length, 1, 'the mutant runs the tripwire once (no pair retry)');
+        assert.equal(res.outcome, 'failed', 'without the retry a flaky tripwire fails the job');
+        assert.throws(
+          () => assert.equal(res.outcome, 'done', ctx.output()),
+          /'failed' !== 'done'/,
+          'the red-then-green merges arm fails on the mutant',
+        );
+      } finally {
+        ctx.cleanup();
+      }
+    },
+  );
+});
+
 test('no mutant residue: loop/lib carries no *.mut-*.mjs copies', async () => {
   const { readdirSync } = await import('node:fs');
   const leftovers = readdirSync(resolve(HERE, '..', 'lib')).filter((f) => f.includes('.mut-'));
