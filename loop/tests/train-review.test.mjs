@@ -45,6 +45,12 @@
  *   no tracker, no model literal, never pushed.
  * - mutations A + B (row 44) plus one red arm per changed function beyond
  *   them (copy-based, each red then restored hash-identical).
+ * - fix-round-1 F-A: prose approve with defective fields is reject at the
+ *   seam (mutant restores the passthrough and finishes a full run done).
+ * - fix-round-1 F-B: well-formed revise is measured by the comparison
+ *   (mutant reports the silent zero with no comparison behind it).
+ * - fix-round-1 F-C: same-train re-assembly seeds rounds from the committed
+ *   manifest (mutant drops history and the streak is lost).
  */
 
 import test from 'node:test';
@@ -1361,7 +1367,7 @@ test('arms: unnamed-finding mutant that swallows whole-train rejection', async (
 test('arms: assembly mutant that drops the pair-list', async () => {
   await withTrainMutant(
     'assembly-norounds',
-    '    review_rounds: [],\n',
+    '    review_rounds: seededReviewRounds(repo, trainId),\n',
     '    review_rounds: undefined,\n',
     async (mutantTrain) => {
       const fx = trainRepo();
@@ -1466,6 +1472,212 @@ test('arms: manifest mutant that recommits the in-memory tip pin', async () => {
         assert.equal(committed.assemblyTip, 'tip-pin', 'the mutant leaks the pin — the keys arm goes red');
       } finally {
         fx.cleanup();
+      }
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Fix round 1: F-A (fail-open), F-B (dead arm), F-C (restart re-read).
+// Q-S18 throughout: throwaway repos, stubbed executor invocations, no live
+// model call, never a push (the bare origin is read for emptiness).
+// ---------------------------------------------------------------------------
+
+/** A minimal well-formed revise record (repair kind: prose fields unneeded). */
+function reviseRecord(job, { reasons = ['spec-violation'], findings = [] } = {}) {
+  const fm = ['---', `job: ${job}`, 'verdict: revise', `reasons: [${reasons.join(', ')}]`];
+  if (findings.length) {
+    fm.push('findings:');
+    for (const f of findings) {
+      fm.push(`  - text: ${JSON.stringify(f.text)}`);
+      fm.push(`    merges: [${(f.merges || []).map((m) => JSON.stringify(m)).join(', ')}]`);
+    }
+  }
+  fm.push('---', '', 'notes here', '');
+  return fm.join('\n');
+}
+
+/** A one-merge train fixture, assembled and ready for the sealed seam. */
+function oneMergeTrain(trainId, { type = 'repair' } = {}) {
+  const fx = trainRepo();
+  ensureTrainBranch(fx.repo, 'main');
+  admitJob(fx.repo, 'job-1', { 'content/a.md': '# a\n' });
+  appendJobLines(fx.repo, ['job-1'], type);
+  commitRecords(fx.repo, { 'job-1.md': approveRecord('job-1', { wouldCite: 'fixture citation' }) });
+  git(fx.repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+  const asm = assembleTrain(fx.repo, { trainId, bounds: BOUNDS, now: () => T0 });
+  assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+  const runnersPath = fixtureRegistry(fx.root, [
+    { id: 'fixture-max', roles: ['reviewer'], effort: 'max' },
+    { id: 'fixture-author', roles: ['author'] },
+  ]);
+  return { fx, repo: fx.repo, manifest: asm.manifest, runnersPath };
+}
+
+/** The sealed-seam invoke stub: writes the scripted train verdict, or the scripted comparison. */
+function seamInvoke(ctx, trainId, { verdictText, comparisonText }) {
+  return stubInvoke({
+    onCall: ({ promptText }) => {
+      if (promptText.startsWith('# Train comparison')) {
+        writeFileSync(trainComparisonPath(ctx, trainId), comparisonText, 'utf8');
+      } else {
+        writeFileSync(trainVerdictPath(ctx, trainId), verdictText, 'utf8');
+      }
+    },
+  });
+}
+
+test('fix-round-1 F-A: prose approve with defective fields never passes the seam as approval', async () => {
+  const { fx, repo, manifest, runnersPath } = oneMergeTrain('t-fa', { type: 'entry' });
+  try {
+    const ctx = ctxFull(fx, { runnersPath });
+    const invoke = seamInvoke(ctx, 't-fa', {
+      verdictText: approveRecord('t-fa', { wouldCite: '' }),
+      comparisonText: '---\ntrain: t-fa\nmissing: []\n---\n\nnotes\n',
+    });
+    const seam = await reviewTrain(ctx, {
+      diffText: '--- reviewed diff ---\nfiles:\ncontent/a.md\n',
+      manifest, repo, capMinutes: 1, invoke,
+    });
+    assert.equal(seam.verdict, 'reject', 'a refused approval must not ride the seam as approval');
+    assert.match(seam.reason, /empty `would-cite`/);
+    assert.equal(invoke.seen.length, 1, 'no comparison runs for a defective record');
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+  // Copy-based red proof: the mutant drops the defective guard, restoring
+  // the pre-fix passthrough — the same refused approval rides the seam as
+  // approval and a full runTrain finishes done on it.
+  await withReviewMutant(
+    'failopen-approve',
+    '    if (!legitimateNonApproval) {\n',
+    '    if (false) {\n',
+    async (mutantReview) => {
+      const inner = oneMergeTrain('t-fa-mut', { type: 'entry' });
+      try {
+        const mctx = ctxFull(inner.fx, { runnersPath: inner.runnersPath });
+        const invoke = seamInvoke(mctx, 't-fa-mut', {
+          verdictText: approveRecord('t-fa-mut', { wouldCite: '' }),
+          comparisonText: '---\ntrain: t-fa-mut\nmissing: []\n---\n\nnotes\n',
+        });
+        const mseam = await mutantReview.reviewTrain(mctx, {
+          diffText: 'd', manifest: inner.manifest, repo: inner.repo, capMinutes: 1, invoke,
+        });
+        assert.equal(mseam.verdict, 'approve', 'the pre-fix seam passes the refused approval through');
+        const tr = await runTrain(ctxFor(inner.repo), {
+          repo: inner.repo, trainId: inner.manifest.train, manifest: inner.manifest,
+          gates: stubGates(), rederive: stubRederive(),
+          review: ({ diffText, manifest: m, repo: r }) => mutantReview.reviewTrain(mctx, { diffText, manifest: m, repo: r, capMinutes: 1, invoke }),
+          now: () => T0,
+        });
+        assert.equal(tr.ok, true, 'the pre-fix tree finishes done on the refused approval');
+        assert.match(tr.sha, /^[0-9a-f]{40}$/);
+        assert.equal(inner.fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+      } finally {
+        inner.fx.cleanup();
+      }
+    },
+  );
+});
+
+test('fix-round-1 F-B: well-formed revise reaches the comparison with a measured count', async () => {
+  const { fx, repo, manifest, runnersPath } = oneMergeTrain('t-fb');
+  try {
+    const named = manifest.merges[0].sha;
+    const ctx = ctxFull(fx, { runnersPath });
+    const invoke = seamInvoke(ctx, 't-fb', {
+      verdictText: reviseRecord('t-fb', { findings: [{ text: 'defect in the merge', merges: [named] }] }),
+      comparisonText: '---\ntrain: t-fb\nmissing:\n  - "the one miss"\n---\n\nnotes\n',
+    });
+    const seam = await reviewTrain(ctx, {
+      diffText: '--- reviewed diff ---\nfiles:\ncontent/a.md\n',
+      manifest, repo, capMinutes: 1, invoke,
+    });
+    assert.equal(seam.verdict, 'revise', 'the legitimate non-approval passes through');
+    assert.equal(seam.findingsNotInAnyRecord, 1, 'the count is measured by the comparison');
+    assert.equal(seam.findings.length, 1);
+    assert.equal(invoke.seen.length, 2, 'review plus comparison both ran');
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+  // Copy-based red proof: the mutant never runs the comparison yet still
+  // reports a number — the silent zero the shipped arm refuses to emit.
+  await withReviewMutant(
+    'unmeasured-zero',
+    '    const cmpLegit = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });\n',
+    '    const cmpLegit = { ok: true, missing: [] };\n',
+    async (mutantReview) => {
+      const inner = oneMergeTrain('t-fb-mut');
+      try {
+        const named = inner.manifest.merges[0].sha;
+        const mctx = ctxFull(inner.fx, { runnersPath: inner.runnersPath });
+        const invoke = seamInvoke(mctx, 't-fb-mut', {
+          verdictText: reviseRecord('t-fb-mut', { findings: [{ text: 'defect in the merge', merges: [named] }] }),
+          comparisonText: '---\ntrain: t-fb-mut\nmissing:\n  - "the one miss"\n---\n\nnotes\n',
+        });
+        const mseam = await mutantReview.reviewTrain(mctx, {
+          diffText: 'd', manifest: inner.manifest, repo: inner.repo, capMinutes: 1, invoke,
+        });
+        assert.equal(mseam.verdict, 'revise');
+        assert.equal(mseam.findingsNotInAnyRecord, 0, 'the mutant reports zero with no comparison behind it');
+        assert.equal(invoke.seen.length, 1, 'the mutant ran the review only');
+      } finally {
+        inner.fx.cleanup();
+      }
+    },
+  );
+});
+
+test('fix-round-1 F-C: re-assembly of the same train re-reads the committed review rounds', async () => {
+  const { fx, repo, manifest } = oneMergeTrain('t-fc');
+  try {
+    assert.deepEqual(manifest.review_rounds, [], 'a fresh assembly starts empty');
+    const tree = trainReviewedTree(repo);
+    const rec = recordTrainReviewRound(repo, manifest, { verdict: 'revise', tree });
+    assert.equal(rec.ok, true, rec.reason ?? 'round record refused');
+    // Restart simulation: assemble the SAME train id again. The committed
+    // manifest now carries one round; the fresh assembly must inherit it.
+    const again = assembleTrain(repo, { trainId: 't-fc', bounds: BOUNDS, now: () => T0 });
+    assert.equal(again.ok, true, again.reason ?? 're-assembly refused');
+    assert.deepEqual(again.manifest.review_rounds, [{ verdict: 'revise', tree }], 'the streak survives the restart');
+    const shas = again.manifest.merges.map((m) => m.sha);
+    assert.equal(consecutiveUnchangedNonApprovals(again.manifest, shas), 1);
+    // Identity rule: a DIFFERENT train id never inherits another train's rounds.
+    const other = assembleTrain(repo, { trainId: 't-fc-other', bounds: BOUNDS, now: () => T0 });
+    assert.equal(other.ok, true, other.reason ?? 'new-train assembly refused');
+    assert.deepEqual(other.manifest.review_rounds, [], 'a new train starts empty');
+  } finally {
+    fx.cleanup();
+  }
+  // Copy-based red proof: the mutant assembly drops history — the same
+  // restart simulation loses the streak.
+  await withTrainMutant(
+    'resume-drop',
+    '    review_rounds: seededReviewRounds(repo, trainId),\n',
+    '    review_rounds: [],\n',
+    async (mutantTrain) => {
+      const inner = trainRepo();
+      try {
+        ensureTrainBranch(inner.repo, 'main');
+        admitJob(inner.repo, 'job-1', { 'content/a.md': '# a\n' });
+        git(inner.repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+        const a1 = mutantTrain.assembleTrain(inner.repo, { trainId: 't-fc-mut', bounds: BOUNDS, now: () => T0 });
+        assert.equal(a1.ok, true, a1.reason ?? 'assembly refused');
+        const tree = mutantTrain.trainReviewedTree(inner.repo);
+        const rec = mutantTrain.recordTrainReviewRound(inner.repo, a1.manifest, { verdict: 'revise', tree });
+        assert.equal(rec.ok, true);
+        const a2 = mutantTrain.assembleTrain(inner.repo, { trainId: 't-fc-mut', bounds: BOUNDS, now: () => T0 });
+        assert.equal(a2.ok, true, a2.reason ?? 're-assembly refused');
+        assert.deepEqual(a2.manifest.review_rounds, [], 'the mutant drops the committed history');
+        assert.equal(
+          mutantTrain.consecutiveUnchangedNonApprovals(a2.manifest, a2.manifest.merges.map((m) => m.sha)),
+          0,
+          'without the seeding the streak is lost',
+        );
+      } finally {
+        inner.cleanup();
       }
     },
   );

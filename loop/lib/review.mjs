@@ -2047,9 +2047,16 @@ export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null } = {}) {
  *
  * Every failure is a fail-closed `reject` with no publish: missing kinds, a
  * missing or ambiguous rung, a thrown or unwritten review, a refused record,
- * a missing comparison. A non-approval the gate ACCEPTS (a well-formed
- * `revise`/`reject`) passes through with its findings, for the
- * eviction-on-finding loop in `train.mjs`.
+ * a missing comparison. The gate refuses EVERY non-approval (`mergeGate`
+ * returns ok:false with `code === verdict` for a well-formed `revise` /
+ * `reject`), so a refused record is either a legitimate non-approval —
+ * which passes through with its findings and its measured comparison count,
+ * for the eviction-on-finding loop in `train.mjs` — or a defective record,
+ * which fails closed as `reject` carrying the gate's reason. In particular
+ * an `approve` the gate refused (empty/duplicate `would-cite`, and the rest
+ * of the defective-field refusals) never passes through as approval: the
+ * gate never returns ok:true for a non-approval, so the post-gate
+ * non-approve arm below is a defensive backstop, never the road.
  */
 export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null }) {
   const unwired = { runner: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
@@ -2091,23 +2098,50 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
   }
   const g = trainReviewGate(ctx, { trainId, kinds: k.kinds, subjects });
   if (!g.ok) {
-    const v = g.verdict ? parseTrainFindings(g.verdict) : { findings: [] };
-    const verdict = g.verdict && g.verdict.verdict ? g.verdict.verdict : 'reject';
+    // A refused record is either a legitimate non-approval or a defective
+    // record — never an approval. The gate refuses EVERY non-approval
+    // (`mergeGate` returns ok:false with `code === verdict` for a
+    // well-formed revise/reject), so the refusal arm is where revise/reject
+    // passes through; but an approve-with-defective-fields refusal
+    // (would-cite-empty/duplicate, reads-human-*, carried-deletion-
+    // unearned, corrections-malformed, cites-unresolved, ...) still carries
+    // verdict 'approve' on the refused record, and passing that through
+    // finished the train done on an empty would-cite. Only the legitimate
+    // non-approval shape passes through; every other refusal fails closed
+    // as reject carrying the gate's reason.
+    const refusedVerdict = g.verdict && g.verdict.verdict;
+    const legitimateNonApproval =
+      (refusedVerdict === 'revise' || refusedVerdict === 'reject') && g.code === refusedVerdict;
+    if (!legitimateNonApproval) {
+      const v = g.verdict ? parseTrainFindings(g.verdict) : { findings: [] };
+      return {
+        verdict: 'reject', reason: `${g.reason} — fail closed: no fast-forward, no publish`,
+        ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings,
+      };
+    }
+    // A well-formed non-approval still gets its comparison: the count is
+    // measured on every verdict that can reach the line, never a silent 0
+    // (the gate never returns ok:true for revise/reject, so this refusal
+    // arm is the only road here). A comparison that cannot run fails the
+    // same closed way the approve arm below does.
+    const vLegit = parseTrainFindings(g.verdict);
+    const cmpLegit = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
+    if (!cmpLegit.ok) {
+      return { verdict: 'reject', reason: `${cmpLegit.reason} — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: vLegit.findings };
+    }
     return {
-      verdict, reason: `${g.reason} — fail closed: no fast-forward, no publish`,
-      ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings,
+      verdict: refusedVerdict,
+      reason: `train review did not approve (${refusedVerdict}${g.verdict.reasons.length ? `: ${g.verdict.reasons.join(', ')}` : ''})`,
+      ...reviewer, findingsNotInAnyRecord: cmpLegit.missing.length, findings: vLegit.findings,
     };
   }
   const v = parseTrainFindings(g.verdict);
   if (g.verdict.verdict !== 'approve') {
-    // A well-formed non-approval still gets its comparison: the count the
-    // eviction loop reports is owed on every verdict, not only approvals.
-    const cmp = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
-    return {
-      verdict: g.verdict.verdict,
-      reason: `train review did not approve (${g.verdict.verdict}${g.verdict.reasons.length ? `: ${g.verdict.reasons.join(', ')}` : ''})`,
-      ...reviewer, findingsNotInAnyRecord: cmp.ok ? cmp.missing.length : 0, findings: v.findings,
-    };
+    // Defensive backstop, unreachable through the gate above: the gate
+    // refuses every non-approval, so ok:true always carries approve. If
+    // that ever changes, a non-approval must not ride the approve path
+    // below into a done line — fail closed instead.
+    return { verdict: 'reject', reason: `train gate passed a non-approval (${g.verdict.verdict}) — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings };
   }
   const cmp = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
   if (!cmp.ok) {
@@ -2118,10 +2152,12 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
 
 /**
  * The comparison half of `reviewTrain`, factored so the approve and
- * non-approve arms share it: read the per-job records' text from the
- * unredacted checkout, run the separate invocation, parse the `missing:`
- * list. Failures return `{ok:false}` and the CALLER decides the direction —
- * approve fails closed without its count, non-approve reports what it can.
+ * legitimate-non-approval arms share it: read the per-job records' text from
+ * the unredacted checkout, run the separate invocation, parse the `missing:`
+ * list. Failures return `{ok:false}` and the caller fails closed on every
+ * verdict — an approval without its count is a reject, and a non-approval
+ * without its count is a reject too: an unmeasured count never rides
+ * the seam.
  */
 async function compareTrainFindings(ctx, { trainId, ref, runner, capMinutes, invoke, verdictText }) {
   const perJobTexts = {};

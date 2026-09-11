@@ -1679,6 +1679,32 @@ export async function runTrain(ctx, {
 }
 
 /**
+ * Row-43 restart seeding: the round count lives in the committed manifest
+ * "so a restart mid-train does not lose it" — but only the COMMITTED file
+ * counts, and only for the SAME train. Identity rule: the committed
+ * manifest's `train` id must equal the assembled `trainId`. A re-assembly
+ * of the same train (restart after one or more committed review rounds)
+ * inherits the committed `review_rounds`; anything else — no committed
+ * manifest yet, an unreadable or unparseable one, a non-list history, or a
+ * different train id — starts empty, so one train's streak can never leak
+ * into another's. (A changed merge set needs no special case here: the
+ * streak check resets on a moved set or tree by itself.)
+ */
+function seededReviewRounds(repo, trainId) {
+  let prior = null;
+  try {
+    const r = gitTry(repo, ['show', `HEAD:${MANIFEST_PATH}`]);
+    if (!r.ok) return [];
+    prior = JSON.parse(String(r.stdout ?? ''));
+  } catch {
+    return [];
+  }
+  if (!prior || prior.train !== trainId) return [];
+  if (!Array.isArray(prior.review_rounds)) return [];
+  return prior.review_rounds.filter((e) => e && typeof e === 'object').map((e) => ({ ...e }));
+}
+
+/**
  * Assemble a train from pending merges: measure, cut the fitting prefix,
  * write + commit the manifest FIRST. Returns `{ok:true, manifest}` or
  * `{ok:false, reason}`. An unparseable merge message fails the assembly —
@@ -1718,7 +1744,10 @@ export function assembleTrain(repo, { trainId, bounds, mainRef = 'main', now = D
     // The review-round history (row-43-declared, filled by U4): one
     // `{verdict, tree}` pair per train review actually run, committed with
     // the manifest. The train LINE keeps the count (row-36 shape, frozen).
-    review_rounds: [],
+    // Seeded from the committed manifest when re-assembling the SAME train
+    // after a restart (identity: committed `train` id equals `trainId`) —
+    // a new train starts empty. See `seededReviewRounds`.
+    review_rounds: seededReviewRounds(repo, trainId),
     measuredPaths: unionSubjects([countedPaths(admitted.flatMap((x) => mergeDiffNames(repo, x.sha)))]),
     bounds: { maxReviewedBytes: bounds.maxReviewedBytes, maxSubjects: bounds.maxSubjects },
     remainder: remainder.map((x) => String(x.sha).slice(0, 8)),
@@ -1733,9 +1762,21 @@ export function assembleTrain(repo, { trainId, bounds, mainRef = 'main', now = D
   if (!add.ok) {
     return { ok: false, reason: `manifest staging failed: ${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}` };
   }
-  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: manifest (${admitted.length} merges)`]);
-  if (!cm.ok) {
-    return { ok: false, reason: `manifest commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+  // Restart idempotence (row 43, with the seeding above): a re-assembly of
+  // the same train over unchanged state writes byte-identical content, so
+  // there is nothing to commit — and an empty commit would only move the tip
+  // the immobility assert spans. The manifest already stands committed with
+  // exactly this content, so the commit is skipped and the tip pinned below
+  // as usual.
+  const staged = gitTry(repo, ['status', '--porcelain=v1', '-uall', '--', MANIFEST_PATH]);
+  if (!staged.ok) {
+    return { ok: false, reason: `manifest status failed: ${String(staged.stderr ?? staged.stdout ?? '').trim() || 'git status failed'}` };
+  }
+  if (String(staged.stdout ?? '').trim()) {
+    const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: manifest (${admitted.length} merges)`]);
+    if (!cm.ok) {
+      return { ok: false, reason: `manifest commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+    }
   }
   // The assembly tip is the MANIFEST COMMIT, not the pre-commit tip: the
   // reviewed tree carries the manifest, and the immobility assert must
