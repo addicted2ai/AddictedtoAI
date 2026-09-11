@@ -12,13 +12,13 @@ verification of that review, archived as evidence.
   the six sealed reviewer reports (A1 Stage 0 16/17 + 2b; A2 3a/3b + two
   gate repairs; A3 items 5 + 6; A4 documents/tasks/beads; A5 gate protocol
   + serial test re-runs; A6 adversarial code-only pass), recovered
-  2026-09-11 from the reviewing session's scratchpad
+  2026-09-10 from the reviewing session's scratchpad
   (`Temp/claude/D--AddictedtoAI/47a211cc…/scratchpad/rev-consolidated/`)
   via `coord/handoffs/`, byte-identical at every hop. Every seat produced.
 - `CONSOLIDATED.md` — the consolidated first-audit report (the synthesis
   the flagship audit verified), same provenance, same chain.
 
-TWO RECORDED CAVEATS (Fable-Arch, 2026-09-11 — the files below are the
+TWO RECORDED CAVEATS (Fable-Arch, 2026-09-10 — the files below are the
 historical record and were NOT rewritten): (1) `CONSOLIDATED.md` carries
 two errors the audit later corrected — it says the successor created zero
 beads (false: the four wisdom beads were created ~10:03) and cites a grep
