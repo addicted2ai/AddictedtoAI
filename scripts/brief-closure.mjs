@@ -24,13 +24,24 @@
 // (this round leaves RESULT2.md uncommitted); the merge-base diff of committed work never names it, and
 // even a committed one is the reviewer own record, not behaviour the brief scopes. Counting it as
 // unlisted scope would refuse every brief for its own report.
-// WHY REVIEWER-SIDE, NOT AUTOMATIC: the instrument reports candidates and the reviewer judges them,
-// because the false-fire rate of an automatic refusal is unmeasured (round 1 detected-not-dispatched
-// precedent). The sealed review running the instrument with a revise verdict naming unlisted true pins
-// IS the gate refusing a file list that misses a pin (what the bead asks for). The automatic form (the
-// merge step refusing on instrument output with nobody judging) is a recorded follow-up owned by the
-// orchestrator, due when the false-fire rate has been measured over real reviews; that measurement is a
-// later attempt under its own brief, not a promise this round makes.
+// WHY REVIEWER-SIDE, NOT AUTOMATIC — PARTLY SUPERSEDED (bead 7dmp, 2026-09-11):
+// the instrument still reports scope misses for the reviewer to judge (the
+// false-fire rate of automatic SCOPE refusal is unmeasured, so scope stays
+// reviewer-side), but CANDIDATES are now wired into the merge path:
+// `loop/run.mjs` runs this file with `--candidates-only` after the verdict
+// gate and refuses the merge as `closure-candidates` (a review.mjs
+// DIFF_REFUSAL_CODE, so the refusal joins the revision findings) when a pin
+// the brief lists is touched-but-unpinned — including GUTTED pins, exact-shape
+// assertions present at base and absent at tip in a listed file. The sealed
+// review running the instrument with a revise verdict naming unlisted true pins
+// IS the gate refusing a file list that misses a pin (what the bead asks for).
+// P2-18 DISPOSITIONS (same bead): pin shapes stay hardcoded — the patterns
+// cover the known pin families (enum-set, shape, field over ledger, reissue,
+// conformance, runner-enabled) and a new family needs a new pattern, which is
+// a briefed change, not silent drift; test roots now cover loop/tests,
+// scripts, and pulse/tests (lib/tests does not exist); the listed check stays
+// path-not-content BY DESIGN (a listed file's whole diff is in scope; the
+// content layer is the pins).
 // WHY NO FALSE-FIRE ON REWORDING: candidates are exact-shape assertions (deepEqual against a literal,
 // Object.keys comparisons, includes against a literal, gate and history deepEqual) over identifiers the
 // diff changes. Rewording prose or comments changes no asserted shape and matches no pattern, unlike a
@@ -100,7 +111,7 @@ export function getTouched(root, base, tip) {
   });
 }
 
-function isProductionFile(f) {
+export function isProductionFile(f) {
   if (f.endsWith('.test.mjs')) return false;
   if (!f.includes('/') && /^RESULT\d*\.md$/.test(f)) return false;
   if (f === 'scripts/brief-closure.mjs') return false;
@@ -167,7 +178,7 @@ export function listTestFilesAtTip(root, tip) {
   const tipEff = tip || 'HEAD';
   let out = '';
   try {
-    out = runGit(root, ['ls-tree', '-r', '--name-only', tipEff, '--', 'loop/tests', 'scripts']);
+    out = runGit(root, ['ls-tree', '-r', '--name-only', tipEff, '--', 'loop/tests', 'scripts', 'pulse/tests']);
   } catch {
     return [];
   }
@@ -324,6 +335,30 @@ export function collectPins(fileMap, signals) {
   return pins;
 }
 
+/**
+ * Gutted pins (P2-18, bead 7dmp): exact-shape assertions present at base and
+ * absent at tip in a file the brief LISTS. A listed file whose pin vanishes
+ * while the brief still claims closure over it is the mirror of an unlisted
+ * pin — the brief's file list promises a closure that no longer exists.
+ * Pure (no git): basePins/tipPins are collectPins outputs over the same
+ * signals, listed is the parseListed set, touchedFiles the getTouched list.
+ * The `(p.touched || file-touched)` guard keeps TRUE-BUT-UNTOUCHED honest: a
+ * pin can only vanish when its family was touched or its own file changed,
+ * and identical content collects identical pins, so a vanished pin in an
+ * untouched file is impossible — the guard names the reason rather than
+ * trusting it.
+ */
+export function findGutted({ basePins, tipPins, listed, touchedFiles }) {
+  const listedSet = listed instanceof Set ? listed : new Set(listed || []);
+  const touchedSet = new Set(touchedFiles || []);
+  const tipKeys = new Set((tipPins || []).map((p) => `${p.file} ${p.cls} ${p.identifier}`));
+  return (basePins || [])
+    .filter((p) => listedSet.has(p.file)
+      && !tipKeys.has(`${p.file} ${p.cls} ${p.identifier}`)
+      && (p.touched || touchedSet.has(p.file)))
+    .map((p) => ({ ...p, cls: `gutted:${p.cls}`, touched: true }));
+}
+
 export function checkClosure({ briefText, briefPath, base, tip, root }) {
   const text = briefText != null ? String(briefText) : readFileSync(briefPath, 'utf8');
   const listed = parseListed(text);
@@ -340,14 +375,21 @@ export function checkClosure({ briefText, briefPath, base, tip, root }) {
     if (content != null) fileMap.set(f, content);
   }
   const pins = collectPins(fileMap, signals);
-  const candidates = pins.filter((p) => !listed.has(p.file) && p.touched);
+  const baseFileMap = new Map();
+  for (const f of new Set([...testFiles, ...listTestFilesAtTip(repoRoot, base)])) {
+    const content = readAtTip(repoRoot, base, f);
+    if (content != null) baseFileMap.set(f, content);
+  }
+  const gutted = findGutted({ basePins: collectPins(baseFileMap, signals), tipPins: pins, listed, touchedFiles: touched });
+  const candidates = [...pins.filter((p) => !listed.has(p.file) && p.touched), ...gutted];
   const foundInside = pins.filter((p) => listed.has(p.file) && p.touched);
   const ok = scopeMisses.length === 0 && candidates.length === 0;
-  return { ok, listed: [...listed].sort(), touched: [...touched].sort(), scopeMisses, candidates, foundInside, pins, signals };
+  return { ok, listed: [...listed].sort(), touched: [...touched].sort(), scopeMisses, candidates, gutted, foundInside, pins, signals };
 }
 
 function printUsage() {
-  console.log('usage: node scripts/brief-closure.mjs --brief <brief> --base <sha> [--tip <sha>] [--root <dir>] [--verbose]');
+  console.log('usage: node scripts/brief-closure.mjs --brief <brief> --base <sha> [--tip <sha>] [--root <dir>] [--candidates-only] [--verbose]');
+  console.log('  --candidates-only: exit 1 iff CANDIDATE lines exist; SCOPE lines still print (for the merge-path caller, which refuses on candidates and logs scope).');
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -357,6 +399,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     return i >= 0 && i + 1 < args.length ? args[i + 1] : null;
   };
   const verbose = args.includes('--verbose');
+  const candidatesOnly = args.includes('--candidates-only');
   if (args.includes('--help') || args.includes('-h')) {
     printUsage();
     process.exit(0);
@@ -376,9 +419,19 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.log(`ERROR ${e && e.message ? e.message : String(e)}`);
     process.exit(2);
   }
-  if (!result.ok) {
+  // --candidates-only (the merge-path caller): SCOPE lines always print so the
+  // caller can log them; the exit code answers only the CANDIDATE question.
+  if (candidatesOnly) {
     for (const f of result.scopeMisses) {
       console.log(`SCOPE ${f} scope touched-but-unlisted`);
+    }
+  }
+  const failed = candidatesOnly ? result.candidates.length > 0 : !result.ok;
+  if (failed) {
+    if (!candidatesOnly) {
+      for (const f of result.scopeMisses) {
+        console.log(`SCOPE ${f} scope touched-but-unlisted`);
+      }
     }
     for (const c of result.candidates) {
       const range = c.end && c.end !== c.start ? `${c.start}-${c.end}` : `${c.start}`;

@@ -199,7 +199,7 @@ export function isReissueRefusal(code) {
  * being added to this list rather than by a `gate.code === '…'` comparison
  * written out by hand at the call site.
  */
-export const DIFF_REFUSAL_CODES = Object.freeze(['carried-deletion-unearned']);
+export const DIFF_REFUSAL_CODES = Object.freeze(['carried-deletion-unearned', 'closure-candidates']);
 
 export function isDiffRefusal(code) {
   return DIFF_REFUSAL_CODES.includes(code);

@@ -16,6 +16,7 @@
  */
 
 import { existsSync, lstatSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -666,13 +667,74 @@ async function executeJob(ctx, opts) {
     // the carried-deletion check reads, so the gate cannot be judging one diff
     // for the record's `reviewed:` and another for what the branch deleted.
     const gateChanged = changedPathsWithStatus(ctx.repoRoot, base, branch);
-    const gate = mergeGate(ctx, {
+    let gate = mergeGate(ctx, {
       jobId,
       type: job.type,
       pass,
       subjects: joinableSubjects(gateChanged),
       changed: gateChanged,
     });
+    // Brief-closure gate (item 3 follow-up, bead 7dmp): the brief's Files list
+    // against the merge-base diff, judged by pin-misses, not prose. Runs as a
+    // SUBPROCESS (node scripts/brief-closure.mjs), not an import: the reviewer
+    // runs the same file the same way, so the merge path and the reviewer can
+    // never disagree about what the instrument said. The verdict gate above
+    // still leads — this only ever ADDS a refusal, and only when a verdict
+    // record exists to carry it (a missing record fails closed upstream, and
+    // a closure finding would add nothing to that failure). Scope misses
+    // (touched-but-unlisted) are LOGGED, never refused: automatic scope
+    // refusal's false-fire rate is unmeasured, so scope stays reviewer-side. A
+    // missing brief or a broken instrument SKIPS loudly rather than refusing:
+    // refusing on what the gate cannot read would fail jobs for
+    // infrastructure reasons.
+    {
+      const closureBrief = readCommittedBrief(ctx.repoRoot, branch);
+      if (closureBrief == null) {
+        ctx.log(`closure: no committed .job/brief.md on ${branch} — skipping (a file list cannot be judged without the brief)`);
+      } else {
+        const closureBriefPath = join(ctx.worktreeRoot, `${jobId}-closure-brief.md`);
+        try {
+          writeFileSync(closureBriefPath, closureBrief, 'utf8');
+          const closureOut = execFileSync(process.execPath, [
+            join(ctx.repoRoot, 'scripts', 'brief-closure.mjs'),
+            '--brief', closureBriefPath, '--base', base, '--tip', branch,
+            '--root', ctx.repoRoot, '--candidates-only',
+          ], { encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'pipe'] });
+          for (const l of String(closureOut).split(/\r?\n/)) {
+            if (l.startsWith('SCOPE ')) ctx.log(`closure scope (reviewer-side, not refused): ${l.slice(6)}`);
+          }
+          ctx.log('closure: no pin-miss candidates');
+        } catch (e) {
+          const out = e && e.stdout ? String(e.stdout) : '';
+          const outLines = out.split(/\r?\n/);
+          const candidates = outLines.filter((l) => l.startsWith('CANDIDATE '));
+          for (const l of outLines) {
+            if (l.startsWith('SCOPE ')) ctx.log(`closure scope (reviewer-side, not refused): ${l.slice(6)}`);
+          }
+          if (candidates.length > 0) {
+            const reason = `brief closure refused: ${candidates.join('; ')}`;
+            ctx.log(`closure: merge refused — ${reason}`);
+            // `closure-candidates` is a review.mjs DIFF_REFUSAL_CODE, so the
+            // refusal joins the revision findings like any other diff-measured
+            // one; when the verdict gate already failed, its reason is kept
+            // and the closure text joins it rather than replacing it. Without
+            // a verdict record there is nothing to carry the refusal, and the
+            // missing record fails closed upstream — so the candidates are
+            // logged, and the no-record failure stands unmodified.
+            if (gate.verdict) {
+              gate = gate.ok
+                ? { ok: false, code: 'closure-candidates', reason, verdict: gate.verdict }
+                : { ...gate, reason: `${gate.reason} | ${reason}` };
+            }
+          } else {
+            ctx.log(`closure: instrument did not judge (exit ${e && e.status != null ? e.status : 'spawn-failed'}${e && e.killed ? ', killed at the cap' : ''}) — skipping loudly, the verdict gate stands`);
+            if (out.trim()) ctx.log(`closure output: ${out.trim().split(/\r?\n/).slice(0, 5).join(' | ')}`);
+          }
+        } finally {
+          try { unlinkSync(closureBriefPath); } catch { /* best-effort temp cleanup */ }
+        }
+      }
+    }
     // The reviewer analogue of the author's no-output detection (beads
     // addictedtoai-g8a): no verdict record, not killed, and nothing on stdout
     // — the shape of a reviewer that never really ran. Measured from `rev`,
@@ -769,6 +831,12 @@ async function executeJob(ctx, opts) {
     // judged diff and structurally cited requirements. The original author
     // brief is deliberately not sent again: its spend figures are stale and
     // its unrelated outcome and proposal prose are not revision inputs.
+    // REVISION/RESUME RULING (bead 7dmp): 2b and 3a do not run here BY DESIGN,
+    // not by omission — a revision brief is a DELTA against a verdict, not a
+    // restatement of the source, so reconciling it against the full ledger
+    // and dispatch state false-fires by construction. Closure over the final
+    // diff is judged at the merge gate above (brief-closure), which reads the
+    // committed brief against what is actually about to merge.
     const revisionBrief = assembleRevisionBrief(ctx, {
       jobId,
       job,
