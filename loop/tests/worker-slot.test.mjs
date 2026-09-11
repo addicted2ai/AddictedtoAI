@@ -23,17 +23,35 @@
  *           before and after.
  *   arm 4 — structural: the run.mjs startup refusal returns the
  *           did-not-start status 1 (same status as a STOP/HOLD refusal —
- *           the Q6 answer, pinned where the mapping lives).
+ *           the Q6 answer, pinned where the mapping lives), AND asserts the
+ *           acquire call itself — so the pin observes the wiring, not just
+ *           the exit number.
+ *   arm 4b — the arm-4 pin is not vacuous: a text-level mutant deleting the
+ *           acquire line fails the acquire conjunct (while the exit-status
+ *           conjunct still matches — each half observes its own line), and
+ *           a mutant deleting the `return 1` fails the status conjunct.
+ *   arm 5 — merge-lock (task 33) path and single-take discipline: the lock
+ *           lives at `<dir>/merge.lock`; a live holder wins and a second
+ *           take refuses on `lock_wait_seconds` expiry; release frees it.
+ *           The post-release absence assert is the red arm for
+ *           `releaseMergeLock` (a no-op mutant keeps the dir and goes red).
+ *   arm 6 — merge-lock dead reclaim: a lock planted by a dead pid is won
+ *           by the next live take, and the pid file then names the live
+ *           holder (the red arm for the reclaim branch of
+ *           `acquireMergeLock` — a mutant that never reclaims refuses here).
+ *   arm 7 — merge-lock release is best-effort: releasing an absent lock
+ *           still reports ok.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { acquireWorkerSlot, releaseWorkerSlot, workerSlotPath } from '../lib/train.mjs';
+import { acquireMergeLock, acquireWorkerSlot, mergeLockPath, releaseMergeLock, releaseWorkerSlot, workerSlotPath } from '../lib/train.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const LIB = resolve(HERE, '..', 'lib', 'train.mjs');
@@ -123,17 +141,90 @@ test('arm 3 — the refusal observes the slot (copy-based mutant lets two takes 
     } finally {
       cleanup();
     }
+    // Verified by hash (the acceptance wording): the digest of the tracked
+    // file after the mutant run equals the digest before it — plus the
+    // byte-equality assert below, which is strictly stronger.
+    const sha = createHash('sha256').update(before, 'utf8').digest('hex');
+    assert.equal(
+      createHash('sha256').update(readFileSync(LIB, 'utf8'), 'utf8').digest('hex'),
+      sha,
+      `tracked train.mjs hash-identical after the mutant run (sha256 ${sha.slice(0, 12)}…)`,
+    );
     assert.equal(readFileSync(LIB, 'utf8'), before, 'tracked train.mjs byte-identical after the mutant run');
   } finally {
     rmSync(copyPath, { force: true });
   }
 });
 
-test('arm 4 — structural: the startup refusal returns the did-not-start status', () => {
+test('arm 4 — structural: the startup refusal acquires a slot and returns the did-not-start status', () => {
   // Q6, pinned where the mapping lives: a slot refusal is a loop that did
   // not even start (STOP/HOLD class), so `main()` returns 1. Asserted on
   // source per the exit-code precedent — spawning run.mjs would take a real
   // slot in the live lock dir.
   const src = readFileSync(RUN, 'utf8');
+  assert.match(src, /slot = acquireWorkerSlot\(\{ workers: loadConfig\(ctx\)\.workers \?\? 1 \}\);/, 'main() acquires a worker slot at startup');
   assert.match(src, /ctx\.log\(slot\.message\);\s*return 1;/, 'slot refusal logs the message and returns 1');
+});
+
+test('arm 4b — the arm-4 pin observes the wiring (text-level mutants)', () => {
+  // No import, no copy: the mutant is a string with one line deleted, and
+  // each conjunct of arm 4 must fail exactly when its own line goes.
+  const src = readFileSync(RUN, 'utf8');
+  const acquireLine = '    slot = acquireWorkerSlot({ workers: loadConfig(ctx).workers ?? 1 });';
+  assert.ok(src.includes(acquireLine), 'the acquire line anchors the mutant');
+  const noAcquire = src.replace(acquireLine, '    slot = null;');
+  assert.notEqual(noAcquire, src, 'the mutant must differ');
+  assert.doesNotMatch(noAcquire, /slot = acquireWorkerSlot\(/, 'deleting the acquire line breaks the acquire conjunct');
+  assert.match(noAcquire, /ctx\.log\(slot\.message\);\s*return 1;/, 'the status conjunct still matches — it observes its own lines, not the acquire');
+  const noStatus = src.replace('      return 1;', '      return 0;');
+  assert.notEqual(noStatus, src, 'the status mutant must differ');
+  assert.doesNotMatch(noStatus, /ctx\.log\(slot\.message\);\s*return 1;/, 'losing the did-not-start status breaks the status conjunct');
+});
+
+test('arm 5 — merge-lock: beside the lock dir; a live holder wins, expiry refuses, release frees', async () => {
+  const { dir, cleanup } = slotRoot();
+  try {
+    assert.equal(mergeLockPath(dir), join(dir, 'merge.lock'), 'the lock lives beside the build lock');
+    const first = await acquireMergeLock({ dir, waitMs: 50, sleepMs: 10 });
+    assert.equal(first.ok, true, 'the first take wins');
+    assert.equal(first.dir, join(dir, 'merge.lock'));
+    const second = await acquireMergeLock({ dir, waitMs: 50, sleepMs: 10 });
+    assert.equal(second.ok, false, 'a live-held lock refuses on expiry — no second take steals it');
+    assert.match(second.reason, /waited 50ms/, 'the refusal names the waited bound');
+    const rel = releaseMergeLock(first);
+    assert.equal(rel.ok, true);
+    // The red arm for releaseMergeLock: a no-op mutant keeps the dir and
+    // goes red here.
+    assert.equal(existsSync(join(dir, 'merge.lock')), false, 'release removes the lock');
+    const third = await acquireMergeLock({ dir, waitMs: 50 });
+    assert.equal(third.ok, true, 'a released lock is winnable again');
+    releaseMergeLock(third);
+  } finally {
+    cleanup();
+  }
+});
+
+test('arm 6 — merge-lock: a dead holder is reclaimed by the next live take', async () => {
+  const { dir, cleanup } = slotRoot();
+  try {
+    const lockDir = join(dir, 'merge.lock');
+    mkdirSync(lockDir, { recursive: true });
+    writeFileSync(join(lockDir, 'pid'), `${DEAD_PID}\n2026-01-01T00:00:00.000Z\n`, 'utf8');
+    const r = await acquireMergeLock({ dir, waitMs: 50, sleepMs: 10 });
+    assert.equal(r.ok, true, 'the dead-held lock is reclaimed, not waited out');
+    const [pidLine] = readFileSync(join(lockDir, 'pid'), 'utf8').split(/\r?\n/);
+    assert.equal(Number(pidLine), process.pid, 'the pid file now names the live holder');
+    releaseMergeLock(r);
+  } finally {
+    cleanup();
+  }
+});
+
+test('arm 7 — merge-lock: releasing an absent lock still reports ok (best-effort)', () => {
+  const { dir, cleanup } = slotRoot();
+  try {
+    assert.equal(releaseMergeLock({ dir: join(dir, 'merge.lock') }).ok, true);
+  } finally {
+    cleanup();
+  }
 });

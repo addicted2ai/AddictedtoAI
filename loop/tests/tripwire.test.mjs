@@ -28,6 +28,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -211,6 +212,14 @@ test('arm 3 — the combined arm observes the merge (copy-based mutant goes gree
       cleanup();
     }
     // The tracked file was never written: the mutation lived in the copy.
+    // Verified by hash (the acceptance wording): digest after equals digest
+    // before — plus the byte-equality assert below, strictly stronger.
+    const sha = createHash('sha256').update(before, 'utf8').digest('hex');
+    assert.equal(
+      createHash('sha256').update(readFileSync(LIB, 'utf8'), 'utf8').digest('hex'),
+      sha,
+      `tracked train.mjs hash-identical after the mutant run (sha256 ${sha.slice(0, 12)}…)`,
+    );
     assert.equal(readFileSync(LIB, 'utf8'), before, 'tracked train.mjs byte-identical after the mutant run');
   } finally {
     rmSync(copyPath, { force: true });

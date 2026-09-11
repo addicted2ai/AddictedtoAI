@@ -152,8 +152,8 @@ export function revertMerge(repo, sha) {
 // ---------------------------------------------------------------------------
 
 /** The merge lock lives beside the build lock: same per-user directory. */
-export function mergeLockPath() {
-  return join(buildLockDir(), 'merge.lock');
+export function mergeLockPath(dir = buildLockDir()) {
+  return join(dir, 'merge.lock');
 }
 
 function readMergeHolder(dir) {
@@ -175,23 +175,23 @@ const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
  * caller classifies environmental and books `interrupted`, never a breaker
  * input.
  */
-export async function acquireMergeLock({ waitMs, sleepMs = 1000, now = Date.now } = {}) {
-  const dir = mergeLockPath();
+export async function acquireMergeLock({ waitMs, sleepMs = 1000, now = Date.now, dir = buildLockDir() } = {}) {
+  const lockDir = join(dir, 'merge.lock');
   const limit = Number.isFinite(waitMs) ? waitMs : 0;
   const deadline = now() + limit;
   for (;;) {
-    if (mkdirOk(dir)) {
+    if (mkdirOk(lockDir)) {
       try {
-        writeFileSync(join(dir, 'pid'), `${process.pid}\n${new Date().toISOString()}\n`, 'utf8');
+        writeFileSync(join(lockDir, 'pid'), `${process.pid}\n${new Date().toISOString()}\n`, 'utf8');
       } catch {
         // The pid file is diagnostic; the directory IS the lock.
       }
-      return { ok: true, dir };
+      return { ok: true, dir: lockDir };
     }
-    const holder = readMergeHolder(dir);
+    const holder = readMergeHolder(lockDir);
     if (holder && !pidAlive(holder.pid)) {
       try {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(lockDir, { recursive: true, force: true });
       } catch {
         // Lost a race with another reclaimer; loop around and re-read.
       }

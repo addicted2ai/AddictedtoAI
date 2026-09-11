@@ -194,10 +194,21 @@ const ORDINARY_RED = {
 function sequence(fn) {
   let wt = 0;
   return fn.calls.map((c) => {
+    // Scripts are rendered, not just counted: the branch-gate runner calls
+    // with no options (the default set runs), while the tripwire and the
+    // merge-time rebuild pass explicit `{scripts}` — a rebuild running any
+    // other set must read differently here AND fail the deep-equal below.
     if (c.where === 'root') return `root:${(c.scripts ?? []).join('+')}`;
     wt += 1;
-    return `worktree#${wt}`;
+    return `worktree#${wt}:${c.scripts ? c.scripts.join('+') : 'default'}`;
   }).join(' | ');
+}
+
+/** Exactly one merge-time build per job, and it is a build — never a set. */
+function assertSingleBuild(fn, message) {
+  const roots = fn.calls.filter((c) => c.where === 'root');
+  assert.equal(roots.length, 1, `${message}: exactly one root call, saw ${roots.length}`);
+  assert.deepEqual(roots[0].scripts, ['build'], `${message}: the merge-time rebuild is a build, not a gate set`);
 }
 
 test('CONTROL: green-together merges and reaches the remote, so the checks below can fail', async (t) => {
@@ -210,8 +221,13 @@ test('CONTROL: green-together merges and reaches the remote, so the checks below
   assert.equal(res.outcome, 'done', ctx.output());
   assert.equal(
     sequence(gates),
-    'worktree#1 | worktree#2',
-    `single branch-gate run, then the tripwire (no rebuild: the tip never moved):\n${ctx.output()}`,
+    'worktree#1:default | worktree#2:build+verify-surfaces',
+    `single branch-gate run (default set), then the tripwire (explicit two-script set; no rebuild: the tip never moved):\n${ctx.output()}`,
+  );
+  assert.equal(
+    gates.calls.filter((c) => c.where === 'root').length,
+    0,
+    'no merge-time build when the tip never moved',
   );
   assert.notEqual(
     ctx.remoteHead(), null,
@@ -238,9 +254,10 @@ test('tip moved and rebuild red: the merge is reverted immediately, nothing publ
   assert.equal(res.outcome, 'failed', ctx.output());
   assert.equal(
     sequence(gates),
-    'worktree#1 | worktree#2 | root:build',
+    'worktree#1:default | worktree#2:build+verify-surfaces | root:build',
     `branch gates, tripwire, then the merge-time rebuild:\n${ctx.output()}`,
   );
+  assertSingleBuild(gates, 'tip-moved rebuild');
   const log = git(ctx.repoRoot, ['log', '--oneline', 'main']);
   assert.match(log, /Revert /, `the just-made merge was reverted immediately:\n${ctx.output()}`);
   assert.equal(ctx.remoteHead(), null, 'a reverted merge must publish nothing');
@@ -256,6 +273,7 @@ test('tip moved and rebuild environmental: the merge stands UNVERIFIED — no ho
   const gates = routingGates({ rebuild: LOCK_REFUSAL, moveTip: true });
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
   assert.equal(res.outcome, 'done', ctx.output());
+  assertSingleBuild(gates, 'environmental rebuild');
   assert.equal(existsSync(ctx.holdPath), false, `no breaker feed exists in U1 to write HOLD.md:\n${ctx.output()}`);
   assert.match(ctx.output(), /UNVERIFIED/, 'the log says the merge stands unverified');
   assert.equal(ctx.remoteHead(), null, 'an unverified merge must publish nothing');
