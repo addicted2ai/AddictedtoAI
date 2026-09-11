@@ -46,10 +46,11 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { runLoop, removeJobWorktree } from '../run.mjs';
+import { removeWorktree } from '../lib/git.mjs';
 import { makeRepo, writeQueue, runnersYaml, mockCommand, git } from './helpers.mjs';
 
 /** The error Windows actually raised, shaped the way `fs` raises it. */
@@ -329,8 +330,7 @@ test('the happy path reports nothing and really deletes a clean worktree', (t) =
   assert.equal(ctx.output(), '', 'a successful cleanup says nothing');
 });
 
-test('review and conformance callers guard recursive cleanup on a refusal', () => {
-  const review = readFileSync(new URL('../lib/review.mjs', import.meta.url), 'utf8');
+test('review and conformance callers guard recursive cleanup on a refusal', () => {  const review = readFileSync(new URL('../lib/review.mjs', import.meta.url), 'utf8');
   assert.match(review, /const removed = removeWorktree\(ctx\.repoRoot, reviewDir\);/);
   assert.match(
     review,
@@ -340,4 +340,51 @@ test('review and conformance callers guard recursive cleanup on a refusal', () =
   const conformance = readFileSync(new URL('../conformance.mjs', import.meta.url), 'utf8');
   assert.match(conformance, /const teardownRemoval = removeWorktree\(ctx\.repoRoot, dir\);/);
   assert.match(conformance, /if \(!teardownRemoval\.ok\) \{\s*ctx\.log\(/s);
+});
+
+// ---------------------------------------------------------------------------
+// The shared primitive refuses a still-linked junction (bead addictedtoai-xlz1).
+//
+// Measured 2026-09-11 in a scratch repo: a plain unforced `git worktree
+// remove` of a worktree whose gitignored `node_modules` was a junction into
+// another tree emptied the TARGET (1 entry to 0) while reporting success —
+// the recurring D:/AddictedtoAI/node_modules wipe, twice on 2026-09-11, each
+// found by the next scheduled Pulse dying at import with
+// ERR_MODULE_NOT_FOUND (exit 1) because the tree was already empty. The
+// `--force` in the older reports is not the trigger: ignored paths never
+// block the removal, so no force is needed.
+//
+// The guard used to live only in `removeJobWorktree` (loop/run.mjs), while
+// the reviewer (loop/lib/review.mjs) and conformance (loop/conformance.mjs)
+// call `removeWorktree` (loop/lib/git.mjs) directly. This test drives the
+// primitive itself against a real worktree and a real junction, so every
+// caller inherits the refusal.
+// ---------------------------------------------------------------------------
+
+test('removeWorktree REFUSES a worktree whose node_modules junction is still linked — the shared install survives', (t) => {
+  const ctx = makeRepo();
+  t.after(() => ctx.cleanup());
+  mkdirSync(ctx.worktreeRoot, { recursive: true });
+  // A stand-in for the shared install, the way D:/AddictedtoAI/node_modules
+  // carries ~190 packages: one sentinel file is enough, because the wipe
+  // empties the whole directory.
+  const shared = join(ctx.repoRoot, 'node_modules');
+  mkdirSync(shared, { recursive: true });
+  writeFileSync(join(shared, 'sentinel.txt'), 'the shared install\n', 'utf8');
+  const dir = join(ctx.worktreeRoot, 'junctioned');
+  git(ctx.repoRoot, ['worktree', 'add', '-b', 'cleanup-junction', dir, 'HEAD']);
+  // The fixture .gitignore carries `node_modules/` exactly like the working
+  // repository, so without the guard git proceeds — and follows the link.
+  symlinkSync(shared, join(dir, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+
+  const r = removeWorktree(ctx.repoRoot, dir);
+
+  assert.equal(r.ok, false, 'the removal must be refused while the junction stands');
+  assert.match(r.reason, /junction/, 'the reason names the hazard');
+  assert.equal(
+    readFileSync(join(shared, 'sentinel.txt'), 'utf8'),
+    'the shared install\n',
+    'the shared install is untouched',
+  );
+  assert.equal(existsSync(dir), true, 'the worktree is left standing for the junction-first teardown');
 });

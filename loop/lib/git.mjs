@@ -20,6 +20,8 @@
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
+import { lstatSync } from 'node:fs';
+import { join } from 'node:path';
 
 function run(repo, args, opts = {}) {
   return execFileSync('git', ['-C', repo, ...args], {
@@ -112,8 +114,40 @@ export function addWorktree(repo, dir, branch, { create = false, base = 'HEAD', 
   return dir;
 }
 
-/** @returns {{ok: true} | {ok: false, reason: string}} */
+/**
+ * Remove a worktree, refusing rather than forcing.
+ *
+ * A `node_modules` junction still linked inside the worktree is a REFUSAL,
+ * checked BEFORE git runs. `git worktree remove` follows a directory junction
+ * into its target and deletes the TARGET's contents: measured 2026-09-11 in a
+ * scratch repo, a plain unforced removal of a worktree whose gitignored
+ * `node_modules` was a junction emptied the target directory (1 entry to 0)
+ * while reporting success. That is the recurring D:/AddictedtoAI/node_modules
+ * wipe (bead addictedtoai-xlz1): the scheduled Pulse never deletes anything —
+ * it died at import with ERR_MODULE_NOT_FOUND, exit 1, because the tree was
+ * already empty when it started.
+ *
+ * The guard lives here, in the shared primitive, rather than only in
+ * `removeJobWorktree` (loop/run.mjs), because the reviewer
+ * (loop/lib/review.mjs) and conformance (loop/conformance.mjs) call this
+ * function directly. Prune still runs on the refusal path: it only drops
+ * stale admin entries under .git/worktrees/ and never touches contents.
+ *
+ * @returns {{ok: true} | {ok: false, reason: string}}
+ */
 export function removeWorktree(repo, dir) {
+  try {
+    if (lstatSync(join(dir, 'node_modules')).isSymbolicLink()) {
+      gitTry(repo, ['worktree', 'prune']);
+      return {
+        ok: false,
+        reason: `${join(dir, 'node_modules')} is still a junction to the shared node_modules — refusing the removal so git cannot follow it into the real install (addictedtoai-xlz1)`,
+      };
+    }
+  } catch {
+    // No node_modules link there, or it cannot be read: not the hazard, so
+    // git's own refusal (dirty worktree) still stands guard below.
+  }
   const removal = gitTry(repo, ['worktree', 'remove', dir]);
   gitTry(repo, ['worktree', 'prune']);
   if (!removal.ok) {
