@@ -58,8 +58,10 @@ import { execFileSync } from 'node:child_process';
 
 import { TRAIN_GATES } from '../lib/gates.mjs';
 import { LEDGER_FIELDS, appendLedger, makeLedgerLine } from '../lib/ledger.mjs';
+import { loadRunners } from '../lib/runners.mjs';
 import {
   assembleTrainReviewBrief,
+  makeReviewTrain,
   parseTrainComparison,
   parseTrainFindings,
   redactTrainRecords,
@@ -989,17 +991,31 @@ test('closure: no tracker, no model literal, no registry write in this diff', ()
   }
   // No model, provider or harness literal ON THE CODE PATH (row 43,
   // Q-S6): the rung is read from the registry and only ever interpolated
-  // at runtime. Scoped to the new functions' sources rather than the whole
-  // file, because pre-existing prose (e.g. a `CLAUDE.md` reference in an
-  // old comment) names no model on any path.
+  // at runtime. The banned set is derived from the live registry — the same
+  // derivation the portability gate uses — so this file names no provider
+  // itself and cannot rot when the registry changes. Scoped to the new
+  // functions' sources: pre-existing prose elsewhere in these files is the
+  // gate's jurisdiction, not this arm's (it scans this tree independently).
+  const reg = loadRunners({ runnersPath: join(resolve(HERE, '..', '..'), 'runners.yml') });
+  const banned = new Set();
+  for (const r of reg.runners) {
+    for (const v of [r.id, r.provider, r.model, r.harness]) {
+      if (!v) continue;
+      if (String(v).length >= 4) banned.add(String(v).toLowerCase());
+      const parts = String(v).split(/[/\s]+/).filter((p) => p.length >= 4);
+      if (parts.length) banned.add(parts[parts.length - 1].toLowerCase());
+    }
+  }
   const codePath = [
-    assembleTrainReviewBrief, trainReviewerRung, reviewTrain, runTrainReview,
+    assembleTrainReviewBrief, trainReviewerRung, reviewTrain, makeReviewTrain, runTrainReview,
     runTrainComparison, parseTrainComparison, trainReviewGate, parseTrainFindings,
     trainFindingsNamingMerges, redactTrainRecords, trainKinds,
     assembleTrain, trainReviewedTree, recordTrainReviewRound,
     consecutiveUnchangedNonApprovals, sameMergeSet, evictReviewNamed, runTrain,
-  ].map((f) => f.toString()).join('\n');
-  assert.doesNotMatch(codePath, /gpt|claude|codex|deepseek|muse-spark|anthropic|openai|openrouter|-luna/i, 'the train review path names no model, provider or harness');
+  ].map((f) => f.toString().toLowerCase()).join('\n');
+  const esc = (n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hits = [...banned].filter((n) => new RegExp(`\\b${esc(n)}\\b`).test(codePath));
+  assert.deepEqual(hits, [], 'the train review path names no model, provider or harness');
   assert.ok(!reviewSrc.includes('runners.yml", "w') && !trainSrc.includes("runners.yml', 'w"), 'no registry write path');
 });
 
