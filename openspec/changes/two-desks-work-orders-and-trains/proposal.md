@@ -443,3 +443,52 @@ the answer is a decision about what happens after the drain rather than during i
    bytes and reviewed machinery, with deterministic derived data and the review's
    own records exempt, as `openspec/specs/review/spec.md:26-30` already exempts
    them.
+
+## Stage 1 — rulings at briefing time, 2026-09-10
+
+Before the first Stage-1 brief was written, the implementing session's plan set
+(`D:/addictedtoai-coord/stage1-plan-*.md`) raised nineteen gap questions
+(Q-S1–Q-S19) against the Stage-1 tasks. The architect ruled on all nineteen from
+the committed design and deltas; the rulings are written INTO the task rows
+they govern (each marked `RULED`, `CLARIFIED`, `CORRECTED` or `REWORDED
+2026-09-10 (Q-Sn)`) so a worker briefed from a task cannot miss them, and the
+extractor reports that quote the governing passages are archived beside the
+Stage-1 evidence. Recorded here, per the rule that a correction to an issue's
+claims goes in the proposal and not a commit message:
+
+- **One task was WRONG, not merely unclear.** Task 47 said the Pulse's commit
+  lands on `train`. Design round NEW-4 reversed that and the pulse delta carries
+  the SHALL that a run keep committing to `main`; the task would have
+  reinstated the reversed mechanism in the file the delta forbids. Reworded to
+  the bullet that replaced it (the train merges `main` in before gating and
+  re-merges on a non-descendant refusal), in `loop/lib/train.mjs`.
+- **Two tasks contradicted the delta's wording** and the delta wins: task 33's
+  "under the merge lock" (the provisional build is unlocked; the lock is taken
+  once at the merge); task 38's "admits nothing further" (up to the configured
+  size, and waiting workers are told).
+- **Seven were specification gaps the tasks now close**: the `TRAIN_GATES`
+  order (32); the config keys and their starting values, the manifest's writer
+  and the lock-wait budget (35); the counted-set helper, the records
+  allow-list, the re-gate's lock and the train's own ledger line (36); the
+  fixture policy (37); the Stage-1 upkeep channel and the deferred bead reopen
+  (38); the automatic solo replay (40); "unchanged" and where the count lives
+  (43); the equal-SHA arm (48); breaker 2's two triggers in one sentence (49).
+- **One was a discipline standing in for a mechanism**: nothing enforced one
+  worker. Task 35b adds the slot lock and the `workers` key.
+- **The heading-to-task table was off by one for every Stage-1 row** and the
+  numbering had not moved since it was written; the rows are re-derived from
+  the tasks' own `Implements`/`Tests` lines and the rule is now stated. Rows
+  for tasks 53 and above were not re-derived; a script that derives the table
+  is the durable fix.
+- **Two rulings the maintainer may overturn in one line**, made on his behalf
+  because both concern brakes and limits he set: breaker 2's Stage-1 trip
+  condition (task 49) and the one-worker mechanism (task 35b). Neither blocks
+  U1.
+- **What Stage 1 does not build, and says so**: no tracker call before task 69
+  (upkeep goes through a proposal; the reopen is deferred); the
+  tracker-unreachable clause of task 49 is a classification arm only.
+
+The implementing session's sequencing unit U5 was drafted around the stale task
+47 ("Pulse onto train") and must be re-cut from the reworded task before it is
+briefed. Q-S1 blocks U5, not U1; Q-S2, Q-S15 and Q-S19 were the ones in front of
+U1, and all three are ruled.
