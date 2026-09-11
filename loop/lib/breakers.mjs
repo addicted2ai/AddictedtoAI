@@ -213,7 +213,9 @@ export function isDeployMiss(publish) {
  * Three arms, in order:
  * - Suppressed for pre-existing red (`suppressedHold: 'pre-existing'`) trips
  *   NOTHING: the classification left the tree un-halted and a hold here
- *   would re-halt it (Q-S13 exclusion, intact across both triggers).
+ *   would re-halt it (Q-S13 exclusion). Defensive on this trigger: the train
+ *   declares `preExistingRed: false`, so the train path never suppresses —
+ *   this arm is pinned by fixture tests, not reached in production.
  * - A standing hold is OBSERVED, never overwritten: the step writes its own
  *   `deploy-hold:`-marked hold carrying the windows and the classification,
  *   and a second write would clobber the marker and its appended
