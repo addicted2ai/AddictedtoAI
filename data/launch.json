@@ -161,5 +161,36 @@
       "measured_on": "2026-09-08",
       "commit": "78c6361"
     }
+  },
+  "train_series": {
+    "measured_on": "2026-09-11",
+    "method": "scripts/fold-train-series.mjs over data/ledger.jsonl lines with type train (task 52; Q-S16). Task-31 substance verified present in desk_baseline (measured 2026-09-08: brief_chars recent-window baseline + build availability claim).",
+    "task_52": {
+      "measured_on": "2026-09-11",
+      "method": "scripts/fold-train-series.mjs over data/ledger.jsonl lines with type train (task-36 shape)",
+      "trains": 0,
+      "per_train": [],
+      "totals": {
+        "gate_seconds": 0,
+        "evictions": 0,
+        "wrongly": 0,
+        "pre_existing_holds": 0,
+        "review_mm": 0
+      },
+      "gate_inputs": {
+        "wrongly_in_last_20": 0,
+        "trains_observed": 0
+      }
+    },
+    "overhead_vs_baseline": {
+      "baseline_minutes": 3.85,
+      "baseline_source": "desk_baseline.non_model_overhead_minutes_brief_to_merge.median_all",
+      "post_train_production_jobs": 0,
+      "status": "unmeasurable — no production trains and no post-train job merges yet; baseline stands unmoved"
+    },
+    "gate": {
+      "met": false,
+      "reason": "n=0 production trains: the no-wrong-eviction clause is vacuously satisfied and the sub-1.5-minute overhead clause is unmeasurable. Stage 2 does not start on measurement grounds until trains accrue; re-measure then."
+    }
   }
 }
