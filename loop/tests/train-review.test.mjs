@@ -1375,3 +1375,82 @@ test('arms: merge-set mutant that never sees a new merge', async () => {
     },
   );
 });
+
+test('arms: naming mutant that never leaves a finding unnamed', async () => {
+  await withReviewMutant(
+    'naming-nounnamed',
+    '    if (!hit.size) unnamed.push(f);\n',
+    '    if (false) unnamed.push(f);\n',
+    async (mutantReview) => {
+      const part = mutantReview.trainFindingsNamingMerges(
+        [{ text: 'stranger', merges: ['zzz'] }],
+        { merges: [{ sha: 'aaa', jobId: 'job-1' }] },
+      );
+      assert.deepEqual(part.unnamed, [], 'the mutant names the stranger — the partition arm goes red');
+      const shipped = trainFindingsNamingMerges(
+        [{ text: 'stranger', merges: ['zzz'] }],
+        { merges: [{ sha: 'aaa', jobId: 'job-1' }] },
+      );
+      assert.equal(shipped.unnamed.length, 1, 'the shipped partition still rejects strangers');
+    },
+  );
+});
+
+test('arms: comparison mutant that withholds the records', async () => {
+  await withReviewMutant(
+    'compare-withhold',
+    "${records || '(no per-job records)'}\n",
+    "'(records withheld)'\n",
+    async (mutantReview) => {
+      const fx = trainRepo();
+      try {
+        const { repo } = fx;
+        ensureTrainBranch(repo, 'main');
+        admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+        git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+        const ctx = ctxFull(fx);
+        const invoke = stubInvoke({
+          onCall: ({ promptText }) => {
+            assert.ok(!promptText.includes('WITHHOLD-PROBE-quux-3281'), 'the mutant hides the records');
+            writeFileSync(trainComparisonPath(ctx, 't-mutW'), '---\nmissing: []\n---\n', 'utf8');
+          },
+        });
+        await mutantReview.runTrainComparison(ctx, {
+          trainId: 't-mutW', ref: git(repo, ['rev-parse', TRAIN_BRANCH]),
+          trainRecordText: 'record',
+          perJobTexts: { 'job-1.md': 'WITHHOLD-PROBE-quux-3281' },
+          runner: { id: 'r', provider: 'p', tier: 't', command: 'true' }, capMinutes: 1, invoke,
+        });
+      } finally {
+        fx.cleanup();
+      }
+    },
+  );
+});
+
+test('arms: manifest mutant that recommits the in-memory tip pin', async () => {
+  await withTrainMutant(
+    'manifest-tiptpin',
+    '    const { assemblyTip: _dropped, ...committed } = manifest;\n    void _dropped;\n',
+    '    const committed = manifest;\n',
+    async (mutantTrain) => {
+      const fx = trainRepo();
+      try {
+        const { repo } = fx;
+        ensureTrainBranch(repo, 'main');
+        admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+        git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+        const asm = assembleTrain(repo, { trainId: 't-mutK', bounds: BOUNDS, now: () => T0 });
+        assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+        asm.manifest.assemblyTip = 'tip-pin';
+        const rec = mutantTrain.recordTrainReviewRound(repo, asm.manifest, { verdict: 'approve', tree: 'T' });
+        assert.equal(rec.ok, true);
+        const head = git(repo, ['rev-parse', TRAIN_BRANCH]);
+        const committed = JSON.parse(readCommitted(repo, head, '.train/manifest.json'));
+        assert.equal(committed.assemblyTip, 'tip-pin', 'the mutant leaks the pin — the keys arm goes red');
+      } finally {
+        fx.cleanup();
+      }
+    },
+  );
+});
