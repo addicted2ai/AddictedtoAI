@@ -11,6 +11,17 @@
  * feed (breaker 2 retarget is task 49, U6) and the job's-cap inheritance on
  * the post-merge call (no such call exists anymore).
  *
+ * REWORKED Stage-1 U2 (bead 938e): merges land on the `train` integration
+ * branch, not `main` (row 35) — the per-job publish this file proved is
+ * gone with it (row 36 ends the ordered run at the publish handoff; U5
+ * owns the push). Same property, new address: a green-together merge
+ * lands on `train` with `main` frozen and nothing on the remote; the
+ * moved-tip rebuild reverts on `train`; the environmental merge stands
+ * UNVERIFIED on `train`. The bare origin still answers "did this
+ * publish?" — the answer is now always nothing, which is the point: the
+ * CONTROL proves the merge DID land (on train) so the remote-emptiness
+ * below is meaningful rather than vacuous.
+ *
  * ## THE DEFECT, measured through a real runLoop fixture on 2026-09-07
  * (kept: it is why the publish half reads off a remote)
  *
@@ -212,11 +223,12 @@ function assertSingleBuild(fn, message) {
   assert.deepEqual(roots[0].scripts, ['build'], `${message}: the merge-time rebuild is a build, not a gate set`);
 }
 
-test('CONTROL: green-together merges and reaches the remote, so the checks below can fail', async (t) => {
+test('CONTROL: green-together merges onto train with main frozen, nothing published', async (t) => {
   // Without this, "nothing reached the remote" passes on a fixture that could
-  // never publish at all — which is precisely how the first version of this file
+  // never merge at all — which is precisely how the first version of this file
   // was wrong.
   const ctx = await repo(t);
+  const baseMain = git(ctx.repoRoot, ['rev-parse', 'main']);
   const gates = routingGates();
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
   assert.equal(res.outcome, 'done', ctx.output());
@@ -230,26 +242,32 @@ test('CONTROL: green-together merges and reaches the remote, so the checks below
     0,
     'no merge-time build when the tip never moved',
   );
-  assert.notEqual(
+  assert.equal(git(ctx.repoRoot, ['rev-parse', 'main']), baseMain, 'main is frozen between trains');
+  const trainMerges = git(ctx.repoRoot, ['log', '--merges', '--oneline', 'train']);
+  assert.match(trainMerges, /fix the fixture link/, `the green-together merge landed on train:\n${ctx.output()}`);
+  assert.equal(
     ctx.remoteHead(), null,
-    `a green-together merge must publish, or this file proves nothing:\n${ctx.output()}`,
+    `a per-job merge must publish nothing (publish handoff is U5's):\n${ctx.output()}`,
   );
   ctx.cleanup();
 });
 
 test('red-together is an ordinary failure: nothing merges, nothing publishes', async (t) => {
   const ctx = await repo(t);
+  const baseMain = git(ctx.repoRoot, ['rev-parse', 'main']);
   const gates = routingGates({ tripwire: ORDINARY_RED });
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
   assert.equal(res.outcome, 'failed', ctx.output());
   assert.equal(ctx.remoteHead(), null, 'a red-together pair must publish nothing');
-  const merges = git(ctx.repoRoot, ['log', '--merges', '--oneline', 'main']);
-  assert.equal(merges, '', `the refused branch must not be merged; main carries merges:\n${merges}`);
+  assert.equal(git(ctx.repoRoot, ['rev-parse', 'main']), baseMain, 'main untouched');
+  const merges = git(ctx.repoRoot, ['log', '--merges', '--oneline', 'train']);
+  assert.equal(merges, '', `the refused branch must not be merged anywhere; train carries merges:\n${merges}`);
   ctx.cleanup();
 });
 
 test('tip moved and rebuild red: the merge is reverted immediately, nothing publishes', async (t) => {
   const ctx = await repo(t);
+  const baseMain = git(ctx.repoRoot, ['rev-parse', 'main']);
   const gates = routingGates({ rebuild: ORDINARY_RED, moveTip: true });
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
   assert.equal(res.outcome, 'failed', ctx.output());
@@ -259,8 +277,9 @@ test('tip moved and rebuild red: the merge is reverted immediately, nothing publ
     `branch gates, tripwire, then the merge-time rebuild:\n${ctx.output()}`,
   );
   assertSingleBuild(gates, 'tip-moved rebuild');
-  const log = git(ctx.repoRoot, ['log', '--oneline', 'main']);
-  assert.match(log, /Revert /, `the just-made merge was reverted immediately:\n${ctx.output()}`);
+  const log = git(ctx.repoRoot, ['log', '--oneline', 'train']);
+  assert.match(log, /Revert /, `the just-made merge was reverted immediately on train:\n${ctx.output()}`);
+  assert.equal(git(ctx.repoRoot, ['rev-parse', 'main']), baseMain, 'main frozen');
   assert.equal(ctx.remoteHead(), null, 'a reverted merge must publish nothing');
   ctx.cleanup();
 });
@@ -290,8 +309,16 @@ test('merge lock held by a live run: expiry books interrupted, never failed', { 
   // even if the config key ever stops flowing (then this fails fast on the
   // outcome, not on a 20-minute hang — the wait would be the hang).
   const ctx = await repo(t, { train: { lock_wait_seconds: 0 } });
-  const held = await acquireMergeLock({ waitMs: 0 });
-  assert.equal(held.ok, true, 'the fixture pre-holds the real merge lock');
+  // Retry the pre-hold: the merge lock is real and machine-wide by row-33
+  // design, and under a full parallel suite a sibling test may hold it for
+  // seconds (U2 added more real-lock users). The SUT's own acquire stays
+  // zero-wait below — only the fixture setup retries, never the refusal.
+  let held = null;
+  for (let i = 0; i < 100 && !(held && held.ok); i++) {
+    held = await acquireMergeLock({ waitMs: 0 });
+    if (!held.ok) await new Promise((r) => setTimeout(r, 100));
+  }
+  assert.equal(held.ok, true, 'the fixture pre-holds the real merge lock (still held after 10s: genuine contention, not a flake)');
   try {
     const gates = routingGates();
     const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });

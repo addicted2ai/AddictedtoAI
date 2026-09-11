@@ -25,6 +25,19 @@
  * and the only place a test can stand INSIDE the moment `data/derived/` is
  * recomputed). The assertions are about what actually landed in the commit —
  * `git show --name-only` on the real HEAD — never about the fix's intent.
+ *
+ * REWORKED Stage-1 U2 (bead 938e): row 50 removes the per-job rederive, so
+ * the per-job recomputation these tests stood inside of is gone — and with
+ * it the per-job derived-commit the djd guard policed. The property moved
+ * up: the train recomputes once (real witness rederive, same discovery
+ * seam), and its records commit is allow-listed (ledger/reviews/carried/
+ * proposals) — `data/derived/` is structurally excludable, on clean AND
+ * dirty trees alike. Same witness, same committed-tree assertions, new
+ * driver (assemble + ordered run instead of a job run). What retired with
+ * the per-job path: the 942 positive control (derived committed WITH
+ * records) — nothing commits `data/derived/` anymore, which is a boundary
+ * for U5-or-later to own (RESULT2 records it), not a property to keep
+ * pinning the old shape of.
  */
 
 import test from 'node:test';
@@ -32,9 +45,9 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { runLoop } from '../run.mjs';
 import { dirtyDerivedInputs } from '../lib/rederive.mjs';
-import { makeRepo, writeQueue, runnersYaml, mockCommand, git } from './helpers.mjs';
+import { assembleTrain, ensureTrainBranch, runTrain, TRAIN_BRANCH } from '../lib/train.mjs';
+import { makeRepo, runnersYaml, mockCommand, git } from './helpers.mjs';
 
 /** A minimal shared derive step: writes one file, so committed-or-not is easy to read. */
 const WITNESS_DERIVE = `
@@ -68,96 +81,107 @@ function repoWithWitness(extraFiles = {}) {
       ...extraFiles,
     },
   });
-  writeQueue(ctx, [{ type: 'repair', title: 'a repair job, so the run reaches a merge' }]);
   return ctx;
 }
 
-const go = (ctx) => runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+const TRAIN_BOUNDS = { merges: 5, minutes: 90, maxReviewedBytes: 150000, maxSubjects: 12, lockWaitSeconds: 1200 };
+const GREEN_GATES = () => ({ ok: true, results: [], output: '' });
+const APPROVE_REVIEW = async () => ({ verdict: 'approve', runner: 'stub', provider: 'stub', tier: 'stub', findingsNotInAnyRecord: 0 });
 
-/** The records commit's own tree — never the working tree, which can carry more. */
-function recordsCommitFiles(ctx) {
-  const subject = git(ctx.repoRoot, ['log', '-1', '--format=%s']).trim();
-  assert.match(subject, /records \(done\)/, `HEAD is not the records commit: ${subject}`);
-  return git(ctx.repoRoot, ['show', '--name-only', '--format=', 'HEAD'])
+/**
+ * Admit one merge and run the ordered run with the DEFAULT rederive seam
+ * (the real `rederiveStep`, discovering the witness above). Returns the
+ * train result. Stubs mirror `train.test.mjs`'s stated contracts.
+ */
+async function witnessTrain(ctx) {
+  const repo = ctx.repoRoot;
+  ensureTrainBranch(repo, 'main');
+  git(repo, ['checkout', '--quiet', '-b', 'job/wit', 'main']);
+  mkdirSync(join(repo, 'content'), { recursive: true });
+  writeFileSync(join(repo, 'content', 'wit.md'), '# witness\n', 'utf8');
+  git(repo, ['add', '--', 'content/wit.md']);
+  git(repo, ['commit', '--quiet', '--no-verify', '-m', 'witness work']);
+  git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+  git(repo, ['merge', '--quiet', '--no-ff', '--no-verify', '-m', 'job j-wit-01 (repair): witness work', 'job/wit']);
+  const asm = assembleTrain(repo, { trainId: 't-wit', bounds: TRAIN_BOUNDS });
+  assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+  const tr = await runTrain(ctx, {
+    repo, trainId: asm.manifest.train, manifest: asm.manifest,
+    gates: GREEN_GATES, review: APPROVE_REVIEW,
+  });
+  assert.equal(tr.ok, true, tr.reason ?? 'witness train refused');
+  return tr;
+}
+
+/** The train's records commit's own tree — never the working tree. */
+function recordsCommitFiles(ctx, sha) {
+  const subject = git(ctx.repoRoot, ['log', '-1', '--format=%s', sha]).trim();
+  assert.match(subject, /train t-wit: records/, `not the records commit: ${subject}`);
+  return git(ctx.repoRoot, ['show', '--name-only', '--format=', sha])
     .split('\n')
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
-test('THE DEFECT, reproduced: data/derived/ recomputed from a dirty data/changes.jsonl must not be committed alongside it', async (t) => {
+test('THE DEFECT, moved up: data/derived/ recomputed from a dirty data/changes.jsonl must not reach the train records commit', async (t) => {
   const ctx = repoWithWitness();
   t.after(() => ctx.cleanup());
 
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), [], 'precondition: nothing of the input set is dirty yet');
 
   // The shape of the incident: something appended to data/changes.jsonl in the
-  // MAIN working tree and never committed it — a Pulse run mid-flight, or an
-  // agent's own edit. This loop run shares that same working tree.
+  // working tree and never committed it — a Pulse run mid-flight, or an
+  // agent's own edit.
   writeFileSync(join(ctx.repoRoot, 'data', 'changes.jsonl'), '{"subject":"a"}\n{"subject":"b"}\n', 'utf8');
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), ['data/changes.jsonl'], 'precondition: now it is dirty');
 
-  const res = await go(ctx);
-  assert.equal(res.outcome, 'done', ctx.output());
+  const tr = await witnessTrain(ctx);
 
-  // data/derived/ WAS recomputed (rederiveStep ran) — the working tree carries
-  // the recomputed file...
+  // data/derived/ WAS recomputed (the real rederive ran) — the working tree
+  // carries the recomputed file...
   const queuePath = join(ctx.repoRoot, 'data', 'derived', 'queue.json');
   assert.ok(existsSync(queuePath));
   assert.deepEqual(JSON.parse(readFileSync(queuePath, 'utf8')).items, ['witness']);
 
-  // ...but it must NOT be in the records commit: its own input
-  // (data/changes.jsonl) is still dirty, and the commit cannot honestly carry
-  // a data/derived/ that state does not reproduce.
-  const files = recordsCommitFiles(ctx);
+  // ...but it must NOT be in the records commit: the allow-list admits
+  // ledger/reviews/carried/proposals and nothing else, on clean AND dirty
+  // trees alike. The djd foot guard this replaces policed the same pairing
+  // per job; the train holds it structurally.
+  const files = recordsCommitFiles(ctx, tr.sha);
   assert.ok(
     !files.some((f) => f.startsWith('data/derived/')),
     `data/derived/ reached the records commit while an input stayed dirty: ${files.join(', ')}`,
   );
-  // The guard is scoped to data/derived/ ALONE — the rest of this run's own
-  // records (the ledger line, the verdict) do not depend on the invariant it
-  // protects and must still land in the same commit. A guard that withheld
-  // the whole records commit would lose the ledger line the budget is
-  // computed from for no reason connected to this bug.
-  assert.ok(files.includes('data/ledger.jsonl'), `the ledger line must still be committed: ${files.join(', ')}`);
-  assert.ok(files.some((f) => f.startsWith('data/reviews/')), `the verdict record must still be committed: ${files.join(', ')}`);
+  assert.ok(files.includes('data/ledger.jsonl'), `the train line must still be committed: ${files.join(', ')}`);
 
-  // The guard did not silently commit the dirty input to make room for it either.
+  // The dirty input is still dirty after the run — the train neither
+  // committed it to make room nor cleaned it.
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), ['data/changes.jsonl'], 'the input is still dirty after the run');
 
-  // The refusal is on the record, naming the dirty path and the issue.
-  assert.match(ctx.output(), /data\/changes\.jsonl/);
-  assert.match(ctx.output(), /addictedtoai-djd/);
-
-  // THE ACTUAL HAZARD, confirmed against the committed tree rather than the
-  // dirty working tree: `data/derived/queue.json` is not tracked by HEAD at
-  // all — a branch cut from this commit gets whatever `data/derived/` it
-  // already had (nothing, in this fixture), never a queue.json recomputed
-  // from state the branch cannot see.
-  const tracked = git(ctx.repoRoot, ['ls-tree', '-r', '--name-only', 'HEAD']);
-  assert.ok(!tracked.split('\n').includes('data/derived/queue.json'), 'HEAD must not track the unreproducible recomputation');
+  // THE ACTUAL HAZARD, confirmed against the committed tree: the records
+  // commit pairs no derived output with inputs it does not carry.
+  const tracked = git(ctx.repoRoot, ['ls-tree', '-r', '--name-only', tr.sha]);
+  assert.ok(!tracked.split('\n').includes('data/derived/queue.json'), 'the records commit must not track the recomputation');
 });
 
-test('POSITIVE CONTROL: a clean tree still commits the recomputed derived tree with the records (addictedtoai-942 must survive this fix)', async (t) => {
+test('POSITIVE CONTROL, new form: the exclusion holds on a clean tree too', async (t) => {
+  // Row 50 retired the 942 mechanism (derived committed WITH records);
+  // nothing commits data/derived/ anymore. This pins that the exclusion is
+  // structural — not a guard that only fires when dirty.
   const ctx = repoWithWitness();
   t.after(() => ctx.cleanup());
 
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), [], 'precondition: nothing dirty before the run');
 
-  const res = await go(ctx);
-  assert.equal(res.outcome, 'done', ctx.output());
+  const tr = await witnessTrain(ctx);
 
-  const files = recordsCommitFiles(ctx);
-  assert.ok(files.includes('data/derived/queue.json'), `data/derived/ must still be committed on a clean tree: ${files.join(', ')}`);
+  const files = recordsCommitFiles(ctx, tr.sha);
+  assert.ok(!files.some((f) => f.startsWith('data/derived/')), `clean tree, still excluded: ${files.join(', ')}`);
+  assert.ok(files.includes('data/ledger.jsonl'), `the train line is committed: ${files.join(', ')}`);
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), [], 'nothing left dirty in the input set on the happy path');
-  assert.doesNotMatch(ctx.output(), /addictedtoai-djd/, 'the guard has nothing to say when nothing is dirty');
-
-  // And the committed tree really is the recomputation — the queue is not
-  // merely present, it is the merged state's own answer.
-  const committedQueue = git(ctx.repoRoot, ['show', 'HEAD:data/derived/queue.json']);
-  assert.match(committedQueue, /witness/);
 });
 
-test('a dirty content/ file (another agent mid-edit) blocks the derived-tree commit the same way', async (t) => {
+test('a dirty content/ file (another agent mid-edit) stays out of the records commit the same way', async (t) => {
   const ctx = repoWithWitness();
   t.after(() => ctx.cleanup());
   mkdirSync(join(ctx.repoRoot, 'content'), { recursive: true });
@@ -166,32 +190,30 @@ test('a dirty content/ file (another agent mid-edit) blocks the derived-tree com
   writeFileSync(join(ctx.repoRoot, 'content', 'someone-elses-draft.md'), 'half-written\n', 'utf8');
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), ['content/someone-elses-draft.md']);
 
-  const res = await go(ctx);
-  assert.equal(res.outcome, 'done', ctx.output());
+  const tr = await witnessTrain(ctx);
 
-  const files = recordsCommitFiles(ctx);
+  const files = recordsCommitFiles(ctx, tr.sha);
   assert.ok(
     !files.some((f) => f.startsWith('data/derived/')),
     `data/derived/ must not be committed while content/ carries an untracked file: ${files.join(', ')}`,
   );
-  assert.match(ctx.output(), /content\/someone-elses-draft\.md/);
   // And the foreign draft is untouched — this run neither committed it nor
   // deleted it. It is not this run's file to decide about.
   assert.equal(readFileSync(join(ctx.repoRoot, 'content', 'someone-elses-draft.md'), 'utf8'), 'half-written\n');
 });
 
-test('POSITIVE CONTROL: a dirty file OUTSIDE the input set (e.g. data/launch.json) does not block the commit', async (t) => {
-  // The guard is scoped to what data/derived/ actually depends on. A dirty
-  // file elsewhere under data/ is somebody else's business (addictedtoai-ps3
-  // territory) and must not cause a false refusal here.
+test('POSITIVE CONTROL: a dirty file OUTSIDE the input set (e.g. data/launch.json) changes nothing', async (t) => {
+  // The exclusion is structural (allow-list), not input-scoped: a dirty
+  // file elsewhere under data/ is somebody else's business and must not
+  // change what the records commit carries.
   const ctx = repoWithWitness();
   t.after(() => ctx.cleanup());
   writeFileSync(join(ctx.repoRoot, 'data', 'launch.json'), '{"measured": true}\n', 'utf8');
   assert.deepEqual(dirtyDerivedInputs(ctx.repoRoot), [], 'data/launch.json is not in the derived-tree input set');
 
-  const res = await go(ctx);
-  assert.equal(res.outcome, 'done', ctx.output());
+  const tr = await witnessTrain(ctx);
 
-  const files = recordsCommitFiles(ctx);
-  assert.ok(files.includes('data/derived/queue.json'), `an unrelated dirty file must not block the commit: ${files.join(', ')}`);
+  const files = recordsCommitFiles(ctx, tr.sha);
+  assert.ok(!files.some((f) => f.startsWith('data/derived/')), `an unrelated dirty file changes nothing: ${files.join(', ')}`);
+  assert.ok(files.includes('data/ledger.jsonl'), `the train line is committed: ${files.join(', ')}`);
 });

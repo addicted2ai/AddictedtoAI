@@ -43,15 +43,18 @@ test('a real `done` file plus a real diff plus an approve merges and records don
   assert.equal(ledger.at(-1).outcome, 'done');
   assert.equal(ledger.at(-1).provider, 'provider-a');
   assert.ok(ledger.at(-1).mm >= 0);
-  assert.ok(existsSync(join(ctx.repoRoot, 'site-note.md')), 'the merged file is on main');
-  assert.ok(!existsSync(join(ctx.repoRoot, '.job')), 'job scaffolding does not reach main');
-  // The merge invokes the shared publish step, which prints exactly one skip
-  // line while `publish: false` — and does nothing else, most importantly.
-  assert.match(
+  assert.ok(existsSync(join(ctx.repoRoot, 'site-note.md')), 'the merged file is on train (row 35: merges land on the integration branch)');
+  assert.ok(!existsSync(join(ctx.repoRoot, '.job')), 'job scaffolding does not reach train');
+  // Row 36 / S2 (Stage-1 U2): the merge no longer invokes the shared publish
+  // step at all — the ordered run ends at the publish handoff and U5 owns
+  // the push. The old skip-line pin moved with the row: assert the absence
+  // of any publish invocation, not the skip line.
+  assert.doesNotMatch(
     ctx.output(),
-    /publish: skipped — publishing is disabled in data\/config\.json \(publish: false\)/,
+    /publish: skipped — publishing is disabled/,
+    'no per-job publish invocation remains',
   );
-  assert.match(ctx.output(), /merged job\/.* into main locally as .* — nothing is pushed/);
+  assert.match(ctx.output(), /merged job\/.* into train locally as .* — nothing is pushed/);
   ctx.cleanup();
 });
 
