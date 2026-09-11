@@ -379,3 +379,42 @@ export function recordCorroboration({ sharedInstrument, detail = '' } = {}) {
     reason: `different instruments${suffix} — corroboration`,
   };
 }
+
+/**
+ * selectOutcomeLineage() — the first production producer (item 5
+ * follow-up). A ledger outcome is computed over the tree at the run's
+ * merge-base, so the merge-base commit sha is a genuine input digest:
+ * producer names the recording code path per job type, digest is the
+ * base commit (resolvable via the stated git resolver), method names
+ * the computation. Returns the triple, or undefined when there is no
+ * resolvable base — the caller keeps writing its line either way, so a
+ * missing digest narrows the judgment, never the ledger.
+ *
+ * THREE LIMITS, STATED. (1) The verdict goes to the run log, never onto
+ * the ledger line: the packet-E closure pins forbid new ledger keys
+ * (the gate-transport exact-additive-keys pin), so carrying computed
+ * lineage on the line would break the suite it is meant to serve.
+ * (2) A same-pair verdict across DIFFERENT jobs shares inputs but not
+ * work — consumers check job ids (both are logged) before reading
+ * corroboration; same-job repeats (resume/retry) are true consistency.
+ * (3) The judging store is process-lifetime: repeats across processes
+ * need a ledger-backed store, which is named here and not built here.
+ */
+export function selectOutcomeLineage({ mergeBaseSha, jobType } = {}, resolve) {
+  if (typeof mergeBaseSha !== 'string' || !mergeBaseSha.trim()) return undefined;
+  if (typeof jobType !== 'string' || !jobType.trim()) return undefined;
+  if (typeof resolve !== 'function') return undefined;
+  let verdict;
+  try {
+    verdict = resolve(mergeBaseSha.trim(), LINEAGE_RESOLVER_GIT);
+  } catch {
+    return undefined;
+  }
+  if (!verdict || verdict.ok !== true) return undefined;
+  return {
+    producer: `loop/run.mjs:recordOutcome:${jobType.trim()}`,
+    digest: String(verdict.full ?? mergeBaseSha.trim()).toLowerCase(),
+    method: 'merge-base-outcome',
+    resolver: LINEAGE_RESOLVER_GIT,
+  };
+}

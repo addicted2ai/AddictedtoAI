@@ -26,6 +26,13 @@ import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LED
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
 import { selectJob, escalationTarget, formatRefusals } from './lib/select.mjs';
 import { assembleBrief, assembleRevisionBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
+import {
+  classifyClaim,
+  createLineageStore,
+  gitResolveDigest,
+  LINEAGE_RESOLVER_GIT,
+  selectOutcomeLineage,
+} from './lib/lineage.mjs';
 import { readResult, classifyRun, reviewProducedNothing, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
@@ -74,6 +81,18 @@ import {
   transcribeNotedProposal,
 } from './lib/proposals.mjs';
 import { transcribeCarriedFindings } from './lib/carry.mjs';
+
+// Process-lifetime outcome-lineage store (item 5 follow-up: first
+// producer + judgment). `recordOutcome` classifies each outcome's
+// computed triple against the lines this process already recorded, so
+// repeats inside one process are judged; repeats across processes need
+// the ledger-backed store named (not built) in `selectOutcomeLineage`.
+// Resolution binds process.cwd() per call: the loop runs from the
+// repository root, whose objects include every merge-base it records.
+const outcomeLineageStore = createLineageStore({
+  resolver: LINEAGE_RESOLVER_GIT,
+  resolve: (digest, name) => gitResolveDigest(digest, { repoRoot: process.cwd(), resolverName: name }),
+});
 
 const USAGE = `node loop/run.mjs — one Desk run
 
@@ -1549,6 +1568,30 @@ export async function runLoop(ctx, opts = {}) {
       }),
     );
     ctx.log(`ledger: ${JSON.stringify(ledgerLine)}`);
+    // First-producer judgment (item 5 follow-up): classify this outcome's
+    // computed triple against the process store. The verdict goes to the
+    // log only — never onto the line, whose exact shape the packet-E
+    // closure pins. Ledger writes never fail on lineage.
+    try {
+      const triple = selectOutcomeLineage(
+        { mergeBaseSha, jobType: job.type },
+        (d, n) => outcomeLineageStore.resolve(d, n),
+      );
+      if (triple) {
+        const judged = classifyClaim(outcomeLineageStore, { lineage: triple });
+        if (judged.ok) {
+          ctx.log(
+            judged.independent
+              ? `lineage: ${jobId} independent (${judged.id})`
+              : `lineage: ${jobId} consistencyOf ${judged.consistencyOf} — same producer+digest as an earlier outcome in this process; check job ids before reading corroboration`,
+          );
+        } else {
+          ctx.log(`lineage: ${jobId} ${judged.code} — ${judged.reason}`);
+        }
+      }
+    } catch {
+      // lineage observation must not move the ledger path
+    }
     return ledgerLine;
   };
 

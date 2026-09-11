@@ -34,6 +34,7 @@ import {
   createLineageStore,
   recordCorroboration,
   recordMeasurement,
+  selectOutcomeLineage,
   validateDigestForm,
 } from '../lib/lineage.mjs';
 import { LEDGER_FIELDS, makeLedgerLine } from '../lib/ledger.mjs';
@@ -446,4 +447,45 @@ test('arm 9 (liveness): a ledger line recorded without lineage refuses at classi
   const judged = classifyClaim(store, lined);
   assert.equal(judged.ok, true);
   assert.equal(judged.independent, true, 'first claim over fresh bytes: independent — writer and check meet');
+});
+
+// ---------------------------------------------------------------------------
+// Arms 10–10c — the first production producer (item 5 follow-up).
+// ---------------------------------------------------------------------------
+
+test('arm 10 (first producer): a resolvable merge-base yields the outcome triple', () => {
+  const triple = selectOutcomeLineage(
+    { mergeBaseSha: INPUT_ONE_FULL, jobType: 'entry' },
+    bankedResolve,
+  );
+  assert.deepEqual(triple, {
+    producer: 'loop/run.mjs:recordOutcome:entry',
+    digest: INPUT_ONE_FULL.toLowerCase(),
+    method: 'merge-base-outcome',
+    resolver: LINEAGE_RESOLVER_GIT,
+  });
+});
+
+test('arm 10b: an unresolvable or missing base yields no triple — the ledger path narrows nothing', () => {
+  assert.equal(
+    selectOutcomeLineage({ mergeBaseSha: '03e2207', jobType: 'entry' }, bankedResolve),
+    undefined,
+    'banked-unresolvable base selects nothing',
+  );
+  assert.equal(selectOutcomeLineage({ jobType: 'entry' }, bankedResolve), undefined, 'missing sha selects nothing');
+  assert.equal(selectOutcomeLineage({ mergeBaseSha: INPUT_ONE_FULL }, bankedResolve), undefined, 'missing type selects nothing');
+  assert.equal(selectOutcomeLineage({ mergeBaseSha: INPUT_ONE_FULL, jobType: 'entry' }), undefined, 'missing resolver selects nothing');
+});
+
+test('arm 10c (judgment): two outcomes over one base — the second is consistencyOf the first', () => {
+  const store = testStore();
+  const triple = selectOutcomeLineage({ mergeBaseSha: INPUT_ONE_FULL, jobType: 'entry' }, bankedResolve);
+  const first = classifyClaim(store, { lineage: triple });
+  assert.equal(first.ok, true);
+  assert.equal(first.independent, true, 'first outcome over fresh base: independent');
+  const second = classifyClaim(store, { lineage: triple });
+  assert.equal(second.ok, true);
+  assert.equal(second.independent, false, 'same producer AND same digest is consistency, whatever the jobs differ in');
+  assert.equal(second.consistencyOf, first.id, 'consistency points at the first outcome');
+  assert.equal(store.records.length, 2, 'both records present — the downgrade records, never deletes');
 });
