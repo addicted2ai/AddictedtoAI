@@ -281,6 +281,30 @@ test('once: bare once refuses', () => {
   });
 });
 
+test('once: quoted once inside Authority source does not fire (U1 hatch)', () => {
+  const sha = headSha();
+  // Verbatim from tasks.md@sha (task 33): fabricated quotes correctly fail
+  // the verbatim and reconcile checks, so the hatch arm must quote the real
+  // row. Declarative clauses ("The"/"where" heads, no modal) extract no
+  // imperative, so reconcile stays out of this arm's way.
+  const text = `${baseBrief(sha)}\n## Authority source\n\n> **The merge lock is taken once, at the merge**, to check the integration tip is unchanged since the tripwire ran; where it moved, the merged tip is rebuilt once under that lock (a build, ~29s, not a gate set) before the merge is accepted.\n`;
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 0, r.out);
+    assert.match(r.out, /PASS.*"once" always says iteration or attempt/);
+  });
+});
+
+test('once: bare author once still fires beside a quoted once (U1 hatch)', () => {
+  const sha = headSha();
+  const text = `${baseBrief(sha)}\n## Authority source\n\n> **The merge lock is taken once, at the merge**, to check the integration tip is unchanged since the tripwire ran; where it moved, the merged tip is rebuilt once under that lock (a build, ~29s, not a gate set) before the merge is accepted.\n\nRun it once.\n`;
+  withTemp(text, (p) => {
+    const r = runLint(p, sha);
+    assert.equal(r.status, 1, r.out);
+    assert.match(r.out, /FAIL.*"once" always says iteration or attempt/);
+  });
+});
+
 /* ── 6. prohibition-line token ────────────────────────────────── */
 
 test('check 6: clean vehicle goes green', () => {

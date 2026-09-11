@@ -45,7 +45,6 @@ import {
   diffAgainst,
   gitTry,
   mergeBase,
-  mergeLocal,
   removeWorktree,
 } from './lib/git.mjs';
 import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './lib/resume.mjs';
@@ -60,11 +59,11 @@ import {
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
 import { isDiffRefusal, isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
+import { acquireWorkerSlot, mergeJobBranch, releaseWorkerSlot, runTripwire } from './lib/train.mjs';
 import {
   brakeScan,
   brakeState,
   checkConsecutiveFailures,
-  checkBuildRed,
   checkReviewBypass,
   checkReservedPaths,
   startGate,
@@ -1742,6 +1741,32 @@ export async function runLoop(ctx, opts = {}) {
     // through the merge's own failure path, which already logs the reason and
     // records the outcome; a separate refusal path would be a second way to say
     // "this did not merge".
+    // Stage-1 U1 tripwire (task 33, bead avs5): green apart says nothing
+    // about green together. Before the real merge, provisionally merge the
+    // base tip into the job worktree — uncommitted, under no merge lock —
+    // and run the two tripwire gates over that merged tip. Red together is
+    // an ordinary gate failure: nothing landed anywhere (ruling a). Gates
+    // that could not RUN leave togetherness unverified, and an unverified
+    // merge must not land: that books `interrupted`, resumable like any
+    // environmental refusal. `--no-gates` skips the tripwire outright (the
+    // operator override keeps its pre-train meaning).
+    let tripwireBaseTip = null;
+    let tripwireBlocked = null;
+    if (!opts.noGates) {
+      const trip = runTripwire(ctx, { worktree, baseRef: base, gates: opts.gates });
+      tripwireBaseTip = trip.baseTip ?? null;
+      if (!trip.ok) {
+        if (trip.environmental) {
+          ctx.log(`tripwire: branch+base togetherness unverified (${trip.reason}) — booking interrupted, nothing merges`);
+          tripwireBlocked = 'interrupted';
+        } else {
+          ctx.log(`tripwire: branch+base red together (${trip.reason}) — ordinary gate failure, nothing merges`);
+          tripwireBlocked = 'failed';
+        }
+      } else {
+        ctx.log(`tripwire: branch+base green together at ${String(trip.baseTip).slice(0, 8)}`);
+      }
+    }
     const merged = proposals.refused.length
       ? {
           ok: false,
@@ -1750,10 +1775,28 @@ export async function runLoop(ctx, opts = {}) {
             `the branch adds ${proposals.refused.length === 1 ? 'does' : 'do'} not carry what a ` +
             `declined story must record (specs/loop): ${proposals.refused.join(' | ')}`,
         }
-      : mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
+      : tripwireBlocked
+        ? { ok: false, quiet: true, blocked: tripwireBlocked }
+        : await mergeJobBranch(ctx, {
+            repo: ctx.repoRoot,
+            branch,
+            baseRef: base,
+            message: `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`,
+            tripwireBaseTip,
+            gates: opts.gates,
+            noGates: opts.noGates,
+            lockWaitMs: (cfg.train?.lock_wait_seconds ?? 1200) * 1000,
+          });
     if (!merged.ok) {
-      ctx.log(`merge failed: ${merged.reason}`);
-      outcome = 'failed';
+      if (!merged.quiet) ctx.log(`merge failed: ${merged.reason}`);
+      // A tripwire booking survives: `interrupted` is resumable, `failed`
+      // is counted. A merge the machine refused (merge-lock expiry) is
+      // environmental like any gate refusal — `interrupted`, never a breaker
+      // input — unless the run already failed, which stands. Anything else
+      // that refused the merge is an ordinary failure.
+      if (merged.blocked) outcome = merged.blocked;
+      else if (merged.environmental && outcome !== 'failed') outcome = 'interrupted';
+      else if (outcome !== 'interrupted') outcome = 'failed';
     } else {
       mergedSha = merged.sha;
       outcome = 'done';
@@ -1853,110 +1896,43 @@ export async function runLoop(ctx, opts = {}) {
         }
       }
 
-      // THE POST-MERGE BUILD DERIVES ITS LOCK WAIT FROM THIS JOB'S OWN CAP,
-      // the same way the pre-review gate does (`gateTimeoutMs` above). Passing
-      // no timeout left it on `runGates`'s 20-minute default, so a 120-minute
-      // job waited 900,000 ms for the build lock here and 5,400,000 ms in its
-      // branch gates — the same job, two budgets, for no stated reason
-      // (addictedtoai-ml25). `job_caps_minutes` is the same table the
-      // per-invocation cap comes from.
-      const postMergeCapMs = (cfg.job_caps_minutes?.[job.type] ?? 20) * 60 * 1000;
-      // THE OPTIONS GO TO THE HOOK TOO, not only to the real `runGates`. The
-      // injected hook took `(ctx, dir)` and never saw them, so the budget above
-      // was unobservable from a test: deleting `timeoutMs` left the suite green
-      // and the cap was asserted by reading the source rather than measured.
-      // A property nothing can observe is a property nothing can hold.
-      const postMergeGateOptions = { scripts: ['build'], timeoutMs: postMergeCapMs };
-      const built = opts.noGates
-        ? { ok: true }
-        : (typeof opts.gates === 'function'
-          ? opts.gates(ctx, ctx.repoRoot, postMergeGateOptions)
-          : runGates(ctx, ctx.repoRoot, postMergeGateOptions));
+      // Stage-1 task 32 (U1, bead avs5) DELETED the post-merge build block
+      // that stood here: the `postMergeGateOptions`/`runGates` call over the
+      // merged tip plus its three-state handling. Verification-before-publish
+      // now comes from the tripwire (same tip) or the merge-time rebuild
+      // (moved tip) above — `merged.verified` carries it to the publish flag
+      // below. What this means for breaker 2 is stated beside that flag: its
+      // post-merge-build feed is gone until task 49 (U6) retargets it, by the
+      // rows' sequence, not by omission here.
 
-      // ---------------------------------------------------------------------
-      // THREE STATES, NOT TWO (addictedtoai-ml25).
-      //
-      // `ok` is not the only question. A build that RAN and failed is red: the
-      // site cannot be trusted to rebuild, breaker 2 trips, HOLD.md stops the
-      // Desk. A build that NEVER RAN — because it could not take the machine's
-      // build lock, or the child could not be spawned — says nothing about the
-      // site at all, and treating it as red is the most expensive possible
-      // misreading: it halts every SUBSEQUENT job over a machine condition that
-      // has usually cleared by the time anyone reads the file.
-      //
-      // MEASURED before this existed: an orchestrator merge window holds the
-      // shared build lock for ~10 minutes, and any Desk job whose post-merge
-      // build met that lock halted the whole Desk. The mitigation was
-      // discipline — stop the chain before taking the lock — which protects
-      // only whoever remembers.
-      //
-      // THE THIRD STATE IS "THE BUILD DID NOT RUN": do not count it, do not
-      // halt, and DO NOT PUBLISH.
-      //
-      // The last clause is the one that is easy to get wrong and it is why this
-      // was split out of addictedtoai-3ov0 rather than patched inside it. The
-      // obvious fix — suppress the hold for the environmental case — ALSO
-      // removes the publish gate, because `HOLD.md` does double duty: it is the
-      // breaker AND `pulse/lib/publish.mjs` suspends publishing entirely while
-      // it exists. Suppressing the halt without suppressing the publish reaches
-      // the shared publish step with NO VERIFIED BUILD, which breaks the
-      // standing bar: push only what passed the gates. So the publish is
-      // refused here, explicitly, rather than as a side effect of a file.
-      //
-      // WHAT THE NEXT RUN DOES WITH THE UNVERIFIED MERGE, since this leaves one
-      // on `main`: nothing special, and that is the point. The merge and this
-      // job's records are committed locally by `commitJobRecords` below. The
-      // next run that completes a GREEN post-merge build publishes, and its
-      // push carries this merge with it — legitimately, because that build
-      // built the tree INCLUDING this merge. An unverified commit is therefore
-      // held exactly until something verifies it, and no separate re-gating
-      // mechanism is needed. If no later run ever goes green, the merge stays
-      // local, which is the correct end state rather than a leak.
-      const buildDidNotRun = !built.ok && gatesHitEnvironmentalFailure(built);
+      // (Three-state handling for the deleted post-merge build — the
+      // build-did-not-run honesty above — moved with the tripwire: an
+      // unverified merge leaves `merged.verified` false and the publish flag
+      // down. See the deletion note and the flag below.)
+      const buildDidNotRun = !merged.verified;
 
       if (buildDidNotRun) {
         ctx.log(
-          `the post-merge build DID NOT RUN — ${gateFailureNote(built)}. Not counted toward the ` +
-          `breaker, no HOLD.md, and NOT PUBLISHED: the merge stays on main until a later run's ` +
-          `own build verifies it.`,
+          `the merged content is UNVERIFIED${merged.note ? ` — ${merged.note}` : ''} — NOT PUBLISHED: ` +
+            `the merge stays local until a later run verifies it.`,
         );
       } else {
-        const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
-        if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
+        ctx.log(`the merged content is verified (tripwire same-tip green, rebuild green, or no-gates override) — publishable`);
       }
-      // THE PUBLISH IS NOT HERE ANY MORE. It is at the foot of this function,
-      // after `commitJobRecords`, and the flag is what carries the decision
-      // there. What survives unchanged is the ordering that is load-bearing:
-      // the build gate above still runs BEFORE the publish, so a run that
-      // produced content the build rejects still publishes nothing.
+      // WHAT `verified` CARRIES (Stage-1 U1, bead avs5): the tripwire proved
+      // THIS tip green-together, or the merge-time rebuild proved the moved
+      // tip, or `--no-gates` overrode verification as before. Unverified
+      // merges publish nothing — the old third-state honesty, now fed by the
+      // tripwire instead of the deleted post-merge build.
       //
-      // The red path is deliberately UNCHANGED: it still sets the flag and is
-      // still stopped by the `HOLD.md` this block just wrote. Only the
-      // did-not-run path withholds the flag, which is the narrowest edit that
-      // adds the third state without touching the contract for the other two.
-      //
-      // WHAT WITHHOLDING THE FLAG COSTS, stated because it is not quite
-      // nothing. `publishStep`'s phase 1 commits the paths a declaring caller
-      // owns, and `commitJobRecords` below has already committed the same
-      // `staged` array, so on this path phase 1 finds nothing left to do. But it
-      // was also a SECOND NET: if that records commit fails — the
-      // unmatched-pathspec trap of addictedtoai-tqpq, which discarded three
-      // jobs' records in one afternoon while every run still reported `done` —
-      // phase 1 would have had another go at the same paths, because this flag
-      // used to be unconditionally true. It no longer will, in the compound case
-      // where the records commit fails AND the build did not run. Judged not
-      // worth holding the third state for, and recorded here rather than left
-      // for whoever meets it.
-      //
-      // AND THE OTHER HALF OF WHY THE OBVIOUS FIX IS WORSE THAN IT LOOKS,
-      // measured while mutation-testing this block: publishing on the
-      // did-not-run path does not merely push an unverified merge. The push
-      // succeeds, the site does not serve that commit, and the shared step then
-      // writes `HOLD.md` ITSELF with its `deploy-hold:` marker — so the Desk
-      // halts anyway, later, for a confusing reason, with the unverified commit
-      // already public. Suppressing the breaker without suppressing the publish
-      // trades one halt for a halt plus a deploy.
-      publishAfterRecords = !buildDidNotRun;
+      // BREAKER-2 GAP, STATED NOT TO HIDE IT: the deleted block fed breaker 2
+      // (red post-merge build → HOLD.md). Nothing in U1 replaces that feed —
+      // a red build on main is now observed by no Desk mechanism until task
+      // 49 (U6) retargets the breaker, which is the rows' sequence. A red
+      // merged tip cannot reach main through THIS path (the tripwire refuses
+      // it, the rebuild reverts it); what U1 stops seeing is redness that
+      // arrives any other way.
+      publishAfterRecords = merged.verified === true;
       if (job.source === 'directive' && job.lineNumber) {
         // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
         // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
@@ -2536,14 +2512,32 @@ async function main() {
     return 0;
   }
   const ctx = makeContext({ repoRoot: args.repo, worktreeRoot: args.worktreeRoot });
+  // Stage-1 task 35b (U1, bead avs5): one worker is a mechanism, not a
+  // discipline. A run takes a worker slot before anything else; when none is
+  // free the run refuses with the did-not-start status (1 — the same status
+  // a STOP/HOLD refusal carries, per `exitCodeFor` above) and is booked
+  // `interrupted`: resumable, never a breaker input. There is no job yet, so
+  // the log line IS the booking, the same shape as every other startup
+  // refusal. Exit status found in this file for Q6: 1 (did-not-start class).
+  let slot = null;
   try {
-    const res = await runLoop(ctx, {
-      runner: args.runner,
-      reviewer: args.reviewer,
-      dryRun: args.dryRun,
-      noGates: args.noGates,
-    });
-    return exitCodeFor(res);
+    slot = acquireWorkerSlot({ workers: loadConfig(ctx).workers ?? 1 });
+    if (!slot.ok) {
+      ctx.log(slot.message);
+      return 1;
+    }
+    try {
+      const res = await runLoop(ctx, {
+        runner: args.runner,
+        reviewer: args.reviewer,
+        dryRun: args.dryRun,
+        noGates: args.noGates,
+      });
+      return exitCodeFor(res);
+    } finally {
+      const rel = releaseWorkerSlot(slot);
+      if (!rel.ok) ctx.log(`worker slot release failed: ${rel.reason}`);
+    }
   } catch (e) {
     // A child process's stderr is the whole diagnosis of a "Command failed"
     // (execFileSync puts only the command line in `message`); twice a run died

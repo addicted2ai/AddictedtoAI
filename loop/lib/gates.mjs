@@ -545,8 +545,23 @@ export const NODE_GATES = Object.freeze({
   }),
 });
 
-/** The per-job merge gate, in order: the export must exist before it is checked. */
-export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
+/**
+ * The per-job tripwire gate, in order: the export must exist before it is
+ * checked. Shrunk to two by Stage-1 task 32 (U1): a job's own gates prove
+ * its branch alone, and branch+base together is proved by the tripwire run
+ * of exactly these two over the provisionally merged tip (`train.mjs`
+ * `runTripwire`). The full six live on in `TRAIN_GATES` below.
+ */
+export const DEFAULT_GATES = Object.freeze(['build', 'verify-surfaces']);
+
+/**
+ * The full gate set, frozen, in Q-S15 order (Stage-1 task 32, U1). DATA
+ * only in U1: nothing runs this set yet — the `verify-launch`-reuses-the-
+ * train-build clause is task 36/U2 property and is NOT wired here. The one
+ * reuse U1 asserts is the tripwire's: `verify-surfaces` on the tripwire
+ * path reads the tripwire's own export, exactly one build per job.
+ */
+export const TRAIN_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design', 'verify-launch', 'verify-analytics']);
 
 function nodeRun(worktree, name, spec, timeoutMs, env, floors, spawn = spawnSync, now = defaultClock) {
   const args = [spec.file, ...spec.args()];

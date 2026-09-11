@@ -250,13 +250,13 @@ test('the review brief states which gates really ran on this branch, and on whic
 
   const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
   assert.match(brief, /## What the loop has already verified on this branch/);
-  assert.match(brief, /`npm run test` — \*\*PASS\*\*/);
+  // Stage-1 task 32 (U1): the per-job set is the tripwire two — `test` and
+  // `verify-design` no longer run here (the full six run on the train, U2).
   assert.match(brief, /`npm run build` — \*\*PASS\*\*/);
-  // The two content-shaped verifications the per-job set gained (beads
-  // addictedtoai-one6), named by the command that ran them rather than by an
+  // The content-shaped verification the per-job set kept (beads
+  // addictedtoai-one6), named by the command that ran it rather than by an
   // `npm run` that does not exist.
   assert.match(brief, /`node scripts\/verify-surfaces\.mjs out` — \*\*PASS\*\*/);
-  assert.match(brief, /`node scripts\/verify-design\.mjs out \d+` — \*\*PASS\*\*/);
   assert.match(brief, /on commit `[0-9a-f]{12}`/, 'which commit, not just "the branch"');
   assert.match(brief, /\*\*Do not re-run them\.\*\*/);
   assert.match(brief, /run\s+\*\*that\*\* check/);

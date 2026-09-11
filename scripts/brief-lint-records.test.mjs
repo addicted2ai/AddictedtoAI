@@ -129,7 +129,7 @@ const EXPECTED_ANCHOR_FOR_ID = {
   F3i: { anchor: '/\\bonce\\b/i', expect: 1 },
   F4e: { anchor: '/iteration|attempt/i', expect: 1 },
   F5b: { anchor: '\\bonce\\b', expect: 1 },
-  F6lines: { anchor: 'const onceBad = prose.filter', expect: 1 },
+  F6lines: { anchor: 'const onceBad = ownProse.filter', expect: 1 },
   G7hy: { anchor: '[^A-Za-z0-9_-]', expect: 2 },
   G8sent: { anchor: 'proseLines.filter((l) => /(^|', expect: 1 },
   H2i: { anchor: '/\\bsweep/i', expect: 1 },
@@ -258,11 +258,11 @@ const RECORDS = [
   },
   {
     id: 'F6lines',
-    anchor: 'const onceBad = prose.filter',
+    anchor: 'const onceBad = ownProse.filter',
     expect: 1,
     owner: 'orchestrator',
     expiry: '2026-10-10',
-    reason: "No wrap-split twin (`once` and qualifier on different physical lines). Wrapping is real; sentence model already fixed for this check. Keep.",
+    reason: "REWRITE, re-decided 2026-09-10 against the changed arm rather than the previous reason (Stage-1 U1 check-5 hatch: Authority-source blockquotes, verbatim task rows the architect forbids rewording, drop out before sentence-splitting, so the filter reads `ownProse`). The wrap fix the old reason names survives the move — both arrays share the one `toSentences` spelling, which is also why the Nsplit anchor still resolves exactly once. The remaining basis is the refusal itself: a bare `once` in author prose still refuses, bound by the arms (quoted-once green, author-once red). Keep on the new anchor.",
   },
   {
     id: 'G7hy',
