@@ -18,12 +18,13 @@
  */
 
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildLockDir } from '../../scripts/build-lock.mjs';
 import { addWorktree, branchExists, changedPathsWithStatus, gitTry, headSha, mergeLocal, removeWorktree } from './git.mjs';
 import { gatesHitEnvironmentalFailure, runGates, TRAIN_GATES } from './gates.mjs';
-import { joinableSubjects } from './review.mjs';
+import { joinableSubjects, makeReviewTrain, trainFindingsNamingMerges } from './review.mjs';
 import { appendLedger, makeLedgerLine, readLedger } from './ledger.mjs';
 import { localDate } from './dates.mjs';
 import { rederiveStep } from './rederive.mjs';
@@ -668,9 +669,11 @@ export function dirtyPaths(repo) {
 }
 
 /**
- * Default train review (production until U4 wires the assembly): FAIL
- * CLOSED. There is no honest approval without the 41–42 assembly, and an
- * honest refusal beats a borrowed one — merges wait, nothing publishes.
+ * The explicit fail-closed train review: FAIL CLOSED. Kept for tests and
+ * for any caller that must refuse review without running it — there is no
+ * honest approval without the 41–42 assembly, and an honest refusal beats a
+ * borrowed one. NOT the default: since U4 the default `review` is
+ * `reviewTrain` (the sealed two-invocation assembly in `review.mjs`).
  */
 export async function unreviewedTrain() {
   return { verdict: 'reject', reason: 'train review assembly lands in U4 (tasks 41-42); no train is approved without it' };
@@ -710,44 +713,130 @@ export function appendTrainLine(ctx, { id, runner, provider, tier, mm, gateSecon
  */
 async function finishTrainRun(ctx, {
   repo, trainId, manifest, gates, review = unreviewedTrain, now = Date.now,
-  gateSeconds = {}, evictions = [], reviewRounds = 1, mmPrior = 0,
+  gateSeconds = {}, evictions = [], reviewRounds = 0, mmPrior = 0,
 }) {
   const fn = gateRunner(gates);
   // 4. Review over the whole diff INCLUDING rederived data (uncommitted
-  // rederive output rides along). Fail closed on anything but approve.
-  const base = manifest.mainTip;
-  const tip = headSha(repo);
-  const committed = gitTry(repo, ['diff', '--name-only', `${base}...${tip}`]);
-  // Uncommitted rederive output is UNTRACKED, which `git diff` never
-  // lists — read the status instead, so regenerated data provably rides
-  // the reviewed diff (mutation B fails here when it does not).
-  const uncommitted = dirtyPaths(repo);
-  const diffNames = [...new Set([
-    ...String(committed.stdout ?? '').split('\n'),
-    ...uncommitted,
-  ].map((l) => String(l).trim()).filter(Boolean))].sort();
-  const diffText = `--- reviewed diff for train ${trainId} ---\nfiles:\n${diffNames.join('\n')}\n`;
-  const reviewStart = now();
+  // rederive output rides along), then eviction-on-finding (row 43): a
+  // non-approving review evicts the merges its findings name and re-runs
+  // the FULL TRAIN_GATES set AND the review; a finding naming no merge
+  // rejects the whole train; two consecutive non-approvals over unchanged
+  // merges reject the whole train. Every round is recorded on the manifest
+  // (`review_rounds`, committed) BEFORE its verdict is acted on, so a
+  // restart re-reads the streak instead of resetting it. Each
+  // findings-carrying non-approval evicts at least one merge, so the loop
+  // is bounded by the merge count; `maxRounds` is the tripwire, not the
+  // bound. A non-approval carrying NO findings keeps the pre-U4 refusal
+  // (no ledger line — there is nothing to evict and nothing unnamed).
+  let roundsRun = 0;
+  let mm = mmPrior;
+  let reviewer = { runner: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
   let vr = null;
-  try {
-    vr = await review({ diffText, manifest, repo });
-  } catch (e) {
-    return { ok: false, reason: `train review threw (${e.message ?? String(e)}); merge stands, nothing publishes` };
+  const maxRounds = ((manifest && manifest.merges) || []).length + 2;
+  for (;;) {
+    roundsRun += 1;
+    if (roundsRun > maxRounds) {
+      return rejectTrain(ctx, {
+        repo, trainId, manifest, gateSeconds, evictions, mm,
+        reviewRounds: reviewRounds + roundsRun - 1, reviewer,
+        reason: `train review ran ${roundsRun - 1} rounds without reaching a verdict the loop can act on — rejecting rather than looping`,
+      });
+    }
+    const tree = trainReviewedTree(repo);
+    if (tree == null) {
+      return { ok: false, reason: 'cannot hash the reviewed tree — fail closed: no fast-forward, no publish', reviewer };
+    }
+    const base = manifest.mainTip;
+    const tip = headSha(repo);
+    const committed = gitTry(repo, ['diff', '--name-only', `${base}...${tip}`]);
+    // Uncommitted rederive output is UNTRACKED, which `git diff` never
+    // lists — read the status instead, so regenerated data provably rides
+    // the reviewed diff (mutation B fails here when it does not).
+    const uncommitted = dirtyPaths(repo);
+    const diffNames = [...new Set([
+      ...String(committed.stdout ?? '').split('\n'),
+      ...uncommitted,
+    ].map((l) => String(l).trim()).filter(Boolean))].sort();
+    const diffText = `--- reviewed diff for train ${trainId} ---\nfiles:\n${diffNames.join('\n')}\n`;
+    const reviewStart = now();
+    try {
+      vr = await review({ diffText, manifest, repo });
+    } catch (e) {
+      return { ok: false, reason: `train review threw (${e.message ?? String(e)}); merge stands, nothing publishes` };
+    }
+    const roundMm = Math.round((((now() - reviewStart) / 60000) + Number.EPSILON) * 100) / 100;
+    mm = Math.round(((mm + roundMm) + Number.EPSILON) * 100) / 100;
+    reviewer = { runner: vr?.runner ?? 'unwired-reviewer', provider: vr?.provider ?? 'unwired-provider', tier: vr?.tier ?? 'unwired-tier' };
+    if (!vr || !['approve', 'revise', 'reject'].includes(vr.verdict)) {
+      return { ok: false, reason: 'train review record absent or malformed — fail closed: no fast-forward, no publish', reviewer };
+    }
+    const rec = recordTrainReviewRound(repo, manifest, { verdict: vr.verdict, tree });
+    if (!rec.ok) {
+      return { ok: false, reason: `${rec.reason} — fail closed: no fast-forward, no publish`, reviewer };
+    }
+    if (vr.verdict === 'approve') break;
+    const findings = Array.isArray(vr.findings) ? vr.findings : [];
+    if (!findings.length) {
+      return { ok: false, reason: `train review did not approve (${vr.verdict}): ${vr.reason || 'no reason given'}`, reviewer };
+    }
+    const { named, unnamed } = trainFindingsNamingMerges(findings, manifest);
+    if (unnamed.length) {
+      const sample = unnamed.slice(0, 2).map((f) => JSON.stringify(String(f.text).slice(0, 120))).join('; ');
+      return rejectTrain(ctx, {
+        repo, trainId, manifest, gateSeconds, evictions, mm,
+        reviewRounds: reviewRounds + roundsRun, reviewer,
+        reason: `train review finding names no train merge (${unnamed.length} of ${findings.length}): ${sample}`,
+      });
+    }
+    const admitted = pendingMerges(repo).map((p) => p.sha);
+    if (consecutiveUnchangedNonApprovals(manifest, admitted) >= 2) {
+      return rejectTrain(ctx, {
+        repo, trainId, manifest, gateSeconds, evictions, mm,
+        reviewRounds: reviewRounds + roundsRun, reviewer,
+        reason: `two consecutive non-approving train reviews over unchanged merges (${named.map((s) => String(s).slice(0, 8)).join(', ')}) — rejecting the whole train`,
+      });
+    }
+    const ev = evictReviewNamed({ repo, trainId, manifest, shas: named });
+    evictions = [...evictions, ...ev.evictions];
+    const shorts = named.map((s) => String(s).slice(0, 8)).join(', ');
+    if (!ev.ok) {
+      return rejectTrain(ctx, {
+        repo, trainId, manifest, gateSeconds, evictions, mm,
+        reviewRounds: reviewRounds + roundsRun, reviewer,
+        reason: `train review named ${shorts} but the eviction failed (${ev.reason}) — standing evictions stand, the rest waits on train, nothing publishes`,
+      });
+    }
+    let full = null;
+    try {
+      const t0 = now();
+      full = fn(ctx, repo, { scripts: [...TRAIN_GATES] });
+      gateSeconds = { ...gateSeconds, after_review_eviction: Math.round(((now() - t0) / 1000) * 100) / 100 };
+    } catch (e) {
+      return rejectTrain(ctx, {
+        repo, trainId, manifest, gateSeconds, evictions, mm,
+        reviewRounds: reviewRounds + roundsRun, reviewer,
+        reason: `post-review-eviction full gates threw (${e.message ?? String(e)})`,
+      });
+    }
+    if (!full || !full.ok) {
+      const tail = full && full.output ? String(full.output).split(/\r?\n/).filter(Boolean).slice(-3).join(' | ') : 'no gate result';
+      return rejectTrain(ctx, {
+        repo, trainId, manifest, gateSeconds, evictions, mm,
+        reviewRounds: reviewRounds + roundsRun, reviewer,
+        reason: `still red after evicting ${shorts}: ${tail}`,
+      });
+    }
+    // Green after eviction: re-review the evicted tree. The round just
+    // recorded carries the new tree, so an unchanged second non-approval is
+    // counted, not looped.
   }
-  const roundMm = Math.round((((now() - reviewStart) / 60000) + Number.EPSILON) * 100) / 100;
-  const mm = Math.round(((mmPrior + roundMm) + Number.EPSILON) * 100) / 100;
-  if (!vr || !['approve', 'revise', 'reject'].includes(vr.verdict)) {
-    return { ok: false, reason: 'train review record absent or malformed — fail closed: no fast-forward, no publish', reviewer: { runner: vr?.runner ?? 'unwired-reviewer', provider: vr?.provider ?? 'unwired-provider', tier: vr?.tier ?? 'unwired-tier' } };
-  }
-  if (vr.verdict !== 'approve') {
-    return { ok: false, reason: `train review did not approve (${vr.verdict}): ${vr.reason || 'no reason given'}`, reviewer: { runner: vr.runner ?? 'unwired-reviewer', provider: vr.provider ?? 'unwired-provider', tier: vr.tier ?? 'unwired-tier' } };
-  }
-  const reviewer = { runner: vr.runner ?? 'unwired-reviewer', provider: vr.provider ?? 'unwired-provider', tier: vr.tier ?? 'unwired-tier' };
   // 5. Train's own line at the records commit, after the rederive (row
   // 36): review model-minutes summed over every review actually run, gate
   // seconds, the row-36 shape. U3 fills the landed fields: the eviction
   // entries (if any), the hold flag (false past this point — a held train
-  // never reaches a review), the rounds run.
+  // never reaches a review). The line's `review_rounds` is the COUNT of
+  // reviews run in this finish (plus any prior the caller credits); the
+  // manifest's `review_rounds` pair-list beside it is the history (OQ1).
   const trainLine = appendTrainLine(ctx, {
     id: trainId,
     runner: reviewer.runner,
@@ -762,7 +851,7 @@ async function finishTrainRun(ctx, {
       evictions,
       pre_existing_hold: false,
       findings_not_in_any_record: vr.findingsNotInAnyRecord ?? 0,
-      review_rounds: reviewRounds,
+      review_rounds: reviewRounds + roundsRun,
     },
   });
   void trainLine;
@@ -979,7 +1068,14 @@ export function preExistingHold(ctx) {
 function writeManifest(repo, manifest) {
   try {
     mkdirSync(join(repo, '.train'), { recursive: true });
-    writeFileSync(join(repo, MANIFEST_PATH), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+    // `assemblyTip` is an in-memory pin, deliberately never committed (row
+    // 35): it equals the manifest commit's own sha, so writing it back
+    // would both dirty the committed shape and chase its own tail. Every
+    // rewrite goes through here, so every manifest commit carries exactly
+    // the declared keys.
+    const { assemblyTip: _dropped, ...committed } = manifest;
+    void _dropped;
+    writeFileSync(join(repo, MANIFEST_PATH), `${JSON.stringify(committed, null, 2)}\n`, 'utf8');
     return { ok: true };
   } catch (e) {
     return { ok: false, reason: e.message ?? String(e) };
@@ -1013,6 +1109,112 @@ function commitAllowListed(repo, message) {
     return { ok: false, reason: `commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
   }
   return { ok: true };
+}
+
+/**
+ * The reviewed tree (row 43, Q-S7): what the train review judged, as a hash.
+ *
+ * Computed over `git ls-tree -r HEAD` MINUS `.train/manifest.json`, then
+ * SHA-256. The exclusion is the point, not a shortcut: the review rounds
+ * themselves are committed to the manifest (restart-proofing, below), and a
+ * full-tree hash would move under that bookkeeping commit — every second
+ * consecutive review would then read as "changed content" and the
+ * two-consecutive-non-approvals rule could never fire. Content the review
+ * judged (merges, reverts, rederived data) moves this hash; the manifest's
+ * own bookkeeping never does. Stated here because the row's letter
+ * (`rev-parse <tip>^{tree}`) would count the bookkeeping as content.
+ *
+ * Returns null when git cannot list the tree — the caller fails closed.
+ */
+export function trainReviewedTree(repo) {
+  const r = gitTry(repo, ['ls-tree', '-r', '--full-tree', 'HEAD']);
+  if (!r.ok) return null;
+  const lines = String(r.stdout ?? '')
+    .split('\n')
+    .filter((l) => l.trim() && !l.endsWith('\t.train/manifest.json'));
+  return createHash('sha256').update(lines.join('\n'), 'utf8').digest('hex');
+}
+
+/**
+ * Record one train review round on the manifest: append
+ * `{verdict, tree}` to `review_rounds` (row 43 — the manifest's ONLY
+ * row-declared addition; E-closure holds) and recommit the manifest at once
+ * (`train <id>: review round <n> (<verdict>)`), so a restart mid-train
+ * re-reads the count from the committed file instead of memory. The train
+ * LINE keeps the count (row-36 shape, frozen — OQ1): the pair-list is the
+ * history, the line is the number.
+ */
+export function recordTrainReviewRound(repo, manifest, { verdict, tree }) {
+  manifest.review_rounds = [...(manifest.review_rounds || []), { verdict, tree }];
+  const w = writeManifest(repo, manifest);
+  if (!w.ok) {
+    return { ok: false, reason: `review round (${verdict}) computed but the manifest rewrite failed (${w.reason})` };
+  }
+  const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
+  if (!add.ok) {
+    return { ok: false, reason: `review round (${verdict}) staged nowhere (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'})` };
+  }
+  const n = manifest.review_rounds.length;
+  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${manifest.train}: review round ${n} (${verdict})`]);
+  if (!cm.ok) {
+    return { ok: false, reason: `review round commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'})` };
+  }
+  return { ok: true, rounds: manifest.review_rounds };
+}
+
+/** Order-insensitive sha-set equality for the unchanged rule's merge half. */
+export function sameMergeSet(a, b) {
+  const sa = [...(a ?? [])].map(String).sort().join('\0');
+  const sb = [...(b ?? [])].map(String).sort().join('\0');
+  return sa === sb;
+}
+
+/**
+ * Trailing consecutive non-approvals over UNCHANGED content (row 43): the
+ * newest round back while every round is non-approving AND carries the
+ * newest round's tree. Zero when the merge set moved (a new merge was
+ * admitted mid-train) — the second review is then not "of the same
+ * content". An eviction or a tree-changing main-merge moves the tree (both
+ * are content commits), so the streak resets through the tree half with no
+ * special-casing; the manifest's own round commits never move it (see
+ * `trainReviewedTree`).
+ */
+export function consecutiveUnchangedNonApprovals(manifest, mergeShas) {
+  const manifestShas = ((manifest && manifest.merges) || []).map((m) => String(m.sha));
+  if (!sameMergeSet(manifestShas, mergeShas ?? manifestShas)) return 0;
+  const rounds = (manifest && manifest.review_rounds) || [];
+  if (!rounds.length) return 0;
+  const tree = rounds[rounds.length - 1].tree;
+  let n = 0;
+  for (let i = rounds.length - 1; i >= 0; i -= 1) {
+    if (rounds[i].verdict === 'approve' || rounds[i].tree !== tree) break;
+    n += 1;
+  }
+  return n;
+}
+
+/**
+ * Evict the merges a train review's findings named (row 43): one shared
+ * `evictMerge` per sha (the single revert owner — no second vocabulary),
+ * each marked `evicted-at-train` with reason `review`. Shas arrive in
+ * manifest (oldest-first) order from `trainFindingsNamingMerges`. The first
+ * failure stops the sequence; earlier evictions STAND (history is
+ * append-only) and ride the returned list into the whole-train rejection.
+ */
+export function evictReviewNamed({ repo, trainId, manifest, shas }) {
+  const evictions = [];
+  for (const sha of shas ?? []) {
+    const short = String(sha).slice(0, 8);
+    const ev = evictMerge({
+      repo, trainId, manifest, clearer: { sha },
+      reason: `evicted-at-train: removing ${short} at train review (reason review)`,
+    });
+    if (!ev.ok) {
+      return { ok: false, evictions, reason: ev.reason };
+    }
+    evictions.push(ev.eviction);
+  }
+  return { ok: true, evictions };
 }
 
 /**
@@ -1126,8 +1328,14 @@ export function rejectTrain(ctx, { repo, trainId, manifest, gateSeconds = {}, ev
  * recommitted here, mid-train). The ledger entry rides the train's line,
  * which is written later; the manifest mark lands now, in its own commit,
  * so a post-mortem never finds a revert without its mark.
+ *
+ * The `reason` is the caller's vocabulary on the shared marks: the
+ * leave-one-out path names the gate the removal cleared, the
+ * review-findings path names the train review (row 43, reason `review`).
+ * Same revert, same marks, same manifest rewrite — one vocabulary, two
+ * triggers; `revertMerge` is called from nowhere else.
  */
-function evictMerge({ repo, trainId, manifest, clearer, failingGate }) {
+function evictMerge({ repo, trainId, manifest, clearer, reason }) {
   const short = String(clearer.sha).slice(0, 8);
   const rv = revertMerge(repo, clearer.sha);
   if (!rv.ok) {
@@ -1136,7 +1344,7 @@ function evictMerge({ repo, trainId, manifest, clearer, failingGate }) {
   }
   const eviction = {
     merge: clearer.sha,
-    reason: `evicted-at-train: removing ${short} cleared ${failingGate}`,
+    reason,
     wrongly: null,
   };
   manifest.evictions = [...(manifest.evictions || []), eviction];
@@ -1148,7 +1356,7 @@ function evictMerge({ repo, trainId, manifest, clearer, failingGate }) {
   if (!add.ok) {
     return { ok: false, reason: `evicted ${short} but the eviction commit could not be staged (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}) — the revert stands` };
   }
-  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: evict ${short} (cleared ${failingGate})`]);
+  const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: evict ${short}`]);
   if (!cm.ok) {
     return { ok: false, reason: `evicted ${short} but the eviction commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}) — the revert stands, the mark uncommitted` };
   }
@@ -1339,7 +1547,7 @@ async function runRedPath(ctx, {
   }
   // 3. Evict the clearer, then the FULL TRAIN_GATES set AND the review —
   // a subset of a reviewed diff is neither reviewed nor gated.
-  const ev = evictMerge({ repo, trainId, manifest, clearer: search.clearer, failingGate });
+  const ev = evictMerge({ repo, trainId, manifest, clearer: search.clearer, reason: `evicted-at-train: removing ${String(search.clearer.sha).slice(0, 8)} cleared ${failingGate}` });
   if (!ev.ok) {
     return rejectTrain(ctx, { repo, trainId, manifest, gateSeconds, evictions: [], reason: ev.reason });
   }
@@ -1363,9 +1571,10 @@ async function runRedPath(ctx, {
   // 4. The evicted train re-enters the shared finish: re-review, line,
   // records, re-gate. A non-approval or a later red here is still red
   // after eviction → whole-train rejection with the eviction standing,
-  // recorded, and audited.
+  // recorded, and audited. The finish counts its own review rounds; the
+  // gate-eviction path credits none prior.
   const done = await finishTrainRun(ctx, {
-    repo, trainId, manifest, gates: fn, review, now, gateSeconds, evictions, reviewRounds: 1,
+    repo, trainId, manifest, gates: fn, review, now, gateSeconds, evictions,
   });
   if (!done.ok) {
     const short = String(search.clearer.sha).slice(0, 8);
@@ -1404,7 +1613,7 @@ async function runRedPath(ctx, {
  * names its step.
  */
 export async function runTrain(ctx, {
-  repo, trainId, manifest, gates, rederive = trainRederive, review = unreviewedTrain, now = Date.now,
+  repo, trainId, manifest, gates, rederive = trainRederive, review = makeReviewTrain(ctx), now = Date.now,
 }) {
   const fn = gateRunner(gates);
   // 1. Manifest FIRST, before any gate runs (row 35): the reviewed tree
@@ -1506,6 +1715,10 @@ export function assembleTrain(repo, { trainId, bounds, mainRef = 'main', now = D
     // The manifest's eviction section (row-36-declared, filled by U3):
     // empty on the happy path, one entry per eviction thereafter.
     evictions: [],
+    // The review-round history (row-43-declared, filled by U4): one
+    // `{verdict, tree}` pair per train review actually run, committed with
+    // the manifest. The train LINE keeps the count (row-36 shape, frozen).
+    review_rounds: [],
     measuredPaths: unionSubjects([countedPaths(admitted.flatMap((x) => mergeDiffNames(repo, x.sha)))]),
     bounds: { maxReviewedBytes: bounds.maxReviewedBytes, maxSubjects: bounds.maxSubjects },
     remainder: remainder.map((x) => String(x.sha).slice(0, 8)),
