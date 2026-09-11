@@ -399,12 +399,12 @@ else {
 // HATCH (Stage-1 U1, reason beside it): lines inside a blockquote (`> ...`)
 // within the "Authority source" section are task rows quoted VERBATIM — the
 // architect forbids rewording the authority, so a "once" there is the ROW's
-// word, never the author's. The skip is narrow by construction: quoted lines
-// only, inside that one section. A bare "once" in author prose still fires
-// (arm below), and so does a bare "once" quoted anywhere else. Skipped lines
-// drop out before sentence-splitting; a sentence broken across the drop
-// rejoins at the boundary, and a rejoined bare "once" still fires — the skip
-// hides nothing the author wrote.
+// word, never the author's. The skip is narrow: quoted lines only, inside
+// that one section — plus the `## ` markers, never sentences (so a "once" in
+// any other heading is unchecked too). Author prose still fires (arm below),
+// as does a "once" quoted anywhere else. Skipped lines drop out before
+// sentence-splitting; a sentence broken across the drop rejoins, and a
+// rejoined bare "once" still fires — the skip hides nothing the author wrote.
 let inAuthority = false;
 const ownLines = [];
 for (const l of proseLines) {

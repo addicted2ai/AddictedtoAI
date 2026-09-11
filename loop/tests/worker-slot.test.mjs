@@ -41,6 +41,8 @@
  *           `acquireMergeLock` — a mutant that never reclaims refuses here).
  *   arm 7 — merge-lock release is best-effort: releasing an absent lock
  *           still reports ok.
+ *   arm 8 — the stale-sweep has a red arm: a planted `worker-1.stale-*`
+ *           directory is gone after a take (the sweep runs on every win).
  */
 
 import test from 'node:test';
@@ -224,6 +226,19 @@ test('arm 7 — merge-lock: releasing an absent lock still reports ok (best-effo
   const { dir, cleanup } = slotRoot();
   try {
     assert.equal(releaseMergeLock({ dir: join(dir, 'merge.lock') }).ok, true);
+  } finally {
+    cleanup();
+  }
+});
+
+test('arm 8 — a take sweeps a stale-aside directory left by a dead reclaimer', () => {
+  const { dir, cleanup } = slotRoot();
+  try {
+    mkdirSync(join(dir, 'worker-1.stale-12345-99999'), { recursive: true });
+    const r = acquireWorkerSlot({ workers: 1, dir });
+    assert.equal(r.ok, true);
+    assert.equal(existsSync(join(dir, 'worker-1.stale-12345-99999')), false, 'the sweep removes the litter on the winning take');
+    releaseWorkerSlot(r);
   } finally {
     cleanup();
   }

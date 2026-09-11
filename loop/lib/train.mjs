@@ -99,7 +99,9 @@ export function discardProvisional(worktree, tip) {
  * reason}` — an ordinary gate failure, nothing landed anywhere (ruling a).
  * When the gates could not RUN (spawn/environmental failure, or the hook
  * threw): `{ok:false, environmental:true}` — togetherness is unverified and
- * an unverified merge must not land; the caller books `interrupted`.
+ * an unverified merge must not land; the caller books `interrupted`. Green
+ * gates with a failed provisional cleanup report the same shape: togetherness
+ * was verified but the tree may be dirty, so the merge must not land either.
  */
 export function runTripwire(ctx, { worktree, baseRef, gates }) {
   const pm = provisionalMerge(worktree, baseRef);
@@ -130,7 +132,10 @@ export function runTripwire(ctx, { worktree, baseRef, gates }) {
     };
   }
   if (!cleanup.ok) {
-    return { ok: false, baseTip: pm.baseTip, reason: `tripwire green but provisional cleanup failed: ${cleanup.reason}` };
+    // Green gates with a failed cleanup: togetherness WAS verified, but the
+    // tree may be dirty — a machine condition, not an ordinary failure. The
+    // merge must not land; the caller books `interrupted`.
+    return { ok: false, baseTip: pm.baseTip, environmental: true, reason: `tripwire green but provisional cleanup failed: ${cleanup.reason}` };
   }
   return { ok: true, baseTip: pm.baseTip };
 }

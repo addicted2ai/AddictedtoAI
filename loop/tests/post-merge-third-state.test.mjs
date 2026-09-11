@@ -63,6 +63,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runLoop } from '../run.mjs';
+import { acquireMergeLock, releaseMergeLock } from '../lib/train.mjs';
 import { makeRepo, runnersYaml, mockCommand, writeQueue, DEFAULT_CONFIG } from './helpers.mjs';
 
 const REPO = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
@@ -99,14 +100,14 @@ function sharedStepClosure(entry = 'pulse/lib/publish.mjs') {
 }
 
 /** A repository that merges, with publishing ENABLED, the real shared step, and a bare origin. */
-async function repo(t) {
+async function repo(t, extraConfig = {}) {
   const files = {};
   for (const rel of sharedStepClosure()) files[rel] = readFileSync(join(REPO, rel), 'utf8');
 
   const ctx = makeRepo({
     // SPREAD, never replace: `makeRepo` does `o.config ?? DEFAULT_CONFIG`, so a
     // bare `{ publish: true }` drops job_caps_minutes and every other key.
-    config: { ...DEFAULT_CONFIG, publish: true },
+    config: { ...DEFAULT_CONFIG, publish: true, ...extraConfig },
     files,
     runners: runnersYaml({
       command: mockCommand('done-edit'),
@@ -278,4 +279,30 @@ test('tip moved and rebuild environmental: the merge stands UNVERIFIED — no ho
   assert.match(ctx.output(), /UNVERIFIED/, 'the log says the merge stands unverified');
   assert.equal(ctx.remoteHead(), null, 'an unverified merge must publish nothing');
   ctx.cleanup();
+});
+
+test('merge lock held by a live run: expiry books interrupted, never failed', { timeout: 120000 }, async (t) => {
+  // The machine refused the merge, not the work: a live-held lock with a
+  // zero wait refuses environmentally, and the run books `interrupted`
+  // (resumable, never a breaker input) — the ml25 lesson applied to the
+  // merge path. The pre-hold uses the real lock dir (the merge path takes
+  // no hermetic override by row-33 design); the zero wait bounds the test
+  // even if the config key ever stops flowing (then this fails fast on the
+  // outcome, not on a 20-minute hang — the wait would be the hang).
+  const ctx = await repo(t, { train: { lock_wait_seconds: 0 } });
+  const held = await acquireMergeLock({ waitMs: 0 });
+  assert.equal(held.ok, true, 'the fixture pre-holds the real merge lock');
+  try {
+    const gates = routingGates();
+    const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+    assert.equal(res.outcome, 'interrupted', `a machine-refused merge is resumable:\n${ctx.output()}`);
+    assert.match(ctx.output(), /merge refused: merge lock held/, 'the log names the refusal');
+    const merges = git(ctx.repoRoot, ['log', '--merges', '--oneline', 'main']);
+    assert.equal(merges, '', `the refused branch must not be merged; main carries merges:\n${merges}`);
+    assert.equal(ctx.remoteHead(), null, 'a refused merge must publish nothing');
+    assert.equal(existsSync(ctx.holdPath), false, 'no breaker input, no hold');
+  } finally {
+    releaseMergeLock(held);
+    ctx.cleanup();
+  }
 });

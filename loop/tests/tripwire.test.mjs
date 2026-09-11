@@ -24,6 +24,10 @@
  *   arm 5 — the post-merge build block is absent by symbol
  *           (`postMergeGateOptions` nowhere in `run.mjs`) while the single
  *           rederive (`await rederiveStep(ctx)`) stands.
+ *   arm 6 — green gates with a broken cleanup book environmental, not
+ *           ordinary: the gates stub deletes the worktree's gitfile after
+ *           the green run, so `discardProvisional` fails and togetherness —
+ *           verified green — must refuse the merge as `interrupted`.
  */
 
 import test from 'node:test';
@@ -238,4 +242,31 @@ test('arm 5 — post-merge block absent by symbol, single rederive stands', () =
   // archaeology, but no code may construct it.
   assert.equal(src.includes('postMergeGateOptions ='), false, 'the symbol-anchored post-merge build block is gone');
   assert.match(src, /await rederiveStep\(ctx\)/, 'the single rederive stands');
+});
+
+test('arm 6 — green gates with a failed cleanup book environmental', () => {
+  const { root, repo, cleanup } = tripwireRepo();
+  try {
+    plantBranch(repo, 'job/a', { 'wo-a.txt': 'a\n' });
+    const wt = checkoutBranch(repo, root, 'job/a');
+    try {
+      // The stub reports green, then destroys the worktree's gitfile (a
+      // linked worktree carries `.git` as a pointer file): the provisional
+      // cleanup's `git reset --hard` cannot run. Togetherness was verified
+      // green, so the refusal is a machine condition — environmental.
+      const gates = (ctx, dir, options) => {
+        rmSync(join(wt, '.git'), { force: true });
+        return { ok: true, results: [], output: '' };
+      };
+      const r = runTripwire(CTX(repo), { worktree: wt, baseRef: 'main', gates });
+      assert.equal(r.ok, false, 'a dirty tree must refuse the merge');
+      assert.equal(r.environmental, true, 'green-but-uncleaned books interrupted, never a breaker input');
+    } finally {
+      // `git worktree remove` may fail with the gitfile gone; the outer
+      // cleanup removes the whole fixture universe regardless.
+      try { removeWorktree(repo, wt); } catch { /* fixture cleanup below */ }
+    }
+  } finally {
+    cleanup();
+  }
 });

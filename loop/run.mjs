@@ -1790,9 +1790,12 @@ export async function runLoop(ctx, opts = {}) {
     if (!merged.ok) {
       if (!merged.quiet) ctx.log(`merge failed: ${merged.reason}`);
       // A tripwire booking survives: `interrupted` is resumable, `failed`
-      // is counted. Anything else that refused the merge is an ordinary
-      // failure.
+      // is counted. A merge the machine refused (merge-lock expiry) is
+      // environmental like any gate refusal — `interrupted`, never a breaker
+      // input — unless the run already failed, which stands. Anything else
+      // that refused the merge is an ordinary failure.
       if (merged.blocked) outcome = merged.blocked;
+      else if (merged.environmental && outcome !== 'failed') outcome = 'interrupted';
       else if (outcome !== 'interrupted') outcome = 'failed';
     } else {
       mergedSha = merged.sha;
