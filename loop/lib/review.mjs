@@ -30,7 +30,8 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
+import matter from 'gray-matter';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { RESULT_FILENAME } from './result.mjs';
@@ -39,6 +40,8 @@ import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
 import { GROUND_RULES, polaritySection, subjectLines } from './brief.mjs';
+import { readLedger } from './ledger.mjs';
+import { loadRunners } from './runners.mjs';
 import { corroborationSection } from './lineage.mjs';
 import { gateCommand, gateCommandForName } from './gates.mjs';
 import {
@@ -1434,4 +1437,761 @@ export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCit
 export function reviewRecordCount(ctx) {
   if (!existsSync(ctx.reviewsDir)) return 0;
   return readdirSync(ctx.reviewsDir).filter((f) => f.endsWith('.md') && f !== 'README.md').length;
+}
+
+// ---------------------------------------------------------------------------
+// Train review seal (Stage-1 U4, rows 41-42).
+//
+// The train review is sealed from the per-job verdicts and reports what they
+// missed. Two executor invocations, each in its own disposable worktree:
+//   1. `runTrainReview` — the reviewer reads the whole train diff, the
+//      committed manifest and the kind checklists, in a tree from which the
+//      train's merges' per-job verdict records have been REMOVED, and writes
+//      the train verdict record (ordinary protocol, gated by
+//      `trainReviewGate` — the same refusals as `mergeGate`, by delegation
+//      rather than by a second implementation).
+//   2. `runTrainComparison` — a SEPARATE invocation with its own (unredacted)
+//      tree compares the train verdict's findings against the per-job
+//      records' text and reports the findings present in none of them; the
+//      count lands on the train line as `findings_not_in_any_record`.
+// `reviewTrain` composes both into the `review({diffText, manifest, repo})`
+// seam `train.mjs` runs. Anything absent, empty or malformed fails closed.
+// ---------------------------------------------------------------------------
+
+/**
+ * Where the train verdict record lives: the ORDINARY per-job path for the
+ * train id (`<trainId>.md`), deliberately NOT a second path scheme.
+ *
+ * `trainReviewGate` below delegates to `mergeGate`, which reads exactly this
+ * path — one gate, one parser, no fork. There is no collision with the
+ * redaction: train ids (`t-<sha8>`) and job ids (`j-<date>-<seq>`) are
+ * disjoint namespaces, and the redaction removes only the manifest's merge
+ * job ids, never the train id itself.
+ */
+export function trainVerdictPath(ctx, trainId) {
+  return verdictPath(ctx, trainId, 1);
+}
+
+/** Where the comparison invocation writes its `missing:` report. */
+export function trainComparisonPath(ctx, trainId) {
+  return join(ctx.reviewsDir, `${trainId}.train-compare.md`);
+}
+
+/**
+ * Remove the train's merges' per-job verdict records from a review worktree.
+ *
+ * Runs AFTER the checkout (the records are committed files, so they arrive
+ * with it) and removes `<jobId>.md` plus any `<jobId>.pass<N>.md` delta
+ * records, for every merge job id in the manifest. The train's own record
+ * is never among them (disjoint id namespaces — see `trainVerdictPath`).
+ *
+ * Returns `{removed, missing}` — names, so the caller proves the removal
+ * rather than asserting the intent. A job with no record on the tree is
+ * reported missing, not failed: the seal holds either way.
+ */
+export function redactTrainRecords(worktreeReviewsDir, jobIds) {
+  let files = [];
+  try {
+    files = readdirSync(worktreeReviewsDir);
+  } catch {
+    files = [];
+  }
+  const removed = [];
+  const missing = [];
+  for (const id of jobIds ?? []) {
+    const hits = files.filter((f) => f === `${id}.md` || (f.startsWith(`${id}.pass`) && f.endsWith('.md')));
+    if (!hits.length) {
+      missing.push(id);
+      continue;
+    }
+    for (const h of hits) {
+      try {
+        rmSync(join(worktreeReviewsDir, h));
+      } catch {
+        // A file that cannot be removed is reported by its absence from
+        // `removed`, which the caller reads as a failed seal.
+        continue;
+      }
+      removed.push(h);
+    }
+  }
+  return { removed, missing };
+}
+
+/**
+ * The job types the train's merges were authored as, read off the ledger
+ * through the manifest's job ids. The manifest carries no types (E-closure:
+ * it gains ONLY the row-43 `review_rounds` pair-list), so the ledger join is
+ * the only honest source — the same types the per-job reviews were held to.
+ *
+ * Unknown (no ledger line for a merge job id, unreadable ledger) fails
+ * closed: without a kind there is no checklist, and `checklistFor` refuses
+ * to invent one.
+ */
+export function trainKinds(ctx, manifest) {
+  let lines;
+  try {
+    lines = readLedger(ctx);
+  } catch (e) {
+    return { ok: false, reason: `cannot read the ledger to kind the train's merges (${e.message ?? String(e)}) — no checklist without a kind` };
+  }
+  const byId = new Map((lines ?? []).map((l) => [l && l.id, l && l.type]));
+  const kinds = [];
+  for (const m of (manifest && manifest.merges) || []) {
+    const t = byId.get(m && m.jobId);
+    if (!t) {
+      return { ok: false, reason: `no ledger line for merge job ${JSON.stringify(m && m.jobId)} — cannot choose its checklist, so the train brief is refused` };
+    }
+    if (!kinds.includes(t)) kinds.push(t);
+  }
+  return { ok: true, kinds };
+}
+
+/**
+ * Whichever registry entry carries the `reviewer` role at `effort: max`
+ * (row 43, Q-S6). The train reads the rung and names no model: the entry's
+ * own command is the invocation, so no model, provider or harness literal
+ * appears anywhere on this code path.
+ *
+ * Takes the parsed runners list (registry-owned values only), so tests pin
+ * the policy without touching the reserved `runners.yml`. Zero or several
+ * matches FAIL CLOSED — never a fallback to a named model.
+ */
+export function trainReviewerRung(runners) {
+  const atMax = (runners ?? []).filter(
+    (r) => r && r.enabled !== false && Array.isArray(r.roles) && r.roles.includes('reviewer') && r.effort === 'max',
+  );
+  if (atMax.length === 0) {
+    return { ok: false, reason: 'no registry entry carries the reviewer role at effort max — the train review names no fallback model, so it is refused' };
+  }
+  if (atMax.length > 1) {
+    return { ok: false, reason: `ambiguous reviewer rung at effort max (${atMax.map((r) => r.id).join(', ')}) — the train review names no model to break the tie, so it is refused` };
+  }
+  return { ok: true, rung: atMax[0] };
+}
+
+/**
+ * Assemble the TRAIN reviewer's brief (row 41): the whole train diff, the
+ * committed manifest (merge shas, job ids, subjects), the checklists of
+ * every kind the train touches (via the same `checklistFor` the sibling
+ * assembly reads — an unknown kind throws, failing the assembly closed),
+ * the reviewer rung read from the registry — and NO per-job verdict record.
+ * The seal is by construction: this function never receives the records, so
+ * no interpolation can leak them; the test proves the property on the text.
+ */
+export function assembleTrainReviewBrief(
+  ctx,
+  { trainId, diffText, manifest, kinds, rung, outPath, capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null },
+) {
+  void ctx;
+  const uniqKinds = [...new Set(kinds ?? [])];
+  if (!uniqKinds.length) {
+    throw new Error('review: no kinds for the train brief — without a kind there is no checklist, so the brief is refused rather than assembled against the wrong list.');
+  }
+  const checklistBlocks = uniqKinds
+    .map((k) => `### ${k}\n\n${checklistFor(k).map((c) => `- ${c}`).join('\n')}`)
+    .join('\n\n');
+  const subjects = [...new Set(((manifest && manifest.merges) || []).flatMap((m) => m.subjects || []))].sort();
+  const proseKinds = uniqKinds.filter((k) => isProse(k));
+  const posts = blogPostSubjects(subjects);
+  const rungLine = rung && rung.id
+    ? `\`${rung.id}\` (provider \`${rung.provider ?? '?'}\`, tier \`${rung.tier ?? '?'}\`) — read from the registry at review time; no model is named here.`
+    : '(no rung — the review must not run)';
+  const merges = ((manifest && manifest.merges) || [])
+    .map((m) => `- \`${String(m.sha).slice(0, 12)}\` job \`${m.jobId}\`: ${((m.subjects || []).join(', ') || '(no subjects)')}`)
+    .join('\n');
+  return `# Train review — ${trainId}
+
+You are the train reviewer. You have fresh context: you have not seen any
+author's reasoning, and — unlike every other reviewer in this repository —
+you have not seen the PER-JOB VERDICTS either. The worktree you run in had
+the per-job verdict records of this train's merges REMOVED before you
+arrived. Judge the diff below on its own, against the manifest and the
+checklists. You have **no edit rights** — any change you make to this
+worktree is thrown away, so do not try to fix anything. Your only accepted
+output is the train verdict record.
+
+## What you received — state this first
+
+Open your verdict record's notes by listing exactly what this brief gave
+you: the diff file list below, the ${((manifest && manifest.merges) || []).length} manifest merges, and these
+checklist kinds: ${uniqKinds.map((k) => `\`${k}\``).join(', ')}. If you can
+read any per-job verdict record from this tree, the seal has failed: say so
+first and write nothing else.
+
+## The train
+
+Committed manifest \`.train/manifest.json\` at review time (merge shas, job
+ids, subjects). Main tip it was measured against: \`${String((manifest && manifest.mainTip) || '').slice(0, 12)}\`.
+
+${merges || '- (no merges)'}
+
+## The whole train diff
+
+The loop computed this diff itself from the train state, INCLUDING
+uncommitted rederived data; it is not any author's account of what changed.
+
+\`\`\`diff
+${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated at 200 KB]' : diffText}
+\`\`\`
+
+${runShapeSection({ capMinutes, mmSoFar, invocations, totalMinutes })}
+## Your standing instruction
+
+**For every claim about what something does, run the cheap direct check. For
+every sourced claim, confirm the source supports it.** The defect class this
+review exists to catch is the claim written from intent rather than
+measurement — and, for a train, the finding every per-job verdict missed:
+each merge was judged alone, and what breaks is what they do together.
+
+## Checklists — one per kind this train touches
+
+${checklistBlocks}
+
+${corroborationSection()}
+${polaritySection()}
+## Reviewer rung
+
+${rungLine}
+
+## The verdict
+
+Return exactly one verdict: \`approve\`, \`revise\` (naming the required
+changes), or \`reject\`. Give one or more reasons **from this closed list**:
+
+${REASONS.map((r) => `- \`${r}\``).join('\n')}
+
+${proseKinds.length ? `**Required, non-empty: \`would-cite\`.** This train touches prose (kinds: ${proseKinds.map((k) => `\`${k}\``).join(', ')}). Answer in your own words, one sentence per prose merge: who would link it, and in what argument? An \`approve\` with this field blank, or with text identical to another review record's, is refused at merge. Answer the question; do not fill the field.
+` : `\`would-cite\`: this train touches no prose kind, so the field is not required. Leave it out rather than inventing an answer.
+`}${posts.length || uniqKinds.some((k) => needsReadsHuman(k)) ? `
+**Voice.** This train merges ${posts.length ? posts.join(', ') : 'a post kind'}: an \`approve\` must answer the voice question — where does it read machine-made, or why does it not? — in a non-empty \`reads-human\`, or carry the prior answer forward per post in a \`reads-human-from\` entry naming the post, the earlier approving record, and why this train's diff did not move its voice. Same duplicate rules as \`would-cite\`.
+` : ''}
+## Findings — what the per-job verdicts missed
+
+List every defect this train carries that its per-job verdicts did not stop,
+in the front matter below as \`findings:\` — one entry per finding:
+
+\`\`\`
+findings:
+  - text: <what is wrong, concretely — quote the bytes>
+    merges: [<merge sha or job id this finding names, ...>]   # EMPTY when the finding names no merge
+\`\`\`
+
+Name merges EXACTLY (full sha or job id from the manifest above). A finding
+naming no merge rejects the whole train; findings that name merges evict
+them. An empty \`findings:\` on a non-approval rejects the whole train — a
+refusal that names nothing cannot be answered.
+
+## Write your verdict here
+
+Write the verdict record to this exact absolute path — it is deliberately
+**outside** the worktree you are reviewing:
+
+\`${String(outPath).replace(/\\/g, '/')}\`
+
+The file is markdown with YAML front matter:
+
+\`\`\`
+---
+train: ${trainId}
+job: ${trainId}
+verdict: approve            # or revise / reject
+reasons: []                 # from the closed list above; required unless approve
+would-cite: >-
+  <your own-words answer, one sentence per prose merge; omit when the train touches no prose>
+findings:                   # omit the key entirely when there are no findings
+  - text: <the finding>
+    merges: [<sha or job id, ...>]   # or [] when it names no merge
+---
+
+Free-form notes: open with the received-files list above, then what you
+checked, what you fetched, what you ran, and what you observed. Quote the
+observed output for anything you ran.
+\`\`\`
+
+${GROUND_RULES}
+`;
+}
+
+/**
+ * The sealed invocation (row 41): the reviewer runs in a disposable worktree
+ * from which the train's merges' per-job verdict records have been REMOVED.
+ * Reuses the disposable-worktree machinery (`addWorktree`, `runExecutor`,
+ * unconditional discard) — extends it, never a second invoker: `invoke` is
+ * the executor seam (tests stub it; production passes nothing and the real
+ * `runExecutor` runs).
+ *
+ * `ref` is the commit the sealed tree checks out detached (the caller passes
+ * the train tip sha — no branch name is needed and none is moved). Removal
+ * happens AFTER the checkout, at `<tree>/<reviews-relative>/<jobId>.md`
+ * (plus `.pass<N>` delta records). The tree is discarded unconditionally;
+ * the verdict record lands outside it, like the sibling's.
+ */
+export async function runTrainReview(ctx, {
+  trainId, ref, diffText, manifest, kinds, runner, capMinutes = 0,
+  mmSoFar, invocations = 0, totalMinutes = null, invoke = null,
+}) {
+  mkdirSync(ctx.reviewsDir, { recursive: true });
+  const outPath = trainVerdictPath(ctx, trainId);
+  const reviewDir = join(ctx.worktreeRoot, `${trainId}-train-review`);
+  rmSync(reviewDir, { recursive: true, force: true });
+  mkdirSync(ctx.worktreeRoot, { recursive: true });
+
+  const before = gitTry(ctx.repoRoot, ['rev-parse', 'HEAD']).stdout.trim();
+  addWorktree(ctx.repoRoot, reviewDir, ref, { detach: true });
+
+  const rel = relative(ctx.repoRoot, ctx.reviewsDir);
+  if (!rel || rel.startsWith('..')) {
+    throw new Error(`train review: reviews dir ${ctx.reviewsDir} is outside the repository — the sealed tree cannot redact it`);
+  }
+  const redacted = redactTrainRecords(join(reviewDir, rel), ((manifest && manifest.merges) || []).map((m) => m.jobId));
+
+  const rung = runner && runner.id ? runner : { id: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
+  const brief = assembleTrainReviewBrief(ctx, {
+    trainId, diffText, manifest, kinds, rung, outPath,
+    capMinutes, mmSoFar, invocations, totalMinutes,
+  });
+  const invoker = invoke ?? runExecutor;
+  const run = await invoker({
+    command: rung.command,
+    cwd: reviewDir,
+    promptText: brief,
+    promptPath: join(ctx.worktreeRoot, `${trainId}-train-review-brief.md`),
+    timeoutMs: capMinutes * 60 * 1000,
+    role: 'reviewer',
+    jobId: trainId,
+    logPath: jobLogPath(ctx.worktreeRoot, trainId, 'train-review'),
+  });
+
+  const dirtyBefore = gitTry(reviewDir, ['status', '--porcelain']).stdout.trim();
+  gitTry(reviewDir, ['reset', '--hard', 'HEAD']);
+  gitTry(reviewDir, ['clean', '-fdx']);
+  const dirtyAfter = gitTry(reviewDir, ['status', '--porcelain']).stdout.trim();
+  const removed = removeWorktree(ctx.repoRoot, reviewDir);
+  if (removed.ok) {
+    rmSync(reviewDir, { recursive: true, force: true });
+  } else {
+    ctx.log(
+      `WORKTREE CLEANUP REFUSED: train reviewer worktree ${reviewDir} was not removed: ` +
+        `${removed.reason}. The directory is left standing.`,
+    );
+  }
+  const after = gitTry(ctx.repoRoot, ['rev-parse', 'HEAD']).stdout.trim();
+
+  return {
+    run,
+    outPath,
+    recordWritten: existsSync(outPath),
+    redacted,
+    discarded: { dirtyBefore, dirtyAfter, discardedAnything: Boolean(dirtyBefore) },
+    headBefore: before,
+    headAfter: after,
+    headUnchanged: before === after,
+  };
+}
+
+/**
+ * The comparison (row 41): a SEPARATE invocation with its own tree. Where
+ * the sealed review must NOT see the per-job records, this one must: it
+ * reads the train verdict's findings against every per-job record's text and
+ * reports the findings present in NONE of them — "what they missed". Its
+ * tree is fresh, unredacted, and discarded unconditionally, like the first.
+ */
+export async function runTrainComparison(ctx, {
+  trainId, ref, trainRecordText, perJobTexts, runner, capMinutes = 0, invoke = null,
+}) {
+  mkdirSync(ctx.reviewsDir, { recursive: true });
+  const outPath = trainComparisonPath(ctx, trainId);
+  const compareDir = join(ctx.worktreeRoot, `${trainId}-train-compare`);
+  rmSync(compareDir, { recursive: true, force: true });
+  mkdirSync(ctx.worktreeRoot, { recursive: true });
+
+  addWorktree(ctx.repoRoot, compareDir, ref, { detach: true });
+
+  const rung = runner && runner.id ? runner : { id: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
+  const records = Object.entries(perJobTexts ?? {})
+    .map(([name, text]) => `### ${name}\n\n${text}`)
+    .join('\n\n');
+  const brief = `# Train comparison — ${trainId}
+
+You are comparing, not reviewing. Below is the train verdict's record, then
+every per-job verdict record of this train's merges. For each finding the
+train verdict lists under \`findings:\`, say whether any per-job record
+already states it — same defect, not same words. Report the findings present
+in NONE of the per-job records.
+
+## The train verdict record
+
+\`\`\`
+${trainRecordText ?? '(no train record)'}
+\`\`\`
+
+## The per-job records
+
+${records || '(no per-job records)'}
+
+## Write your report here
+
+Write to this exact absolute path — deliberately **outside** the worktree:
+
+\`${String(outPath).replace(/\\/g, '/')}\`
+
+The file is markdown with YAML front matter carrying the machine-readable
+answer:
+
+\`\`\`
+---
+train: ${trainId}
+missing:
+  - <one entry per train finding present in no per-job record, quoting the finding's text>
+---
+
+Free-form notes: for each train finding, where (if anywhere) a per-job
+record states it.
+\`\`\`
+
+An empty \`missing: []\` is a complete answer — it says the per-job records
+caught everything the train found. Omit nothing: every train finding is
+either quoted under \`missing:\` or placed in a per-job record in your notes.
+
+${GROUND_RULES}
+`;
+  const invoker = invoke ?? runExecutor;
+  const run = await invoker({
+    command: rung.command,
+    cwd: compareDir,
+    promptText: brief,
+    promptPath: join(ctx.worktreeRoot, `${trainId}-train-compare-brief.md`),
+    timeoutMs: capMinutes * 60 * 1000,
+    role: 'reviewer',
+    jobId: trainId,
+    logPath: jobLogPath(ctx.worktreeRoot, trainId, 'train-compare'),
+  });
+
+  gitTry(compareDir, ['reset', '--hard', 'HEAD']);
+  gitTry(compareDir, ['clean', '-fdx']);
+  const removed = removeWorktree(ctx.repoRoot, compareDir);
+  if (removed.ok) {
+    rmSync(compareDir, { recursive: true, force: true });
+  } else {
+    ctx.log(
+      `WORKTREE CLEANUP REFUSED: train comparison worktree ${compareDir} was not removed: ` +
+        `${removed.reason}. The directory is left standing.`,
+    );
+  }
+
+  return { run, outPath, recordWritten: existsSync(outPath) };
+}
+
+/**
+ * Read the comparison report: the `missing:` list. Absent file, absent key
+ * or non-list value FAILS CLOSED — an unreadable comparison cannot become a
+ * zero on the train line. (This parses OUR comparison file, not a verdict
+ * record: the single-verdict-parser rule is untouched.)
+ */
+export function parseTrainComparison(text) {
+  if (!text || !String(text).trim()) {
+    return { ok: false, reason: 'the train comparison report is absent or empty — the not-in-any-record count is unknown' };
+  }
+  let data = null;
+  try {
+    data = matter(String(text)).data ?? null;
+  } catch {
+    data = null;
+  }
+  if (!data || typeof data !== 'object') {
+    return { ok: false, reason: 'the train comparison report has no readable front matter — the not-in-any-record count is unknown' };
+  }
+  const raw = data.missing;
+  if (raw === undefined || raw === null) {
+    return { ok: false, reason: 'the train comparison report carries no `missing:` list — the not-in-any-record count is unknown' };
+  }
+  const list = Array.isArray(raw) ? raw : [raw];
+  const missing = list.map((e) => String(e ?? '').trim()).filter(Boolean);
+  if (missing.length !== list.length) {
+    return { ok: false, reason: 'the train comparison report carries blank `missing:` entries — the not-in-any-record count is unknown' };
+  }
+  return { ok: true, missing };
+}
+
+/**
+ * The train verdict's `findings:`, read from the ONE parse (`parseVerdict`
+ * in `verdict.mjs` — never a second parser: an entry is `v.data.findings`,
+ * the way `subject:` is read off the same parse). Each entry needs a
+ * non-empty `text`; `merges` is a sha-or-job-id scalar-or-list, empty when
+ * the finding names no merge. Malformed entries are DROPPED with a warning —
+ * the fail-closed direction, because a dropped entry names nothing and a
+ * non-approval that names nothing rejects the whole train.
+ */
+export function parseTrainFindings(parsed) {
+  const data = (parsed && typeof parsed === 'object' && parsed.data) ? parsed.data : {};
+  const raw = data.findings;
+  if (raw === undefined || raw === null) return { findings: [], findingWarnings: [] };
+  const list = Array.isArray(raw) ? raw : [raw];
+  const findings = [];
+  const findingWarnings = [];
+  list.forEach((entry, i) => {
+    const at = `findings[${i}]`;
+    if (typeof entry === 'string') {
+      const text = entry.trim();
+      if (!text) findingWarnings.push(`${at}: blank text — dropped`);
+      else findings.push({ text, merges: [] });
+      return;
+    }
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      findingWarnings.push(`${at}: not a mapping with text/merges — dropped`);
+      return;
+    }
+    const text = String(entry.text ?? '').trim();
+    if (!text) {
+      findingWarnings.push(`${at}: no non-empty \`text\` — dropped`);
+      return;
+    }
+    const mraw = entry.merges ?? entry.merge ?? [];
+    const mlist = Array.isArray(mraw) ? mraw : [mraw];
+    const merges = mlist.map((m) => String(m ?? '').trim()).filter(Boolean);
+    findings.push({ text, merges });
+  });
+  return { findings, findingWarnings };
+}
+
+/**
+ * Partition the findings against the manifest: which train merges each
+ * finding names, and which findings name NO train merge. A merge is named by
+ * full sha, by unambiguous sha prefix, or by job id; anything else — prose
+ * naming a file, a merge from another train, or a blank list — names no
+ * merge and rejects the whole train. Named shas come back in manifest
+ * (oldest-first) order, the eviction order the red path already uses.
+ */
+export function trainFindingsNamingMerges(findings, manifest) {
+  const merges = ((manifest && manifest.merges) || []).map((m) => ({ sha: String(m.sha), jobId: String(m.jobId) }));
+  const namedSet = new Set();
+  const unnamed = [];
+  for (const f of findings ?? []) {
+    const hit = new Set();
+    for (const name of (f && f.merges) || []) {
+      const n = String(name);
+      for (const m of merges) {
+        if (n === m.sha || n === m.jobId || (n.length >= 7 && m.sha.startsWith(n))) hit.add(m.sha);
+      }
+    }
+    if (!hit.size) unnamed.push(f);
+    else for (const s of hit) namedSet.add(s);
+  }
+  return { named: merges.map((m) => m.sha).filter((s) => namedSet.has(s)), unnamed };
+}
+
+/**
+ * The train verdict protocol (row 42): the train review produces a verdict
+ * record on the ORDINARY protocol — closed-list verdict, `would-cite` per
+ * prose piece, the same refusals as `mergeGate` — by DELEGATING to
+ * `mergeGate` once per kind the train touches, first refusal wins. Same
+ * codes, same reasons, same sweeps (including the duplicate checks, which
+ * read the train record like any other). An absent, empty or malformed
+ * record fails closed: `no-record`, `malformed-verdict` and every other
+ * refusal surface here unchanged.
+ *
+ * `kinds` unknown to `checklistFor` fail closed before any gate runs: a
+ * kind with no checklist cannot have been reviewed.
+ */
+export function trainReviewGate(ctx, { trainId, kinds = [], subjects = [], changed = null }) {
+  const uniqKinds = [...new Set(kinds ?? [])];
+  if (!uniqKinds.length) {
+    return { ok: false, code: 'no-kinds', reason: `no kinds for train ${trainId} — without a kind there is no checklist, so the train verdict is refused` };
+  }
+  for (const kind of uniqKinds) {
+    try {
+      checklistFor(kind);
+    } catch (e) {
+      return { ok: false, code: 'unknown-kind', reason: `train ${trainId} touches kind ${JSON.stringify(kind)} with no checklist (${e.message ?? String(e)}) — the verdict is refused` };
+    }
+  }
+  for (const kind of uniqKinds) {
+    let g;
+    try {
+      g = mergeGate(ctx, { jobId: trainId, type: kind, subjects, changed });
+    } catch (e) {
+      return { ok: false, code: 'gate-threw', reason: `the train verdict gate threw on kind ${JSON.stringify(kind)} (${e.message ?? String(e)}) — fail closed: no fast-forward, no publish` };
+    }
+    if (!g.ok) return g;
+  }
+  // Re-read for the caller rather than trusting the last gate's object: the
+  // record could have moved between the per-kind passes. A vanishing record
+  // is `no-record`, never a throw — the gate fails closed, not loudly.
+  try {
+    return { ok: true, verdict: parseVerdict(readFileSync(trainVerdictPath(ctx, trainId), 'utf8')) };
+  } catch (e) {
+    return { ok: false, code: 'no-record', reason: `the train verdict for ${trainId} could not be re-read (${e.message ?? String(e)}) — fail closed: no fast-forward, no publish` };
+  }
+}
+
+/**
+ * The default `review` seam for `runTrain`: `reviewTrain` closed over the
+ * loop context. The seam shape is `review({diffText, manifest, repo})` — a
+ * single object with no context — while the sealed assembly needs the
+ * ledger, the registry, the reviews dir and a worktree root. The factory
+ * binds them at the call site (`review = makeReviewTrain(ctx)`), so stubs
+ * keep the single-object shape and production gets the sealed reviewer.
+ */
+export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null } = {}) {
+  return ({ diffText, manifest, repo }) => reviewTrain(ctx, { diffText, manifest, repo, capMinutes, invoke });
+}
+
+/**
+ * The production train review: both invocations composed into the
+ * `review({diffText, manifest, repo})` seam `train.mjs` runs. Reads the
+ * kinds off the ledger, the rung off the registry, runs the sealed review,
+ * gates the record, runs the comparison, and returns the seam shape —
+ * `{verdict, reason, runner, provider, tier, findingsNotInAnyRecord,
+ * findings}`.
+ *
+ * Every failure is a fail-closed `reject` with no publish: missing kinds, a
+ * missing or ambiguous rung, a thrown or unwritten review, a refused record,
+ * a missing comparison. The gate refuses EVERY non-approval (`mergeGate`
+ * returns ok:false with `code === verdict` for a well-formed `revise` /
+ * `reject`), so a refused record is either a legitimate non-approval —
+ * which passes through with its findings and its measured comparison count,
+ * for the eviction-on-finding loop in `train.mjs` — or a defective record,
+ * which fails closed as `reject` carrying the gate's reason. In particular
+ * an `approve` the gate refused (empty/duplicate `would-cite`, and the rest
+ * of the defective-field refusals) never passes through as approval: the
+ * gate never returns ok:true for a non-approval on a stable record, so the
+ * post-gate non-approve arm below is a defensive backstop, the road only
+ * a mutated record can take.
+ */
+export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null }) {
+  const unwired = { runner: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
+  const trainId = manifest && manifest.train;
+  if (!trainId) {
+    return { verdict: 'reject', reason: 'the train manifest carries no train id — fail closed: no fast-forward, no publish', ...unwired, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  const k = trainKinds(ctx, manifest);
+  if (!k.ok) {
+    return { verdict: 'reject', reason: `${k.reason} — fail closed: no fast-forward, no publish`, ...unwired, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  let runners;
+  try {
+    runners = loadRunners(ctx).runners;
+  } catch (e) {
+    return { verdict: 'reject', reason: `cannot read the runner registry (${e.message ?? String(e)}) — fail closed: no fast-forward, no publish`, ...unwired, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  const r = trainReviewerRung(runners);
+  if (!r.ok) {
+    return { verdict: 'reject', reason: `${r.reason} — fail closed: no fast-forward, no publish`, ...unwired, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  const rung = r.rung;
+  const reviewer = { runner: rung.id, provider: rung.provider, tier: rung.tier };
+  const subjects = [...new Set(((manifest && manifest.merges) || []).flatMap((m) => m.subjects || []))].sort();
+  const ref = gitTry(repo, ['rev-parse', 'HEAD']).stdout.trim();
+  if (!ref) {
+    return { verdict: 'reject', reason: 'cannot resolve the train tip to review — fail closed: no fast-forward, no publish', ...unwired, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  let rev;
+  try {
+    rev = await runTrainReview(ctx, {
+      trainId, ref, diffText, manifest, kinds: k.kinds, runner: rung, capMinutes, invoke,
+    });
+  } catch (e) {
+    return { verdict: 'reject', reason: `the sealed train review threw (${e.message ?? String(e)}) — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  if (!rev.recordWritten) {
+    return { verdict: 'reject', reason: `no train verdict recorded at ${rev.outPath} — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: [] };
+  }
+  const g = trainReviewGate(ctx, { trainId, kinds: k.kinds, subjects });
+  if (!g.ok) {
+    // A refused record is either a legitimate non-approval or a defective
+    // record — never an approval. The gate refuses EVERY non-approval
+    // (`mergeGate` returns ok:false with `code === verdict` for a
+    // well-formed revise/reject), so the refusal arm is where revise/reject
+    // passes through; but an approve-with-defective-fields refusal
+    // (would-cite-empty/duplicate, reads-human-*, carried-deletion-
+    // unearned, corrections-malformed, cites-unresolved, ...) still carries
+    // verdict 'approve' on the refused record, and passing that through
+    // finished the train done on an empty would-cite. Only the legitimate
+    // non-approval shape passes through; every other refusal fails closed
+    // as reject carrying the gate's reason.
+    const refusedVerdict = g.verdict && g.verdict.verdict;
+    const legitimateNonApproval =
+      (refusedVerdict === 'revise' || refusedVerdict === 'reject') && g.code === refusedVerdict;
+    if (!legitimateNonApproval) {
+      const v = g.verdict ? parseTrainFindings(g.verdict) : { findings: [] };
+      return {
+        verdict: 'reject', reason: `${g.reason} — fail closed: no fast-forward, no publish`,
+        ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings,
+      };
+    }
+    // A well-formed non-approval still gets its comparison: the count is
+    // measured on every pass-through verdict that can reach the line,
+    // never a silent 0 (the gate never returns ok:true for revise/reject,
+    // so this refusal arm is the only road here; the defective-refusal
+    // reject above carries an unmeasured 0 by design). A comparison that
+    // cannot run fails the same closed way the approve arm below does.
+    const vLegit = parseTrainFindings(g.verdict);
+    const cmpLegit = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
+    if (!cmpLegit.ok) {
+      return { verdict: 'reject', reason: `${cmpLegit.reason} — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: vLegit.findings };
+    }
+    return {
+      verdict: refusedVerdict,
+      reason: `train review did not approve (${refusedVerdict}${g.verdict.reasons.length ? `: ${g.verdict.reasons.join(', ')}` : ''})`,
+      ...reviewer, findingsNotInAnyRecord: cmpLegit.missing.length, findings: vLegit.findings,
+    };
+  }
+  const v = parseTrainFindings(g.verdict);
+  if (g.verdict.verdict !== 'approve') {
+    // Defensive backstop for a record mutated between the gate's per-kind
+    // passes and its re-read: on a stable record the gate refuses every
+    // non-approval, so ok:true always carries approve — but the re-read
+    // can still return a non-approval the passes just refused. A
+    // non-approval must not ride the approve path below into a done line —
+    // fail closed instead.
+    return { verdict: 'reject', reason: `train gate passed a non-approval (${g.verdict.verdict}) — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings };
+  }
+  const cmp = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
+  if (!cmp.ok) {
+    return { verdict: 'reject', reason: `${cmp.reason} — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings };
+  }
+  return { verdict: 'approve', reason: '', ...reviewer, findingsNotInAnyRecord: cmp.missing.length, findings: v.findings };
+}
+
+/**
+ * The comparison half of `reviewTrain`, factored so the approve and
+ * legitimate-non-approval arms share it: read the per-job records' text from
+ * the unredacted checkout, run the separate invocation, parse the `missing:`
+ * list. Failures return `{ok:false}` and the caller fails closed on every
+ * verdict — an approval without its count is a reject, and a non-approval
+ * without its count is a reject too: an unmeasured count never rides
+ * the seam.
+ */
+async function compareTrainFindings(ctx, { trainId, ref, runner, capMinutes, invoke, verdictText }) {
+  const perJobTexts = {};
+  try {
+    for (const name of readdirSync(ctx.reviewsDir)) {
+      if (!name.endsWith('.md') || name === 'README.md') continue;
+      try {
+        perJobTexts[name] = readFileSync(join(ctx.reviewsDir, name), 'utf8');
+      } catch {
+        // An unreadable record is the comparison's problem to report, not
+        // this scan's: skip it here, and the invocation judges coverage.
+      }
+    }
+  } catch {
+    return { ok: false, reason: `cannot read the per-job records from ${ctx.reviewsDir} — the not-in-any-record count is unknown` };
+  }
+  delete perJobTexts[`${trainId}.md`];
+  delete perJobTexts[`${trainId}.train-compare.md`];
+  let cmp;
+  try {
+    cmp = await runTrainComparison(ctx, {
+      trainId, ref, trainRecordText: verdictText, perJobTexts, runner, capMinutes, invoke,
+    });
+  } catch (e) {
+    return { ok: false, reason: `the train comparison threw (${e.message ?? String(e)}) — the not-in-any-record count is unknown` };
+  }
+  if (!cmp.recordWritten) {
+    return { ok: false, reason: `no train comparison written at ${cmp.outPath} — the not-in-any-record count is unknown` };
+  }
+  const parsed = parseTrainComparison(readFileSync(cmp.outPath, 'utf8'));
+  if (!parsed.ok) return parsed;
+  return { ok: true, missing: parsed.missing };
 }
