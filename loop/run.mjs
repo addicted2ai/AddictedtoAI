@@ -2292,7 +2292,11 @@ export async function runLoop(ctx, opts = {}) {
   if ((outcome === 'done' || outcome === 'interrupted') && !opts.dryRun) {
     let queueEmpty = false;
     try {
-      queueEmpty = readQueue(ctx).length === 0;
+      // `.items`: readQueue returns `{items, warnings, ...}`, never an
+      // array — `.length` on the object is undefined and the idle trigger
+      // below would be dead in production (caught by the sealed review;
+      // the unit arm passes queueEmpty directly and cannot see this).
+      queueEmpty = (readQueue(ctx).items || []).length === 0;
     } catch {
       queueEmpty = false;
     }
@@ -2312,10 +2316,18 @@ export async function runLoop(ctx, opts = {}) {
       if (!asm.ok) {
         ctx.log(`train assembly refused: ${asm.reason} — merges wait on train`);
       } else {
-        const tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: opts.gates });
-        if (!tr.ok) {
+        let tr = null;
+        try {
+          tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: opts.gates });
+        } catch (e) {
+          // runTrain returns {ok:false} for every named failure, but a seam
+          // throwing past it (disk full under appendLedger, a reviewer
+          // harness dying) must not escape the run: log loudly, merges wait.
+          ctx.log(`train threw (${e.message ?? String(e)}) — merges wait on train, nothing publishes`);
+        }
+        if (tr && !tr.ok) {
           ctx.log(`train failed: ${tr.reason} — merges wait on train, nothing publishes`);
-        } else {
+        } else if (tr) {
           ctx.log(`train verified ${String(tr.sha).slice(0, 8)} — publish handoff: no invocation; U5 owns the push`);
         }
       }

@@ -667,3 +667,43 @@ test('runLoop happy merge lands on train, main frozen, nothing published', async
   assert.match(ctx.output(), /publish handoff|nothing publishes|nothing is pushed/, 'no per-job publish');
   assert.equal(existsSync(join(ctx.repoRoot, '.train', 'manifest.json')), false, 'no trigger fired (bounds high), so no train assembled');
 });
+
+test('runLoop idle: stale pending with an empty queue and no admission fires the train', async (t) => {
+  // WIRING arm for the idle trigger (the unit arm passes queueEmpty
+  // directly and cannot see the readQueue wiring): a directives-selected
+  // job whose tripwire cannot run admits nothing; with one stale pending
+  // merge and an empty queue file, the run must fire idle. Fails on the
+  // unwired form — `readQueue(ctx).length` is undefined, never 0, so the
+  // trigger stays silent (sealed-review catch, fixed with the `.items`).
+  const directives = '# DIRECTIVES.md\n\n- repair: fix the idle fixture link\n';
+  const ctx = makeRepo({
+    directives,
+    config: { ...DEFAULT_CONFIG, publish: false, train: { merges: 99, minutes: 9000, max_reviewed_bytes: 150000, max_subjects: 12, lock_wait_seconds: 30 } },
+    files: {},
+    runners: runnersYaml({
+      command: mockCommand('done-content-entry'),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  git(ctx.repoRoot, ['checkout', '--quiet', '-b', 'job/old', 'main']);
+  mkdirSync(join(ctx.repoRoot, 'content'), { recursive: true });
+  writeFileSync(join(ctx.repoRoot, 'content', 'old-idle.md'), '# old\n', 'utf8');
+  git(ctx.repoRoot, ['add', '--', 'content/old-idle.md']);
+  git(ctx.repoRoot, ['commit', '--quiet', '--no-verify', '-m', 'old work']);
+  git(ctx.repoRoot, ['checkout', '--quiet', 'main']);
+  ensureTrainBranch(ctx.repoRoot, 'main');
+  git(ctx.repoRoot, ['checkout', '--quiet', TRAIN_BRANCH]);
+  git(ctx.repoRoot, ['merge', '--quiet', '--no-ff', '--no-verify', '-m', 'job old-9 (repair): old work', 'job/old']);
+  git(ctx.repoRoot, ['checkout', '--quiet', 'main']);
+  writeQueue(ctx, []);
+  const throwingTripwire = (ctx2, dir, options) => {
+    const scripts = options && options.scripts ? options.scripts.join('+') : '';
+    if (scripts === 'build+verify-surfaces') throw new Error('spawn down (fixture: tripwire gates cannot run)');
+    return { ok: true, results: [], output: '' };
+  };
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates: throwingTripwire });
+  assert.equal(res.outcome, 'interrupted', `tripwire environmental books interrupted:\n${ctx.output()}`);
+  assert.match(ctx.output(), /idle trigger/, 'the idle trigger fired on stale pending with an empty queue');
+  assert.ok(existsSync(join(ctx.repoRoot, '.train', 'manifest.json')), 'assembly ran on the idle trigger');
+});

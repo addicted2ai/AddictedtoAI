@@ -874,7 +874,10 @@ export function assembleTrain(repo, { trainId, bounds, mainRef = 'main' }) {
   // The assembly tip is the MANIFEST COMMIT, not the pre-commit tip: the
   // reviewed tree carries the manifest, and the immobility assert must
   // span it. (Caught during authoring: pinning the pre-commit tip made
-  // every green train refuse itself as moved.)
+  // every green train refuse itself as moved.) It equals the manifest
+  // commit's own sha, so a post-mortem re-derives it from the log
+  // (`train <id>: manifest`) — it is deliberately not written back into
+  // the committed file, which would dirty the tree the gates run over.
   manifest.assemblyTip = headSha(repo);
   return { ok: true, manifest };
 }
