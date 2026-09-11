@@ -271,12 +271,20 @@ changing is not a success when publishing is enabled.
 - **THEN** the push is refused naming the declared SHA and the tip, no `HOLD.md`
   is written, and the run reports that it published nothing and why
 
-#### Scenario: A stopped Desk does not freeze the live site
+#### Scenario: STOP stops the scheduled run entirely
 
-- **WHEN** `STOP` stands, or a breaker's `HOLD.md` stands, and a scheduled run
-  rebuilds successfully with publishing enabled
-- **THEN** the Desk starts no worker and no train, and the run still commits and
-  publishes its own gated tree, so the freshness layer keeps reaching the remote
+- **WHEN** `STOP` stands at the repository root
+- **THEN** the scheduled run exits immediately before fetching,
+  committing, or pushing, and the Desk starts no worker and no train
+
+#### Scenario: A standing hold stops the push but not the commit
+
+- **WHEN** a breaker's `HOLD.md` stands, and a scheduled run rebuilds
+  successfully with publishing enabled
+- **THEN** the Desk starts no worker and no train, and the run still
+  commits its own gated tree, but does not push it: the run reports
+  the hold, and the live site keeps serving the last published tree
+  until the hold clears
 
 #### Scenario: A train that fell behind merges and re-gates rather than widening
 
