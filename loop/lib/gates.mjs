@@ -411,6 +411,105 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
 }
 
 /**
+ * First failing script in a gate result — the only gate a retry re-runs.
+ *
+ * `train.mjs` `failingGateOf` answers the same question for the red path;
+ * this is its gates-side twin, not an import, because `train.mjs` imports
+ * THIS module and the reverse edge would be a cycle. The two are pinned to
+ * each other by `gates-retry.test.mjs`'s structural arm rather than by a
+ * shared definition: a stub that fails gate X must read as X on both.
+ */
+export function failingGateScript(gateResult) {
+  const results = (gateResult && gateResult.results) || [];
+  const hit = results.find((r) => r && !r.ok);
+  return hit && hit.script ? hit.script : null;
+}
+
+/**
+ * The train's single-attempt retry (Stage-1 task 51, row 51): re-run the
+ * FAILING GATE, never the set — as a wrapper around the gates seam, so the
+ * train's call sites gain it without a single edit to `train.mjs`.
+ *
+ * Row 51's three clauses, enforced structurally rather than by convention:
+ *
+ * - ONE re-run of the failing gate. The retry carries `retryOf`, and a call
+ *   already carrying it is never retried again — double-wrapping degrades to
+ *   one attempt, not two. The attempt count is observable on the seam (first
+ *   call N scripts, second call exactly one), which is what the whole-set
+ *   mutation fails against.
+ * - Per gate STAGE, never per probe or measurement. A retry runs only for a
+ *   multi-gate call in the train checkout (`scripts.length > 1` with
+ *   `dir === onlyDir`): single-gate probes (leave-one-out trials, replay
+ *   audits, merge-time rebuilds) and out-of-checkout measurements (the
+ *   classification re-run in its detached scratch worktree) pass through
+ *   untouched. The classification re-run is a measurement and consumes
+ *   neither retry — it never reaches the second call, so there is nothing
+ *   to count.
+ * - Never a lock refusal (R1). A failing gate the environment refused —
+ *   lock refusals, spawn failures — is returned as-is: a second wait on the
+ *   same holder is how retries pile up, and the caller already books those
+ *   `interrupted`. Timeouts are NOT refusals (see `environmentalCondition`):
+ *   the child started, so they retry like any other failure. Transport
+ *   marking says WHY a retry happened, never WHETHER — a real defect still
+ *   fails twice, which is the only property that ever made this safe.
+ *
+ * The retry record names which kind it was (`kind: 'train-failing-gate'`,
+ * alongside the gate, the pass/fail and the transport reading) and is
+ * delivered twice: attached to the returned result under `retry` (additive —
+ * every train call site reads only `ok`/`output`/`results`) and to the
+ * caller's `onRetry` sink, which is how `run.mjs` observes retries that run
+ * inside `runTrain`. No retry, no record: green runs, probes, measurements
+ * and refusals return the seam's result untouched.
+ *
+ * @param {Function} gatesFn  the gates seam (`(ctx, dir, {scripts}) => result`); non-functions default to `runGates`
+ * @param {object} [o]
+ * @param {string|null} [o.onlyDir]  the train checkout; multi-gate calls anywhere else never retry
+ * @param {Function|null} [o.onRetry]  `onRetry(record)` per retry that runs
+ */
+export function withFailingGateRetry(gatesFn, { onlyDir = null, onRetry = null } = {}) {
+  const inner = typeof gatesFn === 'function' ? gatesFn : runGates;
+  return (ctx, dir, options) => {
+    const say = ctx && typeof ctx.log === 'function' ? (s) => ctx.log(s) : () => {};
+    const first = inner(ctx, dir, options);
+    if (!first || first.ok) return first;
+    const scripts = options ? options.scripts : undefined;
+    if (options && options.retryOf != null) return first;
+    if (!Array.isArray(scripts) || scripts.length < 2) return first;
+    if (onlyDir != null && dir !== onlyDir) {
+      say(`train gates red (${scripts.join('+')}) out of the train checkout — a measurement, not a stage: no retry, none consumed`);
+      return first;
+    }
+    const gate = failingGateScript(first);
+    const failing = (first.results || []).find((r) => r && !r.ok);
+    if (!gate || !failing) return first;
+    if (gatesHitEnvironmentalFailure({ results: [failing] })) {
+      say(`train gate ${gate} refused by the environment — recording no retry and waiting on nothing twice (R1 pileup guard)`);
+      return first;
+    }
+    const marked = gatesHitTransportFailure(first);
+    say(`train gate ${gate} red — retrying that gate once, not the set (kind train-failing-gate)`);
+    const second = inner(ctx, dir, { ...(options || {}), scripts: [gate], retryOf: scripts });
+    const record = {
+      kind: 'train-failing-gate',
+      gate,
+      retried: true,
+      passed: Boolean(second && second.ok),
+      firstFailed: [gate],
+      transport: marked,
+    };
+    say(`train gate retry (${gate}): ${record.passed ? 'PASS' : 'FAIL'}`);
+    if (typeof onRetry === 'function') {
+      try {
+        onRetry(record);
+      } catch {
+        // Observation must not move the gate path.
+      }
+    }
+    return { ...second, retry: record };
+  };
+}
+
+/**
  * A worktree has no `node_modules` — it is gitignored, so `git worktree add`
  * does not bring it. Link the repository's, rather than installing a second
  * copy per job.

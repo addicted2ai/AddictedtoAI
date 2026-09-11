@@ -56,16 +56,20 @@ import {
   runGates,
   linkNodeModules,
   unlinkNodeModules,
+  withFailingGateRetry,
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
 import { isDiffRefusal, isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
-import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
+import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, classifyRedTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
 import {
   brakeScan,
   brakeState,
+  checkBuildRed,
   checkConsecutiveFailures,
+  checkDeployWindow,
   checkReviewBypass,
   checkReservedPaths,
+  isPostRecordsRedOutcome,
   startGate,
 } from './lib/breakers.mjs';
 import { publishStep } from './lib/publish.mjs';
@@ -573,7 +577,7 @@ async function executeJob(ctx, opts) {
       };
       ctx.log(
         `gates (retry after a ${marked ? 'transport failure' : 'gate failure with no transport marker'}): ` +
-          `${gateResult.ok ? 'PASS' : 'FAIL'}`,
+          `${gateResult.ok ? 'PASS' : 'FAIL'} — kind job-author-pair`,
       );
       // On the job's permanent record, not only in a log that is not kept: the
       // author invocation's phase entry says a retry happened and how it ended.
@@ -1784,8 +1788,23 @@ export async function runLoop(ctx, opts = {}) {
       }
     }
     if (!opts.noGates && admissionBlocked == null) {
-      const trip = runTripwire(ctx, { worktree, baseRef: TRAIN_BRANCH, gates: opts.gates });
+      let trip = runTripwire(ctx, { worktree, baseRef: TRAIN_BRANCH, gates: opts.gates });
       tripwireBaseTip = trip.baseTip ?? null;
+      if (!trip.ok && !trip.environmental) {
+        // Stage-1 U6 (task 51, row 51): a job's tripwire retries its two
+        // gates — the pair, once. An environmental tripwire (togetherness
+        // unverified) still books `interrupted` immediately below: no second
+        // wait on the same holder. The record names which kind it was, on
+        // the ledger note (an existing key — no new one) and in the log.
+        ctx.log(`tripwire red together (${trip.reason}) — retrying the two tripwire gates once as a pair (kind job-tripwire-pair)`);
+        const again = runTripwire(ctx, { worktree, baseRef: TRAIN_BRANCH, gates: opts.gates });
+        tripwireBaseTip = again.baseTip ?? tripwireBaseTip;
+        const retryNote =
+          `tripwire gates retried once as a pair (kind job-tripwire-pair) and ${again.ok ? 'passed' : 'failed again'}`;
+        ctx.log(`tripwire retry: ${again.ok ? 'PASS — togetherness verified on the second run' : `FAIL (${again.reason})`}`);
+        result.note = result.note ? `${result.note} — ${retryNote}` : retryNote;
+        trip = again;
+      }
       if (!trip.ok) {
         if (trip.environmental) {
           ctx.log(`tripwire: branch+train togetherness unverified (${trip.reason}) — booking interrupted, nothing merges`);
@@ -2316,9 +2335,22 @@ export async function runLoop(ctx, opts = {}) {
       if (!asm.ok) {
         ctx.log(`train assembly refused: ${asm.reason} — merges wait on train`);
       } else {
+        // Stage-1 U6 (task 51, row 51): a train retries the FAILING GATE,
+        // never the set — through the wrapped seam, so `train.mjs` is not
+        // edited. The wrapper's own contract (`gates.mjs`) keeps single-gate
+        // probes and out-of-checkout measurements retry-free; the
+        // classification below deliberately takes the UNWRAPPED seam, so the
+        // classification re-run consumes neither retry.
+        const trainGates = withFailingGateRetry(opts.gates, {
+          onlyDir: ctx.repoRoot,
+          onRetry: (r) => ctx.log(
+            `train gate retry [${r.kind}]: ${r.gate} ${r.passed ? 'PASS' : 'FAIL'}` +
+            `${r.transport ? ' (transport-marked)' : ''}`,
+          ),
+        });
         let tr = null;
         try {
-          tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: opts.gates });
+          tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: trainGates });
         } catch (e) {
           // runTrain returns {ok:false} for every named failure, but a seam
           // throwing past it (disk full under appendLedger, a reviewer
@@ -2327,8 +2359,31 @@ export async function runLoop(ctx, opts = {}) {
         }
         if (tr && !tr.ok) {
           ctx.log(`train failed: ${tr.reason} — merges wait on train, nothing publishes`);
+          // Stage-1 U6 (task 49, row 49): breaker 2 reads the TRAIN's
+          // post-records build. Only a RED re-gate feeds it: a re-gate that
+          // could not run (`threw`) is the did-not-run third state, and any
+          // other train failure already has its own handling (the red path's
+          // hold-or-reject). The old per-job feed stays deleted.
+          if (isPostRecordsRedOutcome(tr.reason)) {
+            let classification = 'unknown';
+            try {
+              const cls = classifyRedTrain(ctx, { repo: ctx.repoRoot, manifest: asm.manifest, gates: opts.gates });
+              if (cls && cls.ok && cls.verdict) classification = cls.verdict;
+            } catch {
+              // Unclassifiable stays unknown, which trips (fail-closed).
+            }
+            const b2 = checkBuildRed(ctx, { ok: false, output: tr.reason, classification });
+            if (b2.tripped) ctx.log(`BREAKER: ${b2.reason}`);
+            else ctx.log(`breaker 2: post-records re-gate red classified ${classification} — excluded, no halt`);
+          }
         } else if (tr) {
           ctx.log(`train verified ${String(tr.sha).slice(0, 8)} — publish handoff: no invocation; U5 owns the push`);
+          // Stage-1 U6 (task 49, row 49), second trigger: the Pulse's deploy
+          // confirmation window, observed through the shared publish step's
+          // missed-deploy result — never a live deploy from here.
+          const b2d = checkDeployWindow(ctx, tr.publish);
+          if (b2d.tripped && b2d.wrote) ctx.log(`BREAKER: ${b2d.reason}`);
+          else if (b2d.tripped) ctx.log(`breaker 2: missed deploy observed on the standing hold — not overwritten`);
         }
       }
     }
