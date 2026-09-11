@@ -1630,6 +1630,32 @@ test('fix-round-1 F-B: well-formed revise reaches the comparison with a measured
   );
 });
 
+// ---------------------------------------------------------------------------
+// Fix round 2: post-gate non-approve backstop pin + NIT-A scoping.
+// Q-S18 throughout: source-shape only, no invocation, no push.
+// ---------------------------------------------------------------------------
+
+test('fix-round-2 backstop: post-gate non-approve arm fails closed as reject', () => {
+  const src = readFileSync(REVIEW_LIB, 'utf8');
+  // The gate re-reads the record after the per-kind passes, so a record
+  // mutated between the two reads can arrive here as ok:true carrying a
+  // non-approval — the TOCTOU road the backstop fail-closes on.
+  const armAt = src.indexOf("if (g.verdict.verdict !== 'approve')");
+  assert.notEqual(armAt, -1, 'the post-gate non-approve arm is present');
+  const armWindow = src.slice(armAt, armAt + 800);
+  assert.ok(armWindow.includes("verdict: 'reject'"), 'the backstop returns reject');
+  assert.ok(armWindow.includes('fail closed'), 'the backstop carries the fail-closed reason');
+  assert.ok(armWindow.includes('mutated between'), 'the backstop names the mutation road');
+  // Docstring pins the tightened wording (never "never the road").
+  assert.ok(src.includes('the road only'), 'the docstring names the mutation-only road');
+  assert.ok(src.includes('a mutated record can take'), 'the docstring scopes the road to a mutated record');
+  assert.ok(!src.includes('never the road'), 'the overstated wording is gone');
+  assert.ok(!src.includes('unreachable through the gate'), 'the unreachable claim is gone');
+  // NIT-A: the measured-count sentence covers pass-through verdicts only —
+  // the defective-refusal reject above carries an unmeasured 0 by design.
+  assert.ok(src.includes('measured on every pass-through verdict'), 'the count sentence is scoped to pass-through verdicts');
+});
+
 test('fix-round-1 F-C: re-assembly of the same train re-reads the committed review rounds', async () => {
   const { fx, repo, manifest } = oneMergeTrain('t-fc');
   try {

@@ -2055,8 +2055,9 @@ export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null } = {}) {
  * which fails closed as `reject` carrying the gate's reason. In particular
  * an `approve` the gate refused (empty/duplicate `would-cite`, and the rest
  * of the defective-field refusals) never passes through as approval: the
- * gate never returns ok:true for a non-approval, so the post-gate
- * non-approve arm below is a defensive backstop, never the road.
+ * gate never returns ok:true for a non-approval on a stable record, so the
+ * post-gate non-approve arm below is a defensive backstop, the road only
+ * a mutated record can take.
  */
 export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null }) {
   const unwired = { runner: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
@@ -2120,10 +2121,11 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
       };
     }
     // A well-formed non-approval still gets its comparison: the count is
-    // measured on every verdict that can reach the line, never a silent 0
-    // (the gate never returns ok:true for revise/reject, so this refusal
-    // arm is the only road here). A comparison that cannot run fails the
-    // same closed way the approve arm below does.
+    // measured on every pass-through verdict that can reach the line,
+    // never a silent 0 (the gate never returns ok:true for revise/reject,
+    // so this refusal arm is the only road here; the defective-refusal
+    // reject above carries an unmeasured 0 by design). A comparison that
+    // cannot run fails the same closed way the approve arm below does.
     const vLegit = parseTrainFindings(g.verdict);
     const cmpLegit = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
     if (!cmpLegit.ok) {
@@ -2137,10 +2139,12 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
   }
   const v = parseTrainFindings(g.verdict);
   if (g.verdict.verdict !== 'approve') {
-    // Defensive backstop, unreachable through the gate above: the gate
-    // refuses every non-approval, so ok:true always carries approve. If
-    // that ever changes, a non-approval must not ride the approve path
-    // below into a done line — fail closed instead.
+    // Defensive backstop for a record mutated between the gate's per-kind
+    // passes and its re-read: on a stable record the gate refuses every
+    // non-approval, so ok:true always carries approve — but the re-read
+    // can still return a non-approval the passes just refused. A
+    // non-approval must not ride the approve path below into a done line —
+    // fail closed instead.
     return { verdict: 'reject', reason: `train gate passed a non-approval (${g.verdict.verdict}) — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings };
   }
   const cmp = await compareTrainFindings(ctx, { trainId, ref, runner: rung, capMinutes, invoke, verdictText: g.verdict.raw });
