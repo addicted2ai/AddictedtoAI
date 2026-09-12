@@ -9,10 +9,6 @@ aliases:
     class: exclusive
   - name: "PPO"
     class: manual
-  - name: "RLHF"
-    class: manual
-  - name: "Reinforcement learning from human feedback"
-    class: shared
 facts:
   - field: first_published
     source: cited
