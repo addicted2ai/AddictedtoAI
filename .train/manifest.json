@@ -100,6 +100,10 @@
     {
       "verdict": "approve",
       "tree": "2d243038783079144391d22f0ff1d3ddaa7e6fc8d022563ef371f3f456090094"
+    },
+    {
+      "verdict": "approve",
+      "tree": "54f17a0b55d9e91a41fd8ccf075b7ddd08265b7e293019a69bed14238242c340"
     }
   ],
   "measuredPaths": [
