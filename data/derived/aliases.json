@@ -2509,6 +2509,26 @@
       ]
     },
     {
+      "name": "Inference.net: Schematron V2 Small",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inference-net-schematron-v2-small",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Inference.net: Schematron V2 Turbo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inference-net-schematron-v2-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Inkling",
       "linkable": false,
       "claimed_by": [

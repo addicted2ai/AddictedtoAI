@@ -369,6 +369,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/1706.03741": {
+      "bytes": 41763,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/1706.03741",
+      "last_checked": "2026-09-12",
+      "last_ok": "2026-09-12",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/1706.03741v4": {
       "bytes": 41775,
       "consecutive_failures": 0,
@@ -2734,6 +2745,17 @@
       "last_ok": "2026-08-28",
       "ok": true,
       "status": 200
+    },
+    "https://downloads.regulations.gov/COLC-2023-0006-9003/attachment_1.pdf": {
+      "bytes": 919,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://downloads.regulations.gov/COLC-2023-0006-9003/attachment_1.pdf",
+      "last_checked": "2026-09-12",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 403
     },
     "https://dspy.ai/": {
       "consecutive_failures": 0,

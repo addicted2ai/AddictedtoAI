@@ -659,6 +659,16 @@
     "entry_id": "model/inclusionai-ling-3-0-flash-vl-free",
     "path": "content/wiki/model/inclusionai-ling-3-0-flash-vl-free.md"
   },
+  "inference-net/schematron-v2-small": {
+    "date": "2026-09-12",
+    "entry_id": "model/inference-net-schematron-v2-small",
+    "path": "content/wiki/model/inference-net-schematron-v2-small.md"
+  },
+  "inference-net/schematron-v2-turbo": {
+    "date": "2026-09-12",
+    "entry_id": "model/inference-net-schematron-v2-turbo",
+    "path": "content/wiki/model/inference-net-schematron-v2-turbo.md"
+  },
   "kwaipilot/kat-coder-air-v2.5": {
     "date": "2026-08-28",
     "entry_id": "model/kwaipilot-kat-coder-air-v2-5",

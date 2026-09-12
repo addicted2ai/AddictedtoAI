@@ -1,6 +1,75 @@
 {
   "changed_30d": [
     {
+      "date": "2026-09-12",
+      "display_name": "Mistral: Mistral Small 3.2 24B",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "mistralai/mistral-small-3.2-24b-instruct-2506",
+        "context_length": 256000,
+        "created": 1750443016,
+        "expiration_date": null,
+        "id": "mistralai/mistral-small-3.2-24b-instruct",
+        "name": "Mistral: Mistral Small 3.2 24B",
+        "pricing.completion": "0.0000002",
+        "pricing.prompt": "0.000000075"
+      },
+      "field": "context_window",
+      "key": "openrouter-models|52ce6a56aa7d8ada|bf6b003b4a5b6c19|mistralai/mistral-small-3.2-24b-instruct|context_window",
+      "kind": "field_change",
+      "new": "256000",
+      "old": "131072",
+      "row_id": "mistralai/mistral-small-3.2-24b-instruct",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-12",
+      "display_name": "Inference.net: Schematron V2 Turbo",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "inference-net/schematron-v2-turbo-20260902",
+        "context_length": 128000,
+        "created": 1789176949,
+        "expiration_date": null,
+        "id": "inference-net/schematron-v2-turbo",
+        "name": "Inference.net: Schematron V2 Turbo",
+        "pricing.completion": "0.00000015",
+        "pricing.prompt": "0.00000003"
+      },
+      "field": null,
+      "key": "openrouter-models|52ce6a56aa7d8ada|bf6b003b4a5b6c19|inference-net/schematron-v2-turbo|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "inference-net/schematron-v2-turbo",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-12",
+      "display_name": "Inference.net: Schematron V2 Small",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "inference-net/schematron-v2-small-20260902",
+        "context_length": 128000,
+        "created": 1789176933,
+        "expiration_date": null,
+        "id": "inference-net/schematron-v2-small",
+        "name": "Inference.net: Schematron V2 Small",
+        "pricing.completion": "0.00000023",
+        "pricing.prompt": "0.00000005"
+      },
+      "field": null,
+      "key": "openrouter-models|52ce6a56aa7d8ada|bf6b003b4a5b6c19|inference-net/schematron-v2-small|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "inference-net/schematron-v2-small",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
       "date": "2026-09-11",
       "display_name": "OpenAI GPT Terra Latest",
       "excerpt": {
@@ -3769,75 +3838,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://datanorth.ai/news/google-releases-gemini-3-7-flash"
-    },
-    {
-      "date": "2026-08-12",
-      "display_name": "xAI releases Grok 4.6",
-      "excerpt": {
-        "description": "xAI - xAI released Grok 4.6, a post-training update on the reported 1.5T-parameter V9 foundation behind Grok 4.5, with a 500K context, configurable reasoning effort, and $2/$6 per Mtok list pricing below 200K tokens.",
-        "guid": "d69ab2ea-a12f-448a-ac57-38a8b2102173",
-        "link": "https://llm-releases.com/models/grok-4-6",
-        "pubDate": "Wed, 12 Aug 2026 00:00:00 GMT",
-        "source_name": "xAI",
-        "source_url": "https://codersera.com/blog/grok-4-6-launch-guide-2026/",
-        "title": "xAI releases Grok 4.6"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/grok-4-6",
-      "key": "seed|llm-releases|d69ab2ea-a12f-448a-ac57-38a8b2102173",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "d69ab2ea-a12f-448a-ac57-38a8b2102173",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://codersera.com/blog/grok-4-6-launch-guide-2026/"
-    },
-    {
-      "date": "2026-08-12",
-      "display_name": "Cohere publishes North Micro Vision Instruct",
-      "excerpt": {
-        "description": "Cohere - Cohere released North Micro Vision Instruct, a 2.4B Apache-2.0 document-focused vision-language model with a native-resolution vision encoder and a Command A+ language backbone. Strong on document tasks (0.921 DocVQA, 0.808 ChartQA) and grounding (0.732 RefCOCO), with open weights on Hugging Face.",
-        "guid": "72be986e-2a02-4cd1-8a3f-528e0ec888a1",
-        "link": "https://llm-releases.com/models/north-micro-vision-instruct",
-        "pubDate": "Wed, 12 Aug 2026 00:00:00 GMT",
-        "source_name": "Cohere",
-        "source_url": "https://huggingface.co/blog/CohereLabs/meet-north-micro-vision-instruct",
-        "title": "Cohere publishes North Micro Vision Instruct"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/north-micro-vision-instruct",
-      "key": "seed|llm-releases|72be986e-2a02-4cd1-8a3f-528e0ec888a1",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "72be986e-2a02-4cd1-8a3f-528e0ec888a1",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://huggingface.co/blog/CohereLabs/meet-north-micro-vision-instruct"
-    },
-    {
-      "date": "2026-08-12",
-      "display_name": "Liquid AI releases LFM2.5-VL-3B",
-      "excerpt": {
-        "description": "Liquid AI - Liquid AI released LFM2.5-VL-3B, a 3.1B open-weight edge vision-language model on the LFM2.5-2.6B base with a SigLIP2 400M vision encoder, tuned for on-device screen understanding, grounding, and tool calling. Reported 80.7 on ScreenSpot-v2 and 69.4 averaged across 28 benchmarks; runs at ~228 tok/s on an Apple M5 Max.",
-        "guid": "3a8c6e6e-1ba5-4736-bf22-499db0754485",
-        "link": "https://llm-releases.com/models/lfm2-5-vl-3b",
-        "pubDate": "Wed, 12 Aug 2026 00:00:00 GMT",
-        "source_name": "Liquid AI",
-        "source_url": "https://www.liquid.ai/blog/lfm2-5-vl-3b",
-        "title": "Liquid AI releases LFM2.5-VL-3B"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/lfm2-5-vl-3b",
-      "key": "seed|llm-releases|3a8c6e6e-1ba5-4736-bf22-499db0754485",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "3a8c6e6e-1ba5-4736-bf22-499db0754485",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://www.liquid.ai/blog/lfm2-5-vl-3b"
     }
   ],
   "deprecations": [
@@ -3870,7 +3870,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-11",
+  "generated_on": "2026-09-12",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",

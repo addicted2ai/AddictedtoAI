@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 692,
+  "count": 694,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -3045,6 +3045,26 @@
       "d": "model",
       "s": "active",
       "i": "model/inclusionai-ling-3-0-flash-vl-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inference-net-schematron-v2-small",
+      "t": "Inference.net: Schematron V2 Small",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inference-net-schematron-v2-small",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inference-net-schematron-v2-turbo",
+      "t": "Inference.net: Schematron V2 Turbo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inference-net-schematron-v2-turbo",
       "a": [],
       "b": true
     },
