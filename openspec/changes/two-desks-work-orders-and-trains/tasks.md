@@ -2246,7 +2246,9 @@ the brief under `evidence/reviews/`.
       re-derived. **[orchestrator]**
 - [ ] 55. `loop/run.mjs`: `.job/source.json` gains `items` and `declared_subjects`,
       committed at selection before any executor runs; a missing or empty
-      declaration is a merge refusal. Implements the same requirement's structured
+      declaration is a merge refusal where the merged diff carries content
+      paths — nothing to bind needs no refusal, so a merge with no content
+      paths binds nothing, logs, and merges (the code-only rule). Implements the same requirement's structured
       list and empty-declaration bullets. **Transition**: branches selected before
       this task lands complete under the old single-item contract — no declaration
       required, and a missing declaration is not a refusal for them; task 68b
