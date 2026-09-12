@@ -3334,6 +3334,14 @@
         "file": "content/learn/how-a-model-uses-your-documents.md"
       }
     ],
+    "technique/rlhf": [
+      {
+        "url": "/learn/how-models-are-trained",
+        "title": "How models are trained, and how they are changed afterwards",
+        "type": "learn",
+        "file": "content/learn/how-models-are-trained.md"
+      }
+    ],
     "technique/speculative-decoding": [
       {
         "url": "/wiki/tool/sglang",
