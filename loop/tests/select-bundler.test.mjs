@@ -18,6 +18,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import {
   WORK_ORDER_DEFAULTS,
@@ -133,8 +135,133 @@ test('task 53: one item over the per-subject bound is refused with a recorded re
   assert.equal(refusals[0].rule, 'work-order:per-subject-bound');
   assert.match(refusals[0].reason, /34000/);
   assert.match(refusals[0].reason, /30000/);
+  assert.match(refusals[0].reason, /content\/wiki\/huge\.md/);
   assert.equal(orders.length, 1);
   assert.deepEqual(orders[0].items, [small]);
+});
+
+test('task 53: the per-subject bound measures each subject\'s own size', () => {
+  // Two subjects of 18,000 bytes each is a legal order on every bound
+  // (36,000 total; 18,000 per subject) — it must bundle, not refuse.
+  const two = { source: 'queue', type: 'repair', title: 'touch a and b', subjects: ['a', 'b'] };
+  const sizes = { a: 18000, b: 18000 };
+  const single = bundleWorkOrders([two], {
+    cfg: CFG,
+    measure: (subject) => sizes[subject] ?? null,
+  });
+  assert.equal(single.refusals.length, 0);
+  assert.equal(single.orders.length, 1);
+  assert.equal(single.orders[0].totalBytes, 36000);
+  assert.deepEqual(single.orders[0].perSubjectBytes, { a: 18000, b: 18000 });
+  // Accumulation pins own-size: `a` carries 10,000 + 11,000 = 21,000, so a
+  // later 11,000-byte candidate on `a` still fits the same order.
+  const c1 = { source: 'queue', type: 'repair', title: 'first', subjects: ['a', 'b'] };
+  const c2 = { source: 'queue', type: 'repair', title: 'second', subjects: ['a'] };
+  const own = new Map([
+    [c1, { a: 10000, b: 10000 }],
+    [c2, { a: 11000 }],
+  ]);
+  const { orders, refusals } = bundleWorkOrders([c1, c2], {
+    cfg: CFG,
+    measure: (subject, candidate) => own.get(candidate)?.[subject] ?? null,
+  });
+  assert.equal(refusals.length, 0);
+  assert.equal(orders.length, 1);
+  assert.deepEqual(orders[0].perSubjectBytes, { a: 21000, b: 10000 });
+  assert.equal(orders[0].totalBytes, 31000);
+});
+
+test('task 53: a real proposal-shaped candidate is pathless and cohorts as proposal', () => {
+  // Built exactly as `readProposals` builds one: an absolute proposal-file
+  // `path`, no carried front matter, no subjects — the file pointer is not
+  // a subject, so the candidate is pathless.
+  const proposal = (slug) => ({
+    source: 'proposal',
+    type: 'post',
+    slug,
+    path: join(tmpdir(), 'atai-proposals', `${slug}.md`),
+    ageDays: 5,
+    expires: null,
+    discardedAttempts: 0,
+    preempts: false,
+    title: `Proposal ${slug}`,
+    detail: `Proposal ${slug}\n\nBody.`,
+    evidence: null,
+    issues: [],
+  });
+  const shaped = proposal('fresh-idea');
+  assert.deepEqual(candidateSubjects(shaped), []);
+  assert.equal(
+    coherenceKey(shaped, { category: 'new_writing' }),
+    'new_writing\ncohort:proposal',
+  );
+  const { orders, refusals } = bundleWorkOrders([shaped, proposal('second-idea')], {
+    cfg: CFG,
+    measure: () => null,
+  });
+  assert.equal(refusals.length, 0);
+  assert.equal(orders.length, 1);
+  assert.deepEqual(orders[0].subjects, []);
+  assert.deepEqual(orders[0].perSubjectBytes, {});
+});
+
+test('task 53: a candidate declaring more subjects than max_subjects is refused with a recorded reason', () => {
+  const wide = {
+    source: 'queue',
+    type: 'repair',
+    title: 'touches five subjects',
+    subjects: ['s1', 's2', 's3', 's4', 's5'],
+  };
+  const small = queueRepair('fix a typo', 'content/wiki/tiny.md');
+  const { orders, refusals } = bundleWorkOrders([wide, small], {
+    cfg: CFG,
+    measure: () => 100,
+  });
+  assert.equal(refusals.length, 1);
+  assert.equal(refusals[0].rule, 'work-order:subject-count');
+  assert.match(refusals[0].reason, /5/);
+  assert.match(refusals[0].reason, /max_subjects 4/);
+  assert.equal(orders.length, 1);
+  assert.deepEqual(orders[0].items, [small]);
+});
+
+test('task 53: estimates are candidate-totals — total-only splits, and the total-bound refusal says so', () => {
+  // Estimated candidates have no per-subject split: four 9,000-byte estimates
+  // on one subject split on the total bound alone (counts and per-subject
+  // figures never bind), and estimates add nothing per subject.
+  const bounds = {
+    maxItems: 10,
+    maxSubjects: 10,
+    maxReviewedBytes: 20000,
+    maxReviewedBytesPerSubject: 20000,
+  };
+  const mk = (n) => ({
+    source: 'queue',
+    type: 'repair',
+    title: `estimated ${n}`,
+    subjects: ['p'],
+    estimatedBytes: 9000,
+  });
+  const split = bundleWorkOrders([mk(1), mk(2), mk(3), mk(4)], {
+    cfg: CFG,
+    bounds,
+    measure: () => null,
+  });
+  assert.equal(split.refusals.length, 0);
+  assert.equal(split.orders.length, 2);
+  assert.deepEqual(split.orders.map((o) => o.items.length), [2, 2]);
+  assert.equal(split.orders[0].totalBytes, 18000);
+  assert.deepEqual(split.orders[0].perSubjectBytes, {});
+  // A lone estimate over the total is refused on the total bound, with the
+  // reason stating the figure is a candidate total.
+  const huge = { source: 'proposal', type: 'post', slug: 'big-idea', title: 'Big', estimatedBytes: 65000 };
+  const refused = bundleWorkOrders([huge], { cfg: CFG, measure: () => null });
+  assert.equal(refused.orders.length, 0);
+  assert.equal(refused.refusals.length, 1);
+  assert.equal(refused.refusals[0].rule, 'work-order:total-bound');
+  assert.match(refused.refusals[0].reason, /65000/);
+  assert.match(refused.refusals[0].reason, /60000/);
+  assert.match(refused.refusals[0].reason, /candidate total/);
 });
 
 test('task 53: a pathless candidate is measured by estimate — never zero, never refused for pathlessness', () => {

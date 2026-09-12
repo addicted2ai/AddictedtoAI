@@ -294,26 +294,34 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
 // types with no existing file to sum) cohere on category plus source cohort
 // instead, and are measured by their declared-subject estimate.
 //
-// Per-candidate subjects come from DECLARED metadata only: an explicit
-// `subjects` list, a `subject` string, a queue-style `target`/`path`, carried
-// proposal front matter (`fm`/`frontmatter`), or the raw declared entry
-// (`raw`, an object — the queue entry's own subject fields). The candidate's
-// title, detail, task text and body are NEVER read for paths: a brief names
-// paths in order to forbid them as readily as to assign them, so matching
-// prose would read a prohibition as an authorisation.
-//
-// Measurement is per candidate: the sum of the measured bytes of its
-// measurable declared subjects through the injected `measure` seam, else the
-// size its declared metadata gives for the subject (`reviewedBytes`,
-// `estimatedBytes` or `estimateBytes`, falling back to the raw entry's
-// declared estimate), never zero and never a refusal for pathlessness —
-// having no file to sum is an ordinary state for new writing, not a defect.
-// An order's total is the sum of its candidates' sizes; each named subject
-// additionally accumulates the full size of every candidate naming it, which
-// is conservative (fail-closed) for multi-subject candidates. The bundler
-// performs no graph query: the brief-side annex and the merge-side
-// corroboration read the bundler's declared subjects later; this step only
-// declares them.
+ // Per-candidate subjects come from DECLARED metadata only: an explicit
+ // `subjects` list, a `subject` string, a queue-style `target`, carried
+ // proposal front matter (`fm`/`frontmatter`), or the raw declared entry
+ // (`raw`, an object — the queue entry's own subject fields). A proposal
+ // candidate's own `path` is its file pointer, never a subject, and is
+ // deliberately never read: every proposal would otherwise gain a unique
+ // bogus subject of its own file, so no two proposals could ever cohere on
+ // the pathless category-plus-cohort key. The candidate's
+ // title, detail, task text and body are NEVER read for paths: a brief names
+ // paths in order to forbid them as readily as to assign them, so matching
+ // prose would read a prohibition as an authorisation.
+ //
+ // Measurement is per subject where subjects measure, per candidate where
+ // they do not. Each declared subject's own size is read through the injected
+ // `measure` seam, and the candidate's total is the sum of its subjects' own
+ // sizes. Where no subject measures, the candidate carries a candidate-level
+ // estimate — the size its declared metadata gives (`reviewedBytes`,
+ // `estimatedBytes` or `estimateBytes`, falling back to the raw entry's
+ // declared estimate, else the positive fallback below) — charged as a
+ // candidate TOTAL against the total bound only, never per subject, since an
+ // estimate has no per-subject split. Sizes are never zero and pathlessness
+ // alone never refuses: having no file to sum is an ordinary state for new
+ // writing, not a defect. An order's total is the sum of its candidates'
+ // totals; each named subject accumulates only its own size from every
+ // candidate naming it. The bundler
+ // performs no graph query: the brief-side annex and the merge-side
+ // corroboration read the bundler's declared subjects later; this step only
+ // declares them.
 // ---------------------------------------------------------------------------
 
 /** Default work-order bounds, pending the reserved-path block that carries them. */
@@ -384,12 +392,10 @@ export function candidateSubjects(candidate) {
   out = normalizeSubjectList(candidate.subject);
   if (out.length) return out;
   // A queue entry's declared path field — a declared slot, not prose.
+  // (A proposal candidate's own `path` is deliberately NOT read here: it is
+  // the proposal file's pointer, never a subject.)
   if (typeof candidate.target === 'string' && candidate.target.trim()) {
     out = normalizeSubjectList(candidate.target);
-    if (out.length) return out;
-  }
-  if (typeof candidate.path === 'string' && candidate.path.trim()) {
-    out = normalizeSubjectList(candidate.path);
     if (out.length) return out;
   }
   // Carried proposal front matter, when a reader preserved it structurally.
@@ -412,27 +418,12 @@ export function candidateSubjects(candidate) {
 }
 
 /**
- * A candidate's reviewed size in bytes: measured subjects summed through the
- * `measure` seam where any subject measures, else the declared-subject
- * estimate from the candidate's own metadata, else the positive fallback.
- * Never zero, and pathlessness alone never refuses — the refusal rules live
- * in `bundleWorkOrders` and none of them fires on "has no file".
+ * A candidate's declared size estimate: the size its own metadata gives for
+ * the work (`reviewedBytes`, `estimatedBytes` or `estimateBytes`, falling
+ * back to the raw entry's declared estimate), else the positive fallback.
+ * Never zero. This is a candidate TOTAL with no per-subject split.
  */
-export function candidateReviewedBytes(candidate, { measure } = {}) {
-  const subjects = candidateSubjects(candidate);
-  if (subjects.length && typeof measure === 'function') {
-    let sum = 0;
-    for (const subject of subjects) {
-      let n = null;
-      try {
-        n = measure(subject, candidate);
-      } catch {
-        n = null;
-      }
-      if (typeof n === 'number' && Number.isFinite(n) && n > 0) sum += Math.floor(n);
-    }
-    if (sum > 0) return sum;
-  }
+function readCandidateEstimate(candidate) {
   const holders = [candidate];
   if (candidate?.raw && typeof candidate.raw === 'object') holders.push(candidate.raw);
   for (const holder of holders) {
@@ -444,6 +435,56 @@ export function candidateReviewedBytes(candidate, { measure } = {}) {
     }
   }
   return WORK_ORDER_PATHLESS_ESTIMATE_BYTES;
+}
+
+/**
+ * Measure one candidate through the `measure` seam: each declared subject's
+ * OWN size, plus the candidate total (the sum of its subjects' own sizes).
+ *
+ * Where no subject measures, the candidate-level estimate stands in as the
+ * total with no per-subject split: every subject's own size is 0 and
+ * `estimated` is true, so callers charge the estimate against the TOTAL
+ * bound only. A subject the seam cannot read (null, non-positive, or
+ * throwing) contributes 0 rather than failing the whole candidate.
+ *
+ * @returns {{ total: number, estimated: boolean, sizes: Record<string, number> }}
+ */
+function measureCandidate(candidate, subjects, measure) {
+  const sizes = {};
+  let anyMeasured = false;
+  if (subjects.length && typeof measure === 'function') {
+    for (const subject of subjects) {
+      let n = null;
+      try {
+        n = measure(subject, candidate);
+      } catch {
+        n = null;
+      }
+      const own = (typeof n === 'number' && Number.isFinite(n) && n > 0) ? Math.floor(n) : 0;
+      sizes[subject] = own;
+      if (own > 0) anyMeasured = true;
+    }
+  }
+  if (anyMeasured) {
+    let total = 0;
+    for (const subject of subjects) total += sizes[subject] ?? 0;
+    return { total, estimated: false, sizes };
+  }
+  for (const subject of subjects) sizes[subject] = 0;
+  return { total: readCandidateEstimate(candidate), estimated: true, sizes };
+}
+
+/**
+ * A candidate's reviewed size in bytes (its total): the sum of its declared
+ * subjects' own measured sizes where any subject measures, else the
+ * candidate-level estimate. Never zero, and pathlessness alone never
+ * refuses — the refusal rules live in `bundleWorkOrders` and none of them
+ * fires on "has no file".
+ */
+export function candidateReviewedBytes(candidate, { measure } = {}) {
+  const subjects = candidateSubjects(candidate);
+  const meas = typeof measure === 'function' ? measure : () => null;
+  return measureCandidate(candidate, subjects, meas).total;
 }
 
 /**
@@ -463,15 +504,20 @@ export function coherenceKey(candidate, { category } = {}) {
   return `${cat}\ncohort:${source}`;
 }
 
-/** Whether `order` still fits `size` bytes on `subjects` under `bounds`. */
-function orderFits(order, subjects, size, bounds) {
+/**
+ * Whether `order` still fits a candidate under `bounds`: `total` is the
+ * candidate's total, `sizes` its per-subject own sizes. Each named subject
+ * is checked against its own accumulated figure — never against the
+ * candidate's cross-subject total.
+ */
+function orderFits(order, subjects, sizes, total, bounds) {
   if (order.items.length + 1 > bounds.maxItems) return false;
   let distinct = order.subjects.length;
   for (const s of subjects) if (!order.subjects.includes(s)) distinct += 1;
   if (distinct > bounds.maxSubjects) return false;
-  if (order.totalBytes + size > bounds.maxReviewedBytes) return false;
+  if (order.totalBytes + total > bounds.maxReviewedBytes) return false;
   for (const s of subjects) {
-    if ((order.perSubjectBytes[s] ?? 0) + size > bounds.maxReviewedBytesPerSubject) return false;
+    if ((order.perSubjectBytes[s] ?? 0) + (sizes[s] ?? 0) > bounds.maxReviewedBytesPerSubject) return false;
   }
   return true;
 }
@@ -481,11 +527,14 @@ function orderFits(order, subjects, size, bounds) {
  * orders. Returns `{ orders, refusals }`: each order carries its coherence
  * `key`, `category`, `governingType` (its first item's type — one order, one
  * category, one type in charge), `items`, the union `subjects`, `totalBytes`
- * and `perSubjectBytes`. A candidate that alone exceeds a bound it can never
- * fit — more subjects than `max_subjects`, more bytes than the per-subject
- * limit, or more bytes than the total — is refused at selection with a
- * recorded reason naming the bound and the measured size, never silently
- * dropped: a bound that silently removes work has become the work list.
+ * and `perSubjectBytes` (each subject's own accumulated size). A candidate
+ * that alone exceeds a bound it can never fit — more subjects than
+ * `max_subjects`, one subject's own measured size over the per-subject
+ * limit, or a candidate total over the total — is refused at selection with
+ * a recorded reason naming the bound and the measured size, never silently
+ * dropped: a bound that silently removes work has become the work list. A
+ * candidate-level estimate has no per-subject split, so it is charged as a
+ * candidate total against the total bound only.
  */
 export function bundleWorkOrders(candidates, { cfg = null, bounds = null, measure = null } = {}) {
   const b = bounds ?? workOrderBounds(cfg);
@@ -495,7 +544,8 @@ export function bundleWorkOrders(candidates, { cfg = null, bounds = null, measur
   const refusals = [];
   for (const c of candidates ?? []) {
     const subjects = candidateSubjects(c);
-    const size = candidateReviewedBytes(c, { measure: meas });
+    const measured = measureCandidate(c, subjects, meas);
+    const size = measured.total;
     const category = (cfg ? categoryOf(cfg, c?.type) : null) ?? 'uncategorized';
     const key = coherenceKey(c, { category });
     const label = String(c?.title ?? c?.slug ?? c?.id ?? c?.type ?? 'candidate').slice(0, 80);
@@ -510,14 +560,23 @@ export function bundleWorkOrders(candidates, { cfg = null, bounds = null, measur
       });
       continue;
     }
-    if (size > b.maxReviewedBytesPerSubject) {
+    // The per-subject refusal is gated on the maximum SINGLE subject's own
+    // measured size — never on the candidate's cross-subject total, and never
+    // on an estimate, which has no per-subject split.
+    let worst = null;
+    for (const s of subjects) {
+      const own = measured.sizes[s] ?? 0;
+      if (!worst || own > worst.bytes) worst = { subject: s, bytes: own };
+    }
+    if (worst && worst.bytes > b.maxReviewedBytesPerSubject) {
       refusals.push({
         candidate: c,
         rule: 'work-order:per-subject-bound',
         reason:
-          `candidate "${label}" measures ${size} reviewed bytes, exceeding ` +
-          `work_order.max_reviewed_bytes_per_subject ${b.maxReviewedBytesPerSubject} on its ` +
-          `own — refused at selection (recorded here, not silently dropped)`,
+          `candidate "${label}" measures ${worst.bytes} reviewed bytes on subject ` +
+          `"${worst.subject}", exceeding work_order.max_reviewed_bytes_per_subject ` +
+          `${b.maxReviewedBytesPerSubject} on its own — refused at selection ` +
+          `(recorded here, not silently dropped)`,
       });
       continue;
     }
@@ -526,14 +585,19 @@ export function bundleWorkOrders(candidates, { cfg = null, bounds = null, measur
         candidate: c,
         rule: 'work-order:total-bound',
         reason:
-          `candidate "${label}" measures ${size} reviewed bytes, exceeding ` +
-          `work_order.max_reviewed_bytes ${b.maxReviewedBytes} on its own — refused at ` +
-          `selection (recorded here, not silently dropped)`,
+          measured.estimated
+            ? `candidate "${label}" estimates ${size} reviewed bytes as a candidate ` +
+              `total (no per-subject split), exceeding work_order.max_reviewed_bytes ` +
+              `${b.maxReviewedBytes} on its own — refused at selection (recorded here, ` +
+              `not silently dropped)`
+            : `candidate "${label}" measures ${size} reviewed bytes in total, exceeding ` +
+              `work_order.max_reviewed_bytes ${b.maxReviewedBytes} on its own — refused at ` +
+              `selection (recorded here, not silently dropped)`,
       });
       continue;
     }
     let order = lastByKey.get(key) ?? null;
-    if (order && !orderFits(order, subjects, size, b)) order = null;
+    if (order && !orderFits(order, subjects, measured.sizes, size, b)) order = null;
     if (!order) {
       order = {
         key,
@@ -550,7 +614,10 @@ export function bundleWorkOrders(candidates, { cfg = null, bounds = null, measur
     order.items.push(c);
     for (const s of subjects) {
       if (!order.subjects.includes(s)) order.subjects.push(s);
-      order.perSubjectBytes[s] = (order.perSubjectBytes[s] ?? 0) + size;
+      // Each subject accumulates only its own size — never the candidate's
+      // cross-subject total. Absent (zero) stays absent.
+      const own = measured.sizes[s] ?? 0;
+      if (own > 0) order.perSubjectBytes[s] = (order.perSubjectBytes[s] ?? 0) + own;
     }
     order.totalBytes += size;
   }
