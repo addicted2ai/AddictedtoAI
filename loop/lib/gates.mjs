@@ -44,12 +44,12 @@ export const MIN_GATE_FLOOR_MS = 1;
 const CALIBRATION_DATE = '2026-09-08';
 const CALIBRATION_RUN_COUNT = 1;
 
-function calibratedFloor(calibrationSeconds, source, note) {
+function calibratedFloor(calibrationSeconds, source, note, calibratedOn = CALIBRATION_DATE) {
   return Object.freeze({
     calibrationSeconds,
     floorMs: Math.round(calibrationSeconds * 1000 * REPOSITORY_FLOOR_FRACTION),
     floorFraction: REPOSITORY_FLOOR_FRACTION,
-    calibratedOn: CALIBRATION_DATE,
+    calibratedOn,
     calibrationRuns: CALIBRATION_RUN_COUNT,
     calibrationMethod: 'one serial wall-clock invocation of the gate',
     source,
@@ -66,7 +66,22 @@ export const GATE_FLOORS = Object.freeze({
   ),
   'verify-surfaces': calibratedFloor(3.7, 'gate-timings-final.txt'),
   'verify-design': calibratedFloor(35.7, 'gate-timings-final.txt'),
-  'verify-launch': calibratedFloor(39.6, 'gate-timings-final.txt', 'includes its recorded 39s build'),
+  // RECALIBRATED 2026-09-12 (job j-20260912-02): the 39.6s figure in
+  // gate-timings-final.txt measured verify-launch spawning its OWN build, but
+  // as a train gate it reuses the train's build through hasCurrentBuild — the
+  // task-32 reuse property — so the legitimate run returns in ~1s (1.07s one
+  // serial run on this machine 2026-09-12: 0.34s reuse walk + ~0.7s of checks;
+  // 0.365s reuse on 2026-09-08, tasks.md task 31). The old 9.9s floor would
+  // have rejected that legitimate run, the exact duration-refusal failure the
+  // floor principle forbids: each floor sits below the fastest legitimate run
+  // observed. The 39.6s figure stays true of the spawn path, which clears this
+  // floor by two orders of magnitude, so one floor admits both paths.
+  'verify-launch': calibratedFloor(
+    1.1,
+    'j-20260912-02 RESULT.md reuse timing',
+    'reuses the train build via hasCurrentBuild; spawns (~23-53s) clear the same floor',
+    '2026-09-12',
+  ),
   'verify-analytics': calibratedFloor(
     19.5,
     'gate-timings-final.txt',
@@ -582,26 +597,58 @@ function npmRun(worktree, script, timeoutMs, env, floors, spawn = spawnSync, now
 }
 
 /**
- * THE GATES THAT ARE NOT `npm` SCRIPTS (beads addictedtoai-one6).
+ * THE GATES THAT ARE NOT `npm` SCRIPTS (beads addictedtoai-one6, job
+ * j-20260912-02).
  *
- * `package.json` carries `verify:launch` and `verify:analytics` but no
- * `verify:design` or `verify:surfaces`, and `package.json` is a file this
- * repository does not edit. So these two are run the way the push bar runs
- * them — `node scripts/<name>.mjs` against the export the `build` gate above
- * has just produced in this same worktree.
+ * `package.json` carries `verify:launch` and `verify:analytics` (colons) but
+ * no `verify-launch` or `verify-analytics` (hyphens), and no `verify:design`
+ * or `verify:surfaces` at all — and `package.json` is a file this repository
+ * does not edit. So all four are run the way the push bar runs them —
+ * `node scripts/<name>.mjs` — resolved against THIS worktree: the child is
+ * spawned with the worktree as its cwd naming a relative script path, so the
+ * script file it loads is the worktree's own copy and its ROOT-derived paths
+ * (content, data, out) are the worktree's, against the export the `build`
+ * gate has just produced in that same worktree.
  *
- * WHY THESE TWO AND NOT THE OTHER TWO. `verify-launch` runs its own build
- * unless told not to, which would double every job's build cost;
- * `verify-analytics` needs Playwright driving a served export to count GA4
- * `page_view` hits, which is not a thing a content diff can plausibly break.
- * These two are the ones that catch CONTENT-shaped defects, which is the class
- * a Desk job can actually introduce — and one of them has already caught one in
- * production, after the fact: job `j-20260903-15` merged on `gates: PASS`,
- * published at `077ffcd5`, and the very next human-initiated run failed
+ * WHY THE FIRST TWO JOINED THE TRIPWIRE AND THE LAST TWO DID NOT (one6).
+ * `verify-launch` runs its own build unless told not to, which would double
+ * every job's build cost; `verify-analytics` needs Playwright driving a served
+ * export to count GA4 `page_view` hits, which is not a thing a content diff
+ * can plausibly break. The tripwire two are the ones that catch
+ * CONTENT-shaped defects, which is the class a Desk job can actually
+ * introduce — and one of them has already caught one in production, after the
+ * fact: job `j-20260903-15` merged on `gates: PASS`, published at `077ffcd5`,
+ * and the very next human-initiated run failed
  *     FAIL  every dateModified equals that URL's <lastmod> in sitemap.xml
  *           /blog/glm-5-3-license-revenue-gate: graph 2026-09-03 vs sitemap 2026-09-02
  * which is a `verify-surfaces` check. The site was live with a failing gate for
  * as long as it took a person to look.
+ *
+ * WHY THE LAST TWO ARE NODE GATES RATHER THAN NPM SCRIPTS (j-20260912-02).
+ * The frozen TRAIN_GATES names are hyphenated while `package.json` carries
+ * the colon forms, so `runGates` resolves them through neither branch and
+ * fails them closed on every run, in every worktree, on any commit. Renaming
+ * either side is forbidden — the frozen names are referenced by specs and
+ * tasks, and `package.json` is reserved by design — so these entries run them
+ * as node children, exactly as the push bar invokes them.
+ *
+ * `verify-launch` runs with NO arguments, which is the task-32 reuse
+ * property: its build section finds the train build current through
+ * `hasCurrentBuild` and reuses it (0.34s on 2026-09-12) instead of spawning a
+ * second one. `--no-build` would be cheaper still and is WRONG here: it
+ * records a SKIP whose own wording says the build was not verified by the
+ * run, and the task-31 reuse-vs-spawn availability record needs the build
+ * section to actually run and name which path it took.
+ *
+ * `verify-analytics` serves the worktree's own `out/` (its first argument is
+ * an export directory OR a base URL; a relative `out` resolves under the
+ * worktree cwd) on the script's default port, overridable exactly the way
+ * `verify-design`'s is. Its no-record discipline is enforced from THIS side
+ * (`noRecordPaths` below): unlike `verify-design` the script has no
+ * no-record flag and nothing in scope may add one, so the runner snapshots
+ * the measurement record and restores it after the child exits, pass or fail.
+ * `data/` is never gitignored, so a written measurement would otherwise reach
+ * the merged diff through the revision pass's `git add -A`.
  *
  * MEASURED COST, 2026-09-06, both run from a worktree against the already-built
  * export in `D:/AddictedtoAI/out` while a Desk job and four agents shared the
@@ -618,10 +665,11 @@ function npmRun(worktree, script, timeoutMs, env, floors, spawn = spawnSync, now
  * `verify-analytics`, not a different one, and the reason to keep
  * `verify-analytics` out is its subject, not its machinery.
  *
- * The port is deliberately NOT `verify-design`'s own default of 3111: the
- * maintainer or the orchestrator running the push gate by hand on `main` binds
- * that one, and two servers on one port is a gate failure that has nothing to
- * do with the diff. `LOOP_VERIFY_DESIGN_PORT` overrides.
+ * The design port is deliberately NOT `verify-design`'s own default of 3111:
+ * the maintainer or the orchestrator running the push gate by hand on `main`
+ * binds that one, and two servers on one port is a gate failure that has
+ * nothing to do with the diff. `LOOP_VERIFY_DESIGN_PORT` overrides, and
+ * `LOOP_VERIFY_ANALYTICS_PORT` does the same for the analytics default 3212.
  */
 export const NODE_GATES = Object.freeze({
   'verify-surfaces': Object.freeze({
@@ -642,6 +690,28 @@ export const NODE_GATES = Object.freeze({
     // reviewer as an unexplained diff hunk nobody wrote.
     env: { ATAI_VERIFY_DESIGN_NO_RECORD: '1' },
   }),
+  'verify-launch': Object.freeze({
+    file: 'scripts/verify-launch.mjs',
+    // No `--no-build`: the build section must RUN so it can reuse the train
+    // build through hasCurrentBuild and name the path it took (see above).
+    // With `--no-build` the section reports SKIP — "THE BUILD WAS NOT
+    // VERIFIED BY THIS RUN" — which is false of a train that gated `build`
+    // two steps earlier, and it would leave the reuse-vs-spawn record with
+    // nothing to record.
+    args: () => [],
+    floor: GATE_FLOORS['verify-launch'],
+  }),
+  'verify-analytics': Object.freeze({
+    file: 'scripts/verify-analytics.mjs',
+    args: () => ['out', process.env.LOOP_VERIFY_ANALYTICS_PORT ?? '3212'],
+    floor: GATE_FLOORS['verify-analytics'],
+    // The same CHECK-NOT-RECORD discipline as `verify-design`, enforced from
+    // the runner because the script honours no flag for it: `nodeRun`
+    // snapshots these worktree-relative paths before spawning and restores
+    // them after the child exits, whatever the verdict, so a measurement the
+    // gate wrote never reaches a diff.
+    noRecordPaths: Object.freeze(['data/launch.json']),
+  }),
 });
 
 /**
@@ -654,24 +724,69 @@ export const NODE_GATES = Object.freeze({
 export const DEFAULT_GATES = Object.freeze(['build', 'verify-surfaces']);
 
 /**
- * The full gate set, frozen, in Q-S15 order (Stage-1 task 32, U1). DATA
- * only in U1: nothing runs this set yet — the `verify-launch`-reuses-the-
- * train-build clause is task 36/U2 property and is NOT wired here. The one
- * reuse U1 asserts is the tripwire's: `verify-surfaces` on the tripwire
+ * The full gate set, frozen, in Q-S15 order (Stage-1 task 32, U1). Every name
+ * here resolves through the same two branches `runGates` uses — a
+ * `NODE_GATES` entry naming a script file in the worktree, or an `npm`
+ * script of that name — and `loop/tests/train-gate-resolution.test.mjs`
+ * runs the whole set through `runGates` so a future rename breaks the suite
+ * instead of the night. `verify-launch` reuses the train's build (its entry
+ * carries no `--no-build`; see above); `verify-analytics` restores the
+ * measurement record it writes (its `noRecordPaths`). The one reuse U1
+ * asserts besides those is the tripwire's: `verify-surfaces` on the tripwire
  * path reads the tripwire's own export, exactly one build per job.
  */
 export const TRAIN_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design', 'verify-launch', 'verify-analytics']);
 
+/**
+ * What `spec.noRecordPaths` (worktree-relative) held before the gate child
+ * ran — bytes, or null where nothing was there to keep.
+ */
+function snapshotNoRecordPaths(worktree, relPaths) {
+  return (relPaths ?? []).map((rel) => {
+    const abs = join(worktree, rel);
+    let bytes = null;
+    try {
+      bytes = readFileSync(abs);
+    } catch {
+      bytes = null;
+    }
+    return { abs, bytes };
+  });
+}
+
+/**
+ * Put the snapshot back, whatever the gate verdict was. A path that held
+ * nothing holds nothing again; a path that held bytes holds those exact
+ * bytes. Best-effort by design: the gate's verdict already stands, and a
+ * restore that threw must not take it down with it.
+ */
+function restoreNoRecordPaths(snapshots) {
+  for (const { abs, bytes } of snapshots) {
+    try {
+      if (bytes === null) rmSync(abs, { force: true });
+      else writeFileSync(abs, bytes);
+    } catch {
+      /* the verdict stands; the dirt is reported by the tree, not hidden */
+    }
+  }
+}
+
 function nodeRun(worktree, name, spec, timeoutMs, env, floors, spawn = spawnSync, now = defaultClock) {
   const args = [spec.file, ...spec.args()];
   const started = now();
-  const r = spawn(process.execPath, args, {
-    cwd: worktree,
-    encoding: 'utf8',
-    timeout: timeoutMs,
-    maxBuffer: 32 * 1024 * 1024,
-    env: { ...process.env, ...env, ...(spec.env ?? {}) },
-  });
+  const preserved = snapshotNoRecordPaths(worktree, spec.noRecordPaths);
+  let r;
+  try {
+    r = spawn(process.execPath, args, {
+      cwd: worktree,
+      encoding: 'utf8',
+      timeout: timeoutMs,
+      maxBuffer: 32 * 1024 * 1024,
+      env: { ...process.env, ...env, ...(spec.env ?? {}) },
+    });
+  } finally {
+    restoreNoRecordPaths(preserved);
+  }
   return {
     script: name,
     command: `node ${args.join(' ')}`,
