@@ -317,6 +317,8 @@ content/blog/claude-fable-5-1-mythos-5-1.md ends without a newline (the branch d
 - expires: 2026-09-09
 - swept on: 2026-09-11 (the LOCAL date of the machine that swept it)
 - was: `claude-fable-5-1-mythos-5-1.md` (slug `claude-fable-5-1-mythos-5-1`)
+- failed test: not selected before its declared expiry (mechanical sweep; no model invoked, no inference spent)
+- refile when: new developments make the story current again and it outranks the derived queue
 
 An expiring proposal is selectable without cooling and stops being selectable at its expiry. This one was not selected in time, so it was swept here mechanically — no model was invoked and no inference was spent. Nothing anywhere treats this as a failure: it is what keeps the candidate directory from becoming a backlog of stories whose evidence has stopped being current.
 

@@ -396,7 +396,16 @@ export function sweepExpired(ctx, item, { dryRun = false } = {}) {
     `- expires: ${item.expires}\n` +
     issueLine +
     `- swept on: ${localDate(ctx.now())} (the LOCAL date of the machine that swept it)\n` +
-    `- was: \`${item.file ?? basename(item.path)}\` (slug \`${item.slug}\`)\n\n` +
+    `- was: \`${item.file ?? basename(item.path)}\` (slug \`${item.slug}\`)\n` +
+    // The drop-record guard (beads addictedtoai-fyd3) reads EVERY record in
+    // `dropped/`, including mechanical sweeps — so the note carries the two
+    // structured lines the guard requires, stating in fields what the prose
+    // below already says in sentences. Neither is invented: the "failed test"
+    // is the declared expiry going unmet, and the refile condition is the
+    // story becoming current again. An expiry remains what the spec calls it:
+    // never a failure, never a block.
+    `- failed test: not selected before its declared expiry (mechanical sweep; no model invoked, no inference spent)\n` +
+    `- refile when: new developments make the story current again and it outranks the derived queue\n\n` +
     `An expiring proposal is selectable without cooling and stops being ` +
     `selectable at its expiry. This one was not selected in time, so it was ` +
     `swept here mechanically — no model was invoked and no inference was ` +
