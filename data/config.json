@@ -46,6 +46,12 @@
     "lock_wait_seconds": 1200
   },
   "workers": 1,
+  "work_order": {
+    "max_items": 4,
+    "max_subjects": 4,
+    "max_reviewed_bytes": 60000,
+    "max_reviewed_bytes_per_subject": 30000
+  },
   "degradation": {
     "window_hours": 48,
     "shed_levels": [
