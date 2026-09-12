@@ -2032,8 +2032,10 @@ export function trainReviewGate(ctx, { trainId, kinds = [], subjects = [], chang
  * loop context. The seam shape is `review({diffText, manifest, repo})` — a
  * single object with no context — while the sealed assembly needs the
  * ledger, the registry, the reviews dir and a worktree root. The factory
- * binds them at the call site (`review = makeReviewTrain(ctx)`), so stubs
- * keep the single-object shape and production gets the sealed reviewer.
+ * binds them at the call site (`review = makeReviewTrain(ctx)` or
+ * `makeReviewTrain(ctx, { reviewerId })` to carry the run's resolved
+ * reviewer), so stubs keep the single-object shape and production gets
+ * the sealed reviewer.
  */
 export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null, reviewerId } = {}) {
   return ({ diffText, manifest, repo }) => reviewTrain(ctx, { diffText, manifest, repo, capMinutes, invoke, reviewerId });
