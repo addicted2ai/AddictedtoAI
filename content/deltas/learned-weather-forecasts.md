@@ -7,9 +7,9 @@ impossible:
   source_url: "https://deepmind.google/discover/blog/graphcast-ai-model-for-faster-and-more-accurate-global-weather-forecasting/"
   metric: "10-day forecast in under a minute on one TPU machine"
 routine:
-  date: "2025-02-25"
-  what: "ECMWF takes a machine-learning forecast into operations, running it beside its physics-based system."
-  source_url: "https://www.ecmwf.int/en/about/media-centre/news/2025/ecmwfs-ai-forecasts-become-operational"
-  metric: "about 1,000x less energy per forecast"
+  date: "2026-09-02"
+  what: "WeatherNext 3 becomes the new leader on Brightband's Operational WeatherBench, a live third-party comparison of AI and physics global medium-range models, edging out its predecessor WeatherNext 2."
+  source_url: "https://brightband.com/company/news/weathernext-3-on-operational-weatherbench"
+  metric: "lowest 2m-temperature error on 26 of the last 30 days in August"
 mentions: []
 ---
