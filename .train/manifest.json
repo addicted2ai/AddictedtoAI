@@ -27,13 +27,18 @@
     "data/reviews/j-20260911-05.md",
     "data/reviews/j-20260911-06.md",
     "data/reviews/j-20260912-01.md",
+    "data/reviews/j-20260912-02.md",
+    "data/reviews/t-ba60687c.md",
+    "data/reviews/t-ba60687c.train-compare.md",
     "data/sources/llm-releases/state.json",
     "data/sources/openrouter-models/latest.json",
     "data/sources/openrouter-models/minted.json",
     "data/sources/openrouter-models/previous.json",
     "data/sources/openrouter-models/state.json",
     "evidence/gate-run-2026-09-11-0f25911/summary.txt",
-    "evidence/gate-run-2026-09-11-7cb253c/summary.txt"
+    "evidence/gate-run-2026-09-11-7cb253c/summary.txt",
+    "loop/lib/gates.mjs",
+    "loop/tests/train-gate-resolution.test.mjs"
   ],
   "merges": [
     {
@@ -106,5 +111,7 @@
     "maxReviewedBytes": 150000,
     "maxSubjects": 12
   },
-  "remainder": []
+  "remainder": [
+    "541c9f8b"
+  ]
 }
