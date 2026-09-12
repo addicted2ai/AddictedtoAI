@@ -119,6 +119,51 @@ switch (mode) {
     break;
   }
 
+  // Task 55 ordering witness: the author observes the declaration commitment
+  // at spawn time. It reads the COMMITTED `.job/source.json` from history
+  // (not the working tree) and fails loudly when selection has not committed
+  // `items` + `declared_subjects` before this executor ran. On success it
+  // records the observation to `declare-check.txt` and then does real content
+  // work (same files as `done-content-entry`) so the merge reaches the
+  // declaration gate. If production ever moves the brief commit after the
+  // executor, this mode records `absent`/`malformed` and the ordering arm
+  // goes red.
+  case 'declare-check-content': {
+    let observed = 'absent';
+    try {
+      const out = execFileSync('git', ['show', 'HEAD:.job/source.json'], {
+        encoding: 'utf8',
+        cwd,
+      });
+      const parsed = JSON.parse(out);
+      const hasItems = Array.isArray(parsed?.items);
+      const hasDeclared = Array.isArray(parsed?.declared_subjects);
+      observed =
+        hasItems && hasDeclared
+          ? `present items=${parsed.items.length} declared=${parsed.declared_subjects.length}`
+          : 'malformed';
+    } catch {
+      observed = 'absent';
+    }
+    write('declare-check.txt', `declaration at spawn: ${observed}\n`);
+    if (observed === 'absent' || observed === 'malformed') {
+      result('failed\n\nDeclaration not committed before the executor ran.\n');
+      break;
+    }
+    const p = join(cwd, 'content', 'wiki', 'model', 'fixture-model.md');
+    mkdirSync(join(cwd, 'content', 'wiki', 'model'), { recursive: true });
+    mkdirSync(join(cwd, 'content', 'blog'), { recursive: true });
+    writeFileSync(
+      p,
+      '---\nid: model/fixture-model\nkind: model\ndisplay_name: Fixture Model\n---\n\nA prose body.\n',
+      'utf8',
+    );
+    write('content/blog/fixture-post.md', '---\nslug: fixture-post\n---\n\nA post body.\n');
+    write('notes.txt', 'not content, and must not be claimed as a reviewed piece\n');
+    result('done\n\nWrote the entry after observing a committed declaration.\n');
+    break;
+  }
+
   // A job dispatched at a carried finding that REALLY deletes the finding's
   // file and changes nothing else — the shape a job reaches for when it cannot
   // do the work (beads addictedtoai-jdt8). It deletes again on the revision

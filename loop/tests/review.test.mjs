@@ -49,7 +49,15 @@ function repo(authorMode, reviewerMode, opts = {}) {
     runners: runnersYaml({ command: mockCommand(authorMode), reviewerCommand: mockCommand(reviewerMode) }),
     ...opts,
   });
-  writeQueue(ctx, opts.queue ?? [{ type: 'entry', title: 'write the entry for the fixture subject' }]);
+  writeQueue(ctx, opts.queue ?? [{
+    type: 'entry',
+    title: 'write the entry for the fixture subject',
+    // Task 55: the declaration gate refuses a content diff with nothing
+    // declared, so the default fixture declares what `done-content-entry`
+    // writes. Non-content authors are unaffected (a content-free diff binds
+    // nothing and merges either way).
+    subjects: ['content/blog/fixture-post.md', 'content/wiki/model/fixture-model.md'],
+  }]);
   return ctx;
 }
 

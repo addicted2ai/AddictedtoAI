@@ -474,7 +474,13 @@ test('o5t a job inside its budget runs all four invocations with every cap untou
       reviewerCommand: mockCommand('review-revise-then-approve'),
     }),
   });
-  writeQueue(ctx, [{ type: 'entry', title: 'write the entry for the fixture subject' }]);
+  writeQueue(ctx, [{
+    type: 'entry',
+    title: 'write the entry for the fixture subject',
+    // Task 55: the author writes the two fixture content files, so the
+    // fixture declares them; an undeclared content diff refuses at the merge.
+    subjects: ['content/blog/fixture-post.md', 'content/wiki/model/fixture-model.md'],
+  }]);
 
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
   assert.equal(res.outcome, 'done', ctx.output());

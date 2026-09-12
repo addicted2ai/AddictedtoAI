@@ -685,7 +685,15 @@ test('runLoop overlap: a job whose subjects ride an admitted merge waits', async
   git(ctx.repoRoot, ['checkout', '--quiet', TRAIN_BRANCH]);
   git(ctx.repoRoot, ['merge', '--quiet', '--no-ff', '--no-verify', '-m', 'job old-1 (repair): old work', 'job/old']);
   git(ctx.repoRoot, ['checkout', '--quiet', 'main']);
-  writeQueue(ctx, [{ type: 'repair', title: 'fix the fixture link', detail: 'a small repair' }]);
+  writeQueue(ctx, [{
+    type: 'repair',
+    title: 'fix the fixture link',
+    detail: 'a small repair',
+    // Task 55: the author writes the two fixture content files, so the
+    // fixture declares them; an undeclared content diff refuses at the merge.
+    // Admission overlap below is diff-measured and unaffected.
+    subjects: ['content/blog/fixture-post.md', 'content/wiki/model/fixture-model.md'],
+  }]);
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates: GREEN_GATES });
   assert.equal(res.outcome, 'interrupted', `overlap waits, resumable:\n${ctx.output()}`);
   assert.match(ctx.output(), /subjects overlap a merge on the train/, 'the log names the wait');
@@ -697,7 +705,13 @@ test('runLoop overlap: a job whose subjects ride an admitted merge waits', async
 test('runLoop happy merge lands on train, main frozen, nothing published', async (t) => {
   const ctx = loopRepo(t);
   const baseMain = git(ctx.repoRoot, ['rev-parse', 'main']);
-  writeQueue(ctx, [{ type: 'repair', title: 'fix the fixture link', detail: 'a small repair' }]);
+  writeQueue(ctx, [{
+    type: 'repair',
+    title: 'fix the fixture link',
+    detail: 'a small repair',
+    // Task 55: declared to match what the author writes (see above).
+    subjects: ['content/blog/fixture-post.md', 'content/wiki/model/fixture-model.md'],
+  }]);
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates: GREEN_GATES });
   assert.equal(res.outcome, 'done', ctx.output());
   assert.equal(git(ctx.repoRoot, ['rev-parse', 'main']), baseMain, 'main is frozen between trains');
@@ -716,13 +730,17 @@ test('runLoop idle: stale pending with an empty queue and no admission fires the
   // merge and an empty queue file, the run must fire idle. Fails on the
   // unwired form — `readQueue(ctx).length` is undefined, never 0, so the
   // trigger stays silent (sealed-review catch, fixed with the `.items`).
+  // Task 55: the author writes only a non-content note, so the
+  // content-scoped declaration refusal never fires and the run reaches the
+  // tripwire (which is what this arm is about); the author mode is
+  // incidental to the idle wiring.
   const directives = '# DIRECTIVES.md\n\n- repair: fix the idle fixture link\n';
   const ctx = makeRepo({
     directives,
     config: { ...DEFAULT_CONFIG, publish: false, train: { merges: 99, minutes: 9000, max_reviewed_bytes: 150000, max_subjects: 12, lock_wait_seconds: 30 } },
     files: {},
     runners: runnersYaml({
-      command: mockCommand('done-content-entry'),
+      command: mockCommand('done-edit'),
       reviewerCommand: mockCommand('review-approve'),
     }),
   });

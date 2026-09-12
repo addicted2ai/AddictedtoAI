@@ -158,16 +158,19 @@ export function ledgerSchemaLine(job, runner, jobId) {
 }
 
 // ---------------------------------------------------------------------------
-// Work-order declaration, Stage 2 task 55.
+// Work-order declaration, Stage 2 task 55 (amended: refusal scoped to merges
+// carrying content paths).
 //
 // One job is one work order (1..N items). The loop authors the subject list,
 // commits it to the branch at selection in `.job/source.json` before any
-// executor runs, and the merge refuses a missing or empty declaration.
-// The list records each item's bead, type, subjects and reason, plus the
-// union of every item's subjects as the job's declared subjects. It is never
-// derived by matching strings against the brief or any prose: a brief names
-// paths to forbid them as readily as to assign them, so a substring test
-// reads a prohibition as an authorisation. Subjects come from
+// executor runs, and the merge refuses a missing or empty declaration ONLY
+// where the merged diff carries content paths — a merge with no content paths
+// has nothing to bind and merges, binding nothing, logged (the code-only
+// rule). The list records each item's bead, type, subjects and reason, plus
+// the union of every item's subjects as the job's declared subjects. It is
+// never derived by matching strings against the brief or any prose: a brief
+// names paths to forbid them as readily as to assign them, so a substring
+// test reads a prohibition as an authorisation. Subjects come from
 // `candidateSubjects` (task 53) only, which reads declared metadata.
 //
 // Transition: branches selected before this task lands carry a source record
@@ -181,8 +184,10 @@ export function ledgerSchemaLine(job, runner, jobId) {
 /**
  * One work-order item for a selected candidate: bead, type, subjects, reason.
  * Subjects come from `candidateSubjects` only, never title/detail/prose.
- * Bead is null until intake mints one; reason is provenance, never
- * authorisation.
+ * Bead is null until intake mints one. Reason is provenance only — a human-
+ * readable note about why the item was selected — and must never become
+ * substring-matchable authorisation: every consumer reads `items[].subjects`
+ * and `declared_subjects` and never matches strings inside `reason`.
  */
 export function workOrderItemForCandidate(candidate) {
   const subjects = candidateSubjects(candidate ?? {});
@@ -207,21 +212,26 @@ export function buildWorkOrderDeclaration(candidate) {
 
 /**
  * True for branches selected before task 55: the committed source carries
- * neither `items` nor `declared_subjects`. Both keys must be absent together
- * to count as old — a record carrying exactly one of them is a partial write,
- * not an old contract, and fails closed below rather than passing as old.
+ * neither the `items` key nor the `declared_subjects` key. Detection is by key
+ * presence, not by array shape, so any present-but-malformed value (a key
+ * present without an array) is NOT old — it falls through to the declaration
+ * check below and fails closed. Both keys absent together is the only old
+ * shape; a record carrying exactly one key is a partial write, never old.
  */
 export function isOldContractSource(source) {
   if (!source || typeof source !== 'object' || Array.isArray(source)) return true;
-  const hasItems = Array.isArray(source.items);
-  const hasDeclared = Array.isArray(source.declared_subjects);
-  return !hasItems && !hasDeclared;
+  const hasItemsKey = Object.prototype.hasOwnProperty.call(source, 'items');
+  const hasDeclaredKey = Object.prototype.hasOwnProperty.call(source, 'declared_subjects');
+  return !hasItemsKey && !hasDeclaredKey;
 }
 
 /**
  * The sole subject source the brief's graph annex reads. Old-contract
  * branches read as null: no annex, no sidecar, no marker. New-contract
  * branches read as a copy of the committed union — never the brief text.
+ * Null also covers a present-but-unreadable partial (the merge gate, not this
+ * helper, is the sole authority for partials: it refuses them, so no annex
+ * row is ever assembled from them here).
  */
 export function declaredSubjectsForAnnex(source) {
   if (isOldContractSource(source)) return null;
@@ -230,10 +240,10 @@ export function declaredSubjectsForAnnex(source) {
 }
 
 /**
- * The merge-side gate for the committed declaration. Old-contract sources
- * pass through (transition). Anything else must carry a non-empty items list
- * and a non-empty declared union; otherwise there is nothing to bind and the
- * merge refuses.
+ * The declaration-only check: old-contract sources pass through (transition);
+ * anything else must carry a non-empty items list and a non-empty declared
+ * union. This answers "is anything declared", never "does the diff need it" —
+ * the merge gate below combines it with the diff's content paths.
  */
 export function checkCommittedDeclaration(source) {
   if (isOldContractSource(source)) return { ok: true, oldContract: true, declared: null };
@@ -256,6 +266,49 @@ export function checkCommittedDeclaration(source) {
     };
   }
   return { ok: true, oldContract: false, declared: [...declared] };
+}
+
+/**
+ * The amended merge decision (task 55 as amended): the declaration refusal is
+ * gated on content-path presence in the merged diff.
+ *
+ * - Old-contract sources pass through with no refusal and no graph arm.
+ * - Where the merged diff carries no joinable content path (`contentPaths`
+ *   empty, measured with the same `joinableSubjects` predicate task 56 uses),
+ *   the merge binds nothing, logs, and merges — even with a missing or empty
+ *   declaration.
+ * - Where the diff carries content paths, a missing or empty declaration
+ *   refuses, naming the content path(s); a non-empty declaration passes this
+ *   gate (the subset check against the union is task 56's, not here).
+ *
+ * `contentPaths` is the joinable-content list for the branch diff, never
+ * brief prose. Callers compute it with `joinableSubjects`; this function
+ * invents no second detector.
+ */
+export function declarationMergeDecision(source, contentPaths) {
+  if (isOldContractSource(source)) {
+    return { ok: true, oldContract: true, bindsNothing: false, declared: null };
+  }
+  const content = Array.isArray(contentPaths) ? contentPaths.filter(Boolean) : [];
+  const decl = checkCommittedDeclaration(source);
+  if (content.length === 0) {
+    return {
+      ok: true,
+      oldContract: false,
+      bindsNothing: true,
+      declared: decl.ok ? [...decl.declared] : [],
+    };
+  }
+  if (!decl.ok) {
+    return {
+      ok: false,
+      oldContract: false,
+      code: decl.code,
+      reason: `${decl.reason} — refusing content path(s): ${content.join(', ')}`,
+      content: [...content],
+    };
+  }
+  return { ok: true, oldContract: false, bindsNothing: false, declared: [...decl.declared] };
 }
 
 async function executeJob(ctx, opts) {
@@ -1645,7 +1698,7 @@ export async function runLoop(ctx, opts = {}) {
     if (workOrder.declared_subjects.length) {
       ctx.log(`declared subjects (${workOrder.declared_subjects.length}): ${workOrder.declared_subjects.join(', ')}`);
     } else {
-      ctx.log(`declared subjects: (none declared — the merge will refuse with nothing to bind)`);
+      ctx.log(`declared subjects: (none declared — binds nothing unless the diff carries content paths, which refuse)`);
     }
   }
   const mergeBaseSha = mergeBase(ctx.repoRoot, base, branch);
@@ -1786,25 +1839,30 @@ export async function runLoop(ctx, opts = {}) {
     return ledgerLine;
   };
 
-  // Stage-2 task 55: the committed-declaration gate. Read from branch history
-  // (`git show branch:.job/source.json`), never the working tree — the check
-  // is on what selection committed before any executor ran. Old-contract
-  // branches (no `items`/`declared_subjects`) complete under the single-item
-  // contract with no refusal and no graph arm. Anything else with a missing
-  // or empty declaration logs nothing-to-bind and refuses: an absent
-  // declaration is a refusal, never a pass, because an empty set makes every
-  // subset test vacuous. Checked before the scaffolding removal below, so a
-  // refused branch keeps its `.job/` evidence instead of gaining a removal
-  // commit on the way to no merge.
+  // Stage-2 task 55 (amended): the committed-declaration gate, scoped to merges
+  // carrying content paths. Read from branch history (`git show
+  // branch:.job/source.json`), never the working tree — the check is on what
+  // selection committed before any executor ran. Content presence is measured
+  // with the same `joinableSubjects` predicate task 56 uses (joinable content
+  // paths, deletions excluded); no second detector. Old-contract branches (neither
+  // key present) complete under the single-item contract with no refusal and
+  // no graph arm. A missing or empty declaration refuses only where the diff
+  // carries content paths, naming them; a diff with no content paths binds
+  // nothing, logs, and merges. Checked before the scaffolding removal below,
+  // so a refused branch keeps its `.job/` evidence instead of gaining a
+  // removal commit on the way to no merge.
   if (outcome === 'approve') {
     const committedSource = readCommittedJobSource(ctx.repoRoot, branch);
-    const declCheck = checkCommittedDeclaration(committedSource);
+    const contentPaths = joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
+    const declCheck = declarationMergeDecision(committedSource, contentPaths);
     if (!declCheck.ok) {
-      ctx.log(`nothing to bind: committed declared subjects missing or empty on ${branch} — refusing (no merge)`);
+      ctx.log(`${declCheck.reason} on ${branch} — refusing (no merge)`);
       outcome = 'failed';
       result.note = result.note ? `${result.note} — ${declCheck.reason}` : declCheck.reason;
     } else if (declCheck.oldContract) {
       ctx.log(`old-contract branch (no committed items/declared_subjects) — completing under the single-item contract, no graph arm`);
+    } else if (declCheck.bindsNothing) {
+      ctx.log(`binds nothing: merged diff carries no content paths on ${branch} — merging with no subject binding`);
     } else {
       ctx.log(`merge declaration: ${declCheck.declared.length} subject(s): ${declCheck.declared.join(', ')}`);
     }

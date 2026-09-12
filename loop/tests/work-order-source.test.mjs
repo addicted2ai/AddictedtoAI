@@ -1,15 +1,18 @@
 /**
- * Task 55 — `.job/source.json` gains `items` and `declared_subjects`.
+ * Task 55 (amended) — `.job/source.json` gains `items` and `declared_subjects`.
  *
  * Selection commits one work-order item (bead, type, subjects, reason) plus
  * the union `declared_subjects` before any executor runs. Subjects come from
  * declared metadata only (`candidateSubjects`, task 53) — never the brief
- * text, so a prohibition naming a path authorises nothing. A missing or empty
- * committed declaration is a merge refusal (nothing to bind); branches
- * selected before this task (no `items`/`declared_subjects`) complete under
- * the old single-item contract with no refusal and no graph arm. The committed
- * declaration is the sole subject source the graph annex reads; old-contract
- * reads as null (no annex, no sidecar, no marker).
+ * text, so a prohibition naming a path authorises nothing, and `reason`
+ * prose is provenance only that no consumer substring-matches. The amended
+ * refusal is scoped: a missing or empty committed declaration refuses ONLY
+ * where the merged diff carries content paths (naming them); a merge with no
+ * content paths binds nothing, logs, and merges. Branches selected before
+ * this task (neither key present) complete under the old single-item contract
+ * with no refusal and no graph arm. The committed declaration is the sole
+ * subject source the graph annex reads; old-contract reads as null (no
+ * annex, no sidecar, no marker).
  *
  * Fixtures are throwaway repositories in the OS temp directory with real git
  * plumbing. No test pushes anywhere; every history assertion reads the
@@ -20,11 +23,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join } from 'node:path';
 
 import {
   buildWorkOrderDeclaration,
   checkCommittedDeclaration,
+  declarationMergeDecision,
   declaredSubjectsForAnnex,
   isOldContractSource,
   workOrderItemForCandidate,
@@ -152,7 +156,7 @@ test('task 55: old-contract detection and the annex sole source', () => {
   assert.equal(
     isOldContractSource({ job: 'j-x', type: 'repair', source: 'directive', issues: [] }),
     true,
-    'pre-task-55 records carry neither items nor declared_subjects',
+    'pre-task-55 records carry neither key',
   );
   assert.equal(
     isOldContractSource({ items: [], declared_subjects: [] }),
@@ -161,6 +165,14 @@ test('task 55: old-contract detection and the annex sole source', () => {
   );
   assert.equal(
     isOldContractSource({ items: [{ bead: null }], declared_subjects: ['content/wiki/a.md'] }),
+    false,
+  );
+  // Present-but-malformed fails closed: a key present without an array is not
+  // old, so it reaches the declaration check and refuses rather than passing.
+  assert.equal(isOldContractSource({ items: 'corrupt' }), false);
+  assert.equal(isOldContractSource({ declared_subjects: 'corrupt' }), false);
+  assert.equal(
+    isOldContractSource({ items: 'corrupt', declared_subjects: ['content/wiki/a.md'] }),
     false,
   );
 
@@ -219,6 +231,57 @@ test('task 55: missing or empty committed declaration refuses; old passes', () =
     'one key present without the other is a partial write, not an old contract',
   );
   assert.match(partialCheck.reason, /nothing to bind/);
+
+  const corruptItems = { items: 'corrupt', declared_subjects: [] };
+  assert.equal(isOldContractSource(corruptItems), false);
+  assert.equal(checkCommittedDeclaration(corruptItems).ok, false);
+  const corruptDeclared = {
+    items: [{ bead: null, type: 'repair', subjects: [], reason: 'r' }],
+    declared_subjects: 'corrupt',
+  };
+  assert.equal(isOldContractSource(corruptDeclared), false);
+  assert.equal(checkCommittedDeclaration(corruptDeclared).ok, false);
+});
+
+test('task 55 (amended): the refusal is gated on content paths in the diff', () => {
+  const empty = {
+    items: [{ bead: null, type: 'repair', subjects: [], reason: 'r' }],
+    declared_subjects: [],
+  };
+  const good = {
+    items: [{ bead: null, type: 'repair', subjects: ['content/wiki/a.md'], reason: 'r' }],
+    declared_subjects: ['content/wiki/a.md'],
+  };
+  const old = { job: 'j-old', type: 'repair', source: 'directive', issues: [] };
+  const content = ['content/wiki/model/fixture-model.md'];
+
+  // Content diff + empty declaration refuses, naming the path.
+  const refuse = declarationMergeDecision(empty, content);
+  assert.equal(refuse.ok, false, 'a content diff with nothing declared refuses');
+  assert.match(refuse.reason, /nothing to bind/);
+  assert.match(refuse.reason, /content\/wiki\/model\/fixture-model\.md/);
+
+  // No-content diff + empty declaration merges, binding nothing.
+  const bindsNothing = declarationMergeDecision(empty, []);
+  assert.equal(bindsNothing.ok, true);
+  assert.equal(bindsNothing.bindsNothing, true);
+  assert.deepEqual(bindsNothing.declared, []);
+
+  // Content diff + good declaration passes this gate (subset is task 56).
+  const pass = declarationMergeDecision(good, ['content/wiki/a.md']);
+  assert.equal(pass.ok, true);
+  assert.equal(pass.bindsNothing ?? false, false);
+  assert.deepEqual(pass.declared, ['content/wiki/a.md']);
+
+  // No-content diff + good declaration binds nothing and merges (code-only).
+  const codeOnly = declarationMergeDecision(good, []);
+  assert.equal(codeOnly.ok, true);
+  assert.equal(codeOnly.bindsNothing, true);
+
+  // Old-contract passes regardless of the diff, with no graph arm.
+  assert.equal(declarationMergeDecision(old, content).ok, true);
+  assert.equal(declarationMergeDecision(old, content).oldContract, true);
+  assert.equal(declarationMergeDecision(old, []).ok, true);
 });
 
 test('task 55 (fixture): the committed declaration is read from history, not the working tree', async (t) => {
@@ -308,7 +371,47 @@ test('task 55 (fixture): selection writes items and declared_subjects committed 
   }
 });
 
-test('task 55 (integration): a new empty declaration refuses with nothing to bind and merges nothing', async (t) => {
+test('task 55 (integration): content diff + empty declaration refuses, naming the path, after observing the commit at spawn', async (t) => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('declare-check-content'),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [{ type: 'repair', title: 'subject-less upkeep with nothing declared' }]);
+  writeLedger(ctx, []);
+
+  const res = await runLoop(ctx, {
+    runner: 'mock-frontier',
+    reviewer: 'mock-reviewer',
+    noGates: true,
+  });
+  assert.equal(res.outcome, 'failed', `expected failed, got ${res.outcome}\n${ctx.output()}`);
+  assert.equal(res.mergedSha, null, 'a refused declaration merges nothing');
+  assert.match(ctx.output(), /declared subjects: \(none declared/);
+  assert.match(ctx.output(), /nothing to bind/);
+  assert.match(ctx.output(), /content\/wiki\/model\/fixture-model\.md/);
+  // Ordering: the author observed the committed declaration at spawn. The
+  // marker is written by the executor into its worktree, which the loop
+  // removes — so read it off the refused branch, where the work survives.
+  const marker = (() => {
+    try {
+      const out = git(ctx.repoRoot, ['show', `${res.branch}:declare-check.txt`]);
+      return String(out);
+    } catch {
+      return '';
+    }
+  })();
+  assert.match(
+    marker,
+    /declaration at spawn: present items=1 declared=0/,
+    `the brief commit preceded the executor spawn\n${ctx.output()}`,
+  );
+});
+
+test('task 55 (integration): no-content diff + empty declaration merges, binding nothing', async (t) => {
   const ctx = makeRepo({
     now: () => NOW,
     runners: runnersYaml({
@@ -325,10 +428,10 @@ test('task 55 (integration): a new empty declaration refuses with nothing to bin
     reviewer: 'mock-reviewer',
     noGates: true,
   });
-  assert.equal(res.outcome, 'failed', `expected failed, got ${res.outcome}\n${ctx.output()}`);
-  assert.equal(res.mergedSha, null, 'a refused declaration merges nothing');
-  assert.match(ctx.output(), /declared subjects: \(none declared/);
-  assert.match(ctx.output(), /nothing to bind: committed declared subjects missing or empty/);
+  assert.equal(res.outcome, 'done', `expected done, got ${res.outcome}\n${ctx.output()}`);
+  assert.ok(res.mergedSha, 'a content-free merge lands');
+  assert.match(ctx.output(), /binds nothing/);
+  assert.doesNotMatch(ctx.output(), /refusing \(no merge\)/);
 });
 
 test('task 55 (integration): an old-contract branch completes with no declaration refusal', async (t) => {
