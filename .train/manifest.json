@@ -1,7 +1,7 @@
 {
   "train": "t-ba60687c",
   "mainTip": "366c8cd04242508ca9c2d875680fbe518de80f4c",
-  "begunDate": "2026-09-11",
+  "begunDate": "2026-09-12",
   "baselinePaths": [
     "DIRECTIVES.md",
     "content/learn/ai-and-the-law.md",
@@ -12,7 +12,13 @@
     "content/learn/what-it-costs-to-build-and-run-ai.md",
     "content/learn/what-models-are-trained-on.md",
     "content/learn/who-builds-ai.md",
+    "content/wiki/concept/the-bitter-lesson.md",
+    "content/wiki/model/inference-net-schematron-v2-small.md",
+    "content/wiki/model/inference-net-schematron-v2-turbo.md",
+    "data/changes.jsonl",
     "data/ledger.jsonl",
+    "data/linkcheck.json",
+    "data/proposals/pre-train-366c8cd0-red.md",
     "data/reviews/evidence/verify-ai-and-the-law-industry-submission.md",
     "data/reviews/evidence/verify-ai-and-the-law-industry-submission.raw.txt",
     "data/reviews/j-20260911-02.md",
@@ -20,6 +26,12 @@
     "data/reviews/j-20260911-04.md",
     "data/reviews/j-20260911-05.md",
     "data/reviews/j-20260911-06.md",
+    "data/reviews/j-20260912-01.md",
+    "data/sources/llm-releases/state.json",
+    "data/sources/openrouter-models/latest.json",
+    "data/sources/openrouter-models/minted.json",
+    "data/sources/openrouter-models/previous.json",
+    "data/sources/openrouter-models/state.json",
     "evidence/gate-run-2026-09-11-0f25911/summary.txt",
     "evidence/gate-run-2026-09-11-7cb253c/summary.txt"
   ],
@@ -61,6 +73,13 @@
       "subjects": [
         "content/learn/ai-and-the-law.md"
       ]
+    },
+    {
+      "sha": "4401a67146fe5c9d7ffe1b82f3cbe64aed9e6894",
+      "jobId": "j-20260912-01",
+      "subjects": [
+        "content/wiki/concept/the-bitter-lesson.md"
+      ]
     }
   ],
   "evictions": [],
@@ -75,7 +94,8 @@
     "content/learn/how-ai-systems-get-attacked.md",
     "content/learn/ai-and-the-law.md",
     "data/reviews/evidence/verify-ai-and-the-law-industry-submission.md",
-    "data/reviews/evidence/verify-ai-and-the-law-industry-submission.raw.txt"
+    "data/reviews/evidence/verify-ai-and-the-law-industry-submission.raw.txt",
+    "content/wiki/concept/the-bitter-lesson.md"
   ],
   "bounds": {
     "maxReviewedBytes": 150000,
