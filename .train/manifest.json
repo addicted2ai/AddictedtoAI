@@ -4,6 +4,8 @@
   "begunDate": "2026-09-12",
   "baselinePaths": [
     "DIRECTIVES.md",
+    "content/blog/weathernext-3-operational-weatherbench.md",
+    "content/deltas/learned-weather-forecasts.md",
     "content/learn/ai-and-the-law.md",
     "content/learn/how-ai-systems-get-attacked.md",
     "content/learn/how-models-are-trained.md",
@@ -21,6 +23,7 @@
     "data/changes.jsonl",
     "data/ledger.jsonl",
     "data/linkcheck.json",
+    "data/proposals/consumed/weathernext-3-tops-operational-weatherbench.consumed-20260912T162156.md",
     "data/proposals/pre-train-366c8cd0-red.md",
     "data/reviews/evidence/verify-ai-and-the-law-industry-submission.md",
     "data/reviews/evidence/verify-ai-and-the-law-industry-submission.raw.txt",
@@ -35,6 +38,7 @@
     "data/reviews/j-20260912-04.md",
     "data/reviews/j-20260912-05.md",
     "data/reviews/j-20260912-06.md",
+    "data/reviews/j-20260912-07.md",
     "data/reviews/t-ba60687c.md",
     "data/reviews/t-ba60687c.train-compare.md",
     "data/sources/llm-releases/state.json",
@@ -143,6 +147,7 @@
     "b2c23e6b",
     "fd40428d",
     "d7e287ca",
-    "6a80aa63"
+    "6a80aa63",
+    "d49c5435"
   ]
 }
