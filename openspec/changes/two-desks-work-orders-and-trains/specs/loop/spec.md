@@ -83,7 +83,8 @@ decides what may travel together; count only bounds it.
   declared paths intersected with them — and never from the measured diff. The
   measured diff SHALL be used to CHECK that set, never to constitute it.** Two
   checks, in opposite directions: every content path in the diff SHALL lie inside
-  the declared set, or the merge refuses with `scope-violation`; and every item to
+  the declared set — a declared `data/carried/*.md` path contributes that
+  file's `subject:` front-matter field to the set — or the merge refuses with `scope-violation`; and every item to
   be retired SHALL have a measured diff on its own declared subjects, or a
   read-and-unchanged declaration covering them, or it is not retired. This is one
   rule because it is one defect. A subject set constituted from the diff is empty
