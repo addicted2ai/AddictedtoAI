@@ -400,9 +400,13 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
     ? failed
         .map((r) => {
           const timedOut = r.errorCode === 'ETIMEDOUT' || /\bETIMEDOUT\b/i.test(r.error ?? '');
+          // Name the spawn error when the child never ran (addictedtoai-aw7j):
+          // `could not run` alone cost hours on three silent failures in one
+          // night. Absent an error the wording is byte-identical to before.
+          const spawnDetail = !timedOut && r.error ? `: ${r.error}` : '';
           const ending = r.floorFailure
             ? `below floor: observed ${formatDuration(r.durationMs)} < ${formatDuration(r.floorMs)}`
-            : r.status === null ? (timedOut ? 'timed out' : 'could not run') : `exit ${r.status}`;
+            : r.status === null ? (timedOut ? 'timed out' : `could not run${spawnDetail}`) : `exit ${r.status}`;
           return `${gateCommand(r)} (${ending})`;
         })
         .join(', ')
@@ -881,7 +885,7 @@ export function runGates(ctx, worktree, {
     transport,
     environmental,
     output: results
-      .map((r) => `--- ${gateCommand(r)} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}`})\n${r.output.slice(-6000)}`)
+      .map((r) => `--- ${gateCommand(r)} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}${r.status == null && r.error ? `: ${r.error}` : ''}`})\n${r.output.slice(-6000)}`)
       .join('\n'),
   };
 }

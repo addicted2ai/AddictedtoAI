@@ -56,6 +56,7 @@ import {
   assembleTrain,
   checkRecordsPaths,
   countedPaths,
+  dirtyPaths,
   ensureTrainBranch,
   evaluateTriggers,
   MANIFEST_PATH,
@@ -260,6 +261,46 @@ test('selectFittingPrefix cuts at the first breach, remainder waits', () => {
 
 test('unionSubjects dedupes in first-seen order', () => {
   assert.deepEqual(unionSubjects([['a', 'b'], ['b', 'c'], []]), ['a', 'b', 'c']);
+});
+
+test('dirtyPaths parses staged, unstaged-modified and untracked lines byte-identical (addictedtoai-aw7j)', () => {
+  // THE REGRESSION: dirtyPaths() read `l.trim().slice(3)`, so an unstaged
+  // modification (` M data/...` — the leading space IS the X status) lost
+  // its first path character (`data/ledger.jsonl` → `ata/ledger.jsonl`),
+  // the allow-list filter yielded [], and the train's records commit died
+  // with empty streams. Staged-only (`M `) and untracked (`?? `) parsed
+  // correctly, which is why only the rederive-dirt path failed.
+  const { repo, cleanup } = trainRepo();
+  try {
+    // One of each XY shape; the unstaged modification is the live defect
+    // line itself — rederive dirt on the allow-listed ledger.
+    mkdirSync(join(repo, 'data'), { recursive: true });
+    writeFileSync(join(repo, 'data', 'ledger.jsonl'), '{"id":"a"}\n', 'utf8');
+    writeFileSync(join(repo, 'data', 'staged.txt'), 'v1\n', 'utf8');
+    git(repo, ['add', '--', 'data/ledger.jsonl', 'data/staged.txt']);
+    git(repo, ['commit', '--quiet', '--no-verify', '-m', 'tracked pair']);
+    writeFileSync(join(repo, 'data', 'staged.txt'), 'v2\n', 'utf8');
+    git(repo, ['add', '--', 'data/staged.txt']);
+    writeFileSync(join(repo, 'data', 'ledger.jsonl'), '{"id":"a"}\n{"id":"b"}\n', 'utf8');
+    writeFileSync(join(repo, 'data', 'fresh.txt'), 'fresh\n', 'utf8');
+    // Prove the fixture really covers all three shapes before asserting the parse.
+    const raw = execFileSync('git', ['-C', repo, 'status', '--porcelain=v1', '-uall'], { encoding: 'utf8' });
+    assert.match(raw, /^M {2}data\/staged\.txt\r?$/m, 'staged modification present');
+    assert.match(raw, /^ M data\/ledger\.jsonl\r?$/m, 'unstaged modification present');
+    assert.match(raw, /^\?\? data\/fresh\.txt\r?$/m, 'untracked file present');
+    assert.deepEqual(
+      dirtyPaths(repo).sort(),
+      ['data/fresh.txt', 'data/ledger.jsonl', 'data/staged.txt'],
+      'every shape round-trips byte-identical — no eaten first character',
+    );
+    assert.deepEqual(
+      dirtyPaths(repo).filter((p) => recordsPathAllowed(p)),
+      ['data/ledger.jsonl'],
+      'the allow-list admits the ledger (pre-fix it saw ata/ledger.jsonl and yielded [])',
+    );
+  } finally {
+    cleanup();
+  }
 });
 
 // ---------------------------------------------------------------------------

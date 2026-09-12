@@ -42,6 +42,7 @@ import {
   commitAll,
   currentBranch,
   deleteBranch,
+  describeGitFailure,
   diffAgainst,
   gitTry,
   mergeBase,
@@ -2544,7 +2545,7 @@ export function commitJobRecords(ctx, { staged: stagedIn, jobId, outcome }) {
     for (const p of staged) {
       const one = gitTry(ctx.repoRoot, ['add', '--', p]);
       if (one.ok) staged1.push(p);
-      else failed.push({ path: p, why: one.stderr.trim() || `exit ${one.status}` });
+      else failed.push({ path: p, why: describeGitFailure(one, 'git add failed') });
     }
     for (const f of failed) {
       const gone = /did not match any file/i.test(f.why);
@@ -2569,7 +2570,7 @@ export function commitJobRecords(ctx, { staged: stagedIn, jobId, outcome }) {
           'Pulse or another agent has the index; the files are intact and need committing by the ' +
           'next run or by hand (addictedtoai-tqpq).',
       );
-      return { committed: false, why: `git add failed: ${add.stderr.trim() || `exit ${add.status}`}`, paths: staged };
+      return { committed: false, why: describeGitFailure(add, 'git add failed'), paths: staged };
     }
     ctx.log(`records: staged ${staged1.length} of ${staged.length} path(s) individually after the batch add failed`);
   }
@@ -2586,12 +2587,10 @@ export function commitJobRecords(ctx, { staged: stagedIn, jobId, outcome }) {
   const commit = gitTry(ctx.repoRoot, ['commit', '--no-verify', '-m', `job ${jobId}: records (${outcome})`]);
   if (!commit.ok) {
     ctx.log(
-      `RECORDS NOT COMMITTED — the paths staged but \`git commit\` failed (exit ${commit.status}): ${
-        commit.stderr.trim() || commit.stdout.trim() || '(no output)'
-      }`,
+      `RECORDS NOT COMMITTED — the paths staged but \`git commit\` failed: ${describeGitFailure(commit, 'git commit')}`,
     );
     ctx.log(`  staged and left staged: ${paths.join(', ')}`);
-    return { committed: false, why: `git commit failed: exit ${commit.status}`, paths };
+    return { committed: false, why: describeGitFailure(commit, 'git commit failed'), paths };
   }
   ctx.log(`committed the job's records: ${paths.join(', ')}`);
   return { committed: true, why: 'committed', paths };

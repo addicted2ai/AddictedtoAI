@@ -22,7 +22,7 @@ import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildLockDir } from '../../scripts/build-lock.mjs';
-import { addWorktree, branchExists, changedPathsWithStatus, gitTry, headSha, mergeLocal, removeWorktree } from './git.mjs';
+import { addWorktree, branchExists, changedPathsWithStatus, describeGitFailure, gitTry, headSha, mergeLocal, removeWorktree } from './git.mjs';
 import { gatesHitEnvironmentalFailure, runGates, TRAIN_GATES } from './gates.mjs';
 import { joinableSubjects, makeReviewTrain, trainFindingsNamingMerges } from './review.mjs';
 import { appendLedger, makeLedgerLine, readLedger } from './ledger.mjs';
@@ -88,8 +88,7 @@ export function provisionalMerge(worktree, baseRef) {
   const m = gitTry(worktree, ['merge', '--no-commit', '--no-ff', baseRef]);
   if (!m.ok) {
     gitTry(worktree, ['merge', '--abort']);
-    const detail = String(m.stderr ?? m.stdout ?? '').trim();
-    return { ok: false, tip, baseTip, conflict: true, reason: detail || 'merge conflict' };
+    return { ok: false, tip, baseTip, conflict: true, reason: describeGitFailure(m, 'merge conflict') };
   }
   return { ok: true, tip, baseTip };
 }
@@ -98,7 +97,7 @@ export function provisionalMerge(worktree, baseRef) {
 export function discardProvisional(worktree, tip) {
   const r = gitTry(worktree, ['reset', '--hard', tip]);
   if (!r.ok) {
-    return { ok: false, reason: String(r.stderr ?? r.stdout ?? '').trim() || 'reset failed' };
+    return { ok: false, reason: describeGitFailure(r, 'reset failed') };
   }
   return { ok: true };
 }
@@ -159,7 +158,7 @@ export function revertMerge(repo, sha) {
   // must dodge; a hook failure surfaces in `reason` like any revert failure.
   const r = gitTry(repo, ['revert', '-m', '1', '--no-edit', sha]);
   if (!r.ok) {
-    return { ok: false, reason: String(r.stderr ?? r.stdout ?? '').trim() || 'revert failed' };
+    return { ok: false, reason: describeGitFailure(r, 'revert failed') };
   }
   return { ok: true };
 }
@@ -480,7 +479,7 @@ export function ensureTrainBranch(repo, baseRef) {
   if (branchExists(repo, TRAIN_BRANCH)) return { ok: true, created: false };
   const r = gitTry(repo, ['branch', TRAIN_BRANCH, baseRef]);
   if (!r.ok) {
-    return { ok: false, reason: String(r.stderr ?? r.stdout ?? '').trim() || 'could not create train branch' };
+    return { ok: false, reason: describeGitFailure(r, 'could not create train branch') };
   }
   return { ok: true, created: true };
 }
@@ -494,7 +493,7 @@ export function ensureTrainBranch(repo, baseRef) {
 export function checkoutTrain(repo) {
   const r = gitTry(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
   if (!r.ok) {
-    return { ok: false, environmental: true, reason: `could not check out ${TRAIN_BRANCH}: ${String(r.stderr ?? r.stdout ?? '').trim() || 'checkout failed'}` };
+    return { ok: false, environmental: true, reason: `could not check out ${TRAIN_BRANCH}: ${describeGitFailure(r, 'git checkout')}` };
   }
   return { ok: true };
 }
@@ -685,11 +684,46 @@ export function checkRecordsPaths(dirtyPaths) {
   return { ok: true };
 }
 
-/** Dirty (uncommitted) repo-relative paths in a checkout. */
+/**
+ * Dirty (uncommitted) repo-relative paths in a checkout.
+ *
+ * Porcelain v1 guarantees two XY status columns plus the space, so the path
+ * starts at byte 3 of the RAW line — and the leading column IS meaningful
+ * (` M data/...`: worktree-modified, index-untouched). Trimming before
+ * slicing eats that column and then the slice eats the path's first
+ * character (`data/ledger.jsonl` → `ata/ledger.jsonl`), which the
+ * allow-list filter then drops — the held train's records commit starved
+ * with empty streams (addictedtoai-aw7j). So: filter blanks on the raw
+ * line, slice the raw line, trim only the path half afterwards.
+ */
 export function dirtyPaths(repo) {
   const r = gitTry(repo, ['status', '--porcelain=v1', '-uall']);
   if (!r.ok) return [];
-  return String(r.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => l.slice(3).trim().replace(/^"(.+)"$/, '$1'));
+  const unquote = (s) => String(s).trim().replace(/^"(.+)"$/, '$1');
+  const out = [];
+  for (const raw of String(r.stdout ?? '').split('\n')) {
+    if (!raw.trim()) continue;
+    if (raw.length < 4) continue;
+    const pathPart = raw.slice(3);
+    // A staged rename lists `old -> new` (each side quoted separately when
+    // quoting applies): both names are dirt the allow-list must judge.
+    const quotedRename = /^"(.*)" -> "(.*)"$/.exec(pathPart.trim());
+    if (quotedRename) {
+      if (quotedRename[1]) out.push(quotedRename[1]);
+      if (quotedRename[2]) out.push(quotedRename[2]);
+      continue;
+    }
+    if (pathPart.includes(' -> ')) {
+      for (const side of pathPart.split(' -> ')) {
+        const p = unquote(side);
+        if (p) out.push(p);
+      }
+      continue;
+    }
+    const p = unquote(pathPart);
+    if (p) out.push(p);
+  }
+  return out;
 }
 
 /**
@@ -890,7 +924,7 @@ async function finishTrainRun(ctx, {
   const staged = dirty.filter((p) => recordsPathAllowed(p));
   const add = gitTry(repo, ['add', '--', ...staged]);
   if (!add.ok) {
-    return { ok: false, reason: `records staging failed: ${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}` };
+    return { ok: false, reason: `records staging failed: ${describeGitFailure(add, 'git add')}` };
   }
   const cached = gitTry(repo, ['diff', '--cached', '--name-only']);
   const willCommit = String(cached.stdout ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
@@ -898,7 +932,7 @@ async function finishTrainRun(ctx, {
   if (!check.ok) return { ok: false, reason: check.reason };
   const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: records`]);
   if (!cm.ok) {
-    return { ok: false, reason: `records commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+    return { ok: false, reason: `records commit failed: ${describeGitFailure(cm, 'git commit')}` };
   }
   // 7. Post-records re-gate: build + verify-launch (reusing that build) +
   // verify-surfaces on the post-records tip — build lock, NEVER merge lock
@@ -1057,7 +1091,7 @@ export function leaveOneOutSearch(ctx, { repo, manifest, gates, failingGate, now
     if (!trial.ok) {
       gitTry(repo, ['revert', '--quit']);
       gitTry(repo, ['reset', '--hard', 'HEAD']);
-      untried.push({ sha: m.sha, why: String(trial.stderr ?? trial.stdout ?? '').trim() || 'revert would not apply cleanly' });
+      untried.push({ sha: m.sha, why: describeGitFailure(trial, 'revert would not apply cleanly') });
       continue;
     }
     let g = null;
@@ -1068,7 +1102,7 @@ export function leaveOneOutSearch(ctx, { repo, manifest, gates, failingGate, now
     }
     const reset = gitTry(repo, ['reset', '--hard', 'HEAD']);
     if (!reset.ok) {
-      return { ok: false, reason: `cannot restore the train tip after trialling ${short} (${String(reset.stderr ?? reset.stdout ?? '').trim() || 'reset failed'}) — the tree may be dirty; no removal is trialled further`, dirty: true };
+      return { ok: false, reason: `cannot restore the train tip after trialling ${short} (${describeGitFailure(reset, 'reset')}) — the tree may be dirty; no removal is trialled further`, dirty: true };
     }
     const stray = gitTry(repo, ['diff', '--name-only']);
     if (stray.ok && String(stray.stdout ?? '').trim()) {
@@ -1132,7 +1166,7 @@ function commitAllowListed(repo, message) {
   if (staged.length) {
     const add = gitTry(repo, ['add', '--', ...staged]);
     if (!add.ok) {
-      return { ok: false, reason: `staging failed: ${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}` };
+      return { ok: false, reason: `staging failed: ${describeGitFailure(add, 'git add')}` };
     }
   }
   const cached = gitTry(repo, ['diff', '--cached', '--name-only']);
@@ -1142,7 +1176,7 @@ function commitAllowListed(repo, message) {
   if (!willCommit.length) return { ok: true, empty: true };
   const cm = gitTry(repo, ['commit', '--no-verify', '-m', message]);
   if (!cm.ok) {
-    return { ok: false, reason: `commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+    return { ok: false, reason: `commit failed: ${describeGitFailure(cm, 'git commit')}` };
   }
   return { ok: true };
 }
@@ -1188,12 +1222,12 @@ export function recordTrainReviewRound(repo, manifest, { verdict, tree }) {
   }
   const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
   if (!add.ok) {
-    return { ok: false, reason: `review round (${verdict}) staged nowhere (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'})` };
+    return { ok: false, reason: `review round (${verdict}) staged nowhere (${describeGitFailure(add, 'git add')})` };
   }
   const n = manifest.review_rounds.length;
   const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${manifest.train}: review round ${n} (${verdict})`]);
   if (!cm.ok) {
-    return { ok: false, reason: `review round commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'})` };
+    return { ok: false, reason: `review round commit failed (${describeGitFailure(cm, 'git commit')})` };
   }
   return { ok: true, rounds: manifest.review_rounds };
 }
@@ -1391,11 +1425,11 @@ function evictMerge({ repo, trainId, manifest, clearer, reason }) {
   }
   const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
   if (!add.ok) {
-    return { ok: false, reason: `evicted ${short} but the eviction commit could not be staged (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}) — the revert stands` };
+    return { ok: false, reason: `evicted ${short} but the eviction commit could not be staged (${describeGitFailure(add, 'git add')}) — the revert stands` };
   }
   const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: evict ${short}`]);
   if (!cm.ok) {
-    return { ok: false, reason: `evicted ${short} but the eviction commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}) — the revert stands, the mark uncommitted` };
+    return { ok: false, reason: `evicted ${short} but the eviction commit failed (${describeGitFailure(cm, 'git commit')}) — the revert stands, the mark uncommitted` };
   }
   return { ok: true, eviction };
 }
@@ -1445,7 +1479,7 @@ export function replayEviction(ctx, { repo, trainId, eviction, gate, mainRef = '
   const mg = gitTry(dir, ['merge', '--no-ff', '--no-verify', '-m', `replay ${trainId}: ${short} alone on ${mainRef}`, jobTip]);
   if (!mg.ok) {
     dropWorktree(repo, dir, ctx);
-    return { ok: false, reason: `replay of ${short} could not merge onto ${mainRef} (${String(mg.stderr ?? mg.stdout ?? '').trim() || 'merge failed'}) — no verdict` };
+    return { ok: false, reason: `replay of ${short} could not merge onto ${mainRef} (${describeGitFailure(mg, 'merge failed')}) — no verdict` };
   }
   let g = null;
   try {
@@ -1508,11 +1542,11 @@ export function recordReplayVerdict(ctx, { repo, trainId, manifest, eviction, ga
   });
   const add = gitTry(repo, ['add', '--', MANIFEST_PATH, 'data/ledger.jsonl']);
   if (!add.ok) {
-    return { ok: false, reason: `replay verdict staged nowhere (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'})` };
+    return { ok: false, reason: `replay verdict staged nowhere (${describeGitFailure(add, 'git add')})` };
   }
   const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: replay verdict (${short} wrongly=${wrongly})`]);
   if (!cm.ok) {
-    return { ok: false, reason: `replay verdict commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'})` };
+    return { ok: false, reason: `replay verdict commit failed (${describeGitFailure(cm, 'git commit')})` };
   }
   return { ok: true, replayId, wrongly };
 }
@@ -1825,7 +1859,7 @@ export function assembleTrain(repo, { trainId, bounds, mainRef = 'main', now = D
   }
   const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
   if (!add.ok) {
-    return { ok: false, reason: `manifest staging failed: ${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}` };
+    return { ok: false, reason: `manifest staging failed: ${describeGitFailure(add, 'git add')}` };
   }
   // Restart idempotence (row 43, with the seeding above): a re-assembly of
   // the same train over unchanged state writes byte-identical content, so
@@ -1835,12 +1869,12 @@ export function assembleTrain(repo, { trainId, bounds, mainRef = 'main', now = D
   // as usual.
   const staged = gitTry(repo, ['status', '--porcelain=v1', '-uall', '--', MANIFEST_PATH]);
   if (!staged.ok) {
-    return { ok: false, reason: `manifest status failed: ${String(staged.stderr ?? staged.stdout ?? '').trim() || 'git status failed'}` };
+    return { ok: false, reason: `manifest status failed: ${describeGitFailure(staged, 'git status')}` };
   }
   if (String(staged.stdout ?? '').trim()) {
     const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${trainId}: manifest (${admitted.length} merges)`]);
     if (!cm.ok) {
-      return { ok: false, reason: `manifest commit failed: ${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}` };
+      return { ok: false, reason: `manifest commit failed: ${describeGitFailure(cm, 'git commit')}` };
     }
   }
   // The assembly tip is the MANIFEST COMMIT, not the pre-commit tip: the
@@ -1975,11 +2009,11 @@ export function refreezeManifestForMain(repo, manifest, mainTip) {
   }
   const add = gitTry(repo, ['add', '--', MANIFEST_PATH]);
   if (!add.ok) {
-    return { ok: false, reason: `main-merged but the re-frozen manifest could not be staged (${String(add.stderr ?? add.stdout ?? '').trim() || 'git add failed'}) — merges wait on train, nothing publishes` };
+    return { ok: false, reason: `main-merged but the re-frozen manifest could not be staged (${describeGitFailure(add, 'git add')}) — merges wait on train, nothing publishes` };
   }
   const cm = gitTry(repo, ['commit', '--no-verify', '-m', `train ${manifest.train}: re-freeze baseline after merging main`]);
   if (!cm.ok) {
-    return { ok: false, reason: `main-merged but the re-freeze commit failed (${String(cm.stderr ?? cm.stdout ?? '').trim() || 'git commit failed'}) — merges wait on train, nothing publishes` };
+    return { ok: false, reason: `main-merged but the re-freeze commit failed (${describeGitFailure(cm, 'git commit')}) — merges wait on train, nothing publishes` };
   }
   manifest.assemblyTip = headSha(repo);
   return { ok: true };
@@ -1998,7 +2032,7 @@ export function fastForwardMain(repo, sha, mainRef = 'main') {
     const br = gitTry(repo, ['branch', mainRef, sha]);
     return br.ok
       ? { ok: true, note: `created local ${mainRef} at ${String(sha).slice(0, 8)}` }
-      : { ok: false, note: `could not create local ${mainRef} (${String(br.stderr ?? br.stdout ?? '').trim() || 'git branch failed'}) — the remote still carries the publish` };
+      : { ok: false, note: `could not create local ${mainRef} (${describeGitFailure(br, 'git branch')}) — the remote still carries the publish` };
   }
   const oldTip = String(cur.stdout ?? '').trim();
   if (oldTip === sha) return { ok: true, note: `local ${mainRef} already at the published SHA` };
@@ -2008,7 +2042,7 @@ export function fastForwardMain(repo, sha, mainRef = 'main') {
   const up = gitTry(repo, ['update-ref', `refs/heads/${mainRef}`, sha, oldTip]);
   return up.ok
     ? { ok: true, note: `fast-forwarded local ${mainRef} ${oldTip.slice(0, 8)} → ${String(sha).slice(0, 8)}` }
-    : { ok: false, note: `could not fast-forward local ${mainRef} (${String(up.stderr ?? up.stdout ?? '').trim() || 'update-ref failed'}) — the remote still carries the publish` };
+    : { ok: false, note: `could not fast-forward local ${mainRef} (${describeGitFailure(up, 'update-ref')}) — the remote still carries the publish` };
 }
 
 /**
