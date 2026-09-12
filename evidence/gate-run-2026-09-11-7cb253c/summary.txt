@@ -1,0 +1,25 @@
+gate-run 2026-09-11 7cb253c
+pin 7cb253c38b8d8f7c605d46994a429d5a1ea1ddcb
+short 7cb253c
+repo D:\AddictedtoAI
+evidence D:\AddictedtoAI\evidence
+date 2026-09-11 (machine-local)
+gating HEAD 7cb253c at 19:15:04
+
+=== 1-test starting ===
+1-test EXIT=1 854s duration_ms=854052
+1-test counts: 2283 passed
+=== 2-build starting ===
+2-build EXIT=0 31s duration_ms=31408
+=== 3-launch starting ===
+3-launch EXIT=0 32s duration_ms=31920
+=== 4-design starting ===
+4-design EXIT=0 34s duration_ms=34462
+=== 5-surfaces starting ===
+5-surfaces EXIT=0 3s duration_ms=3472
+=== 6-analytics starting ===
+6-analytics EXIT=0 20s duration_ms=19847
+
+GATES RED at 7cb253c: 1-test(exit 1)
+pin OK: pinned and HEAD agree at 7cb253c
+THIS SCRIPT NEVER PUSHES. A green result is a report, not a deploy.
