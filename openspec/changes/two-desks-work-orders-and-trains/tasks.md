@@ -2260,7 +2260,10 @@ the brief under `evidence/reviews/`.
       committed `declared_subjects` — on the `reviewed:` outcome, from the
       executor's declared paths intersected with it — and the measured diff is used
       only to **check** it: every diff content path inside the declaration
-      (`scope-violation` otherwise), and every item retired only with a measured
+      (`scope-violation` otherwise) — a declared `data/carried/*.md` path
+      contributes that file's `subject:` front-matter field to the declared
+      union (the file declares its page structurally; the loop reads the
+      field, never prose) — and every item retired only with a measured
       diff on its own subjects or a `reviewed:` declaration covering them.
       Unretired items stay open and the line records the order partially done.
       Separately, make the missing-or-empty-**declaration** refusal **unconditional**
