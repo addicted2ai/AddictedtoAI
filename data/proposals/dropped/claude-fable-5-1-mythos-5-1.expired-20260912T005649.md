@@ -307,3 +307,17 @@ The title promises "~25-45% cheaper to run". Anthropic states the saving as appl
 content/blog/claude-fable-5-1-mythos-5-1.md ends without a newline (the branch diff shows "\ No newline at end of file" on the last Sources bullet). Nothing breaks; it makes every future diff of the file touch a line it did not change. Append a newline.
 
 (The reviewer named `content/blog/claude-fable-5-1-mythos-5-1.md`, which the discarded branch never merged.)
+
+
+---
+
+## Swept: the expiry it declared has arrived
+
+- date: 2026-09-11
+- expires: 2026-09-09
+- swept on: 2026-09-11 (the LOCAL date of the machine that swept it)
+- was: `claude-fable-5-1-mythos-5-1.md` (slug `claude-fable-5-1-mythos-5-1`)
+
+An expiring proposal is selectable without cooling and stops being selectable at its expiry. This one was not selected in time, so it was swept here mechanically — no model was invoked and no inference was spent. Nothing anywhere treats this as a failure: it is what keeps the candidate directory from becoming a backlog of stories whose evidence has stopped being current.
+
+`data/proposals/dropped/` is a record, never a block. This slug does not feed the rejection index, so the story may be refiled when its refile condition arrives.
