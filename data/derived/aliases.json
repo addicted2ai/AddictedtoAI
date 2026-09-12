@@ -5920,11 +5920,11 @@
     },
     {
       "name": "RLHF",
-      "linkable": false,
+      "linkable": true,
       "claimed_by": [
         {
-          "id": "technique/proximal-policy-optimization",
-          "class": "manual"
+          "id": "technique/rlhf",
+          "class": "exclusive"
         }
       ]
     },
@@ -5959,6 +5959,16 @@
       ]
     },
     {
+      "name": "Reinforcement Learning from Human Feedback",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/rlhf",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Reinforcement Learning with Verifiable Rewards",
       "linkable": true,
       "claimed_by": [
@@ -5970,11 +5980,11 @@
     },
     {
       "name": "Reinforcement learning from human feedback",
-      "linkable": false,
+      "linkable": true,
       "claimed_by": [
         {
-          "id": "technique/proximal-policy-optimization",
-          "class": "shared"
+          "id": "technique/rlhf",
+          "class": "exclusive"
         }
       ]
     },
