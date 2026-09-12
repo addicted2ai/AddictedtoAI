@@ -65,8 +65,10 @@ decides what may travel together; count only bounds it.
   reason, and the union of every item's subjects as the job's declared subjects.
   The merge SHALL refuse a diff whose content paths are not a subset of that
   declared union, with the `scope-violation` reason, and SHALL refuse a job whose
-  committed declared subjects are **missing or empty**: an absent declaration is
-  a refusal, never a pass, because an empty set makes every subset test vacuous.
+  committed declared subjects are **missing or empty** where the merged diff
+  carries content paths: an absent declaration is a refusal, never a pass,
+  because an empty set makes every subset test vacuous — while a merge with
+  no content paths has nothing to bind and merges, binding nothing, logged.
   A diff carrying no content path against a non-empty declaration that yields a joinable content path is the
   unchanged-pages outcome's territory and SHALL be refused unless it was declared
   as that outcome. The list SHALL NOT be derived by matching strings against the
@@ -95,11 +97,13 @@ decides what may travel together; count only bounds it.
   settling the run `failed` and naming the path. The outcome binds pages without
   a diff for any reviewer to read, so an accompanying diff is work the bounds
   never measured.
-- Where the committed declared subjects are **missing or empty**, the merge SHALL
+- Where the committed declared subjects are **missing or empty** and the merged
+  diff carries content paths, the merge SHALL
   log that there is nothing to bind and refuse, **unconditionally**. A refusal
   that is itself guarded on the set being non-empty cannot fire on the empty
   set, which is the one case it exists for, and the run then reports success
-  having written a record that joins to nothing.
+  having written a record that joins to nothing. Where the merged diff carries
+  no content paths, the merge binds nothing, logs, and merges.
 - Where the declaration is **non-empty but yields no joinable content path** (a
   code-only merge), the merge SHALL bind nothing, log the no-joinable-path state
   naming the declaration, and merge — a merge with no subject binding, not a
