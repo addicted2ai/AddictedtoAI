@@ -116,6 +116,16 @@ decides what may travel together; count only bounds it.
   items are selected, one file is changed, the diff is a subset of the declared
   union, one reviewer approves the one diff, and all four items are retired
   having had one done.
+- **Graph incompleteness is a merge refusal, not a pass.** Where the graph change
+  analysis over the branch diff against the merge base is present but answers
+  incompletely for a declared subject inside a symbol universe — `partial` or
+  `truncated`, or UNKNOWN risk — and the work order's result file carries no
+  well-formed `graph-ack:` entry for that subject, the merge SHALL refuse with
+  `graph-incomplete`, naming the subject (`graph:<declared-subject-path>`) and
+  the flag. Where the tool or the index is absent, the run SHALL record a warning
+  plus a `graph: absent` status and proceed on the path checks alone. A
+  `no-symbols` answer for a subject outside any symbol universe is complete and
+  SHALL NOT refuse on this bullet.
 - Every job type carries a wall-clock cap: `data/config.json` maps each job type
   to its cap, with defaults keyed by the type's tier (cheap-tier types 30
   minutes, frontier authoring types 60) — the caps are per-type, the defaults are
@@ -226,6 +236,16 @@ Adding a job type requires an OpenSpec change.
 - **WHEN** six coherent candidates would together exceed the total byte bound
 - **THEN** the bundler emits two work orders that each fit, and no candidate is
   dropped from the list
+
+#### Scenario: An incomplete graph answer does not merge
+
+- **WHEN** a work order's branch diff touches a declared code subject, the graph
+  analysis over that diff against the merge base reports `partial` for the
+  subject, and the result file carries no well-formed `graph-ack:` entry for
+  `graph:<that-subject>`
+- **THEN** the merge is refused with `graph-incomplete` naming the subject and
+  the flag, unretired items stay open and return to intake, and nothing is
+  published on that branch
 
 ### Requirement: Work comes from one intake, and cannot self-amplify
 
@@ -1413,6 +1433,16 @@ distinguish blocked from guessing from interrupted. The protocol:
   refuses on a missing entry. A well-formed `blocked:` line with a clean tree is a
   successful honest outcome, recorded as such — this is how "reports
   blocked rather than guessing" is detected, in this file, mechanically.
+- **Graph acknowledgements use a sibling block with a closed vocabulary.** An
+  executor's result file MAY carry a `graph-ack:` block with one entry per
+  `graph:<declared-subject-path>` identifier its brief marked incomplete, each
+  entry carrying the identifier, exactly one of `noted` / `path-checked` /
+  `deferred`, and one sentence of evidence. The loop SHALL parse that block in
+  `loop/lib/result.mjs`, and the merge SHALL treat presence plus well-formedness
+  as the acknowledgement the work-order requirement's graph bullet requires. What
+  is mechanised is that every incomplete marker was answered in a closed
+  vocabulary with evidence attached; whether the answer is right is the
+  reviewer's, whose checklist SHALL put each entry beside the marker it answers.
 - A `reviewed:` line SHALL be accepted only where **both** preconditions hold:
   every path it names is in the work order's committed declared subjects, and
   every path it names already reads as `mismatched` against its current review
