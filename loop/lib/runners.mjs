@@ -107,6 +107,27 @@ export function loadRunners(ctx) {
   if (!byId.has(defaultId)) {
     throw new Error(`${ctx.runnersPath}: default "${defaultId}" is not a registered runner id`);
   }
+  // OPTIONAL reviewer default: absent means reviewer selection falls back
+  // to the global default, exactly as before. When present it must name a
+  // registered reviewer-cleared entry — validated here, fail fast at load,
+  // so a typo can never silently route reviews to the global default.
+  // Maintainer-ordered 2026-09-11: the operator sets reviewer defaults in
+  // this file (model X / provider Y / harness Z, per run or per default),
+  // and no code under loop/ may narrow the choice by effort or by name.
+  const defaultReviewerId = doc.default_reviewer ?? null;
+  if (defaultReviewerId !== null) {
+    const target = byId.get(defaultReviewerId);
+    if (!target) {
+      throw new Error(
+        `${ctx.runnersPath}: default_reviewer "${defaultReviewerId}" is not a registered runner id`,
+      );
+    }
+    if (!target.roles.includes('reviewer')) {
+      throw new Error(
+        `${ctx.runnersPath}: default_reviewer "${defaultReviewerId}" is not cleared for the reviewer role`,
+      );
+    }
+  }
   for (const r of doc.runners) {
     if (r.escalates_to === undefined) continue;
     const where = `${ctx.runnersPath} runner "${r.id}"`;
@@ -123,10 +144,10 @@ export function loadRunners(ctx) {
       );
     }
   }
-  return { runners: doc.runners, byId, defaultId };
+  return { runners: doc.runners, byId, defaultId, defaultReviewerId };
 }
 
-/** Resolve the runner for a role: an explicit id, else the default, else the first cleared one. */
+/** Resolve the runner for a role: an explicit id, else the role default (reviewer only), else the default, else the first cleared one. */
 export function pickRunner(registry, { id, role }) {
   if (id) {
     const r = registry.byId.get(id);
@@ -139,6 +160,10 @@ export function pickRunner(registry, { id, role }) {
       throw new Error(`runner "${id}" is not cleared for role "${role}"`);
     }
     return r;
+  }
+  if (role === 'reviewer' && registry.defaultReviewerId) {
+    const reviewerDef = registry.byId.get(registry.defaultReviewerId);
+    if (reviewerDef.enabled !== false && reviewerDef.roles.includes(role)) return reviewerDef;
   }
   const def = registry.byId.get(registry.defaultId);
   if (def.enabled !== false && (!role || def.roles.includes(role))) return def;

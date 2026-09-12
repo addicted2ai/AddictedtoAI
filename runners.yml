@@ -143,6 +143,14 @@ version: 1
 # The runner used when `--runner` is not given.
 default: claude-code-opus
 
+# The reviewer used when `--reviewer` is not given (explicit id always
+# wins). Absent means the global default above. Maintainer-ordered
+# 2026-09-11: model X / provider Y / harness Z defaults live HERE, and
+# each entry reviews at its own highest effort — `effort:` describes,
+# never selects. Revisit: whether cheap-tier default holds as trains
+# review every merge.
+default_reviewer: codex-gpt-luna
+
 runners:
   - id: claude-code-opus
     provider: anthropic
