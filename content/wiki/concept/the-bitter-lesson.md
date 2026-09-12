@@ -68,7 +68,7 @@ mostly consumed more compute.
 
 Two things about its reception are worth having in one place.
 
-**The rebuttal came six days later and is rarely read.** Rodney Brooks
+**The rebuttal came six days later and is rarely cited alongside the essay in the sources surveyed here.** Rodney Brooks
 published *A Better Lesson* on 19 March 2019 with six numbered objections. The
 sharpest is not that Sutton is wrong about compute but that the human
 knowledge never left — it moved. Convolutional networks have translation
@@ -95,8 +95,7 @@ argument, aimed at the thing the essay is usually quoted to defend. His
 specific objection is that a model with no goal and no ground truth cannot be
 surprised by an outcome, and so cannot learn while it operates.
 
-That leaves the essay in an unusual position: the most-quoted argument in
-favour of the current paradigm, disputed by its author, with a substantive
-rebuttal published within the week that most of the people quoting it have
-never seen. It is worth reading all three primary documents before citing any
+That leaves the essay in an unusual position: an argument often invoked in
+favour of the current paradigm in the sources surveyed here, disputed by its author, with a substantive
+rebuttal published within the week that is rarely cited alongside it in those sources. It is worth reading all three primary documents before citing any
 of them; each is short.
