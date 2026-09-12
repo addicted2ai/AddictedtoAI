@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 692,
+  "count": 691,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -6683,7 +6683,9 @@
       "s": "active",
       "i": "technique/proximal-policy-optimization",
       "a": [
-        "PPO"
+        "PPO",
+        "RLHF",
+        "Reinforcement learning from human feedback"
       ],
       "b": false
     },
@@ -6738,19 +6740,6 @@
       "a": [
         "Retrieval augmented generation",
         "RAG"
-      ],
-      "b": false
-    },
-    {
-      "u": "/wiki/technique/rlhf",
-      "t": "Reinforcement Learning from Human Feedback",
-      "k": "entry",
-      "d": "technique",
-      "s": "active",
-      "i": "technique/rlhf",
-      "a": [
-        "Reinforcement learning from human feedback",
-        "RLHF"
       ],
       "b": false
     },

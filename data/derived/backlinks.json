@@ -3142,12 +3142,6 @@
         "file": "content/wiki/technique/reinforcement-learning-with-verifiable-rewards.md"
       },
       {
-        "url": "/wiki/technique/rlhf",
-        "title": "Reinforcement Learning from Human Feedback",
-        "type": "entry",
-        "file": "content/wiki/technique/rlhf.md"
-      },
-      {
         "url": "/learn/how-models-are-trained",
         "title": "How models are trained, and how they are changed afterwards",
         "type": "learn",
@@ -3186,14 +3180,6 @@
         "title": "Why the same request gives different answers",
         "type": "learn",
         "file": "content/learn/why-the-same-request-gives-different-answers.md"
-      }
-    ],
-    "technique/proximal-policy-optimization": [
-      {
-        "url": "/wiki/technique/rlhf",
-        "title": "Reinforcement Learning from Human Feedback",
-        "type": "entry",
-        "file": "content/wiki/technique/rlhf.md"
       }
     ],
     "technique/quantization": [
