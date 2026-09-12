@@ -188,6 +188,49 @@ switch (mode) {
     break;
   }
 
+  // Task 56 — write the content/code paths named after the prompt file
+  // (`process.argv[4..]`, via `mockCommand(mode, ' <path> ...')`) and report
+  // done. Unnamed paths default to the two fixture content files. Anything
+  // named here lands in the branch diff, so a path outside the committed
+  // declaration is what the merge's subset check refuses.
+  case 'done-content-paths': {
+    const targets = process.argv.slice(4).filter((a) => a && !a.startsWith('--'));
+    const paths = targets.length
+      ? targets
+      : ['content/wiki/model/fixture-model.md', 'content/blog/fixture-post.md'];
+    for (const rel of paths) {
+      const full = join(cwd, rel);
+      mkdirSync(dirname(full), { recursive: true });
+      writeFileSync(full, `---\npath: ${rel}\n---\n\nWritten by the mock author for the work-order fixture.\n`, 'utf8');
+    }
+    result('done\n\nWrote the named fixture paths.\n');
+    break;
+  }
+
+  // Task 56 H2(c) — the same content write, but the result file carries a
+  // well-formed `graph-ack:` sibling block for the written subject, so a
+  // present-but-incomplete stub analysis is answered and the merge proceeds.
+  // `argv[4]` is the subject path, `argv[5]` the ack state.
+  case 'done-ack-content-paths': {
+    const rel = process.argv[4] && !String(process.argv[4]).startsWith('--')
+      ? String(process.argv[4])
+      : 'content/wiki/model/fixture-model.md';
+    const state = process.argv[5] && !String(process.argv[5]).startsWith('--')
+      ? String(process.argv[5])
+      : 'path-checked';
+    const full = join(cwd, rel);
+    mkdirSync(dirname(full), { recursive: true });
+    writeFileSync(full, `---\npath: ${rel}\n---\n\nWritten by the mock author for the graph-ack fixture.\n`, 'utf8');
+    write(
+      'RESULT.md',
+      'done\n\nWrote the fixture path with graph acknowledgement.\n\ngraph-ack:\n' +
+        `  - subject: ${JSON.stringify(`graph:${rel}`)}\n` +
+        `    state: ${state}\n` +
+        `    evidence: The stub analysis for ${rel} reported callers 2 processes 1 risk LOW.\n`,
+    );
+    break;
+  }
+
   case 'done-no-result': // really omits the file
     write('site-note.md', '# an edit with no result file\n');
     break;

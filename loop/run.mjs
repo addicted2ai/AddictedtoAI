@@ -15,7 +15,7 @@
  *   - report that nothing qualified, which is a normal, healthy outcome.
  */
 
-import { existsSync, lstatSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,7 +34,7 @@ import {
   LINEAGE_RESOLVER_GIT,
   selectOutcomeLineage,
 } from './lib/lineage.mjs';
-import { readResult, classifyRun, reviewProducedNothing, RESULT_FILENAME } from './lib/result.mjs';
+import { readResult, classifyRun, reviewProducedNothing, parseGraphAck, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
   addWorktree,
@@ -309,6 +309,468 @@ export function declarationMergeDecision(source, contentPaths) {
     };
   }
   return { ok: true, oldContract: false, bindsNothing: false, declared: [...decl.declared] };
+}
+
+// ---------------------------------------------------------------------------
+// Work-order merge constitution and per-item retirement (Stage 2, task 56:
+// the root fix).
+//
+// Anchor (task-32 rule): the `joinableSubjects(...)` constitution site in the
+// merge path below and the refusal branch guarding it. Everything here is
+// keyed on names the task text names — `declared_subjects`, `scope-violation`,
+// `graph-ack:`, `graph-incomplete`, `graph: absent` — never on line numbers.
+//
+// THE DEFECT, in one sentence: the merge constituted its subject set from the
+// measured diff, which is empty when the diff is empty (a record binding
+// nothing for pages dispatched to ratify) and a subset when the diff is a
+// subset (four items selected, one file changed, all four retired). The fix:
+// the set is CONSTITUTED from the committed declaration and the diff only
+// CHECKS it, and retirement is PER ITEM.
+//
+// Reuse, not reimplementation: `candidateSubjects`/`bundleWorkOrders`
+// (task 53, `loop/lib/select.mjs`), `buildWorkOrderDeclaration` /
+// `checkCommittedDeclaration` / `declarationMergeDecision` /
+// `isOldContractSource` (task 55, above), `joinableSubjects` /
+// `writeRecordSubjects` (`loop/lib/review.mjs`), `parseGraphAck`
+// (`loop/lib/result.mjs`).
+//
+// What this block does NOT own (later tasks): the `reviewed:` outcome's
+// production wiring (task 62, blocked on task 61b — the helpers below accept
+// executor-declared paths as an argument so that task needs no re-design),
+// the brief-side annex and `.job/graph.json` writer (task 59), per-item
+// proposal consumption (task 66), the ledger `items` key (task 67), and bead
+// closure (task 69 — no module may invoke `bd` before it). Unretired items
+// are reported open (log + ledger note) and return to intake by staying
+// unretired: nothing here closes or consumes per item.
+// ---------------------------------------------------------------------------
+
+/** Normalise one declared/diff path for set joins: POSIX slashes, trimmed. */
+function normSubjectPath(p) {
+  return String(p ?? '').replace(/\\/g, '/').trim();
+}
+
+/**
+ * The merge's subject set, constituted from the committed declaration — never
+ * from the measured diff, never from brief prose.
+ *
+ * - Old-contract sources (pre-task-55, neither key present) read as
+ *   `{oldContract: true, subjects: null}`: the caller falls back to the
+ *   diff-derived set, exactly as before, and takes no graph arm.
+ * - On the read-and-unchanged outcome the set is the executor's declared
+ *   paths intersected with the committed union (`executorPaths`, parsed from
+ *   the result file by task 62's reader — passed in here so the constitution
+ *   point is one function, not two).
+ * - Otherwise the set is the committed union, sorted and de-duplicated.
+ *
+ * A missing or empty declaration is `{ok: false}`; the caller combines that
+ * with the diff's content presence through `declarationMergeDecision`
+ * (task 55, amended: refusal only where the diff carries content paths).
+ */
+export function constituteMergeSubjects(source, { executorPaths = null } = {}) {
+  if (isOldContractSource(source)) return { ok: true, oldContract: true, subjects: null };
+  const decl = checkCommittedDeclaration(source);
+  if (!decl.ok) {
+    return { ok: false, oldContract: false, code: decl.code, reason: decl.reason };
+  }
+  const declared = [...new Set(decl.declared.map(normSubjectPath).filter(Boolean))].sort();
+  if (executorPaths !== null && executorPaths !== undefined) {
+    const exec = new Set(
+      (Array.isArray(executorPaths) ? executorPaths : [executorPaths])
+        .map(normSubjectPath)
+        .filter(Boolean),
+    );
+    return { ok: true, oldContract: false, subjects: declared.filter((s) => exec.has(s)) };
+  }
+  return { ok: true, oldContract: false, subjects: declared };
+}
+
+/**
+ * The CHECK direction: every joinable content path in the measured diff must
+ * lie inside the constituted declaration, or the merge refuses with
+ * `scope-violation` naming the undeclared path(s). Content-scoped only —
+ * code paths never fail this check (a code-only merge binds nothing and
+ * merges; task 55's amended gate) — and exact-member joins only: nothing
+ * here matches strings inside brief prose.
+ */
+export function checkDeclarationSubset(contentPaths, declared) {
+  const allowed = new Set((Array.isArray(declared) ? declared : []).map(normSubjectPath).filter(Boolean));
+  const undeclared = [...new Set((Array.isArray(contentPaths) ? contentPaths : []).map(normSubjectPath).filter(Boolean))]
+    .filter((p) => !allowed.has(p))
+    .sort();
+  return { ok: undeclared.length === 0, undeclared };
+}
+
+/**
+ * One work-order item's normalised subject list. A present-but-malformed
+ * `subjects` (not an array) reads as no subjects — the item can then only
+ * retire on read-and-unchanged coverage of nothing, i.e. never, which fails
+ * closed rather than retiring work with no declared surface.
+ */
+function itemSubjectsOf(item) {
+  if (!item || !Array.isArray(item.subjects)) return [];
+  return [...new Set(item.subjects.map(normSubjectPath).filter(Boolean))].sort();
+}
+
+/**
+ * Per-item retirement: an item retires only where the merge measured a diff
+ * on that item's OWN declared subjects, or where the outcome declared those
+ * subjects as read-and-unchanged. Anything else stays open and returns to
+ * intake; the ledger line records the order partially done naming every
+ * item it did not retire.
+ *
+ * Evidence model (all joins exact-member on normalised paths):
+ * - `diffPaths`: every non-deletion diff path (content AND code — a
+ *   machinery item's subject is a code file, and a code-only merge still
+ *   retires what it did even though it binds no record). Scaffolding must
+ *   already be filtered by the caller.
+ * - `reviewedPaths`: executor-declared read-and-unchanged paths, or null
+ *   (no such outcome on this merge). An item is covered only where EVERY
+ *   one of its subjects is covered.
+ * - `graph`: the merge-time analysis (`{symbols: [{owner}], subjects:
+ *   {<path>: {universe, symbols, risk}}}`), or null where the tool/index is
+ *   absent — absent proceeds on the path checks alone. The graph NEVER
+ *   retires or unretires alone: it only refines shared-subject attribution
+ *   and reports contradiction.
+ *
+ * Shared-subject refinement: a diff hit on a subject the item ALONE declares
+ * retires on the path evidence. A hit ONLY on subjects other items also
+ * declare retires only with the item's OWN symbol evidence — a changed
+ * symbol owned by a subject that item alone declares — because shared path
+ * evidence attributes to every declarer equally and therefore to none. The
+ * unattributed item retires only on independent path evidence.
+ * Contradiction (a path hit on a subject whose universe the present index
+ * answers with zero symbols) retires nothing: the item stays open and the
+ * report names the subject, the diff evidence, and the zero-symbol answer.
+ * `no-symbols` (universe === false: outside any symbol universe) is
+ * complete — those items retire on the path diff alone, graph summary-only.
+ *
+ * @returns {{oldContract?: boolean, retired: Array, open: Array,
+ *            partiallyDone: boolean, note: string|null}}
+ *   `retired` entries carry `{index, item, via: 'diff'|'reviewed', touched}`.
+ *   `open` entries carry `{index, item, why, contradiction?}`.
+ */
+export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = null, graph = null } = {}) {
+  if (isOldContractSource(source)) {
+    return { oldContract: true, retired: [], open: [], partiallyDone: false, note: null };
+  }
+  const items = Array.isArray(source.items) ? source.items : [];
+  const diffSet = new Set((Array.isArray(diffPaths) ? diffPaths : []).map(normSubjectPath).filter(Boolean));
+  const reviewedSet =
+    reviewedPaths === null || reviewedPaths === undefined
+      ? null
+      : new Set(
+        (Array.isArray(reviewedPaths) ? reviewedPaths : [reviewedPaths])
+          .map(normSubjectPath)
+          .filter(Boolean),
+      );
+  const allSubjects = items.map(itemSubjectsOf);
+  const declarerCount = new Map();
+  for (const subs of allSubjects) {
+    for (const s of subs) declarerCount.set(s, (declarerCount.get(s) ?? 0) + 1);
+  }
+  const symbols = Array.isArray(graph?.symbols) ? graph.symbols : [];
+  const universes = graph && typeof graph.subjects === 'object' && graph.subjects !== null ? graph.subjects : {};
+  const retired = [];
+  const open = [];
+  items.forEach((item, index) => {
+    const subjects = allSubjects[index];
+    const hit = subjects.filter((s) => diffSet.has(s));
+    const exclusiveHit = hit.filter((s) => (declarerCount.get(s) ?? 0) === 1);
+    const sharedHit = hit.filter((s) => (declarerCount.get(s) ?? 0) > 1);
+    const reviewedHit =
+      reviewedSet !== null && subjects.length > 0 && subjects.every((s) => reviewedSet.has(s));
+    if (reviewedHit) {
+      retired.push({ index, item, via: 'reviewed', touched: [...hit] });
+      return;
+    }
+    // Contradiction first: a measured diff on a subject whose universe the
+    // present index answers with zero symbols retires nothing.
+    const contradiction = graph
+      ? hit.filter((s) => universes[s]?.universe === true && (universes[s]?.symbols ?? []).length === 0)
+      : [];
+    if (contradiction.length) {
+      open.push({
+        index,
+        item,
+        why: `measured diff on ${contradiction.join(', ')} but the present index answers zero symbols for its universe`,
+        contradiction: [...contradiction],
+        touched: [...hit],
+      });
+      return;
+    }
+    if (exclusiveHit.length) {
+      retired.push({ index, item, via: 'diff', touched: [...hit] });
+      return;
+    }
+    if (sharedHit.length) {
+      if (!graph) {
+        // Absent tool/index: the path checks stand alone.
+        retired.push({ index, item, via: 'diff', touched: [...hit] });
+        return;
+      }
+      const ownEvidence = symbols.some((sym) => {
+        const owner = normSubjectPath(sym?.owner);
+        return owner && subjects.includes(owner) && (declarerCount.get(owner) ?? 0) === 1;
+      });
+      if (ownEvidence) {
+        retired.push({ index, item, via: 'diff', touched: [...hit] });
+        return;
+      }
+      open.push({
+        index,
+        item,
+        why: `diff only on shared subject(s) ${sharedHit.join(', ')} with no symbol evidence of its own — retires only on independent path evidence`,
+        touched: [...hit],
+      });
+      return;
+    }
+    open.push({
+      index,
+      item,
+      why: subjects.length
+        ? `no measured diff on its subjects (${subjects.join(', ')}) and no read-and-unchanged coverage`
+        : 'the item declares no subjects, so no measured diff can cover it',
+      touched: [],
+    });
+  });
+  const partiallyDone = open.length > 0;
+  const label = (e) => {
+    const subs = itemSubjectsOf(e.item);
+    return `item ${e.index + 1}${subs.length ? ` [${subs.join(', ')}]` : ' [no subjects]'}`;
+  };
+  const note =
+    items.length === 0
+      ? null
+      : partiallyDone
+        ? `partially done: retired ${retired.length} of ${items.length} items; still open: ${open.map(label).join('; ')}`
+        : null;
+  return { retired, open, partiallyDone, note };
+}
+
+/**
+ * Read the committed merge-time graph sidecar (`.job/graph.json`, written at
+ * brief assembly beside the brief — task 59's writer; consumed here and at
+ * discard, never landing as a live path). Shape: `{subjects: {<declared
+ * path>: {symbols|no-symbols marker, callers, processes, risk,
+ * partial/truncated flags, index identifier}}}` — presence of a subject key
+ * is that subject's per-item evidence. Absent or unparseable reads as null,
+ * never as evidence: the gate fails closed on a missing sidecar where one is
+ * required, and skips the sidecar check where the graph is absent.
+ */
+export function readCommittedGraphSidecar(repo, branch) {
+  const r = gitTry(repo, ['show', `${branch}:.job/graph.json`]);
+  if (!r.ok) return null;
+  try {
+    const parsed = JSON.parse(r.stdout);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Whether a diff path is content-path-shaped for graph-scope purposes: the
+ * same `content/*.md` membership `joinableSubjects` uses, minus the
+ * deletion rule (symbols are not diff entries). Graph scope corroboration is
+ * content-path-scoped: symbols with a content-path owner are checked against
+ * the declaration; every other symbol and every transitive affected process
+ * is reviewer information only and never refuses.
+ */
+function isContentPathShaped(p) {
+  const n = normSubjectPath(p);
+  return n.startsWith('content/') && n.endsWith('.md');
+}
+
+/**
+ * The merge-path graph corroboration gate (task 56, folded H2/H3 hooks).
+ *
+ * Inputs: the committed `source`, the constituted `declared` set, the
+ * joinable `contentPaths`, every non-deletion `diffPaths`, the result file's
+ * `resultText` (for `graph-ack:`), the merge `base`, and two injected seams:
+ *
+ * - `analyse`: the merge-path graph seam —
+ *   `({repoRoot, base, branch, subjects}) => analysis`. The analysis runs
+ *   over the branch diff against the merge base (the `compare` form where a
+ *   base exists) and maps changed symbols/processes to declared subjects via
+ *   the same exact-member path-to-subject join the diff check uses. The seam
+ *   is observed inside the callback (tests assert the merge base travelled).
+ *   Contract: read-only against the merge-base tree beside the checked-out
+ *   tree (never worktree state); refreshed by an explicit analyze step
+ *   outside any job — no job writes the index, no merge path refreshes it.
+ *   Return `{absent: true, reason}` where the tool or index is absent, else
+ *   `{absent: false, partial, truncated, symbols: [{name, owner}],
+ *   processes: [...], subjects: {<path>: {universe, symbols, risk}}}`.
+ *   Pass a pre-computed `analysis` instead where the caller already invoked
+ *   the seam (the merge path calls it before the subset check, so the H2(a)
+ *   arm observes the spawn even where the path check then refuses).
+ * - `sidecar`: the parsed `.job/graph.json` (or null). Its per-item
+ *   evidence is required for every item retired on a measured diff; items
+ *   retired on read-and-unchanged coverage are exempt.
+ *
+ * Three-way absence, fail-closed: absent tool/index → warning plus a
+ * `graph: absent` status, merge proceeds on the path checks alone (absent is
+ * never incomplete); present-but-incomplete (`partial`/`truncated`, or
+ * UNKNOWN risk inside a symbol universe) with no well-formed `graph-ack:`
+ * entry → `graph-incomplete` naming `graph:<path>` and the flag, no merge
+ * on the scope side (incomplete is never absent); answered → corroboration.
+ * `no-symbols` (universe === false) is complete, never `unresolved-graph`;
+ * UNKNOWN inside a symbol universe is never an all-clear.
+ *
+ * @returns {{ok: boolean, code?: string, reason?: string, warnings: string[],
+ *            graphStatus: 'absent'|'complete'|'incomplete-answered',
+ *            retirement: object}}
+ */
+export function checkMergeGraphScope({
+  source,
+  declared,
+  contentPaths = [],
+  diffPaths = [],
+  reviewedPaths = null,
+  resultText = '',
+  analyse = null,
+  analysis = undefined,
+  sidecar = null,
+}) {
+  const warnings = [];
+  const declaredList = (Array.isArray(declared) ? declared : []).map(normSubjectPath).filter(Boolean);
+  const declaredSet = new Set(declaredList);
+  const retireWith = (graph) => retireWorkOrderItems(source, { diffPaths, reviewedPaths, graph });
+  let resolved = analysis;
+  if (resolved === undefined && typeof analyse === 'function') {
+    resolved = analyse();
+  }
+  if (!resolved || resolved.absent) {
+    warnings.push(
+      `graph: absent — ${normSubjectPath(resolved?.reason) || 'no graph analysis available on this path'}; proceeding on the path checks alone`,
+    );
+    return { ok: true, warnings, graphStatus: 'absent', retirement: retireWith(null) };
+  }
+  const symbols = Array.isArray(resolved.symbols) ? resolved.symbols : [];
+  const universes =
+    resolved.subjects && typeof resolved.subjects === 'object' ? resolved.subjects : {};
+  const processes = Array.isArray(resolved.processes) ? resolved.processes : [];
+  // (a) Every changed symbol with a content-path owner lies inside the
+  // declaration. Anything else — a non-content owner, a missing owner, a
+  // transitive process — is recorded for the reviewer and never refuses. The
+  // scan collects every warning first and reports the violation after, so a
+  // refusing merge still carries the full corroboration picture (H2(a)).
+  let scopeViolationOwner = null;
+  for (const sym of symbols) {
+    const owner = normSubjectPath(sym?.owner);
+    if (!owner) {
+      warnings.push(`graph: changed symbol ${JSON.stringify(sym?.name ?? '?')} carries no owner path — reviewer-only, never a refusal`);
+      continue;
+    }
+    if (!isContentPathShaped(owner)) {
+      warnings.push(`graph: changed symbol ${JSON.stringify(sym?.name ?? '?')} owned by non-content path ${owner} — reviewer-only, never a refusal`);
+      continue;
+    }
+    if (!declaredSet.has(owner) && scopeViolationOwner === null) {
+      scopeViolationOwner = owner;
+    }
+  }
+  if (processes.length) {
+    warnings.push(
+      `graph: ${processes.length} transitive affected process(es) (${processes.map((p) => String(p?.name ?? p)).slice(0, 5).join(', ')}) — recorded for the reviewer; transitive reach alone never refuses where every changed content path is inside the declaration`,
+    );
+  }
+  if (scopeViolationOwner !== null) {
+    return {
+      ok: false,
+      code: 'scope-violation',
+      reason: `scope-violation: graph maps a changed symbol onto undeclared content path ${scopeViolationOwner} (outside the committed declaration)`,
+      warnings,
+      graphStatus: 'complete',
+      retirement: retireWith({ symbols, subjects: universes }),
+    };
+  }
+  // Incompleteness is per declared subject inside a symbol universe: global
+  // partial/truncated, per-subject flags, or UNKNOWN risk. A subject the
+  // analysis never names has no universe evidence and is not incomplete.
+  const ack = parseGraphAck(resultText);
+  const incomplete = [];
+  for (const subject of declaredList) {
+    const entry = universes[subject];
+    if (!entry || entry.universe !== true) continue;
+    const flags = [];
+    if (resolved.partial || entry.partial) flags.push('partial');
+    if (resolved.truncated || entry.truncated) flags.push('truncated');
+    if (entry.risk === 'UNKNOWN') flags.push('UNKNOWN');
+    if (flags.length && !ack.bySubject.has(subject)) {
+      incomplete.push({ subject, flags });
+    }
+  }
+  incomplete.sort((a, b) => (a.subject < b.subject ? -1 : 1));
+  if (incomplete.length) {
+    const first = incomplete[0];
+    return {
+      ok: false,
+      code: 'graph-incomplete',
+      reason: `graph-incomplete: no well-formed graph-ack: entry for graph:${first.subject} (flag: ${first.flags.join('/')})`,
+      warnings,
+      graphStatus: 'complete',
+      retirement: retireWith({ symbols, subjects: universes }),
+    };
+  }
+  const graphStatus = resolved.partial || resolved.truncated ? 'incomplete-answered' : 'complete';
+  const retirement = retireWith({ symbols, subjects: universes });
+  // Contradiction is retirement-level, never a merge refusal: the item stays
+  // open, and the merge report names the subject, the diff evidence, and the
+  // zero-symbol answer.
+  for (const o of retirement.open) {
+    if (o.contradiction?.length) {
+      warnings.push(
+        `contradiction: item ${o.index + 1} measured a diff on ${(o.touched ?? []).join(', ') || '(no paths)'} but the present index answers zero symbols for ${o.contradiction.join(', ')} — the item stays open`,
+      );
+    }
+  }
+  // (b) The sidecar's per-item evidence is present for every item retired on
+  // a measured diff. Reviewed-coverage retirements are exempt. `no-symbols`
+  // items retire on the path diff alone with the graph recorded summary-only.
+  //
+  // Rollout note: the sidecar is written at brief assembly (task 59). Where
+  // no sidecar was committed at all, (b) has nothing to check against — warn
+  // and proceed on the analysis + path checks (the stub-shaped arms in the
+  // task-57 policy prove the merge through the seams alone). Where a sidecar
+  // IS committed, a missing entry for a diff-retired subject refuses. A
+  // missing entry is never silently filled: presence is the evidence.
+  const sidecarSubjects =
+    sidecar && typeof sidecar.subjects === 'object' && sidecar.subjects !== null
+      ? sidecar.subjects
+      : null;
+  if (!sidecarSubjects) {
+    if (retirement.retired.some((r) => r.via === 'diff')) {
+      warnings.push(
+        'graph: no .job/graph.json sidecar committed — brief-side per-item evidence unavailable; merge proceeds on analysis + path checks alone',
+      );
+    }
+  } else {
+    for (const r of retirement.retired) {
+      if (r.via !== 'diff') continue;
+      for (const subject of r.touched ?? []) {
+        if (Object.prototype.hasOwnProperty.call(sidecarSubjects, subject)) continue;
+        const entry = universes[subject];
+        if (entry?.universe === false) {
+          warnings.push(`graph: ${subject} answers no-symbols (outside any symbol universe) — retired on the path diff alone, graph recorded summary-only`);
+          continue;
+        }
+        return {
+          ok: false,
+          code: 'graph-incomplete',
+          reason: `graph-incomplete: no well-formed graph-ack: entry for graph:${subject} (flag: sidecar)`,
+          warnings,
+          graphStatus,
+          retirement,
+        };
+      }
+    }
+  }
+  for (const [subject, entry] of Object.entries(universes)) {
+    if (entry?.universe === false && declaredSet.has(normSubjectPath(subject))) {
+      warnings.push(`graph: ${normSubjectPath(subject)} answers no-symbols (outside any symbol universe) — complete, never unresolved-graph`);
+    }
+  }
+  return { ok: true, warnings, graphStatus, retirement };
 }
 
 async function executeJob(ctx, opts) {
@@ -1839,32 +2301,132 @@ export async function runLoop(ctx, opts = {}) {
     return ledgerLine;
   };
 
-  // Stage-2 task 55 (amended): the committed-declaration gate, scoped to merges
-  // carrying content paths. Read from branch history (`git show
-  // branch:.job/source.json`), never the working tree — the check is on what
-  // selection committed before any executor ran. Content presence is measured
-  // with the same `joinableSubjects` predicate task 56 uses (joinable content
-  // paths, deletions excluded); no second detector. Old-contract branches (neither
-  // key present) complete under the single-item contract with no refusal and
-  // no graph arm. A missing or empty declaration refuses only where the diff
-  // carries content paths, naming them; a diff with no content paths binds
-  // nothing, logs, and merges. Checked before the scaffolding removal below,
-  // so a refused branch keeps its `.job/` evidence instead of gaining a
-  // removal commit on the way to no merge.
+  // Stage-2 tasks 55 (amended) + 56 (root fix): the committed-declaration
+  // gate, scoped to merges carrying content paths, with the subject set
+  // CONSTITUTED from the declaration and the diff used only to CHECK it.
+  // Read from branch history (`git show branch:.job/source.json`, via the
+  // declaration-read seam `opts.declarationReader`), never the working tree —
+  // the check is on what selection committed before any executor ran. Content
+  // presence is measured with the same `joinableSubjects` predicate task 56
+  // uses (joinable content paths, deletions excluded); no second detector.
+  // Old-contract branches (neither key present) complete under the single-item
+  // contract with no refusal and no graph arm. A missing or empty declaration
+  // refuses only where the diff carries content paths, naming them; a diff
+  // with no content paths binds nothing, logs, and merges. Per-item
+  // retirement runs on every new-contract merge (content or code-only — a
+  // machinery item's subject is a code file, and binding nothing is about the
+  // record, not about whether the work was done); on a merge that binds
+  // nothing the graph scope side is advisory (logged, never refusing).
+  // Checked before the scaffolding removal below, so a refused branch keeps
+  // its `.job/` evidence instead of gaining a removal commit on the way to
+  // no merge.
+  //
+  // Seams (task-37 fixture policy: throwaway repos, stubbed spawns, never a
+  // live push or live index write): `opts.declarationReader`,
+  // `opts.graphSidecarReader`, `opts.mergeGraphAnalysis` — each defaulting to
+  // the history-reading production function (or to absent, for the graph).
+  let mergeSubjects = null;
+  let mergeRetirement = null;
   if (outcome === 'approve') {
-    const committedSource = readCommittedJobSource(ctx.repoRoot, branch);
-    const contentPaths = joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
+    const readSource = opts.declarationReader ?? readCommittedJobSource;
+    const readSidecar = opts.graphSidecarReader ?? readCommittedGraphSidecar;
+    const committedSource = readSource(ctx.repoRoot, branch);
+    const mergeDiff = changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch);
+    const contentPaths = joinableSubjects(mergeDiff);
+    // Scaffolding is committed on the branch at gate time (removed below, on
+    // the way to a merge) and untracked RESULT.md never enters a git diff —
+    // neither is any item's measured work. Same filter `executeJob` uses.
+    const workDiffPaths = mergeDiff
+      .filter((e) => e?.status !== 'D')
+      .map((e) => String(e?.path ?? '').replace(/\\/g, '/'))
+      .filter((p) => p && p !== '.job/brief.md' && !p.startsWith('.job/'));
     const declCheck = declarationMergeDecision(committedSource, contentPaths);
-    if (!declCheck.ok) {
-      ctx.log(`${declCheck.reason} on ${branch} — refusing (no merge)`);
+    const failMerge = (reason) => {
+      ctx.log(`${reason} on ${branch} — refusing (no merge)`);
       outcome = 'failed';
-      result.note = result.note ? `${result.note} — ${declCheck.reason}` : declCheck.reason;
+      result.note = result.note ? `${result.note} — ${reason}` : reason;
+    };
+    const runGraphScope = (constitutedSubjects) => {
+      let resultText = '';
+      try {
+        const resultPath = join(worktree, RESULT_FILENAME);
+        if (existsSync(resultPath)) resultText = readFileSync(resultPath, 'utf8');
+      } catch {
+        resultText = '';
+      }
+      // The seam fires before the subset check below, so the H2(a) arm
+      // observes the spawn (with the merge base) even where the path check
+      // then refuses on the same undeclared path.
+      let analysis;
+      if (typeof opts.mergeGraphAnalysis === 'function') {
+        analysis = opts.mergeGraphAnalysis({
+          repoRoot: ctx.repoRoot, base: mergeBaseSha, branch, subjects: [...constitutedSubjects],
+        });
+      }
+      return checkMergeGraphScope({
+        source: committedSource,
+        declared: constitutedSubjects,
+        contentPaths,
+        diffPaths: workDiffPaths,
+        reviewedPaths: null,
+        resultText,
+        analysis,
+        sidecar: readSidecar(ctx.repoRoot, branch),
+      });
+    };
+    if (!declCheck.ok) {
+      failMerge(declCheck.reason);
     } else if (declCheck.oldContract) {
       ctx.log(`old-contract branch (no committed items/declared_subjects) — completing under the single-item contract, no graph arm`);
-    } else if (declCheck.bindsNothing) {
+    } else if (declCheck.bindsNothing && declCheck.declared.length === 0) {
       ctx.log(`binds nothing: merged diff carries no content paths on ${branch} — merging with no subject binding`);
     } else {
-      ctx.log(`merge declaration: ${declCheck.declared.length} subject(s): ${declCheck.declared.join(', ')}`);
+      // New-contract merge with a non-empty declaration — content-carrying or
+      // code-only. The graph analysis runs on both (the H2(a) arm pins the
+      // spawn even where the path check then refuses); on a merge that binds
+      // nothing its scope side is advisory (out of (a)'s quantifier: logged,
+      // never refusing), while per-item retirement still counts the code
+      // diff — a machinery item's subject is a code file, and binding
+      // nothing is about the record, not about whether the work was done.
+      const advisory = declCheck.bindsNothing;
+      if (advisory) {
+        ctx.log(`binds nothing: merged diff carries no content paths on ${branch} — merging with no subject binding`);
+      } else {
+        ctx.log(`merge declaration: ${declCheck.declared.length} subject(s): ${declCheck.declared.join(', ')}`);
+      }
+      // Task 56 constitution: the set comes from the committed declaration.
+      // (On the read-and-unchanged outcome the executor's declared paths are
+      // intersected here — task 62's reader passes them; today: null.)
+      const constituted = constituteMergeSubjects(committedSource);
+      if (!constituted.ok) {
+        failMerge(constituted.reason);
+      } else {
+        if (!advisory) {
+          ctx.log(`merge subjects constituted from declaration (${constituted.subjects.length}): ${constituted.subjects.join(', ') || '(none)'}`);
+        }
+        const g = runGraphScope(constituted.subjects);
+        for (const w of g.warnings) ctx.log(w);
+        const subset = checkDeclarationSubset(contentPaths, constituted.subjects);
+        if (!subset.ok) {
+          // The path check is primary; a graph scope refusal naming the same
+          // path is logged as corroboration (H2(a): the mapping names the
+          // path the subset check refused).
+          if (!g.ok) ctx.log(`graph corroboration agrees: ${g.reason}`);
+          failMerge(`scope-violation: merged diff touches undeclared content path(s) ${subset.undeclared.join(', ')} — every diff content path must lie inside the committed declaration`);
+          if (g.retirement?.note) ctx.log(g.retirement.note);
+        } else if (!g.ok && !advisory) {
+          failMerge(g.reason);
+          if (g.retirement?.note) ctx.log(g.retirement.note);
+        } else {
+          if (!g.ok) ctx.log(`${g.reason} — advisory on a merge that binds nothing: merging anyway`);
+          if (!advisory) mergeSubjects = [...constituted.subjects];
+          mergeRetirement = g.retirement;
+          if (mergeRetirement?.note) {
+            ctx.log(mergeRetirement.note);
+            result.note = result.note ? `${result.note} — ${mergeRetirement.note}` : mergeRetirement.note;
+          }
+        }
+      }
     }
   }
 
@@ -2083,7 +2645,13 @@ export async function runLoop(ctx, opts = {}) {
       // Measured from the branch at merge time, not from `result.changed`:
       // that list was computed after the AUTHOR run and a revision pass can add
       // a file to the branch afterwards. This is the diff that just merged.
-      const subjects = joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
+      //
+      // Task 56 (root fix): the record binds the CONSTITUTED declaration, not
+      // the measured diff — `mergeSubjects` from the gate above. Old-contract
+      // branches (null) keep the diff-derived set, exactly as before. A merge
+      // that bound nothing records nothing: the join reads the record as the
+      // piece(s) reviewed, and there is no piece.
+      const subjects = mergeSubjects ?? joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
       const wrote = writeRecordSubjects(verdictPath(ctx, jobId, result.pass ?? 1), subjects, {
         repoRoot: ctx.repoRoot,
       });

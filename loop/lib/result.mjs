@@ -271,3 +271,132 @@ export function reviewProducedNothing(run, recordWritten, runner) {
   const startupFailureMeansNothingRan = Boolean(startLine) && !recordWritten && silent;
   return producedNothing || startupFailureMeansNothingRan;
 }
+
+// ---------------------------------------------------------------------------
+// `graph-ack:` — the work order's acknowledgement of graph corroboration
+// (Stage 2, task 56). The ONE result-file shape change that task allows: a
+// sibling block in RESULT.md, one entry per `graph:<declared-subject-path>`,
+// each carrying the identifier, exactly one of the closed states below, and
+// one sentence of evidence. Presence and well-formedness are mechanised at
+// the merge gate; truth stays the reviewer's.
+//
+// Shape (hand-parsed, no YAML dependency — RESULT.md is free-form notes
+// below its first line, not front matter):
+//
+//     graph-ack:
+//       - subject: graph:content/wiki/model/x.md
+//         state: path-checked
+//         evidence: The stub analysis reported callers=2 processes=1 risk=LOW.
+//
+// `state` is exactly one of `GRAPH_ACK_STATES`. `evidence` is one non-empty
+// line. Unknown keys are ignored (forward-tolerant); missing or closed-list-
+// violating keys make the entry malformed, and a malformed entry excuses
+// nothing — the merge treats its subject as unacknowledged.
+// ---------------------------------------------------------------------------
+
+/** The closed acknowledgement states (task 56): exactly one per entry. */
+export const GRAPH_ACK_STATES = Object.freeze(['noted', 'path-checked', 'deferred']);
+
+const GRAPH_ACK_SUBJECT_RE = /^graph:(.+)$/;
+
+function stripQuotes(s) {
+  const t = String(s ?? '').trim();
+  if (t.length >= 2 && ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'")))) {
+    return t.slice(1, -1);
+  }
+  return t;
+}
+
+/**
+ * Parse the sibling `graph-ack:` block out of a result file's text.
+ *
+ * @param {string} text  the whole RESULT.md text (or '' when absent)
+ * @returns {{present: boolean, entries: Array<{subject: string, path: string, state: string, evidence: string}>,
+ *            malformed: Array<{index: number, why: string}>, bySubject: Map<string, object>}}
+ *   `subject` keeps the `graph:` namespace; `path` is the declared subject
+ *   inside it. `bySubject` holds the first well-formed entry per path.
+ *   `present` is true when any entry-shaped content was found, well-formed
+ *   or not.
+ */
+export function parseGraphAck(text) {
+  const empty = { present: false, entries: [], malformed: [], bySubject: new Map() };
+  const lines = String(text ?? '').split(/\r?\n/);
+  const head = lines.findIndex((l) => l.trim() === 'graph-ack:');
+  if (head === -1) return empty;
+  const entries = [];
+  const malformed = [];
+  let current = null;
+  let index = 0;
+  const flush = () => {
+    if (!current) return;
+    index += 1;
+    const entry = current;
+    current = null;
+    const subject = stripQuotes(entry.subject ?? '');
+    const m = GRAPH_ACK_SUBJECT_RE.exec(subject);
+    if (!m || !m[1].trim()) {
+      malformed.push({ index, why: `subject ${JSON.stringify(entry.subject ?? '')} is not graph:<declared-subject-path>` });
+      return;
+    }
+    const state = stripQuotes(entry.state ?? '');
+    if (!GRAPH_ACK_STATES.includes(state)) {
+      malformed.push({ index, why: `state ${JSON.stringify(entry.state ?? '')} is not one of ${GRAPH_ACK_STATES.join(' / ')}` });
+      return;
+    }
+    const evidence = stripQuotes(entry.evidence ?? '');
+    if (!evidence) {
+      malformed.push({ index, why: 'evidence is empty — one sentence of evidence is required' });
+      return;
+    }
+    entries.push({ subject, path: m[1].replace(/\\/g, '/').trim(), state, evidence });
+  };
+  for (const line of lines.slice(head + 1)) {
+    const dash = /^\s*-\s+(.*)$/.exec(line);
+    if (dash) {
+      flush();
+      current = {};
+      const kv = /^\s*([A-Za-z-]+)\s*:\s*(.*)$/.exec(dash[1]);
+      if (kv) current[kv[1].trim()] = kv[2];
+      continue;
+    }
+    if (!current) {
+      // A non-entry line ends the block, except blanks. A second `graph-ack:`
+      // header is not a continuation of the first.
+      if (line.trim() === '' || /^\s*#/.test(line)) continue;
+      break;
+    }
+    const kv = /^\s+([A-Za-z-]+)\s*:\s*(.*)$/.exec(line);
+    if (kv) {
+      current[kv[1].trim()] = kv[2];
+    } else if (line.trim() !== '') {
+      // A non-indented, non-entry line ends the block.
+      if (!/^\s/.test(line)) break;
+    }
+  }
+  flush();
+  const bySubject = new Map();
+  const dups = [];
+  for (const e of entries) {
+    if (bySubject.has(e.path)) {
+      dups.push(e.path);
+      continue;
+    }
+    bySubject.set(e.path, e);
+  }
+  for (const path of dups) {
+    malformed.push({ index: 0, why: `duplicate entry for graph:${path} — the first stands` });
+  }
+  return { present: entries.length > 0 || malformed.length > 0, entries, malformed, bySubject };
+}
+
+/**
+ * The well-formed acknowledgement for a declared subject path, if any.
+ *
+ * @param {{bySubject: Map}|null} parsed  `parseGraphAck` output
+ * @param {string} path  the declared subject (without the `graph:` prefix)
+ */
+export function graphAckForSubject(parsed, path) {
+  if (!parsed || !parsed.bySubject) return null;
+  const key = String(path ?? '').replace(/\\/g, '/').trim();
+  return parsed.bySubject.get(key) ?? null;
+}
