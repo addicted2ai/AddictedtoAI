@@ -25,7 +25,7 @@ import { loadConfig, JOB_TYPES } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
-import { selectJob, escalationTarget, formatRefusals } from './lib/select.mjs';
+import { selectJob, escalationTarget, formatRefusals, candidateSubjects } from './lib/select.mjs';
 import { assembleBrief, assembleRevisionBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import {
   classifyClaim,
@@ -155,6 +155,107 @@ export function ledgerSchemaLine(job, runner, jobId) {
       }),
     ),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Work-order declaration, Stage 2 task 55.
+//
+// One job is one work order (1..N items). The loop authors the subject list,
+// commits it to the branch at selection in `.job/source.json` before any
+// executor runs, and the merge refuses a missing or empty declaration.
+// The list records each item's bead, type, subjects and reason, plus the
+// union of every item's subjects as the job's declared subjects. It is never
+// derived by matching strings against the brief or any prose: a brief names
+// paths to forbid them as readily as to assign them, so a substring test
+// reads a prohibition as an authorisation. Subjects come from
+// `candidateSubjects` (task 53) only, which reads declared metadata.
+//
+// Transition: branches selected before this task lands carry a source record
+// without `items`/`declared_subjects` and complete under the old single-item
+// contract — no declaration required, a missing declaration is not a refusal
+// for them, and they take no graph arm (no annex, no sidecar, no marker).
+// The committed declaration is the sole subject source the brief's graph
+// annex reads; old-contract branches read as null there.
+// ---------------------------------------------------------------------------
+
+/**
+ * One work-order item for a selected candidate: bead, type, subjects, reason.
+ * Subjects come from `candidateSubjects` only, never title/detail/prose.
+ * Bead is null until intake mints one; reason is provenance, never
+ * authorisation.
+ */
+export function workOrderItemForCandidate(candidate) {
+  const subjects = candidateSubjects(candidate ?? {});
+  const bead =
+    typeof candidate?.bead === 'string' && candidate.bead ? candidate.bead : null;
+  const type = candidate?.type ?? null;
+  const reason = String(
+    candidate?.title ?? candidate?.slug ?? candidate?.id ?? type ?? '',
+  ).slice(0, 200);
+  return { bead, type, subjects, reason };
+}
+
+/**
+ * The N=1 declaration selection commits today: one item, its subjects as the
+ * union. Multi-item bundling reuses the same item shape; the union stays the
+ * sorted union of every item's subjects.
+ */
+export function buildWorkOrderDeclaration(candidate) {
+  const item = workOrderItemForCandidate(candidate);
+  return { items: [item], declared_subjects: [...item.subjects] };
+}
+
+/**
+ * True for branches selected before task 55: the committed source carries
+ * neither `items` nor `declared_subjects`. Both keys must be absent together
+ * to count as old — a record carrying exactly one of them is a partial write,
+ * not an old contract, and fails closed below rather than passing as old.
+ */
+export function isOldContractSource(source) {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return true;
+  const hasItems = Array.isArray(source.items);
+  const hasDeclared = Array.isArray(source.declared_subjects);
+  return !hasItems && !hasDeclared;
+}
+
+/**
+ * The sole subject source the brief's graph annex reads. Old-contract
+ * branches read as null: no annex, no sidecar, no marker. New-contract
+ * branches read as a copy of the committed union — never the brief text.
+ */
+export function declaredSubjectsForAnnex(source) {
+  if (isOldContractSource(source)) return null;
+  if (!Array.isArray(source.declared_subjects)) return null;
+  return [...source.declared_subjects];
+}
+
+/**
+ * The merge-side gate for the committed declaration. Old-contract sources
+ * pass through (transition). Anything else must carry a non-empty items list
+ * and a non-empty declared union; otherwise there is nothing to bind and the
+ * merge refuses.
+ */
+export function checkCommittedDeclaration(source) {
+  if (isOldContractSource(source)) return { ok: true, oldContract: true, declared: null };
+  const items = source.items;
+  const declared = source.declared_subjects;
+  if (!Array.isArray(items) || items.length === 0) {
+    return {
+      ok: false,
+      oldContract: false,
+      code: 'missing-declaration',
+      reason: 'nothing to bind: committed work-order items missing or empty — refusing',
+    };
+  }
+  if (!Array.isArray(declared) || declared.length === 0) {
+    return {
+      ok: false,
+      oldContract: false,
+      code: 'missing-declaration',
+      reason: 'nothing to bind: committed declared subjects missing or empty — refusing',
+    };
+  }
+  return { ok: true, oldContract: false, declared: [...declared] };
 }
 
 async function executeJob(ctx, opts) {
@@ -1509,6 +1610,13 @@ export async function runLoop(ctx, opts = {}) {
     // so it survives being read from a different worktree on a different
     // machine. `.job/` is removed from the branch before the merge, so this
     // never reaches `main`.
+    //
+    // Stage-2 task 55: the work-order declaration. `items` (one entry today:
+    // bead, type, subjects, reason) and the union `declared_subjects` are
+    // committed here, before any executor runs. Subjects come from
+    // `candidateSubjects` — declared metadata only, never the brief text —
+    // so a prohibition naming a path in the brief can never authorise it.
+    const workOrder = buildWorkOrderDeclaration(job);
     writeFileSync(
       join(worktree, '.job', 'source.json'),
       JSON.stringify(
@@ -1523,6 +1631,8 @@ export async function runLoop(ctx, opts = {}) {
           // must not re-derive them from a directives file the maintainer may
           // have edited in between.
           issues: jobIssues,
+          items: workOrder.items,
+          declared_subjects: workOrder.declared_subjects,
         },
         null,
         2,
@@ -1532,6 +1642,11 @@ export async function runLoop(ctx, opts = {}) {
     gitTry(worktree, ['add', '.job/source.json']);
     gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: brief`]);
     ctx.log(`committed .job/brief.md and .job/source.json to ${branch} — the branch now carries everything resumption needs`);
+    if (workOrder.declared_subjects.length) {
+      ctx.log(`declared subjects (${workOrder.declared_subjects.length}): ${workOrder.declared_subjects.join(', ')}`);
+    } else {
+      ctx.log(`declared subjects: (none declared — the merge will refuse with nothing to bind)`);
+    }
   }
   const mergeBaseSha = mergeBase(ctx.repoRoot, base, branch);
 
@@ -1670,6 +1785,30 @@ export async function runLoop(ctx, opts = {}) {
     }
     return ledgerLine;
   };
+
+  // Stage-2 task 55: the committed-declaration gate. Read from branch history
+  // (`git show branch:.job/source.json`), never the working tree — the check
+  // is on what selection committed before any executor ran. Old-contract
+  // branches (no `items`/`declared_subjects`) complete under the single-item
+  // contract with no refusal and no graph arm. Anything else with a missing
+  // or empty declaration logs nothing-to-bind and refuses: an absent
+  // declaration is a refusal, never a pass, because an empty set makes every
+  // subset test vacuous. Checked before the scaffolding removal below, so a
+  // refused branch keeps its `.job/` evidence instead of gaining a removal
+  // commit on the way to no merge.
+  if (outcome === 'approve') {
+    const committedSource = readCommittedJobSource(ctx.repoRoot, branch);
+    const declCheck = checkCommittedDeclaration(committedSource);
+    if (!declCheck.ok) {
+      ctx.log(`nothing to bind: committed declared subjects missing or empty on ${branch} — refusing (no merge)`);
+      outcome = 'failed';
+      result.note = result.note ? `${result.note} — ${declCheck.reason}` : declCheck.reason;
+    } else if (declCheck.oldContract) {
+      ctx.log(`old-contract branch (no committed items/declared_subjects) — completing under the single-item contract, no graph arm`);
+    } else {
+      ctx.log(`merge declaration: ${declCheck.declared.length} subject(s): ${declCheck.declared.join(', ')}`);
+    }
+  }
 
   if (outcome === 'approve') {
     // Housekeeping so job scaffolding never reaches main; the branch keeps it.
