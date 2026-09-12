@@ -126,7 +126,7 @@ OpenAI licenses part of AP's text archive. One deal proves one thing, and it is
 the thing that matters: a market in permission now exists beside the crawl,
 where before there was only the crawl. Whether the scraped layer underneath
 ever needed permission is being fought over in courts in several countries and
-is settled nowhere.
+is settled nowhere; [that fight is its own subject](/learn/ai-and-the-law).
 
 The second is text a model wrote. It is cheap and can be aimed at gaps, and it
 carries a documented hazard called [model

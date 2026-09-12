@@ -28,7 +28,8 @@ It emits a string that looks like a call. Whether anything then happens is the
 harness's decision, taken with the harness's permissions. Every capability an
 agent has was granted by that program, and every check on that capability lives
 there too. "The model deleted the directory" describes a harness that ran a
-deletion without asking.
+deletion without asking. When the say-so it ran on came from someone other
+than its operator, [that is its own subject](/learn/how-ai-systems-get-attacked).
 
 The corollary is easy to miss: a tool call is sampled like any other output. It
 can name a tool that does not exist, pass an argument of the wrong type, or be
