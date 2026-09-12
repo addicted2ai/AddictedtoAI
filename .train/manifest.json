@@ -12,6 +12,7 @@
     "content/learn/what-an-agent-is.md",
     "content/learn/what-it-costs-to-build-and-run-ai.md",
     "content/learn/what-models-are-trained-on.md",
+    "content/learn/where-ai-fails-people.md",
     "content/learn/who-builds-ai.md",
     "content/wiki/concept/the-bitter-lesson.md",
     "content/wiki/model/inference-net-schematron-v2-small.md",
@@ -32,6 +33,7 @@
     "data/reviews/j-20260912-02.md",
     "data/reviews/j-20260912-03.md",
     "data/reviews/j-20260912-04.md",
+    "data/reviews/j-20260912-05.md",
     "data/reviews/t-ba60687c.md",
     "data/reviews/t-ba60687c.train-compare.md",
     "data/sources/llm-releases/state.json",
@@ -126,6 +128,7 @@
   "remainder": [
     "541c9f8b",
     "b2c23e6b",
-    "fd40428d"
+    "fd40428d",
+    "d7e287ca"
   ]
 }
