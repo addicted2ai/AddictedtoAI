@@ -425,6 +425,10 @@ test('task 56 H2(b/c): present-but-incomplete without acknowledgement refuses gr
     diffPaths: [A],
     resultText: `done\ngraph-ack:\n  - subject: "graph:${A}"\n    state: noted\n    evidence: The partial flag is noted for the reviewer.\n`,
     analysis: incomplete,
+    // Task 59 hole closure: a diff-retiring merge without a sidecar refuses
+    // on the sidecar flag even when incompleteness is answered, so the
+    // answered case carries its per-item evidence here.
+    sidecar: { subjects: { [A]: { symbols: ['s'] } } },
   });
   assert.equal(acked.ok, true, acked.reason ?? '');
   assert.equal(acked.graphStatus, 'incomplete-answered');
@@ -567,8 +571,11 @@ test('mutation G: diff-constitution under the stub writes no binding on the revi
 test('mutation H: ignoring partial/truncated merges H2(b) when it must not', () => {
   const source = sourceOf([[A]]);
   const flagged = presentAnalysis({ partial: true, subjects: { [A]: uni(['s']) } });
+  // Task 59 hole closure carries a sidecar in both arms so the mutant's
+  // distinction stays on the flags (not on the missing-sidecar refusal).
+  const sidecar = { subjects: { [A]: { symbols: ['s'] } } };
   const production = checkMergeGraphScope({
-    source, declared: [A], contentPaths: [A], diffPaths: [A], resultText: '', analysis: flagged,
+    source, declared: [A], contentPaths: [A], diffPaths: [A], resultText: '', analysis: flagged, sidecar,
   });
   assert.equal(production.ok, false);
   assert.equal(production.code, 'graph-incomplete');
@@ -576,6 +583,7 @@ test('mutation H: ignoring partial/truncated merges H2(b) when it must not', () 
   const mutant = checkMergeGraphScope({
     source, declared: [A], contentPaths: [A], diffPaths: [A], resultText: '',
     analysis: { ...flagged, partial: false, truncated: false },
+    sidecar,
   });
   assert.equal(mutant.ok, true, 'the mutant merges a partial answer with no acknowledgement');
 });
@@ -862,7 +870,11 @@ test('task 56 F1: a carried-file declaration plus its page diff merges (carried 
 
 test('task 56 H3: four items across four subjects with one file changed retires one, leaves three open, records partially-done', async (t) => {
   const id = 'j-20260912-21';
-  const { ctx } = plantedRepo(t, id, [[P1], [P2], [P3], [P4]], {}, 'done-content-paths', ` ${P2}`);
+  // Task 59 hole closure: the merge refuses a diff-retiring branch without a
+  // committed sidecar, so the planted branch carries the writer's per-item
+  // evidence for the diff-retired subject (P2).
+  const sidecar = `${JSON.stringify({ version: 1, index: 'brief-index:merge-base-tree', subjects: { [P2]: { symbols: ['s2'], callers: 1, processes: 0, risk: 'LOW', partial: false, truncated: false } } }, null, 2)}\n`;
+  const { ctx } = plantedRepo(t, id, [[P1], [P2], [P3], [P4]], { '.job/graph.json': sidecar }, 'done-content-paths', ` ${P2}`);
   const res = await go(ctx, {
     mergeGraphAnalysis: () => presentAnalysis({
       symbols: [{ name: 's2', owner: P2 }],
@@ -881,7 +893,10 @@ test('task 56 H3: four items across four subjects with one file changed retires 
 
 test('task 56 H3: a shared-code-file pair retires only the symbol-evidenced item', async (t) => {
   const id = 'j-20260912-22';
-  const { ctx } = plantedRepo(t, id, [[PA, F], [PB, F]], {}, 'done-content-paths', ` ${F}`);
+  // Task 59 hole closure: the shared-file retirement is diff-evidenced, so
+  // the planted branch carries the sidecar entry for the shared file.
+  const sidecar = `${JSON.stringify({ version: 1, index: 'brief-index:merge-base-tree', subjects: { [F]: { symbols: ['symA'], callers: 1, processes: 0, risk: 'LOW', partial: false, truncated: false } } }, null, 2)}\n`;
+  const { ctx } = plantedRepo(t, id, [[PA, F], [PB, F]], { '.job/graph.json': sidecar }, 'done-content-paths', ` ${F}`);
   const res = await go(ctx, {
     mergeGraphAnalysis: () => presentAnalysis({
       symbols: [{ name: 'symA', owner: PA }],

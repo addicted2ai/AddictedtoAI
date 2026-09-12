@@ -27,7 +27,7 @@ import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
 import { selectJob, escalationTarget, formatRefusals, candidateSubjects } from './lib/select.mjs';
-import { assembleBrief, assembleRevisionBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
+import { assembleBrief, assembleRevisionBrief, governingTypeFor, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import {
   classifyClaim,
   createLineageStore,
@@ -199,6 +199,22 @@ export function workOrderItemForCandidate(candidate) {
     candidate?.title ?? candidate?.slug ?? candidate?.id ?? type ?? '',
   ).slice(0, 200);
   return { bead, type, subjects, reason };
+}
+
+/**
+ * The brief-side graph seam's production answer (task 59). The index lives
+ * beside the checked-out tree at the repository root store, never in a job
+ * worktree; queries run against the merge-base tree, never uncommitted
+ * worktree state; the index is refreshed by an explicit analyze step outside
+ * any job — no job writes it, no merge path refreshes it, jobs read it
+ * read-only. No such wired index exists on this path today, so production
+ * answers absent (recorded warning plus `graph: absent`, merge proceeds on
+ * the path checks alone). The seam exists so the annex and sidecar are
+ * assembled through one injected function tests stub (task-12 fixture
+ * pattern): one call per declared subject, observed inside the callback.
+ */
+export function briefGraphQueryForSubject(subject) {
+  return { absent: true, reason: 'no graph index wired on the brief path' };
 }
 
 /**
@@ -833,27 +849,46 @@ export function checkMergeGraphScope({
   // a measured diff. Reviewed-coverage retirements are exempt. `no-symbols`
   // items retire on the path diff alone with the graph recorded summary-only.
   //
-  // Rollout note: the sidecar is written at brief assembly (task 59). Where
-  // no sidecar was committed at all, (b) has nothing to check against — warn
-  // and proceed on the analysis + path checks (the stub-shaped arms in the
-  // task-57 policy prove the merge through the seams alone). Where a sidecar
-  // IS committed, a missing entry for a diff-retired subject refuses. A
-  // missing entry is never silently filled: presence is the evidence.
-  //
-  // KNOWN HOLE, for task 59 to close deliberately (F6): the executor's output
-  // commit (`commitAll` minus `RESULT.md`) can delete a committed
-  // `.job/graph.json`, converting a would-be (b) refusal into this warning.
-  // Warn-only stands until the sidecar writer exists; once it does, a
-  // new-contract branch whose non-empty declaration retires on a diff while
-  // its committed `.job/` lacks the sidecar should refuse rather than warn.
+  // Task 59 closed the F6 hole: the sidecar writer exists (brief assembly
+  // commits `.job/graph.json` beside the brief), so a new-contract branch
+  // whose non-empty declaration retires on a diff while its committed `.job/`
+  // lacks the sidecar refuses rather than warns. The executor's output commit
+  // (`commitAll` minus `RESULT.md`) can delete the committed sidecar, and a
+  // missing file must not convert a would-be (b) refusal into a warning.
+  // Absent tool/index never reaches here (early `graph: absent` return above);
+  // `no-symbols`-only retirements still warn summary-only (complete, never
+  // `unresolved-graph`).
   const sidecarSubjects =
     sidecar && typeof sidecar.subjects === 'object' && sidecar.subjects !== null
       ? sidecar.subjects
       : null;
   if (!sidecarSubjects) {
-    if (retirement.retired.some((r) => r.via === 'diff')) {
+    const diffRetired = retirement.retired.filter((r) => r.via === 'diff');
+    if (diffRetired.length > 0) {
+      // Subjects needing sidecar evidence: diff-touched subjects inside a
+      // symbol universe (universe !== false). Outside-universe subjects are
+      // complete on the path diff alone.
+      const needing = [];
+      for (const r of diffRetired) {
+        for (const subject of r.touched ?? []) {
+          const entry = universes[subject];
+          if (entry?.universe === false) continue;
+          if (!needing.includes(subject)) needing.push(subject);
+        }
+      }
+      needing.sort();
+      if (needing.length > 0) {
+        return {
+          ok: false,
+          code: 'graph-incomplete',
+          reason: `graph-incomplete: no well-formed graph-ack: entry for graph:${needing[0]} (flag: sidecar)`,
+          warnings,
+          graphStatus,
+          retirement,
+        };
+      }
       warnings.push(
-        'graph: no .job/graph.json sidecar committed — brief-side per-item evidence unavailable; merge proceeds on analysis + path checks alone',
+        'graph: no .job/graph.json sidecar committed — diff-retired subjects answer no-symbols (outside any symbol universe); retired on the path diff alone, graph recorded summary-only',
       );
     }
   } else {
@@ -1980,6 +2015,7 @@ export async function runLoop(ctx, opts = {}) {
   let job;
   let branch;
   let briefText;
+  let briefGraphSidecar = null;
   let resumed = false;
   /**
    * The proposal this job was selected from, if any — `{slug, path}` with an
@@ -2162,11 +2198,21 @@ export async function runLoop(ctx, opts = {}) {
     job = sel.selected;
     jobId = nextJobId(ledger, now, scan.resumable.concat(scan.other, scan.abandonable).map((b) => b.id));
     branch = `job/${jobId}`;
+    // Task 59: constitute the declaration BEFORE assembling the brief, so the
+    // brief's N blocks, excerpts (governing type + declared subjects),
+    // verification section and graph annex all read the committed union —
+    // never brief prose. The sidecar is assembled through the same single
+    // per-subject queries (one query per subject) and committed beside the
+    // brief. `opts.briefGraphQuery` is the injected seam tests stub (task-12
+    // fixture pattern); production answers absent (no wired index).
+    const newWorkOrder = buildWorkOrderDeclaration(job);
+    const newGoverning = governingTypeFor(job, newWorkOrder);
+    const briefSink = {};
     briefText = assembleBrief(ctx, {
       jobId,
       job,
       branch,
-      capMinutes: cfg.job_caps_minutes[job.type],
+      capMinutes: cfg.job_caps_minutes[newGoverning] ?? cfg.job_caps_minutes[job.type],
       // A new job: nothing spent, nothing invoked. Stated rather than omitted,
       // because "0.00 across 0 invocations" is the figure that makes the cap
       // read as per-invocation on the very first brief.
@@ -2177,9 +2223,13 @@ export async function runLoop(ctx, opts = {}) {
       // invisible on this path and visible on that one.
       mmSoFar: jobSpendSoFar(ledger, jobId).mm,
       invocations: jobSpendSoFar(ledger, jobId).invocations,
-      totalMinutes: jobTotalMinutes(cfg, job.type),
-      floorMinutes: minInvocationMinutes(cfg, job.type),
-    });
+      totalMinutes: jobTotalMinutes(cfg, newGoverning),
+      floorMinutes: minInvocationMinutes(cfg, newGoverning),
+      workOrder: newWorkOrder,
+      sidecarSink: briefSink,
+      graphIndexId: 'brief-index:merge-base-tree',
+    }, undefined, (typeof opts.briefGraphQuery === 'function' ? opts.briefGraphQuery : briefGraphQueryForSubject));
+    briefGraphSidecar = briefSink.sidecar ?? null;
     ctx.log(`selected: ${job.type} from ${job.source} — ${job.title}`);
     jobIssues = mergeIssueIds(job.issues);
     if (jobIssues.length) ctx.log(`this job serves ${jobIssues.join(', ')}`);
@@ -2243,6 +2293,9 @@ export async function runLoop(ctx, opts = {}) {
     // committed here, before any executor runs. Subjects come from
     // `candidateSubjects` — declared metadata only, never the brief text —
     // so a prohibition naming a path in the brief can never authorise it.
+    // Task 59 reuses the same declaration the brief was assembled from (built
+    // before `assembleBrief` above): rebuilding it here from the same job is
+    // byte-identical by construction, not a second detector.
     const workOrder = buildWorkOrderDeclaration(job);
     writeFileSync(
       join(worktree, '.job', 'source.json'),
@@ -2267,8 +2320,21 @@ export async function runLoop(ctx, opts = {}) {
       'utf8',
     );
     gitTry(worktree, ['add', '.job/source.json']);
+    // Task 59 sidecar writer: `.job/graph.json` committed beside the brief
+    // (per subject, queried names or `no-symbols`, caller/process counts,
+    // risk, partial/truncated flags, index identifier), consumed at
+    // merge/discard, never landing as a live path (`.job/` is removed before
+    // the merge). Old-contract branches take no graph arm and write none.
+    if (briefGraphSidecar) {
+      writeFileSync(
+        join(worktree, '.job', 'graph.json'),
+        `${JSON.stringify(briefGraphSidecar, null, 2)}\n`,
+        'utf8',
+      );
+      gitTry(worktree, ['add', '.job/graph.json']);
+    }
     gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: brief`]);
-    ctx.log(`committed .job/brief.md and .job/source.json to ${branch} — the branch now carries everything resumption needs`);
+    ctx.log(`committed .job/brief.md and .job/source.json${briefGraphSidecar ? ' and .job/graph.json' : ''} to ${branch} — the branch now carries everything resumption needs`);
     if (workOrder.declared_subjects.length) {
       ctx.log(`declared subjects (${workOrder.declared_subjects.length}): ${workOrder.declared_subjects.join(', ')}`);
     } else {

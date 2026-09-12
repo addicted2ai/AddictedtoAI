@@ -270,6 +270,431 @@ ${checks.map((c) => `- ${c}`).join('\n')}
 ${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}`;
 }
 
+// ---------------------------------------------------------------------------
+// Stage 2, task 59 — work-order briefs: N outcome blocks and N subject blocks
+// under one scope rule, keyed on the governing type, with intake verification
+// results where present; the graph annex; and the `.job/graph.json` sidecar.
+//
+// Reuse, not reimplementation (the task's reuse list): the committed
+// declaration's `items` / `declared_subjects` shape is task 55's
+// (`buildWorkOrderDeclaration` in `loop/run.mjs`); subject derivation is
+// task 53's `candidateSubjects` (`loop/lib/select.mjs`); the four bounds'
+// defaults are task 53's `WORK_ORDER_DEFAULTS` (same module); and the merge's
+// subject constitution is task 56's `constituteMergeSubjects` (same
+// `loop/run.mjs` block). This file duplicates none of them: the caller
+// (selection, `loop/run.mjs`) constitutes the declaration with those helpers
+// and passes the constituted union in; this file never matches strings inside
+// brief prose to derive subjects, never re-derives bounds, and never
+// re-constitutes the merge set.
+//
+// What this file owns: rendering (N blocks, verification, annex text) and the
+// sidecar object the caller commits beside the brief. What it does NOT own:
+// selection/bundling (task 53), the merge gate (tasks 56/58), per-item
+// retirement (task 56), proposal consumption (task 66), ledger `items`
+// (task 67). Old-contract branches (selected before task 55: neither `items`
+// nor `declared_subjects` keys present) take no graph arm here — no annex, no
+// sidecar, no marker — exactly as the merge path treats them.
+// ---------------------------------------------------------------------------
+
+/** The assembled-brief bound task 8 asserts (the fixture's 30,000 chars). */
+export const ASSEMBLED_BRIEF_MAX_CHARS = 30000;
+
+/** Stated row width: every annex row truncates to at most this many chars. */
+export const GRAPH_ROW_MAX_CHARS = 200;
+
+/** The one annex section's heading, verbatim. */
+export const GRAPH_ANNEX_HEADING = 'Graph context per declared subject';
+
+/** Sidecar version the merge gate reads (see `readCommittedGraphSidecar`). */
+export const GRAPH_SIDECAR_VERSION = 1;
+
+function normBriefPath(p) {
+  return String(p ?? '').replace(/\\/g, '/').trim();
+}
+
+/**
+ * The work order's governing type: what sets the per-invocation cap, the
+ * budget category, the review checklist, the proposal cap, the ledger line's
+ * `type`, and breaker 1's key. One order, one category, one type in charge —
+ * the bundler's first item's type (`bundleWorkOrders`, task 53). Both
+ * `acceptanceChecksFor` (here) and `checklistFor` (`loop/lib/review.mjs`,
+ * read by the review brief) are keyed on this, never on an item's own type.
+ */
+export function governingTypeFor(job, workOrder) {
+  const g =
+    workOrder?.governingType ??
+    workOrder?.governing_type ??
+    job?.governingType ??
+    job?.governing_type ??
+    null;
+  if (typeof g === 'string' && g.trim()) return g.trim();
+  return job?.type;
+}
+
+/** True for pre-task-55 branches: neither declaration key present. */
+function isOldContractWorkOrder(workOrder) {
+  if (!workOrder || typeof workOrder !== 'object' || Array.isArray(workOrder)) return true;
+  const hasItems = Object.prototype.hasOwnProperty.call(workOrder, 'items');
+  const hasDeclared = Object.prototype.hasOwnProperty.call(workOrder, 'declared_subjects');
+  return !hasItems && !hasDeclared;
+}
+
+/** The N items, or null for the single-item path (no work order). */
+function workOrderItemsForBrief(job, workOrder) {
+  // Stage-0 subject rule (task 5): the committed declaration is the sole
+  // subject source. Job-field `items` are never read here — a work order's
+  // items arrive as `workOrder.items` constituted by the caller with task
+  // 53/55's helpers, never as job fields.
+  void job;
+  const fromOrder = workOrder && Array.isArray(workOrder.items) ? workOrder.items : null;
+  if (fromOrder && fromOrder.length > 0) return fromOrder;
+  if (fromOrder && fromOrder.length === 0) return [];
+  return null;
+}
+
+/** The constituted declared union the caller passes in (a copy, never prose). */
+function declaredSubjectsForBrief(job, workOrder) {
+  // Stage-0 subject rule (task 5, pinned by `brief-excerpt-budget.test.mjs`):
+  // excerpts read the work order's governing type plus its DECLARED subjects
+  // only. Job-field `subjects` / `declared_subjects` / `target` / `raw` are
+  // never read here — that fallback is exactly what the Stage-0 test forbids.
+  void job;
+  const raw =
+    (workOrder && Array.isArray(workOrder.declared_subjects) && workOrder.declared_subjects) ||
+    null;
+  if (!raw) return null;
+  return [...new Set(raw.map(normBriefPath).filter(Boolean))].sort();
+}
+
+/**
+ * Intake's verification results where present: every checkable claim intake
+ * checked against the tree (path exists, quoted string occurs, cited line
+ * reads as claimed) that FAILED, carried by stable identifier with what was
+ * checked and what was found. Shape-tolerant: `failedClaims`,
+ * `verificationFailures`, `intakeVerification` or `verification` on the job
+ * or the work order; each entry `{id|identifier, checked|check, found|result}`.
+ * Absent or empty renders nothing and never refuses (assembly is warn-only;
+ * the merge's `rederived:` enforcement is later tasks').
+ */
+export function verificationEntriesForBrief(job, workOrder) {
+  const holders = [job, workOrder];
+  for (const holder of holders) {
+    if (!holder || typeof holder !== 'object') continue;
+    for (const key of ['failedClaims', 'verificationFailures', 'intakeVerification', 'verification', 'failed_claims']) {
+      const list = holder[key];
+      if (!Array.isArray(list) || list.length === 0) continue;
+      const out = [];
+      for (const entry of list) {
+        if (!entry || typeof entry !== 'object') continue;
+        const id = entry.id ?? entry.identifier ?? entry.claim ?? null;
+        if (typeof id !== 'string' || !id.trim()) continue;
+        out.push({
+          id: id.trim(),
+          checked: String(entry.checked ?? entry.check ?? '').trim(),
+          found: String(entry.found ?? entry.result ?? entry.note ?? '').trim(),
+        });
+      }
+      if (out.length) return out;
+    }
+    // Per-item verification (future bundling): items carrying their own lists.
+    if (Array.isArray(holder.items)) {
+      const out = [];
+      for (const item of holder.items) {
+        if (!item || typeof item !== 'object') continue;
+        for (const key of ['failedClaims', 'verificationFailures', 'intakeVerification', 'verification']) {
+          const list = item[key];
+          if (!Array.isArray(list)) continue;
+          for (const entry of list) {
+            if (!entry || typeof entry !== 'object') continue;
+            const id = entry.id ?? entry.identifier ?? null;
+            if (typeof id !== 'string' || !id.trim()) continue;
+            out.push({
+              id: id.trim(),
+              checked: String(entry.checked ?? entry.check ?? '').trim(),
+              found: String(entry.found ?? entry.result ?? '').trim(),
+            });
+          }
+        }
+      }
+      if (out.length) return out;
+    }
+  }
+  return [];
+}
+
+function verificationSectionForBrief(job, workOrder) {
+  const entries = verificationEntriesForBrief(job, workOrder);
+  if (entries.length === 0) return '';
+  const rows = entries.map(
+    (e) =>
+      `- \`${e.id}\`: checked ${e.checked ? JSON.stringify(e.checked) : '(no check recorded)'} — found ${e.found ? JSON.stringify(e.found) : '(no finding recorded)'}`,
+  );
+  return `## Intake verification (failed claims this work order carries)
+
+Intake checked every checkable claim against the tree before any model was
+invoked. Each failed claim below carries its stable identifier: answer it in
+the structured \`rederived:\` block (one entry per identifier) with evidence.
+An unanswered claim cannot merge; whether an answer is right is the reviewer's.
+
+${rows.join('\n')}
+`;
+}
+
+/**
+ * The N-outcome / N-subject section. Single-item path (no work order) is
+ * byte-identical to the pre-task-59 `## The outcome` section, so every
+ * existing 2b/3a arm and the excerpt-budget fixtures keep their exact shape.
+ * Work-order path renders N outcome blocks (one per item: type, subjects,
+ * bead, reason/title/detail) and N subject blocks (one row per distinct
+ * declared subject naming its owning items) under ONE scope rule keyed on the
+ * governing type. Where the job carries title/detail verbatim it is embedded
+ * verbatim (the 2b/3a tripwire reads it); item reasons render verbatim too.
+ */
+function workOrderOutcomeSection(job, workOrder, governing) {
+  const items = workOrderItemsForBrief(job, workOrder);
+  if (!items) {
+    return `## The outcome
+
+${job.title}
+
+${subjectLines(job)}${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
+This is **one job with one outcome**. It ends in exactly one merge or one
+discard. Do not widen it: a diff that exceeds the stated outcome is a
+\`scope-violation\` at review and the whole job is rejected for it.`;
+  }
+  const n = items.length;
+  if (n === 0) {
+    return `## The outcomes (0 items, governing type \`${governing}\`)
+
+No items were declared. This brief carries no outcome to execute; the merge
+refuses a content-carrying diff on an empty declaration, and a merge with no
+content paths binds nothing, logs, and merges.
+
+This is **one job with no outcomes under one scope rule** (governing type
+\`${governing}\`). It ends in exactly one merge or one discard. Do not widen
+it: a diff that exceeds the stated outcomes is a \`scope-violation\` at review
+and the whole job is rejected for it.
+
+## Subjects (0 subjects, governing type \`${governing}\`)
+
+- (no declared subjects)`;
+  }
+  const blocks = items.map((it, i) => {
+    const type = typeof it?.type === 'string' && it.type ? it.type : governing;
+    const subjects = Array.isArray(it?.subjects)
+      ? [...new Set(it.subjects.map(normBriefPath).filter(Boolean))].sort()
+      : [];
+    const subj = subjects.length ? subjects.map((s) => `\`${s}\``).join(', ') : '(no declared subjects)';
+    const bead = typeof it?.bead === 'string' && it.bead ? `\n- **Bead**: \`${it.bead}\`` : '';
+    const title = typeof it?.title === 'string' && it.title.trim() ? it.title : (typeof it?.reason === 'string' && it.reason ? it.reason : '');
+    const detail = typeof it?.detail === 'string' && it.detail && it.detail !== title ? `\n\n${it.detail}` : '';
+    return `### Item ${i + 1}/${n} — \`${type}\` — ${subj}${bead}\n\n${title}${detail}`;
+  });
+  const allSubjects = [...new Set(items.flatMap((it) => (Array.isArray(it?.subjects) ? it.subjects.map(normBriefPath).filter(Boolean) : [])))].sort();
+  const subjectBlocks = allSubjects.length
+    ? allSubjects
+        .map((s) => {
+          const owners = [];
+          items.forEach((it, idx) => {
+            const subs = Array.isArray(it?.subjects) ? it.subjects.map(normBriefPath) : [];
+            if (subs.includes(s)) owners.push(idx + 1);
+          });
+          return `- \`${s}\` (item${owners.length === 1 ? '' : 's'} ${owners.join(', ')})`;
+        })
+        .join('\n')
+    : '- (no declared subjects)';
+  // The single job's own title/detail, where present and not already carried
+  // verbatim above, is embedded verbatim so the 2b/3a tripwire keeps reading
+  // the work source it was built for.
+  const carried = blocks.join('\n\n');
+  const extras = [];
+  if (typeof job?.title === 'string' && job.title.trim() && !carried.includes(job.title)) extras.push(job.title);
+  if (typeof job?.detail === 'string' && job.detail && job.detail !== job.title && !carried.includes(job.detail)) extras.push(job.detail);
+  const extraText = extras.length ? `\n\n${extras.join('\n\n')}\n` : '';
+  return `## The outcomes (${n} item${n === 1 ? '' : 's'}, governing type \`${governing}\`)
+
+${blocks.join('\n\n')}${extraText}
+This is **one job with ${n} outcome${n === 1 ? '' : 's'} under one scope rule** (governing type
+\`${governing}\`). It ends in exactly one merge or one discard. Do not widen
+it: a diff that exceeds the stated outcomes is a \`scope-violation\` at review
+and the whole job is rejected for it.
+
+## Subjects (${allSubjects.length} subject${allSubjects.length === 1 ? '' : 's'}, governing type \`${governing}\`)
+
+${subjectBlocks}`;
+}
+
+/** The work-source text the 2b/3a tripwire reads: job plus every item. */
+function briefWorkOrderSourceText(job, workOrder) {
+  const parts = [];
+  const base = briefSourceText(job);
+  if (base.trim()) parts.push(base);
+  const items = workOrderItemsForBrief(job, workOrder);
+  if (items) {
+    for (const it of items) {
+      for (const key of ['title', 'detail', 'reason']) {
+        const v = it?.[key];
+        if (typeof v === 'string' && v.trim()) parts.push(v);
+      }
+    }
+  }
+  // Verification identifiers are work source too: the merge refuses an
+  // unanswered one, so a brief that dropped one would be unmergeable.
+  for (const e of verificationEntriesForBrief(job, workOrder)) {
+    parts.push(e.id);
+    if (e.checked) parts.push(e.checked);
+    if (e.found) parts.push(e.found);
+  }
+  return parts.join('\n\n');
+}
+
+/**
+ * One annex row, truncated to the stated width. Overflow is cut from the end
+ * under an explicit cut marker in the `excerptsFor` style naming what was cut
+ * — a row is cut and marked, a subject is never dropped to fit. The subject
+ * path opens the row, so a cut row still names its subject.
+ */
+export function formatGraphRow(subject, body) {
+  const head = `- \`${subject}\`: `;
+  const marker = ` [... CUT: graph row for ${JSON.stringify(subject)} ...]`;
+  const full = `${head}${body}`;
+  if (full.length <= GRAPH_ROW_MAX_CHARS) return full;
+  if (GRAPH_ROW_MAX_CHARS < head.length + marker.length) return `${head.slice(0, Math.max(0, GRAPH_ROW_MAX_CHARS - marker.length))}${marker}`;
+  return `${full.slice(0, GRAPH_ROW_MAX_CHARS - marker.length)}${marker}`;
+}
+
+function graphRowBodyFor(result) {
+  if (!result || result.absent) return 'graph query absent — no index answer on this path';
+  if (result.universe === false) return 'no-symbols; callers 0; processes 0; risk LOW';
+  const symbols = Array.isArray(result.symbols) ? result.symbols : [];
+  const symText = symbols.length ? symbols.map((s) => String(s)).join(', ') : '(no symbols named)';
+  const callers = Number.isFinite(Number(result.callers)) ? Number(result.callers) : 0;
+  const processes = Number.isFinite(Number(result.processes)) ? Number(result.processes) : 0;
+  const risk = typeof result.risk === 'string' && result.risk ? result.risk : 'UNKNOWN';
+  const flags = [];
+  if (result.partial) flags.push('partial');
+  if (result.truncated) flags.push('truncated');
+  if (risk === 'UNKNOWN') flags.push('UNKNOWN');
+  const incomplete = flags.length > 0;
+  return `symbols ${symText}; callers ${callers}; processes ${processes}; risk ${risk}${incomplete ? '; unresolved-graph (' + flags.join('/') + ')' : ''}`;
+}
+
+/**
+ * Assemble the graph annex and its sidecar from the committed declaration and
+ * the index only — one upstream impact query per subject, at most one row per
+ * declared subject. Never from brief prose: the declaration array in is the
+ * sole subject source (a prohibition naming a path in prose authorises
+ * nothing). No refusal at assembly: absent/incomplete answers render as rows
+ * (absent as a note, incomplete with the verbatim `unresolved-graph` marker),
+ * never as throws. `no-symbols` (outside any symbol universe) is complete and
+ * never becomes `unresolved-graph`; UNKNOWN inside a universe always does.
+ *
+ * @param {object} o
+ * @param {string[]} o.declaredSubjects  the committed union (already sorted)
+ * @param {(subject: string) => object} o.graphQuery  injected seam (task-12
+ *   fixture pattern): one call per subject; tests stub it and assert on its
+ *   recorded argv, production returns absent where no index is wired.
+ * @param {string} [o.reviewedOnly]  on a `reviewed:` brief, the one page that
+ *   invocation reviews: the annex filters to that subject only.
+ * @param {string} [o.indexId]  index identifier carried in the sidecar.
+ * @returns {{annexText: string, sidecar: object|null, queried: string[]}}
+ */
+export function assembleGraphContext({ declaredSubjects, graphQuery, reviewedOnly = null, indexId = 'unknown-index' } = {}) {
+  const declared = [...new Set((Array.isArray(declaredSubjects) ? declaredSubjects : []).map(normBriefPath).filter(Boolean))].sort();
+  const filter = typeof reviewedOnly === 'string' && reviewedOnly.trim() ? normBriefPath(reviewedOnly) : null;
+  const wanted = filter ? declared.filter((s) => s === filter) : declared;
+  const queried = [];
+  const rows = [];
+  const sidecarSubjects = {};
+  let absentNote = null;
+  for (const subject of wanted) {
+    queried.push(subject);
+    let result = null;
+    try {
+      result = typeof graphQuery === 'function' ? graphQuery(subject) : null;
+    } catch (err) {
+      result = { universe: true, symbols: [], callers: 0, processes: 0, risk: 'UNKNOWN', partial: false, truncated: false };
+    }
+    if (!result || result.absent) {
+      absentNote = (result && result.reason) || 'no graph index available on this path';
+      rows.push(formatGraphRow(subject, `graph: absent — ${absentNote}`));
+      sidecarSubjects[subject] = { absent: true, reason: absentNote, index: indexId };
+      continue;
+    }
+    if (result.universe === false) {
+      rows.push(formatGraphRow(subject, 'no-symbols; callers 0; processes 0; risk LOW'));
+      sidecarSubjects[subject] = { noSymbols: true, callers: 0, processes: 0, risk: 'LOW', partial: false, truncated: false, index: indexId };
+      continue;
+    }
+    const symbols = Array.isArray(result.symbols) ? result.symbols.map((s) => String(s)) : [];
+    const callers = Number.isFinite(Number(result.callers)) ? Number(result.callers) : 0;
+    const processes = Number.isFinite(Number(result.processes)) ? Number(result.processes) : 0;
+    const risk = typeof result.risk === 'string' && result.risk ? result.risk : 'UNKNOWN';
+    const partial = !!result.partial;
+    const truncated = !!result.truncated;
+    rows.push(formatGraphRow(subject, graphRowBodyFor({ universe: true, symbols, callers, processes, risk, partial, truncated })));
+    sidecarSubjects[subject] = { symbols: [...symbols], callers, processes, risk, partial, truncated, index: indexId };
+  }
+  const heading = `## ${GRAPH_ANNEX_HEADING}`;
+  const intro =
+    'One upstream impact query per subject, from the committed declaration and the index only — never from brief prose. At most one row per declared subject.';
+  const annexText = wanted.length
+    ? `${heading}\n\n${intro}\n\n${rows.join('\n')}\n`
+    : `${heading}\n\n${intro}\n\n- (no declared subjects)\n`;
+  const sidecar = {
+    version: GRAPH_SIDECAR_VERSION,
+    index: indexId,
+    subjects: sidecarSubjects,
+  };
+  if (filter) {
+    sidecar.reviewedOnly = filter;
+  }
+  return { annexText, sidecar, queried };
+}
+
+/**
+ * Cut an over-bound annex from the end under an explicit cut marker naming
+ * what was cut — in the `excerptsFor` style. A row is cut and marked, a
+ * subject is never silently dropped: every declared subject still names
+ * itself in the truncated text (row headers survive because rows open with
+ * the subject path and the cut runs from the end). Where the budget cannot
+ * hold even the headers, the marker names the subjects that did not fit.
+ */
+export function truncateAnnexToBudget(annexText, declaredSubjects, budget) {
+  const text = String(annexText ?? '');
+  if (text.length <= budget) return text;
+  const declared = [...new Set((Array.isArray(declaredSubjects) ? declaredSubjects : []).map(normBriefPath).filter(Boolean))].sort();
+  // Which rows survive the cut point: a row whose header starts before the
+  // cut still names its subject; a row starting at/after it is cut whole.
+  const lines = text.split('\n');
+  const markerFor = (cut) =>
+    `\n\n[... CUT: graph context for ${cut.map((s) => JSON.stringify(s)).join(', ') || '(annex tail)'} ...]\n`;
+  // Binary search the largest prefix that fits with its marker.
+  let lo = 0;
+  let hi = lines.length;
+  let best = '';
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const prefix = lines.slice(0, mid).join('\n');
+    // Subjects whose row header is absent from the prefix are the cut ones.
+    const cut = declared.filter((s) => !prefix.includes(`\`${s}\``));
+    const candidate = `${prefix}${markerFor(cut.length ? cut : ['(annex tail)'])}`;
+    if (candidate.length <= budget) {
+      best = candidate;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  if (best) return best;
+  // Even the heading plus marker does not fit: keep the heading and name
+  // every subject as cut rather than dropping one silently.
+  const fallbackMarker = markerFor(declared.length ? declared : ['(annex tail)']);
+  const head = `## ${GRAPH_ANNEX_HEADING}`;
+  if (head.length + fallbackMarker.length <= budget) return `${head}${fallbackMarker}`;
+  return fallbackMarker.slice(0, budget);
+}
+
 /**
  * The scout's radar feeds, rendered into its brief as INPUTS (beads
  * addictedtoai-wg78; DESK-ORDER-001 §5; keeper ruling K30).
@@ -1016,25 +1441,84 @@ export function assembleBrief(ctx, {
   invocations = 0,
   totalMinutes = null,
   floorMinutes = null,
-}, excerptFn = excerptsFor) {
+  workOrder = null,
+  declaredSubjects = null,
+  verification = null,
+  reviewedOnly = null,
+  graphIndexId = null,
+  sidecarSink = null,
+  graphQuery = null,
+}, excerptFn = excerptsFor, graphQueryFn = null) {
+  // Task 59: the governing type sets excerpts, acceptance, proposal rule and
+  // (via the review brief's shared helper) the checklist — never an item's
+  // own type. `checklistFor` lives in `loop/lib/review.mjs` and reads the same
+  // governing value through `governingTypeFor` (exported here so both brief
+  // assemblers share one reader and no second definition drifts).
+  const governing = governingTypeFor(job, workOrder ?? null);
+  // The constituted union the caller passes in (selection constitutes it with
+  // task 55/56's helpers; this file never matches prose). Explicit
+  // `declaredSubjects` wins; otherwise the work order's union; otherwise the
+  // Stage-0 empty list (existing fixtures keep their exact shape).
+  const declaredForExcerpts = Array.isArray(declaredSubjects)
+    ? [...new Set(declaredSubjects.map(normBriefPath).filter(Boolean))].sort()
+    : declaredSubjectsForBrief(job, workOrder) ?? [];
+  const jobForVerification = verification && typeof verification === 'object'
+    ? { ...job, failedClaims: verification }
+    : job;
   // BRIEF_EXCERPT_MAX_CHARS, not specs.mjs's own 14,000 default (beads
   // addictedtoai-ccs, config.mjs has the measurement and the reasoning): a
   // job type whose capabilities carry an in-flight OpenSpec delta doubles its
   // source count, and 14,000 measurably cut a normative requirement
   // mid-sentence for three job types on the live tree. 20,000 did not, for
   // any of them.
-  const ex = excerptFn(ctx.repoRoot, job.type, {
+  const ex = excerptFn(ctx.repoRoot, governing, {
     maxChars: BRIEF_EXCERPT_MAX_CHARS,
-    subjects: [],
+    subjects: declaredForExcerpts,
     pendingRoot: ctx.pendingRoot,
   });
   // The scout's alone (beads addictedtoai-wg78). The rows exist to widen the
   // sweep's aperture without saturating the surface, and no other job type
   // sweeps; handing them to every brief would be handing every job a reading
   // list it has no charge to read.
-  const radar = job.type === 'scout' ? `\n${radarInputs(ctx.repoRoot)}` : '';
+  const radar = governing === 'scout' ? `\n${radarInputs(ctx.repoRoot)}` : '';
+  // Single-item path (no work order) renders byte-identical to the pre-task-59
+  // `## The outcome` section via `workOrderOutcomeSection`'s null-items arm —
+  // one template, not two, so the detail-embed mutant stays live.
+  const outcomeSection = workOrderOutcomeSection(job, workOrder, governing);
+  const verificationSection = verificationSectionForBrief(jobForVerification, workOrder);
+  // The graph annex (task-12 fixture pattern: injected `graphQuery` seam, one
+  // call per subject, tests assert on its recorded argv). Old-contract work
+  // orders (neither declaration key) take no graph arm at all — no annex, no
+  // sidecar, no marker. New-contract work orders with an empty union render
+  // the heading with an explicit empty note (never a silent omission). No
+  // refusal at assembly: absent/incomplete answers render as rows/notes.
+  const seam = typeof graphQueryFn === 'function' ? graphQueryFn : (typeof graphQuery === 'function' ? graphQuery : null);
+  const hasWorkOrderKeys = workOrder && typeof workOrder === 'object' && !Array.isArray(workOrder) &&
+    (Object.prototype.hasOwnProperty.call(workOrder, 'items') || Object.prototype.hasOwnProperty.call(workOrder, 'declared_subjects'));
+  const wantsAnnex = !!hasWorkOrderKeys && !isOldContractWorkOrder(workOrder) && seam;
+  let annexText = '';
+  let annexSidecar = null;
+  if (wantsAnnex) {
+    const declaredForAnnex = declaredSubjectsForBrief(job, workOrder) ?? [];
+    const indexId = typeof graphIndexId === 'string' && graphIndexId.trim() ? graphIndexId.trim() : 'unknown-index';
+    const built = assembleGraphContext({
+      declaredSubjects: declaredForAnnex,
+      graphQuery: seam,
+      reviewedOnly,
+      indexId,
+    });
+    annexText = built.annexText;
+    annexSidecar = built.sidecar;
+    if (sidecarSink && typeof sidecarSink === 'object') {
+      sidecarSink.sidecar = annexSidecar;
+      sidecarSink.queried = built.queried;
+    }
+  } else if (sidecarSink && typeof sidecarSink === 'object') {
+    sidecarSink.sidecar = null;
+    sidecarSink.queried = [];
+  }
 
-  const text = `# Job ${jobId} — \`${job.type}\`
+  const textWithoutAnnex = `# Job ${jobId} — \`${governing}\`
 
 ${resumed ? CONTINUE_PREAMBLE + '\n\n' : ''}You are working alone, unattended, in a git worktree checked out on branch
 \`${branch}\`. Everything you need is in this file and in the repository around
@@ -1044,16 +1528,9 @@ you. There is no prior conversation to recall and no session to resume.
 ${invocationAccounting({ capMinutes, mmSoFar, invocations, totalMinutes, floorMinutes })}
 - **Work source**: ${job.source}${job.slug ? ` (proposal \`${job.slug}\`)` : ''}${job.lineNumber ? ` (DIRECTIVES.md line ${job.lineNumber})` : ''}
 
-## The outcome
+${outcomeSection}
 
-${job.title}
-
-${subjectLines(job)}${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
-This is **one job with one outcome**. It ends in exactly one merge or one
-discard. Do not widen it: a diff that exceeds the stated outcome is a
-\`scope-violation\` at review and the whole job is rejected for it.
-
-${acceptanceChecksSection(job.type)}
+${verificationSection}${acceptanceChecksSection(governing)}
 ${radar}
 ## What happens next (so you know what your output is for)
 
@@ -1064,7 +1541,7 @@ the checklist for this kind of work and returns one verdict: \`approve\`,
 \`revise\`, or \`reject\`. There is one revision pass, then a delta review, then
 the job is discarded. Nothing publishes without an \`approve\`.
 
-${proposalRule(job.type)}
+${proposalRule(governing)}
 
 ${GROUND_RULES}
 
@@ -1077,6 +1554,35 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
 
  ${ex.text || '_No spec files found in this worktree._'}
 `;
+  // The annex counts against the assembled-brief bound (task 8's 30,000 on
+  // the ASSEMBLED brief; task-59 NOTE). Overflow is bounded rows plus an
+  // explicit cut marker — never a silently dropped subject. No refusal: a
+  // brief that cannot fit still assembles, cut and marked.
+  let text = textWithoutAnnex;
+  if (annexText) {
+    const withoutLen = textWithoutAnnex.length;
+    const available = ASSEMBLED_BRIEF_MAX_CHARS - withoutLen;
+    let fitted = annexText;
+    if (annexText.length > available && available > 0) {
+      const declaredForAnnex = declaredSubjectsForBrief(job, workOrder) ?? [];
+      fitted = truncateAnnexToBudget(annexText, declaredForAnnex, available);
+    } else if (annexText.length > available) {
+      const declaredForAnnex = declaredSubjectsForBrief(job, workOrder) ?? [];
+      fitted = truncateAnnexToBudget(annexText, declaredForAnnex, Math.max(0, available));
+    }
+    // Annex placement: after the outcomes/subjects, before acceptance is
+    // ideal, but inserting there would move every existing fixture's offsets.
+    // Appended after the excerpts instead would bury it. Placed here — after
+    // the work source and before acceptance — by splicing on the acceptance
+    // heading, so single-item briefs without work orders keep byte-identical
+    // shape (no annex, no splice) and work-order briefs carry it early.
+    const anchor = acceptanceChecksSection(governing);
+    if (text.includes(anchor)) {
+      text = text.replace(anchor, `${fitted}\n${anchor}`);
+    } else {
+      text = `${text}\n${fitted}`;
+    }
+  }
   // 2b refusal, placed before the return so it lands before the brief is
   // written anywhere: `run.mjs` writes `.job/brief.md` only after this
   // returns. Moving this check after the return (or after the write) is
@@ -1092,6 +1598,28 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
     throw new Error(
       `brief refuses: ${missing.length} imperative(s) from the work source are not carried: ${missing[0].slice(0, 160)}`,
     );
+  }
+  // Task-59 work-order tripwire, additive beside the single-source check
+  // above (which stays byte-identical so its mutant anchors keep reading):
+  // where a work order is present, every item's title/detail/reason is work
+  // source too, so N outcomes are trip-wired the same way one is.
+  {
+    const itemsForTripwire = workOrderItemsForBrief(job, workOrder);
+    if (itemsForTripwire && itemsForTripwire.length > 0) {
+      const itemSource = itemsForTripwire
+        .flatMap((it) => [it?.title, it?.detail, it?.reason])
+        .filter((s) => typeof s === 'string' && s.trim().length > 0)
+        .join('\n\n');
+      if (itemSource.trim()) {
+        const missingItems = reconcileBriefImperatives(itemSource, text);
+        const extra = missingItems.find((imp) => !missing.includes(imp));
+        if (extra) {
+          throw new Error(
+            `brief refuses: ${missingItems.length} imperative(s) from the work-order source are not carried: ${extra.slice(0, 160)}`,
+          );
+        }
+      }
+    }
   }
   // 3a refusal, same placement for the same reason: the required source
   // must arrive complete, not merely mentioned. Only missing and
@@ -1116,6 +1644,29 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
     throw new Error(
       `brief refuses: required source text ${firstBad[0]}: ${firstBad[1].slice(0, 160)}`,
     );
+  }
+  // Task-59 work-order coverage, additive beside the single-source check
+  // above (which stays byte-identical so its mutant anchors keep reading).
+  {
+    const itemsForCoverage = workOrderItemsForBrief(job, workOrder);
+    if (itemsForCoverage && itemsForCoverage.length > 0) {
+      const itemSource = itemsForCoverage
+        .flatMap((it) => [it?.title, it?.detail, it?.reason])
+        .filter((s) => typeof s === 'string' && s.trim().length > 0)
+        .join('\n\n');
+      if (itemSource.trim()) {
+        const itemCoverage = reconcileRequiredCoverage(itemSource, text);
+        const itemBad =
+          (itemCoverage.missing.length > 0 && ['missing', itemCoverage.missing[0]]) ||
+          (itemCoverage.truncated.length > 0 && ['truncated', itemCoverage.truncated[0]]) ||
+          null;
+        if (itemBad && itemBad[1] !== firstBad?.[1]) {
+          throw new Error(
+            `brief refuses: required work-order source text ${itemBad[0]}: ${itemBad[1].slice(0, 160)}`,
+          );
+        }
+      }
+    }
   }
   return text;
 }
@@ -1163,21 +1714,23 @@ export function assembleRevisionBrief(ctx, {
   findings = '',
   diffText = '',
   cites = null,
+  workOrder = null,
 }, excerptFn = excerptsFor) {
+  const governing = governingTypeFor(job, workOrder ?? null);
   const cited = (Array.isArray(cites) ? cites : Array.isArray(verdict.cites) ? verdict.cites : [])
     .map((heading) => String(heading ?? '').trim())
     .filter(Boolean);
   const excerptOptions = cited.length
     ? { headings: cited, maxChars: BRIEF_EXCERPT_MAX_CHARS, pendingRoot: ctx.pendingRoot }
-    : { maxChars: BRIEF_EXCERPT_MAX_CHARS, subjects: [], pendingRoot: ctx.pendingRoot };
-  const ex = excerptFn(ctx.repoRoot, job.type, excerptOptions);
+    : { maxChars: BRIEF_EXCERPT_MAX_CHARS, subjects: declaredSubjectsForBrief(job, workOrder) ?? [], pendingRoot: ctx.pendingRoot };
+  const ex = excerptFn(ctx.repoRoot, governing, excerptOptions);
   const missing = Array.isArray(ex.missingHeadings) ? ex.missingHeadings : [];
   const missingMarker = missing.length
     ? `\n\n[... CITED REQUIREMENT HEADINGS NOT FOUND: ${missing.map((heading) => JSON.stringify(heading)).join(', ')} ...]`
     : '';
   const diff = String(diffText ?? '');
 
-  return `# Revision pass (one only) — job ${jobId}, type \`${job.type}\`, branch \`${branch}\`
+  return `# Revision pass (one only) — job ${jobId}, type \`${governing}\`, branch \`${branch}\`
 
 This is a continuing invocation in the same worktree. There is no prior
 conversation and no session to resume.
@@ -1186,7 +1739,7 @@ ${invocationAccounting({ capMinutes, mmSoFar, invocations, totalMinutes, floorMi
 
 ${revisionVerdictSection(verdict, findings)}
 
-${acceptanceChecksSection(job.type)}
+${acceptanceChecksSection(governing)}
 ## Diff under revision
 
 This is the exact diff the reviewer judged. Address the verdict above in this
