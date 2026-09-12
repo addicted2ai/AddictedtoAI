@@ -96,6 +96,12 @@ thousands of cases, and the person it happened to has exactly one. Seeing the
 shape takes the whole distribution, which is the one thing nobody on the
 receiving end is ever given.
 
+## It learned who gets hired
+
+Hiring shows the same structure with a résumé in it. In 2018, [Amazon ditched a recruiting tool that favoured men](https://www.theguardian.com/technology/2018/oct/10/amazon-hiring-ai-gender-bias-recruiting-engine). Its models had been trained to vet applicants by observing patterns in résumés submitted to the company over a ten-year period. Most came from men. The system taught itself that male candidates were preferable: it penalised résumés that included the word "women’s", as in "women’s chess club captain", and it downgraded graduates of two all-women’s colleges.
+
+Watch what the engineers tried next, because it is the whole lesson in miniature. They edited the programs to make them neutral to these particular terms — but that, the people familiar with it said, was no guarantee the machines would not devise other ways of sorting candidates that could prove discriminatory. Scrub the word and the pile still knows. A ten-year pile mostly made of one kind of candidate describes a world in which the others are unusual, and the loop puts its effort where the score is. The team was ultimately disbanded.
+
 ## Wrong for you, wrong about you
 
 When a chatbot [invents a source](/wiki/concept/hallucination) and states it
