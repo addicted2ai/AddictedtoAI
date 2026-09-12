@@ -82,7 +82,9 @@ nothing to find. There is no grammar, no parser, and no stage that completes
 before the untrusted text shows up. There is one operation, applied uniformly
 across the whole sequence, which scores every token in the vocabulary for
 plausibility as the next one. Attention is the only thing that moves
-information between positions and it compares queries against keys without any
+information between positions and — "query" here in an unrelated technical
+sense from the database queries above — it compares queries (what one position
+is looking for) against keys (what each other position has to offer) without any
 notion of where a span came from, because provenance was never encoded in the
 first place. A delimiter is text, sitting in the channel it is supposed to
 fence. In Goodside's original thread the first defence tried was an instruction
