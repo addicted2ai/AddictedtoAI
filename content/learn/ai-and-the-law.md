@@ -161,8 +161,8 @@ The search index is the defence's preferred one. In October 2015 the Second
 Circuit decided [Authors Guild v. Google,
 Inc.](https://www.courtlistener.com/opinion/3124896/authors-guild-v-google-inc/),
 804 F.3d 202, a case about the scanning of entire books to build a searchable
-index, and an industry submission to the Copyright Office's inquiry cites it by
-name. If training is that, then copying the whole corpus is a step towards a
+index, and [an industry submission to the Copyright Office's inquiry cites it by
+name](https://downloads.regulations.gov/COLC-2023-0006-9003/attachment_1.pdf). If training is that, then copying the whole corpus is a step towards a
 tool serving a purpose the books never served, and the completeness of the
 copying is a necessity rather than an aggravation.
 

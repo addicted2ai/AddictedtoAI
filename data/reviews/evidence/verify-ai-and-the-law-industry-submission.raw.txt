@@ -1,0 +1,63 @@
+RAW TRANSCRIPT — job j-20260911-06, run 2026-09-11 local.
+Fetched bodies lived under the OS temp directory, never in the tree.
+Script files: o9d-step16.cjs, o9d-step17.cjs, o9d-search.py, o9d-confirm.py, o9d-pypdf2pg.py (temp dir, outside the repo).
+
+===== PART 0 — fetch of candidate industry submissions from the inquiry docket (node:fetch, script o9d-step16.cjs). Re-run output; byte counts identical to first fetch. [raw-part0.txt] =====
+google-docket: HTTP 200 ct=application/pdf len=240445
+  saved 240445 bytes, magic=%PDF-
+ccia-docket: HTTP 200 ct=application/pdf len=283057
+  saved 283057 bytes, magic=%PDF-
+bsa-docket: HTTP 200 ct=application/pdf len=289544
+  saved 289544 bytes, magic=%PDF-
+bsa-self: HTTP 403 ct=text/html; charset=UTF-8 len=null
+  body head: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-
+bsa-berkeley: HTTP 403 ct=text/html len=null
+  body head: <html>
+<head><title>403 Forbidden</title></head>
+<body>
+<center><h1>403 Forbidden</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+<!-- a padding to disable MSIE and Chrome friendly err
+
+===== PART 1 — revalidation of the chosen link target (script o9d-step17.cjs): sha256 of first fetch vs re-GET. [raw-part1.txt] =====
+local copy: 240445 bytes sha256=5b12c9f45f5ffc0dbbddcfdcff201dd912ab96c2fb51b17863ca51aac88af156
+re-GET https://downloads.regulations.gov/COLC-2023-0006-9003/attachment_1.pdf -> HTTP 200 ct=application/pdf
+re-fetched: 240445 bytes sha256=5b12c9f45f5ffc0dbbddcfdcff201dd912ab96c2fb51b17863ca51aac88af156
+byte-identical to first fetch: true
+
+===== PART 2 — literal substring search over locally extracted PDF text, PyMuPDF (script o9d-search.py). [raw-part2.txt] =====
+=== bsa-docket.pdf: 12 pages, 43111 chars ===
+  'Authors Guild': 0
+  'Authors Guild v. Google': 0
+  '804 F.3d 202': 0
+  'Google Books': 0
+=== ccia-docket.pdf: 25 pages, 52826 chars ===
+  'Authors Guild': 1
+  'Authors Guild v. Google': 0
+  '804 F.3d 202': 1
+  'Google Books': 3
+  CONTEXT: 't the ingestion of large amounts of copyrightable material for the \npurpose of an AI algorithm or process learning its function.  Numerous appellate courts have \ncorrectly found the mass copying of raw material to build databases, including commercial \ndatabases, for automated computational analysis to be fair use under 17 U.S.C. § 107. Authors \nGuild v. Google, Inc., 804 F.3d 202 (2d Cir. 2015); Authors Guild v. HathiTrust, 755 F.3d 87 (2d \nCir. 2014); A.V. ex rel. Vanderhye v. iParadigms, LLC, 562 F.3d 630, 640 (4th Cir. 2009); \nPerfect 10 v. Amazon.com, Inc., 508 F.3d 1146, 1165 (9th Cir. 2007); Kelly v. Arriba Soft Corp., \n336 F.3d 811, 818 (9th Cir. 2003).  Training AI is a form of this computational analysis.  Judge \nLeval’s opinion in Google provides the clearest analysis of why the creation of datasets for \ncomputational analysis, and their subsequent uses in AI training, are fair uses.  \nTo help prevent this issue from being relitigated in every case involving an AI training \n'
+=== google-docket.pdf: 16 pages, 48966 chars ===
+  'Authors Guild': 2
+  'Authors Guild v. Google': 1
+  '804 F.3d 202': 1
+  'Google Books': 0
+  CONTEXT: ' to the development of other products.\nIn a word, it can carry out its basic purpose of providing a context-based check that can help to keep a\ncopyright monopoly within its lawful bounds.”).\n29 Harper & Row, 471 U.S. at 549 (quoting H. Ball, Law of Copyright and Literary Property 260 (1944)).\n28 Id.; see also 17 U.S.C. § 102(b).\n27 Eldred v. Ashcroft, 537 U.S. 186, 219 (2003).\n9\n\nFor example, in Authors Guild v. Google, Inc.,32 Google’s creation of digital scans of more than\n20 million books was deemed to be a transformative fair use because, among other things, it\nenabled the creation of Google Book Search and the ability to engage in statistical analysis of\nlanguage through text-and-data mining.33 Similarly, in A.V. ex rel Vanderhye v. iParadigms,\nLLC,34 the court found that it was fair use to make copies of entire works for the purpose of\nbuilding a system to identify plagiarism in student essays. The court noted in particular that\nthe use of the copied works “as part of a digitize'
+
+===== PART 3 — second extractor cross-check, PyPDF2, plus hit location in the Google PDF (script o9d-confirm.py). NOTE: PyPDF2 single-line counts read 0 because that extractor emits one word per line on this file AND maps the fi-ligature to NUL; the words are all present (see Part 4). [raw-part3.txt] =====
+PyPDF2 chars: 48964
+PyPDF2 'Authors Guild' count: 0
+PyPDF2 CONTEXT: 'Arti\x00cial\nIntelligence\nand\nCopyright \n88\nFed.\nReg.\n59942 \nDocket\nNo.\nCOLC-2023-0006 \nOctober\n30,\n2023\nGoogle\nLLC\nappreciates\nthe\nopportunity\nto\nsubmit\nthese\ncomments\nin\nresponse\nto\nthe\nU.S.\nCopyright\nO\x00ce’s\nnotice\nof\ninquiry,\nArti\x00cial\nIntelligence\nand\nCopyright\n,\n88\nFed.\nReg.\n59942\n(Aug.\n30,\n2023).\nGoogle\nhas\nbeen\nat\nthe\nforefront\nof\narti\x00cial\nintelligence\n(AI)\nresearch\nfor\nmany\nyears\nand\nhas\nused\nAI\nto\nimprove\nproducts\nrelied\non\nby\nbillions\nof\npeople.\nOur\nteams\nacross\nGoogle,\nincluding\nour\nAI'
+fitz hit on PDF page index 9 (page number 10)
+'For example, in Authors Guild v. Google, Inc.,32 Google’s creation of digital scans of more than\n20 million books was deemed to be a transformative fair use because, among other things, it\nenabled the creation of Google Book Search and the ability to engage in statistical analysis of\nlanguage through text-and-data mining.33 Similarly, in A.V. ex rel Vanderhye v. iParadigms,\nLLC,34 the court found that it was fair'
+
+===== PART 4 — PyPDF2 page-10 text at the hit location: same words, same order (script o9d-pypdf2pg.py). [raw-part4.txt] =====
+page10 chars: 3223
+CTX: 'For\nexample,\nin\nAuthors\nGuild\nv.\nGoogle,\nInc.\n,\n32\nGoogle’s\ncreation\nof\ndigital\nscans\nof\nmore\nthan\n20\nmillion\nbooks\nwas\ndeemed\nto\nbe\na\ntransformative\nfair\nuse\nbecause,\namong\nother\nthings,\nit\nenabled\nthe\ncreation\nof\nGoogle\nBook\nSearch\nand\nthe\nability\nto\nengage\nin\nstatistical\nanalysis\nof\nlanguage\nthr'
+---- font/encoding resources ----
+{'/F6': IndirectObject(6, 0, 2594867104736), '/F7': IndirectObject(7, 0, 2594867104736), '/F48': IndirectObject(48, 0, 2594867104736)}
