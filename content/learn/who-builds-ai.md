@@ -45,7 +45,7 @@ chips arrive. Training a model at the frontier — one of the largest ones,
 against which the others get measured — costs more than money. It costs a bet.
 The machines run for months and the bill is settled before anyone knows what
 came out. That is why so few organisations are in that layer, and what the bet
-costs is a subject of its own.
+costs is [a subject of its own](/learn/what-it-costs-to-build-and-run-ai).
 
 Then the floor, which has a surprise in it. Chip design has concentrated into
 very few hands, and the one whose name you know does not make chips.
