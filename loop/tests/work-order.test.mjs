@@ -55,7 +55,8 @@ import {
   runLoop,
 } from '../run.mjs';
 import { graphAckForSubject, parseGraphAck } from '../lib/result.mjs';
-import { joinableSubjects, verdictPath, writeRecordSubjects, writeVerdictRecord } from '../lib/review.mjs';
+import { checkWorkOrderMergeBounds, joinableSubjects, mergeGate, verdictPath, writeRecordSubjects, writeVerdictRecord } from '../lib/review.mjs';
+import { bundleWorkOrders } from '../lib/select.mjs';
 import { readCommittedJobSource } from '../lib/resume.mjs';
 import { readLedger } from '../lib/ledger.mjs';
 import {
@@ -961,4 +962,257 @@ test('task 56 H2(b2): a committed sidecar missing the retired subject refuses; w
     assert.equal(res.outcome, 'done', ctx.output());
     assert.match(readLedger(ctx).at(-1).note, /partially done: retired 1 of 2 items/);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Task 57 — one file's repairs travel as one order; the bounds bind twice.
+//
+// Reuse, not reimplementation: every arm below tests THROUGH the task-53
+// bundler (`bundleWorkOrders`), the task-55 declaration, and the task-56
+// constitution/retirement/subset helpers — duplicating none of them. The
+// bundling arms live here (not only in `select-bundler.test.mjs`) because
+// this file is the Tests home tasks 53/55/56/58 share: the selection half of
+// "enforced twice" is proved where the merge half is. The merge-bound arms
+// (task 58's home) go through `mergeGate`'s work-order arm with an injected
+// size seam — throwaway repositories, stubbed sizes, never a live push.
+// ---------------------------------------------------------------------------
+
+/** Minimal category map for the coherence key: repair and post differ. */
+const CFG57 = {
+  budget: {
+    categories: {
+      upkeep: ['repair', 'verify'],
+      new_writing: ['post', 'entry'],
+      machinery: ['machinery'],
+    },
+  },
+};
+
+const BOUNDS57 = Object.freeze({
+  maxItems: 4,
+  maxSubjects: 4,
+  maxReviewedBytes: 60000,
+  maxReviewedBytesPerSubject: 30000,
+});
+
+const cand57 = (type, title, subjects) => ({ source: 'queue', type, title, subjects: [...subjects] });
+
+test('task 57: four repairs on one page bundle into one work order', () => {
+  const candidates = [1, 2, 3, 4].map((n) =>
+    cand57('repair', `fix link ${n}`, ['content/wiki/model/x.md']),
+  );
+  const { orders, refusals } = bundleWorkOrders(candidates, { cfg: CFG57, measure: () => 3000 });
+  assert.equal(refusals.length, 0);
+  assert.equal(orders.length, 1, 'one page, one coherence key, one order');
+  assert.equal(orders[0].items.length, 4);
+  assert.deepEqual(orders[0].subjects, ['content/wiki/model/x.md']);
+  assert.equal(orders[0].governingType, 'repair');
+  assert.equal(orders[0].totalBytes, 12000);
+});
+
+test('task 57: a mixed-category pair on one subject is not bundled', () => {
+  const candidates = [
+    cand57('repair', 'fix a link', ['content/wiki/model/x.md']),
+    cand57('post', 'write up x', ['content/wiki/model/x.md']),
+  ];
+  const { orders, refusals } = bundleWorkOrders(candidates, { cfg: CFG57, measure: () => 3000 });
+  assert.equal(refusals.length, 0);
+  assert.equal(orders.length, 2, 'one budget category per work order — coherence decides, count only bounds');
+  assert.deepEqual(orders.map((o) => o.items.length), [1, 1]);
+  assert.deepEqual(orders.map((o) => o.governingType).sort(), ['post', 'repair']);
+});
+
+test('task 57: a bundle inside the total but over the per-subject limit is refused at selection', () => {
+  const huge = cand57('repair', 'rewrite the huge page', ['content/wiki/huge.md']);
+  const small = cand57('repair', 'fix a typo', ['content/wiki/small.md']);
+  const sizes = { 'content/wiki/huge.md': 34000, 'content/wiki/small.md': 1000 };
+  const { orders, refusals } = bundleWorkOrders([huge, small], {
+    cfg: CFG57,
+    measure: (subject) => sizes[subject] ?? null,
+  });
+  // 35,000 total sits inside the 60,000 total — the per-subject limit is what
+  // refuses, because a total says nothing about the distribution.
+  assert.equal(refusals.length, 1);
+  assert.equal(refusals[0].rule, 'work-order:per-subject-bound');
+  assert.match(refusals[0].reason, /max_reviewed_bytes_per_subject/);
+  assert.match(refusals[0].reason, /34000/);
+  assert.equal(orders.length, 1);
+  assert.deepEqual(orders[0].subjects, ['content/wiki/small.md']);
+});
+
+test('task 57: a brief-prose prohibition on pulse/lib/queue.mjs authorises nothing', () => {
+  const candidate = {
+    source: 'queue',
+    type: 'repair',
+    title: 'fix the queue (do NOT touch pulse/lib/queue.mjs)',
+    subjects: [A],
+  };
+  const production = buildWorkOrderDeclaration(candidate);
+  assert.deepEqual(production.declared_subjects, [A], 'production never reads the prose');
+  assert.ok(
+    !production.declared_subjects.includes('pulse/lib/queue.mjs'),
+    'the forbidden path is not authorised',
+  );
+  // MUTANT COPY: match paths out of the brief text instead of reading
+  // declared metadata.
+  const mutantDeclared = [...new Set(
+    [...String(candidate.title).matchAll(/[a-z]+\/lib\/[^\s'"`]+?\.mjs/g)].map((m) => m[0]),
+  )].sort();
+  assert.ok(
+    mutantDeclared.includes('pulse/lib/queue.mjs'),
+    `the mutant authorises the prohibition: ${mutantDeclared.join(', ')}`,
+  );
+});
+
+test('task 57: a reviewed outcome with an empty diff writes a record binding both declared pages', () => {
+  const source = sourceOf([[P1], [P2]]);
+  // The empty diff constitutes nothing — the binding comes from the
+  // executor's declared paths intersected with the declaration.
+  assert.deepEqual(joinableSubjects([]), []);
+  const production = constituteMergeSubjects(source, { executorPaths: [P1, P2] });
+  assert.deepEqual(production.subjects, [P1, P2]);
+
+  const ctx = makeRepo({ now: () => NOW });
+  try {
+    const p = writeVerdictRecord(ctx, 'j-task57-reviewed', {
+      verdict: 'approve',
+      wouldCite: 'A reader checking page dates would link this.',
+      notes: 'reviewed both pages, no changes needed',
+    });
+    const wrote = writeRecordSubjects(p, production.subjects);
+    assert.equal(wrote.ok, true, 'the declaration-constituted set binds both pages');
+    const data = matter(readFileSync(p, 'utf8')).data;
+    assert.deepEqual([...data.subject].sort(), [P1, P2]);
+  } finally {
+    ctx.cleanup();
+  }
+});
+
+test('task 57/58: a job whose produced reviewed bytes exceed the total bound is refused at the merge gate', async (t) => {
+  const workOrder = {
+    items: [item([P1]), item([P2]), item([P3]), item([P4])],
+    declared_subjects: [P1, P2, P3, P4],
+  };
+  const subjects = [P1, P2, P3, P4];
+  // Count bounds, straight through the helper: five items and five subjects
+  // refuse on max_items / max_subjects before any byte is measured.
+  const tooManyItems = checkWorkOrderMergeBounds({
+    workOrder: { items: [1, 2, 3, 4, 5].map(() => item([P1])), declared_subjects: [P1] },
+    subjects: [P1],
+    bounds: BOUNDS57,
+  });
+  assert.equal(tooManyItems.ok, false);
+  assert.equal(tooManyItems.code, 'work-order-bound');
+  assert.match(tooManyItems.reason, /max_items/);
+  const tooManySubjects = checkWorkOrderMergeBounds({
+    workOrder: {
+      items: [item([P1, P2]), item([P3]), item([P4]), item([Q1])],
+      declared_subjects: [P1, P2, P3, P4, Q1],
+    },
+    subjects: [P1, P2, P3, P4, Q1],
+    bounds: BOUNDS57,
+  });
+  assert.equal(tooManySubjects.ok, false);
+  assert.equal(tooManySubjects.code, 'work-order-bound');
+  assert.match(tooManySubjects.reason, /max_subjects/);
+
+  const ctx = makeRepo({ now: () => NOW });
+  t.after(() => ctx.cleanup());
+  // Four subjects at 20,000 bytes each: 80,000 over the 60,000 total.
+  writeVerdictRecord(ctx, 'j-task57-over-total', {
+    verdict: 'approve',
+    wouldCite: 'A reader checking page dates would link this.',
+    notes: 'n',
+  });
+  const refused = mergeGate(ctx, {
+    jobId: 'j-task57-over-total',
+    type: 'repair',
+    subjects,
+    workOrder,
+    measure: () => 20000,
+    bounds: BOUNDS57,
+  });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.code, 'work-order-bound');
+  assert.match(refused.reason, /max_reviewed_bytes/);
+  assert.match(refused.reason, /80000/);
+
+  // One subject at 34,000 with the total inside 60,000: the per-subject
+  // limit refuses where the total would pass.
+  writeVerdictRecord(ctx, 'j-task57-over-persubject', {
+    verdict: 'approve',
+    wouldCite: 'A reader checking page dates would link this.',
+    notes: 'n',
+  });
+  const perSubject = mergeGate(ctx, {
+    jobId: 'j-task57-over-persubject',
+    type: 'repair',
+    subjects: [A, B],
+    workOrder: { items: [item([A]), item([B])], declared_subjects: [A, B] },
+    measure: (s) => (s === A ? 34000 : 1000),
+    bounds: BOUNDS57,
+  });
+  assert.equal(perSubject.ok, false);
+  assert.equal(perSubject.code, 'work-order-bound');
+  assert.match(perSubject.reason, /max_reviewed_bytes_per_subject/);
+  assert.match(perSubject.reason, new RegExp(A.replace(/\//g, '\\/')));
+
+  // The same order at 3,000 bytes a page passes: the bound binds, it does
+  // not blanket-refuse.
+  writeVerdictRecord(ctx, 'j-task57-within', {
+    verdict: 'approve',
+    wouldCite: 'A reader checking page dates would link this.',
+    notes: 'n',
+  });
+  const passing = mergeGate(ctx, {
+    jobId: 'j-task57-within',
+    type: 'repair',
+    subjects,
+    workOrder,
+    measure: () => 3000,
+    bounds: BOUNDS57,
+  });
+  assert.equal(passing.ok, true, passing.reason ?? '');
+});
+
+test('task 57/58: an empty-diff outcome binding four pages exceeding a four-diff-sized bound is refused', async (t) => {
+  // Four pages at 5,000 bytes each: 20,000 of reviewed surface. The bound is
+  // sized for four diffs (8,000) — the empty diff measures zero, so only a
+  // gate that measures the declared pages' surfaces can refuse.
+  const subjects = [P1, P2, P3, P4];
+  const workOrder = {
+    items: [item([P1]), item([P2]), item([P3]), item([P4])],
+    declared_subjects: [P1, P2, P3, P4],
+  };
+  const bounds = { maxItems: 4, maxSubjects: 4, maxReviewedBytes: 8000, maxReviewedBytesPerSubject: 30000 };
+  const measure = () => 5000;
+
+  const ctx = makeRepo({ now: () => NOW });
+  t.after(() => ctx.cleanup());
+  writeVerdictRecord(ctx, 'j-task57-empty-diff', {
+    verdict: 'approve',
+    wouldCite: 'A reader checking page dates would link this.',
+    notes: 'reviewed four pages, no changes needed',
+  });
+  const production = mergeGate(ctx, {
+    jobId: 'j-task57-empty-diff',
+    type: 'repair',
+    subjects,
+    workOrder,
+    measure,
+    bounds,
+  });
+  assert.equal(production.ok, false);
+  assert.equal(production.code, 'work-order-bound');
+  assert.match(production.reason, /max_reviewed_bytes/);
+  assert.match(production.reason, /20000/);
+
+  // MUTATION (task 58's named one): measure the empty diff instead of the
+  // declared pages. The diff is empty, so the total is zero and the same
+  // bound passes — letting four whole pages through a bound sized for four
+  // diffs, which is exactly the evaporation the second enforcement exists
+  // to stop. Copy-based: production above is untouched.
+  const mutant = checkWorkOrderMergeBounds({ workOrder, subjects: [], measure, bounds });
+  assert.equal(mutant.ok, true, 'the mutant measures zero and merges when it must not');
+  assert.equal(mutant.totalBytes, 0);
 });

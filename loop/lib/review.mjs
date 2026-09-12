@@ -53,6 +53,7 @@ import {
   normalizeField,
 } from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
+import { WORK_ORDER_DEFAULTS } from './select.mjs';
 import { recordFileName, recordNamesPath, reviewedOf } from '../../lib/reviews.mjs';
 import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
 
@@ -202,7 +203,7 @@ export function isReissueRefusal(code) {
  * being added to this list rather than by a `gate.code === '…'` comparison
  * written out by hand at the call site.
  */
-export const DIFF_REFUSAL_CODES = Object.freeze(['carried-deletion-unearned', 'closure-candidates']);
+export const DIFF_REFUSAL_CODES = Object.freeze(['carried-deletion-unearned', 'closure-candidates', 'work-order-bound']);
 
 export function isDiffRefusal(code) {
   return DIFF_REFUSAL_CODES.includes(code);
@@ -819,6 +820,99 @@ export function existingFieldValues(ctx, excludeJobId, field) {
 }
 
 /**
+ * The work-order bound check at the merge (Stage 2, tasks 57/58).
+ *
+ * Re-measures the four configured bounds against the work the job produced:
+ * a maximum number of items, a maximum number of distinct subjects, a
+ * maximum total of reviewed bytes, and a maximum of reviewed bytes for any
+ * one subject. Pure function over its arguments so the gate and the tests
+ * share exactly one implementation.
+ *
+ * - `workOrder` is the committed declaration (`{items, declared_subjects}`).
+ * - `subjects` is the measured set to charge the byte bounds against — the
+ *   constituted declaration the caller already computed. On an empty-diff
+ *   read-and-unchanged outcome that set IS the declared pages, so the gate
+ *   measures the pages' reviewed surfaces rather than the empty diff.
+ * - `measure` is the injected size seam (`(path) => bytes`, positive
+ *   numbers only; anything else reads as 0). Null skips the two byte bounds
+ *   — the gate cannot invent sizes — while the two count bounds still bind.
+ * - `bounds` is an already-resolved `{maxItems, maxSubjects,
+ *   maxReviewedBytes, maxReviewedBytesPerSubject}`. Null resolves to the
+ *   task-53 defaults (`WORK_ORDER_DEFAULTS`).
+ *
+ * @returns {{ok: true, totalBytes: number, perSubjectBytes: object} |
+ *            {ok: false, code: 'work-order-bound', reason: string}}
+ */
+export function checkWorkOrderMergeBounds({ workOrder, subjects = null, measure = null, bounds = null } = {}) {
+  const b = bounds ?? { ...(WORK_ORDER_DEFAULTS ?? {}) };
+  const maxItems = b.maxItems ?? b.max_items ?? 4;
+  const maxSubjects = b.maxSubjects ?? b.max_subjects ?? 4;
+  const maxBytes = b.maxReviewedBytes ?? b.max_reviewed_bytes ?? 60000;
+  const maxPerSubject = b.maxReviewedBytesPerSubject ?? b.max_reviewed_bytes_per_subject ?? 30000;
+  const items = Array.isArray(workOrder?.items) ? workOrder.items : [];
+  const declared = Array.isArray(workOrder?.declared_subjects)
+    ? workOrder.declared_subjects
+    : Array.isArray(workOrder?.declared)
+    ? workOrder.declared
+    : [];
+  const measured = Array.isArray(subjects) ? subjects : [...declared];
+  const norm = (p) => String(p ?? '').replace(/\\/g, '/').trim();
+  const declaredNorm = [...new Set(declared.map(norm).filter(Boolean))].sort();
+  const measuredNorm = [...new Set(measured.map(norm).filter(Boolean))].sort();
+  if (items.length > maxItems) {
+    return {
+      ok: false,
+      code: 'work-order-bound',
+      reason:
+        `work-order-bound: work order carries ${items.length} items over work_order.max_items ${maxItems}`,
+    };
+  }
+  if (declaredNorm.length > maxSubjects) {
+    return {
+      ok: false,
+      code: 'work-order-bound',
+      reason:
+        `work-order-bound: work order declares ${declaredNorm.length} subjects over work_order.max_subjects ${maxSubjects}`,
+    };
+  }
+  if (typeof measure !== 'function') {
+    return { ok: true, totalBytes: 0, perSubjectBytes: {} };
+  }
+  const perSubjectBytes = {};
+  let totalBytes = 0;
+  for (const s of measuredNorm) {
+    let n = null;
+    try {
+      n = measure(s);
+    } catch {
+      n = null;
+    }
+    const bytes = typeof n === 'number' && Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+    perSubjectBytes[s] = bytes;
+    totalBytes += bytes;
+  }
+  if (totalBytes > maxBytes) {
+    return {
+      ok: false,
+      code: 'work-order-bound',
+      reason:
+        `work-order-bound: produced ${totalBytes} reviewed bytes over work_order.max_reviewed_bytes ${maxBytes}`,
+    };
+  }
+  for (const s of measuredNorm) {
+    if ((perSubjectBytes[s] ?? 0) > maxPerSubject) {
+      return {
+        ok: false,
+        code: 'work-order-bound',
+        reason:
+          `work-order-bound: subject ${s} measures ${perSubjectBytes[s]} reviewed bytes over work_order.max_reviewed_bytes_per_subject ${maxPerSubject}`,
+      };
+    }
+  }
+  return { ok: true, totalBytes, perSubjectBytes };
+}
+
+/**
  * The merge gate. Refuses without an `approve`; refuses an `approve` whose
  * `would-cite` is empty or duplicates an existing record's; and refuses a
  * record whose `reviewed:` paths are not the paths the merge measured.
@@ -841,7 +935,7 @@ export function existingFieldValues(ctx, excludeJobId, field) {
  *
  * @returns {{ok: boolean, reason?: string, verdict?: object}}
  */
-export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed }) {
+export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workOrder = null, measure = null, bounds = null }) {
   const path = verdictPath(ctx, jobId, pass);
   if (!existsSync(path)) {
     return {
@@ -1166,6 +1260,28 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed }) {
         'is not a correction.',
       verdict: v,
     };
+  }
+  // Work-order bounds at the merge (Stage 2, tasks 57/58: the enforced-twice
+  // bullet's second half). The bundler (`loop/lib/select.mjs`) enforces the
+  // same four bounds at selection; this re-measures them against the work the
+  // job actually produced. The measured set is the `subjects` argument — the
+  // constituted declaration — so on an empty-diff read-and-unchanged outcome
+  // the gate measures the declared pages' reviewed surfaces rather than the
+  // (empty) diff; measuring an empty diff measures zero, which is exactly the
+  // mutation task 58 names. Absent `workOrder` (every pre-task-58 caller,
+  // including old-contract branches) this arm does not run: no new refusal
+  // for any existing path. Without a `measure` seam only the two count bounds
+  // are checked; byte checks need sizes the gate cannot invent.
+  if (workOrder !== null && workOrder !== undefined) {
+    const boundCheck = checkWorkOrderMergeBounds({
+      workOrder,
+      subjects,
+      measure,
+      bounds,
+    });
+    if (!boundCheck.ok) {
+      return { ok: false, code: boundCheck.code, reason: boundCheck.reason, verdict: v };
+    }
   }
   return { ok: true, verdict: v, path };
 }
