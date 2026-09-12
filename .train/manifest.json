@@ -6,6 +6,7 @@
     "DIRECTIVES.md",
     "content/learn/ai-and-the-law.md",
     "content/learn/how-ai-systems-get-attacked.md",
+    "content/learn/how-models-are-trained.md",
     "content/learn/how-to-think-about-what-comes-next.md",
     "content/learn/what-a-reasoning-model-does.md",
     "content/learn/what-an-agent-is.md",
@@ -30,6 +31,7 @@
     "data/reviews/j-20260912-01.md",
     "data/reviews/j-20260912-02.md",
     "data/reviews/j-20260912-03.md",
+    "data/reviews/j-20260912-04.md",
     "data/reviews/t-ba60687c.md",
     "data/reviews/t-ba60687c.train-compare.md",
     "data/sources/llm-releases/state.json",
@@ -119,6 +121,7 @@
   },
   "remainder": [
     "541c9f8b",
-    "b2c23e6b"
+    "b2c23e6b",
+    "fd40428d"
   ]
 }
