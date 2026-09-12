@@ -33,7 +33,12 @@ decides what may travel together; count only bounds it.
 - A work order SHALL be bounded by four configured limits, each stated in
   `data/config.json`: a maximum number of items, a maximum number of distinct
   subjects, a maximum total of reviewed bytes across all subjects, and a maximum
-  of reviewed bytes for any one subject. The per-subject limit is required
+  of reviewed bytes for any one subject. Reviewed bytes are bytes of reviewed
+  surface the reviewer is asked to read (UTF-8 bytes, not chars), and each
+  enforcement point measures the object it bounds — the bundler the
+  declared subjects' surfaces at selection, the merge gate the produced work
+  plus the declared pages' surfaces on the empty-diff outcome, the train bounds
+  the whole-train reviewed surfaces. The per-subject limit is required
   separately from the total because a total says nothing about the distribution:
   one 55,000-byte subject beside three trivial ones satisfies a total and defeats
   the reading it was meant to bound. These four are configuration, not budget
@@ -62,7 +67,7 @@ decides what may travel together; count only bounds it.
   declared union, with the `scope-violation` reason, and SHALL refuse a job whose
   committed declared subjects are **missing or empty**: an absent declaration is
   a refusal, never a pass, because an empty set makes every subset test vacuous.
-  A diff carrying no content path against a non-empty declaration is the
+  A diff carrying no content path against a non-empty declaration that yields a joinable content path is the
   unchanged-pages outcome's territory and SHALL be refused unless it was declared
   as that outcome. The list SHALL NOT be derived by matching strings against the
   job's brief or against any prose: a brief names paths in order to forbid them as
@@ -85,11 +90,20 @@ decides what may travel together; count only bounds it.
   the diff is a subset, so a four-item order that changed one file retires all
   four. Constituting the set from the declaration and checking it against the diff
   closes both, and neither closes without it.
-- Where the subject set is empty, the merge SHALL log that there is nothing to
-  bind and refuse, **unconditionally**. A refusal that is itself guarded on the
-  set being non-empty cannot fire on the empty set, which is the one case it
-  exists for, and the run then reports success having written a record that joins
-  to nothing.
+- On a read-and-unchanged (`reviewed:`) outcome the branch SHALL carry no diff
+  on a declared subject: a non-empty diff alongside `reviewed:` SHALL be refused,
+  settling the run `failed` and naming the path. The outcome binds pages without
+  a diff for any reviewer to read, so an accompanying diff is work the bounds
+  never measured.
+- Where the committed declared subjects are **missing or empty**, the merge SHALL
+  log that there is nothing to bind and refuse, **unconditionally**. A refusal
+  that is itself guarded on the set being non-empty cannot fire on the empty
+  set, which is the one case it exists for, and the run then reports success
+  having written a record that joins to nothing.
+- Where the declaration is **non-empty but yields no joinable content path** (a
+  code-only merge), the merge SHALL bind nothing, log the no-joinable-path state
+  naming the declaration, and merge — a merge with no subject binding, not a
+  refusal.
 - Every retirement a merge performs SHALL run **per item**: each item's proposal
   is consumed, each item's bead is closed, each item's directive marker is
   written. **An item SHALL be retired only where the merge measured a diff on that
@@ -187,11 +201,25 @@ Adding a job type requires an OpenSpec change.
   open and return to intake, and the ledger line records the work order as
   partially done naming those three
 
-#### Scenario: An empty subject set is logged and refused
+#### Scenario: An empty declaration is logged and refused
 
-- **WHEN** a merge computes an empty subject set
+- **WHEN** a merge's committed declaration is missing or empty
 - **THEN** it logs that there is nothing to bind and refuses, whatever the
   outcome's first line said, and no verdict record is written
+
+#### Scenario: A code-only merge binds nothing and merges
+
+- **WHEN** a merge's committed declaration is non-empty but yields no joinable
+  content path
+- **THEN** the merge binds nothing, logs the no-joinable-path state naming the
+  declaration, writes no subject binding, and merges rather than refusing
+
+#### Scenario: A `reviewed:` outcome with a diff is refused
+
+- **WHEN** a work order reporting `reviewed:` carries a non-empty diff on a
+  declared subject
+- **THEN** the merge is refused, the run is settled `failed` naming the path,
+  and no record is written binding either the pages or the diff
 
 #### Scenario: An over-bound candidate set is split, not truncated
 

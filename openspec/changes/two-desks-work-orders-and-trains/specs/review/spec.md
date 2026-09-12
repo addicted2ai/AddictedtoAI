@@ -83,8 +83,8 @@ nobody was shown.
 
 #### Scenario: A page that moved between reading and binding stops the merge
 
-- **WHEN** a declared page's reviewed surface changes on `main` between the
-  assembly of the review brief and the merge
+- **WHEN** a declared page's reviewed surface changes on the train tip between
+  the assembly of the review brief and the merge
 - **THEN** the merge is refused naming that path, the run is settled `failed`, and
   no record is written binding either version
 

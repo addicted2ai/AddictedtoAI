@@ -22,13 +22,12 @@ breaker 1 (`run.mjs:2082`) all read.
 
 **The subject set is constituted from the declaration and checked against the
 diff — and that single sentence is the fix for two defects that looked like
-two.** Today `run.mjs:1577-1583` builds `subjects` by measuring the branch diff
+two.** Today `loop/run.mjs` builds `subjects` by measuring the branch diff
 (`joinableSubjects(changedPathsWithStatus(...))`). Constituting it that way has
 two consequences that arrive together:
 
 - when the diff is empty by construction — the `reviewed:` outcome —
-  `joinableSubjects([])` returns `[]`, `writeRecordSubjects` refuses at
-  `review.mjs:1284`, and `run.mjs:1594` logs the refusal only under
+  `joinableSubjects([])` returns `[]`, `writeRecordSubjects` in `loop/lib/review.mjs` refuses, and `loop/run.mjs` logs the refusal only under
   `else if (subjects.length)`, so **nothing is written and nothing is said**. The
   record joins to no piece, the declared pages stay mismatched, and the launch
   check stays red — which is the state the outcome exists to clear;
@@ -40,7 +39,7 @@ So: the merge takes its subject set from `.job/source.json`'s committed
 intersected with it), and uses the measured diff only to **check** that set in
 both directions — no diff path outside the declaration, and no item retired
 without a measured diff on its own subjects or a `reviewed:` declaration covering
-them. Independently, the empty-set refusal at `:1594` is made unconditional, so an
+them. Independently, the empty-set refusal in `loop/run.mjs` is made unconditional, so an
 empty set logs and refuses instead of passing in silence. The trace to the single
 root is A2AI-Luna-Boss-2's.
 
@@ -50,7 +49,9 @@ selection before any executor runs (`run.mjs:1329-1351`), already carries
 argument — *"a mechanism that had to parse the prose of a brief to find a file
 path would be guessing."*
 
-Records need almost nothing: `writeRecordSubjects` (`review.mjs:1283`) already
+The merge reads it from branch history at the scaffolding-removal commit's parent (the `job <id>: brief` commit's content), since `.job/` is removed from the working tree before the merge.
+
+Records need almost nothing: `writeRecordSubjects` in `loop/lib/review.mjs` already
 renders `subject:` as a scalar for one and a list for many, and `reviewed:` as a
 path→hash map; `mergeGate` already enforces set equality (`:1086-1104`), which is
 orthogonal to the new subset rule and survives untouched. What changes is
@@ -853,10 +854,19 @@ passing, is a Stage-0 task.
 | `S_train` distinct subjects per train | 12 | Conservative; 3 × `S_max`. |
 | `K` merges per train | 5 | The fleet's every-5 batch review, made mechanical. |
 | `T` minutes since first unpublished merge | 90 | ≈ one job per 79 min observed on the chain. |
-| `W` front-desk workers | **1** | Starts at one. **3** is the proposed experiment value, and it is reached only once the failure count, the runner-health count and the lane pause are windows and the budget gate reads reservations — four of the six controls concurrency touches were broken when this was written. It is a config key the chain reads, so the experiment is an edit, not a code change. |
+| `W` front-desk workers | **1** | Starts at one. **3** is the proposed experiment value, and it is reached only once the failure count, the runner-health count and the lane pause are windows and the budget gate reads reservations — four of the six controls concurrency touches were broken when this was written. It is a config key the chain reads, so the experiment is an edit, not a code change. The 1→3 raise is the Stage-3 block's (task 84); task 54 does not touch top-level `workers`. |
+
+**Reviewed bytes.** The normative definition is the loop delta's bounds bullet
+(bytes of reviewed surface the reviewer is asked to read — UTF-8 bytes, not
+chars). Enforced here at three points over the object each bounds: the bundler estimates from the declared
+subjects' current surfaces at selection (a pathless candidate by its
+declared-subject estimate, never zero); the merge gate measures the produced
+work plus, on the empty-diff outcome, the declared pages' reviewed surfaces;
+the train bounds measure the whole-train reviewed surfaces. The 60,000 start
+value assumes one char ≈ one byte for the measured review-diff p90 of 55,034 chars, rounded up with headroom.
 
 **The bounds and batching, arithmetically.** The median reviewed diff is **8,101
-chars** and the p90 is **55,034**. At the median, `N_max` = 4 binds before
+chars** and the p90 is **55,034 chars**. At the median, `N_max` = 4 binds before
 `B_total` (4 × 8,101 = 32,404 < 60,000); in the top decile a single item goes
 alone. So the bounds permit batching for typical items and refuse it for outliers,
 which is the intent.
