@@ -41,7 +41,7 @@ import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
 import { GROUND_RULES, polaritySection, subjectLines } from './brief.mjs';
 import { readLedger } from './ledger.mjs';
-import { loadRunners } from './runners.mjs';
+import { loadRunners, pickRunner } from './runners.mjs';
 import { corroborationSection } from './lineage.mjs';
 import { gateCommand, gateCommandForName } from './gates.mjs';
 import {
@@ -1548,26 +1548,28 @@ export function trainKinds(ctx, manifest) {
 }
 
 /**
- * Whichever registry entry carries the `reviewer` role at `effort: max`
- * (row 43, Q-S6). The train reads the rung and names no model: the entry's
- * own command is the invocation, so no model, provider or harness literal
- * appears anywhere on this code path.
+ * The train's reviewer rung: the run's resolved reviewer, or the registry default.
  *
- * Takes the parsed runners list (registry-owned values only), so tests pin
- * the policy without touching the reserved `runners.yml`. Zero or several
- * matches FAIL CLOSED — never a fallback to a named model.
+ * Effort is per-entry descriptive and never a selector: every entry reviews at
+ * its own command-encoded highest effort, so this function never reads
+ * `effort` at all. An explicitly threaded reviewer id that is reviewer-cleared
+ * WINS; unknown or not reviewer-cleared fails closed. Absent an id, resolution
+ * is exactly `pickRunner` without an id (registry default if reviewer-cleared,
+ * else first reviewer-cleared entry) — reused here, never reimplemented. The
+ * train reads the rung and names no model: the entry's own command is the
+ * invocation, so no model, provider or harness literal appears anywhere on
+ * this code path.
+ *
+ * Takes the parsed registry (registry-owned values only), so tests pin the
+ * policy without touching the reserved `runners.yml`.
  */
-export function trainReviewerRung(runners) {
-  const atMax = (runners ?? []).filter(
-    (r) => r && r.enabled !== false && Array.isArray(r.roles) && r.roles.includes('reviewer') && r.effort === 'max',
-  );
-  if (atMax.length === 0) {
-    return { ok: false, reason: 'no registry entry carries the reviewer role at effort max — the train review names no fallback model, so it is refused' };
+export function trainReviewerRung(registry, { reviewerId } = {}) {
+  try {
+    const rung = pickRunner(registry, { id: reviewerId, role: 'reviewer' });
+    return { ok: true, rung };
+  } catch (e) {
+    return { ok: false, reason: `${e.message ?? String(e)} — the train review names no fallback model, so it is refused` };
   }
-  if (atMax.length > 1) {
-    return { ok: false, reason: `ambiguous reviewer rung at effort max (${atMax.map((r) => r.id).join(', ')}) — the train review names no model to break the tie, so it is refused` };
-  }
-  return { ok: true, rung: atMax[0] };
 }
 
 /**
@@ -2030,11 +2032,13 @@ export function trainReviewGate(ctx, { trainId, kinds = [], subjects = [], chang
  * loop context. The seam shape is `review({diffText, manifest, repo})` — a
  * single object with no context — while the sealed assembly needs the
  * ledger, the registry, the reviews dir and a worktree root. The factory
- * binds them at the call site (`review = makeReviewTrain(ctx)`), so stubs
- * keep the single-object shape and production gets the sealed reviewer.
+ * binds them at the call site (`review = makeReviewTrain(ctx)` or
+ * `makeReviewTrain(ctx, { reviewerId })` to carry the run's resolved
+ * reviewer), so stubs keep the single-object shape and production gets
+ * the sealed reviewer.
  */
-export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null } = {}) {
-  return ({ diffText, manifest, repo }) => reviewTrain(ctx, { diffText, manifest, repo, capMinutes, invoke });
+export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null, reviewerId } = {}) {
+  return ({ diffText, manifest, repo }) => reviewTrain(ctx, { diffText, manifest, repo, capMinutes, invoke, reviewerId });
 }
 
 /**
@@ -2059,7 +2063,7 @@ export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null } = {}) {
  * post-gate non-approve arm below is a defensive backstop, the road only
  * a mutated record can take.
  */
-export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null }) {
+export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null, reviewerId } = {}) {
   const unwired = { runner: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
   const trainId = manifest && manifest.train;
   if (!trainId) {
@@ -2069,13 +2073,13 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
   if (!k.ok) {
     return { verdict: 'reject', reason: `${k.reason} — fail closed: no fast-forward, no publish`, ...unwired, findingsNotInAnyRecord: 0, findings: [] };
   }
-  let runners;
+  let registry;
   try {
-    runners = loadRunners(ctx).runners;
+    registry = loadRunners(ctx);
   } catch (e) {
     return { verdict: 'reject', reason: `cannot read the runner registry (${e.message ?? String(e)}) — fail closed: no fast-forward, no publish`, ...unwired, findingsNotInAnyRecord: 0, findings: [] };
   }
-  const r = trainReviewerRung(runners);
+  const r = trainReviewerRung(registry, { reviewerId });
   if (!r.ok) {
     return { verdict: 'reject', reason: `${r.reason} — fail closed: no fast-forward, no publish`, ...unwired, findingsNotInAnyRecord: 0, findings: [] };
   }

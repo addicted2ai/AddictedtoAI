@@ -2362,7 +2362,14 @@ export async function runLoop(ctx, opts = {}) {
         });
         let tr = null;
         try {
-          tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: trainGates });
+          // The train reviews with the run's resolved reviewer: the operator's
+          // per-run --reviewer choice flows through here as reviewerId. Absent
+          // an explicit choice the id is whatever pickRunner resolved at
+          // startup (reviewer default, else global default, else first
+          // cleared entry); flagged for later revisit whether the train
+          // should carry its own reviewer selection instead of inheriting
+          // the run's.
+          tr = await runTrain(ctx, { repo: ctx.repoRoot, trainId: asm.manifest.train, manifest: asm.manifest, gates: trainGates, reviewerId: reviewer.id });
         } catch (e) {
           // runTrain returns {ok:false} for every named failure, but a seam
           // throwing past it (disk full under appendLedger, a reviewer

@@ -39,8 +39,10 @@
  *   reverted.
  * - streak: two consecutive non-approvals over unchanged merges reject the
  *   whole train with no eviction; a manifest-only commit moves no tree.
- * - rung: missing or ambiguous reviewer-at-max fails the seam closed with
- *   no invocation; the default `review` is the sealed assembly.
+ * - rung: the run's resolved reviewer wins when threaded; absent an id the
+ *   registry default (via pickRunner, effort never filters) wins; unknown or
+ *   not reviewer-cleared fails the seam closed with no invocation; the
+ *   default `review` is the sealed assembly.
  * - closure: LEDGER_FIELDS frozen, manifest keys exactly the declared set,
  *   no tracker, no model literal, never pushed.
  * - mutations A + B (row 44) plus one red arm per changed function beyond
@@ -489,29 +491,72 @@ test('kinds: ledger join per merge, unknown job fails closed', () => {
   }
 });
 
-test('rung: exactly one reviewer at max wins; zero or two fail closed', () => {
-  const one = trainReviewerRung([
-    { id: 'r-max', provider: 'p1', tier: 'cheap', roles: ['reviewer'], effort: 'max' },
-    { id: 'r-other', provider: 'p2', tier: 'cheap', roles: ['reviewer'] },
-    { id: 'r-auth', provider: 'p1', tier: 'cheap', roles: ['author'], effort: 'max' },
-  ]);
-  assert.equal(one.ok, true);
-  assert.equal(one.rung.id, 'r-max');
-  const none = trainReviewerRung([
-    { id: 'r-other', provider: 'p2', tier: 'cheap', roles: ['reviewer'] },
-  ]);
-  assert.equal(none.ok, false);
-  assert.match(none.reason, /no registry entry/);
-  const two = trainReviewerRung([
-    { id: 'r-a', provider: 'p1', tier: 'cheap', roles: ['reviewer'], effort: 'max' },
-    { id: 'r-b', provider: 'p2', tier: 'cheap', roles: ['reviewer'], effort: 'max' },
-  ]);
-  assert.equal(two.ok, false);
-  assert.match(two.reason, /ambiguous reviewer rung/);
-  const disabled = trainReviewerRung([
-    { id: 'r-off', provider: 'p1', tier: 'cheap', roles: ['reviewer'], effort: 'max', enabled: false },
-  ]);
-  assert.equal(disabled.ok, false, 'a disabled entry is not a rung');
+test('rung: absent id resolves via the default mechanism, effort never filters', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-rung-'));
+  try {
+    // Default is reviewer-cleared: default wins even with several reviewers and mixed effort.
+    const p1 = fixtureRegistry(dir, [
+      { id: 'r-default', roles: ['reviewer'], effort: 'low' },
+      { id: 'r-second', roles: ['reviewer'], effort: 'max' },
+    ]);
+    const reg1 = loadRunners({ runnersPath: p1 });
+    const one = trainReviewerRung(reg1, {});
+    assert.equal(one.ok, true);
+    assert.equal(one.rung.id, 'r-default', 'absent id resolves to the registry default; effort never selects');
+    // Default not reviewer-cleared: first reviewer-cleared entry wins.
+    const p2 = fixtureRegistry(dir, [
+      { id: 'r-author', roles: ['author'] },
+      { id: 'r-first', roles: ['reviewer'] },
+      { id: 'r-second', roles: ['reviewer'], effort: 'max' },
+    ]);
+    const reg2 = loadRunners({ runnersPath: p2 });
+    const two = trainReviewerRung(reg2, {});
+    assert.equal(two.ok, true);
+    assert.equal(two.rung.id, 'r-first', 'absent id falls to the first reviewer-cleared entry');
+    // No reviewer-cleared entry at all fails closed.
+    const p3 = fixtureRegistry(dir, [{ id: 'r-author', roles: ['author'] }]);
+    const reg3 = loadRunners({ runnersPath: p3 });
+    const none = trainReviewerRung(reg3, {});
+    assert.equal(none.ok, false);
+    assert.match(none.reason, /no registered runner|fail closed|refused/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('rung: explicitly threaded reviewer-cleared id wins', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-rung-'));
+  try {
+    const p = fixtureRegistry(dir, [
+      { id: 'r-default', roles: ['reviewer'] },
+      { id: 'r-other', roles: ['reviewer'] },
+    ]);
+    const reg = loadRunners({ runnersPath: p });
+    const g = trainReviewerRung(reg, { reviewerId: 'r-other' });
+    assert.equal(g.ok, true);
+    assert.equal(g.rung.id, 'r-other', 'the threaded id wins over the default');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('rung: explicitly threaded id fails closed when unknown or not reviewer-cleared', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atai-rung-'));
+  try {
+    const p = fixtureRegistry(dir, [
+      { id: 'r-default', roles: ['reviewer'] },
+      { id: 'r-author', roles: ['author'] },
+    ]);
+    const reg = loadRunners({ runnersPath: p });
+    const notCleared = trainReviewerRung(reg, { reviewerId: 'r-author' });
+    assert.equal(notCleared.ok, false);
+    assert.match(notCleared.reason, /not cleared for role/);
+    const unknown = trainReviewerRung(reg, { reviewerId: 'no-such-reviewer' });
+    assert.equal(unknown.ok, false);
+    assert.match(unknown.reason, /unknown runner/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('findings: named by sha, short sha or job id; the rest is unnamed', () => {
@@ -750,7 +795,75 @@ test('seam: two stubbed invocations approve with the comparison count', async ()
   }
 });
 
-test('seam: missing or ambiguous rung fails closed with no invocation', async () => {
+test('seam: default mechanism resolves deterministically with no effort filter', async () => {
+  const fx = trainRepo();
+  try {
+    const { repo } = fx;
+    ensureTrainBranch(repo, 'main');
+    admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+    appendJobLines(repo, ['job-1']);
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const asm = assembleTrain(repo, { trainId: 't-rung', bounds: BOUNDS, now: () => T0 });
+    assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+    const runnersPath = fixtureRegistry(fx.root, [
+      { id: 'r-default', roles: ['reviewer'] },
+      { id: 'r-second', roles: ['reviewer'] },
+    ]);
+    const ctx = ctxFull(fx, { runnersPath });
+    const invoke = stubInvoke({
+      onCall: ({ promptText }) => {
+        if (promptText.startsWith('# Train comparison')) {
+          writeFileSync(trainComparisonPath(ctx, 't-rung'), '---\ntrain: t-rung\nmissing: []\n---\n\nnotes\n', 'utf8');
+        } else {
+          writeFileSync(trainVerdictPath(ctx, 't-rung'), approveRecord('t-rung'), 'utf8');
+        }
+      },
+    });
+    const seam = await reviewTrain(ctx, { diffText: 'd', manifest: asm.manifest, repo, capMinutes: 1, invoke });
+    assert.equal(seam.verdict, 'approve', seam.reason ?? 'default resolution refused');
+    assert.equal(seam.runner, 'r-default', 'absent id resolves to the registry default');
+    assert.equal(invoke.seen.length, 2, 'default resolution runs both invocations');
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
+test('seam: explicitly threaded reviewer id is honored', async () => {
+  const fx = trainRepo();
+  try {
+    const { repo } = fx;
+    ensureTrainBranch(repo, 'main');
+    admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+    appendJobLines(repo, ['job-1']);
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const asm = assembleTrain(repo, { trainId: 't-rung-id', bounds: BOUNDS, now: () => T0 });
+    assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+    const runnersPath = fixtureRegistry(fx.root, [
+      { id: 'r-default', roles: ['reviewer'] },
+      { id: 'r-other', roles: ['reviewer'] },
+    ]);
+    const ctx = ctxFull(fx, { runnersPath });
+    const invoke = stubInvoke({
+      onCall: ({ promptText }) => {
+        if (promptText.startsWith('# Train comparison')) {
+          writeFileSync(trainComparisonPath(ctx, 't-rung-id'), '---\ntrain: t-rung-id\nmissing: []\n---\n\nnotes\n', 'utf8');
+        } else {
+          writeFileSync(trainVerdictPath(ctx, 't-rung-id'), approveRecord('t-rung-id'), 'utf8');
+        }
+      },
+    });
+    const seam = await reviewTrain(ctx, { diffText: 'd', manifest: asm.manifest, repo, capMinutes: 1, invoke, reviewerId: 'r-other' });
+    assert.equal(seam.verdict, 'approve', seam.reason ?? 'threaded id refused');
+    assert.equal(seam.runner, 'r-other', 'the threaded id wins over the default');
+    assert.equal(invoke.seen.length, 2);
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
+test('seam: explicitly threaded id not reviewer-cleared fails closed with no invocation', async () => {
   const fx = trainRepo();
   try {
     const { repo } = fx;
@@ -761,19 +874,19 @@ test('seam: missing or ambiguous rung fails closed with no invocation', async ()
     const asm = assembleTrain(repo, { trainId: 't-rung', bounds: BOUNDS, now: () => T0 });
     assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
     const diffText = 'd';
-    for (const [tag, runners] of [
-      ['missing', [{ id: 'r-low', roles: ['reviewer'] }]],
-      ['ambiguous', [
-        { id: 'r-a', roles: ['reviewer'], effort: 'max' },
-        { id: 'r-b', roles: ['reviewer'], effort: 'max' },
-      ]],
+    const runnersPath = fixtureRegistry(fx.root, [
+      { id: 'r-default', roles: ['reviewer'] },
+      { id: 'r-author', roles: ['author'] },
+    ]);
+    for (const [tag, reviewerId] of [
+      ['not-cleared', 'r-author'],
+      ['unknown', 'no-such-reviewer'],
     ]) {
-      const runnersPath = fixtureRegistry(fx.root, runners);
       const ctx = ctxFull(fx, { runnersPath });
       const invoke = stubInvoke({
         onCall: () => { throw new Error(`no invocation may run on the ${tag}-rung path`); },
       });
-      const seam = await reviewTrain(ctx, { diffText, manifest: asm.manifest, repo, capMinutes: 1, invoke });
+      const seam = await reviewTrain(ctx, { diffText, manifest: asm.manifest, repo, capMinutes: 1, invoke, reviewerId });
       assert.equal(seam.verdict, 'reject', `${tag} rung must not approve`);
       assert.match(seam.reason, /fail closed/);
       assert.equal(invoke.seen.length, 0, `${tag} rung runs no invocation`);
@@ -1158,18 +1271,19 @@ test('arms: kinds mutant invents a checklist for an unknown job', async () => {
   );
 });
 
-test('arms: rung mutant admits a non-max entry', async () => {
+test('arms: rung mutant that drops the reviewer role gate', async () => {
   await withReviewMutant(
     'rung-widen',
-    "r.roles.includes('reviewer')",
-    'true',
+    "const rung = pickRunner(registry, { id: reviewerId, role: 'reviewer' });",
+    'const rung = pickRunner(registry, { id: reviewerId });',
     async (mutantReview) => {
-      const g = mutantReview.trainReviewerRung([
-        { id: 'r-max', provider: 'p1', tier: 'cheap', roles: ['reviewer'], effort: 'max' },
-        { id: 'r-authmax', provider: 'p2', tier: 'cheap', roles: ['author'], effort: 'max' },
-      ]);
-      assert.equal(g.ok, false, 'the mutant admits a non-reviewer — the single-rung arm goes red');
-      assert.match(g.reason, /ambiguous/);
+      const runners = [{ id: 'r-author', provider: 'p', tier: 'cheap', roles: ['author'], command: 'true' }];
+      const registry = { runners, byId: new Map(runners.map((r) => [r.id, r])), defaultId: 'r-author' };
+      const g = mutantReview.trainReviewerRung(registry, {});
+      assert.equal(g.ok, true, 'the mutant drops the role gate and picks an author — the role arm goes red');
+      assert.equal(g.rung.id, 'r-author');
+      const shipped = trainReviewerRung(registry, {});
+      assert.equal(shipped.ok, false, 'the shipped rung still fails a registry with no reviewer closed');
     },
   );
 });
@@ -1222,19 +1336,19 @@ test('arms: verdict-path mutant breaks the gate lookup', async () => {
 test('arms: seam mutant that never reads the rung', async () => {
   await withReviewMutant(
     'seam-norung',
-    '  const r = trainReviewerRung(runners);\n',
-    '  const r = trainReviewerRung([]);\n',
+    '  const r = trainReviewerRung(registry, { reviewerId });\n',
+    "  const r = trainReviewerRung(registry, { reviewerId: 'no-such-reviewer' });\n",
     async (mutantReview) => {
       assert.ok(mutantReview.reviewTrain, 'the seam still exists on the mutant');
       const fx = trainRepo();
       try {
         const runnersPath = fixtureRegistry(fx.root, [
-          { id: 'fixture-max', roles: ['reviewer'], effort: 'max' },
+          { id: 'fixture-default', roles: ['reviewer'] },
         ]);
         const ctx = ctxFull(fx, { runnersPath });
         const seam = await mutantReview.reviewTrain(ctx, { diffText: 'd', manifest: { train: 't-x', merges: [] }, repo: fx.repo, capMinutes: 1, invoke: stubInvoke() });
         assert.equal(seam.verdict, 'reject', 'the mutant cannot reach past the missing rung');
-        assert.match(seam.reason, /no registry entry/);
+        assert.match(seam.reason, /unknown runner|fail closed/);
       } finally {
         fx.cleanup();
       }

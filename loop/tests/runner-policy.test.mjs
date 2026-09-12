@@ -543,3 +543,87 @@ test('escalationTarget returns null for non-clearance refusals and missing field
   assert.equal(escalationTarget(registry, { id: CHEAP }, { topRanked: { candidate, rule: 'runner:job-type' } }), null);
   assert.equal(escalationTarget(registry, runner, { topRanked: null }), null);
 });
+
+function reviewerRegistry({ defaultReviewer, extraTopKeys = '' } = {}) {
+  const command = yamlCommand();
+  const key = defaultReviewer === undefined ? '' : `default_reviewer: ${defaultReviewer}\n`;
+  return `version: 1
+default: mock-author
+${key}${extraTopKeys}runners:
+  - id: mock-author
+    provider: provider-a
+    tier: frontier
+    roles: [author, reviewer]
+    command: '${command}'
+  - id: mock-reviewer
+    provider: provider-b
+    tier: cheap
+    roles: [author, reviewer]
+    command: '${command}'
+  - id: mock-author-only
+    provider: provider-c
+    tier: cheap
+    roles: [author]
+    command: '${command}'
+`;
+}
+
+function reviewerCtx(yaml) {
+  const ctx = makeRepo({ now: () => NOW, runners: yaml });
+  return ctx;
+}
+
+test('default_reviewer wins for the reviewer role; explicit id still wins; author role ignores it', () => {
+  const ctx = reviewerCtx(reviewerRegistry({ defaultReviewer: 'mock-reviewer' }));
+  const registry = loadRunners({ runnersPath: ctx.runnersPath });
+  assert.equal(registry.defaultReviewerId, 'mock-reviewer');
+  assert.equal(pickRunner(registry, { role: 'reviewer' }).id, 'mock-reviewer');
+  assert.equal(pickRunner(registry, { id: 'mock-author', role: 'reviewer' }).id, 'mock-author');
+  assert.equal(pickRunner(registry, { role: 'author' }).id, 'mock-author');
+  ctx.cleanup();
+});
+
+test('absent default_reviewer keeps the old behavior; disabled default_reviewer falls through', () => {
+  const plain = reviewerCtx(reviewerRegistry());
+  const plainRegistry = loadRunners({ runnersPath: plain.runnersPath });
+  assert.equal(plainRegistry.defaultReviewerId, null);
+  assert.equal(pickRunner(plainRegistry, { role: 'reviewer' }).id, 'mock-author');
+  plain.cleanup();
+
+  const command = yamlCommand();
+  const ctx = reviewerCtx(`version: 1
+default: mock-author
+default_reviewer: mock-reviewer
+runners:
+  - id: mock-author
+    provider: provider-a
+    tier: frontier
+    roles: [author, reviewer]
+    command: '${command}'
+  - id: mock-reviewer
+    provider: provider-b
+    tier: cheap
+    roles: [author, reviewer]
+    enabled: false
+    command: '${command}'
+`);
+  const registry = loadRunners({ runnersPath: ctx.runnersPath });
+  assert.equal(pickRunner(registry, { role: 'reviewer' }).id, 'mock-author');
+  ctx.cleanup();
+});
+
+test('default_reviewer naming an unknown or non-reviewer id fails fast at load', () => {
+  const unknown = reviewerCtx(reviewerRegistry({ defaultReviewer: 'mock-missing' }));
+  assert.throws(
+    () => loadRunners({ runnersPath: unknown.runnersPath }),
+    /default_reviewer "mock-missing" is not a registered runner id/,
+  );
+  unknown.cleanup();
+
+  const nonReviewer = reviewerCtx(reviewerRegistry({ defaultReviewer: 'mock-author-only' }));
+  assert.throws(
+    () => loadRunners({ runnersPath: nonReviewer.runnersPath }),
+    /default_reviewer "mock-author-only" is not cleared for the reviewer role/,
+  );
+  nonReviewer.cleanup();
+});

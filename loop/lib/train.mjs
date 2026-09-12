@@ -1657,7 +1657,7 @@ async function runRedPath(ctx, {
  * names its step.
  */
 export async function runTrain(ctx, {
-  repo, trainId, manifest, gates, rederive = trainRederive, review = makeReviewTrain(ctx), now = Date.now,
+  repo, trainId, manifest, gates, rederive = trainRederive, reviewerId, review = makeReviewTrain(ctx, { reviewerId }), now = Date.now,
   publish = null, lockWaitMs,
 }) {
   const fn = gateRunner(gates);
