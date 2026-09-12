@@ -235,7 +235,7 @@ The stretch is also a product surface, and it is usually edited before you see
 it.
 
 The December 2024 system card for one of the first deployed reasoning models
-states the choice in six words:
+states the choice:
 [we surface CoT summaries to users](https://arxiv.org/abs/2412.16720). The text
 in the interface was written by a separate summarising model that read the
 stretch. So the distance between the computation and what you read has two

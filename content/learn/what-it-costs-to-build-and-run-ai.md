@@ -268,7 +268,8 @@ cheaper than creating it was.
 
 Epoch AI tracks the result as ["Lowest inference prices at fixed
 performance"](https://epoch.ai/data-insights/llm-inference-price-trends) and
-finds declines "ranging from 9x to 900x per year", depending on which capability
+finds declines "ranging from 9x to 900x per year" (as of the tracker's
+November 2025 data update), depending on which capability
 is being held fixed.
 
 Read what that series measures, because it is the most reliably misquoted number

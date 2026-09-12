@@ -223,7 +223,7 @@ release that cannot be recalled.
 Prices. Diffusion runs on them, because a capability becomes a consequence
 at a price point, not at a press event. The measured fall is steep and
 uneven: [one tracker found](https://epoch.ai/data-insights/llm-inference-price-trends),
-as of March 2025, the price of matching a fixed level of performance on
+as of its November 2025 data update, the price of matching a fixed level of performance on
 PhD-level science questions falling 40-fold per year, with the rate across
 other tasks ranging from 9-fold to 900-fold, and attached its own caveat
 that the steepest drops were recent and the least certain to persist. A
