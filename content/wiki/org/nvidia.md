@@ -26,6 +26,18 @@ facts:
     source_url: "https://en.wikipedia.org/wiki/Nvidia"
     accessed: "2026-08-28"
     volatility: slow
+  - field: manufacturing_model
+    source: cited
+    value: "fabless and contracting: NVIDIA designs its products and contracts all phases of manufacturing — wafer fabrication, assembly, testing and packaging — to outside suppliers"
+    source_url: "https://s201.q4cdn.com/141608511/files/doc_financials/2026/ar/2026-Annual-Report-Web.pdf"
+    accessed: "2026-09-12"
+    volatility: static
+  - field: wafer_foundries
+    source: cited
+    value: "its semiconductor wafers are produced by foundries including Taiwan Semiconductor Manufacturing Company Limited (TSMC) and Samsung Electronics Co., Ltd. (Samsung)"
+    source_url: "https://s201.q4cdn.com/141608511/files/doc_financials/2026/ar/2026-Annual-Report-Web.pdf"
+    accessed: "2026-09-12"
+    volatility: slow
   - field: model_license
     source: cited
     value: "the OpenMDW License Agreement, version 1.1"
