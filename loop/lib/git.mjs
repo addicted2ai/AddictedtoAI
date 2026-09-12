@@ -35,7 +35,7 @@ export function git(repo, args, opts = {}) {
   return run(repo, args, opts).toString();
 }
 
-/** Non-throwing variant: returns { ok, stdout, stderr, status }. */
+/** Non-throwing variant: returns { ok, stdout, stderr, status, error, errorCode, signal }. */
 export function gitTry(repo, args) {
   const r = spawnSync('git', ['-C', repo, ...args], {
     encoding: 'utf8',
@@ -46,7 +46,36 @@ export function gitTry(repo, args) {
     status: r.status,
     stdout: (r.stdout ?? '').toString(),
     stderr: (r.stderr ?? '').toString(),
+    // Spawn diagnostics (addictedtoai-aw7j): a git child that never speaks —
+    // killed at a cap, index locked with no output, spawn refused — used to
+    // collapse to a bare `git ... failed` that cost hours to diagnose. These
+    // ride along so every failure reason can name them. Additive: no caller
+    // reads them unless it asks.
+    error: r.error ? (r.error.message || String(r.error)) : '',
+    errorCode: r.error && r.error.code ? String(r.error.code) : '',
+    signal: r.signal ?? null,
   };
+}
+
+/**
+ * What a failed git call says, with its spawn diagnostics attached
+ * (addictedtoai-aw7j). Git's own stderr-or-stdout when it spoke — the `||`
+ * (not `??`) matters: a child that wrote only to stdout (e.g. `nothing to
+ * commit`) with an empty stderr must still be heard — followed by the exit
+ * status, spawn error and signal in parentheses, so the reason always names
+ * the machine facts. When git said nothing, the bare `git ... failed`
+ * fallback is replaced by the label plus those same facts, so a silent
+ * failure is still answerable. Reason strings only: no caller changes what
+ * it does on this value.
+ */
+export function describeGitFailure(r, label) {
+  const said = String((r && (r.stderr || r.stdout)) ?? '').trim();
+  const bits = [`exit ${r && r.status != null ? r.status : 'null'}`];
+  const err = r && (r.error || r.errorCode);
+  if (err) bits.push(`error ${err}`);
+  if (r && r.signal) bits.push(`signal ${r.signal}`);
+  const diag = bits.join(', ');
+  return said ? `${label}: ${said} (${diag})` : `${label} (${diag})`;
 }
 
 export function headSha(repo) {
@@ -110,7 +139,7 @@ export function addWorktree(repo, dir, branch, { create = false, base = 'HEAD', 
       ? ['worktree', 'add', '--detach', dir, branch]
       : ['worktree', 'add', dir, branch];
   const r = gitTry(repo, args);
-  if (!r.ok) throw new Error(`git worktree add failed: ${r.stderr.trim() || r.stdout.trim()}`);
+  if (!r.ok) throw new Error(`git worktree add failed: ${describeGitFailure(r, 'git worktree add')}`);
   return dir;
 }
 
@@ -153,7 +182,7 @@ export function removeWorktree(repo, dir) {
   if (!removal.ok) {
     return {
       ok: false,
-      reason: removal.stderr.trim() || removal.stdout.trim() || 'git worktree remove failed',
+      reason: describeGitFailure(removal, 'git worktree remove failed'),
     };
   }
   return { ok: true };
@@ -176,7 +205,7 @@ export function commitAll(repo, dir, message, { exclude = [] } = {}) {
   const staged = gitTry(dir, ['diff', '--cached', '--name-only']).stdout.trim();
   if (!staged) return { committed: false, dirty: st.stdout.trim() };
   const r = gitTry(dir, ['commit', '--no-verify', '-m', message]);
-  if (!r.ok) throw new Error(`git commit failed: ${r.stderr.trim() || r.stdout.trim()}`);
+  if (!r.ok) throw new Error(`git commit failed: ${describeGitFailure(r, 'git commit')}`);
   return { committed: true, sha: headSha(dir) };
 }
 
@@ -250,7 +279,7 @@ export function mergeLocal(repo, branch, message) {
   const r = gitTry(repo, ['merge', '--no-ff', '--no-verify', '-m', message, branch]);
   if (!r.ok) {
     gitTry(repo, ['merge', '--abort']);
-    return { ok: false, reason: r.stderr.trim() || r.stdout.trim() };
+    return { ok: false, reason: describeGitFailure(r, 'git merge failed') };
   }
   return { ok: true, sha: headSha(repo) };
 }
