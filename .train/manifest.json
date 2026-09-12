@@ -83,7 +83,12 @@
     }
   ],
   "evictions": [],
-  "review_rounds": [],
+  "review_rounds": [
+    {
+      "verdict": "approve",
+      "tree": "27e7ca1249037d9c86762f19a01b6c62cbd6c2500b78b921a8012afb8fd9731f"
+    }
+  ],
   "measuredPaths": [
     "content/learn/what-an-agent-is.md",
     "content/learn/what-models-are-trained-on.md",
