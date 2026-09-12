@@ -177,3 +177,18 @@ does.
   new `routine` end or the post explicitly says why it was left alone. A delta
   end must carry its own source; if the writing job cannot source the update to
   this standard it leaves the delta untouched rather than half-sourcing it.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-12
+- job: j-20260912-07 (post)
+- merged as: `d49c5435364c1939497793f81a3e540618f52cd7`
+- produced: `content/blog/weathernext-3-operational-weatherbench.md`, `content/deltas/learned-weather-forecasts.md`
+- was: `weathernext-3-tops-operational-weatherbench.md` (slug `weathernext-3-tops-operational-weatherbench`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
