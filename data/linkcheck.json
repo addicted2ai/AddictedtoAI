@@ -5755,6 +5755,17 @@
       "ok": true,
       "status": 200
     },
+    "https://s201.q4cdn.com/141608511/files/doc_financials/2026/ar/2026-Annual-Report-Web.pdf": {
+      "bytes": 15850437,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://s201.q4cdn.com/141608511/files/doc_financials/2026/ar/2026-Annual-Report-Web.pdf",
+      "last_checked": "2026-09-12",
+      "last_ok": "2026-09-12",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://safe.ai/work/statement-on-ai-risk": {
       "bytes": null,
       "consecutive_failures": 0,
