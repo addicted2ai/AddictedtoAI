@@ -13,7 +13,7 @@
 
 import { RESULT_PROTOCOL_INSTRUCTION } from './result.mjs';
 import { excerptsFor, PROSE_TYPES } from './specs.mjs';
-import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
+import { BRIEF_EXCERPT_MAX_CHARS, ASSEMBLED_BRIEF_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
 // The gate set the author is told about, generated from the set that runs
 // (beads addictedtoai-one6). It used to be two hard-coded commands, so the two
 // content-shaped verifications the merge gate gained were checks the author was
@@ -296,9 +296,6 @@ ${prose ? '- A reviewer with fresh context, seeing only your diff, can check eve
 // sidecar, no marker — exactly as the merge path treats them.
 // ---------------------------------------------------------------------------
 
-/** The assembled-brief bound task 8 asserts (the fixture's 30,000 chars). */
-export const ASSEMBLED_BRIEF_MAX_CHARS = 30000;
-
 /** Stated row width: every annex row truncates to at most this many chars. */
 export const GRAPH_ROW_MAX_CHARS = 200;
 
@@ -318,7 +315,8 @@ function normBriefPath(p) {
  * `type`, and breaker 1's key. One order, one category, one type in charge —
  * the bundler's first item's type (`bundleWorkOrders`, task 53). Both
  * `acceptanceChecksFor` (here) and `checklistFor` (`loop/lib/review.mjs`,
- * read by the review brief) are keyed on this, never on an item's own type.
+ * read by the review brief through the `workOrder` it now accepts) are keyed
+ * on this, never on an item's own type.
  */
 export function governingTypeFor(job, workOrder) {
   const g =
@@ -524,30 +522,6 @@ and the whole job is rejected for it.
 ${subjectBlocks}`;
 }
 
-/** The work-source text the 2b/3a tripwire reads: job plus every item. */
-function briefWorkOrderSourceText(job, workOrder) {
-  const parts = [];
-  const base = briefSourceText(job);
-  if (base.trim()) parts.push(base);
-  const items = workOrderItemsForBrief(job, workOrder);
-  if (items) {
-    for (const it of items) {
-      for (const key of ['title', 'detail', 'reason']) {
-        const v = it?.[key];
-        if (typeof v === 'string' && v.trim()) parts.push(v);
-      }
-    }
-  }
-  // Verification identifiers are work source too: the merge refuses an
-  // unanswered one, so a brief that dropped one would be unmergeable.
-  for (const e of verificationEntriesForBrief(job, workOrder)) {
-    parts.push(e.id);
-    if (e.checked) parts.push(e.checked);
-    if (e.found) parts.push(e.found);
-  }
-  return parts.join('\n\n');
-}
-
 /**
  * One annex row, truncated to the stated width. Overflow is cut from the end
  * under an explicit cut marker in the `excerptsFor` style naming what was cut
@@ -595,7 +569,11 @@ function graphRowBodyFor(result) {
  *   fixture pattern): one call per subject; tests stub it and assert on its
  *   recorded argv, production returns absent where no index is wired.
  * @param {string} [o.reviewedOnly]  on a `reviewed:` brief, the one page that
- *   invocation reviews: the annex filters to that subject only.
+ *   invocation reviews: the annex filters to that subject only. Production
+ *   wiring is task 62's (the per-page reviewed-brief mode appends the filtered
+ *   annex after that page's surface): no production caller passes this today,
+ *   and none is added before that mode lands — wiring it now would be dead
+ *   code. Unit-proved here via the reviewed-only arm.
  * @param {string} [o.indexId]  index identifier carried in the sidecar.
  * @returns {{annexText: string, sidecar: object|null, queried: string[]}}
  */
@@ -658,7 +636,11 @@ export function assembleGraphContext({ declaredSubjects, graphQuery, reviewedOnl
  * subject is never silently dropped: every declared subject still names
  * itself in the truncated text (row headers survive because rows open with
  * the subject path and the cut runs from the end). Where the budget cannot
- * hold even the headers, the marker names the subjects that did not fit.
+ * hold even the heading plus marker — including a zero or negative budget
+ * where the pre-annex brief already exceeds the assembled bound — the
+ * subject-naming marker is still emitted, bounded to the marker's own stated
+ * width (`GRAPH_ROW_MAX_CHARS`) rather than sliced to the remaining budget
+ * or to nothing.
  */
 export function truncateAnnexToBudget(annexText, declaredSubjects, budget) {
   const text = String(annexText ?? '');
@@ -687,12 +669,17 @@ export function truncateAnnexToBudget(annexText, declaredSubjects, budget) {
     }
   }
   if (best) return best;
-  // Even the heading plus marker does not fit: keep the heading and name
-  // every subject as cut rather than dropping one silently.
+  // Even the heading plus marker does not fit (including a zero or negative
+  // budget where the pre-annex brief already exceeds the bound): still emit
+  // the subject-naming marker rather than dropping every subject silently.
+  // The marker is bounded to its own stated width (`GRAPH_ROW_MAX_CHARS`,
+  // the width every annex line is cut to) — never sliced to the remaining
+  // budget and never to nothing. A brief that cannot fit still assembles,
+  // cut and marked; there is no refusal at assembly.
   const fallbackMarker = markerFor(declared.length ? declared : ['(annex tail)']);
-  const head = `## ${GRAPH_ANNEX_HEADING}`;
-  if (head.length + fallbackMarker.length <= budget) return `${head}${fallbackMarker}`;
-  return fallbackMarker.slice(0, budget);
+  if (fallbackMarker.length <= GRAPH_ROW_MAX_CHARS) return fallbackMarker;
+  const cutAt = Math.max(0, GRAPH_ROW_MAX_CHARS - ' [... CUT]'.length);
+  return `${fallbackMarker.slice(0, cutAt)} [... CUT]`;
 }
 
 /**
@@ -1450,9 +1437,9 @@ export function assembleBrief(ctx, {
   graphQuery = null,
 }, excerptFn = excerptsFor, graphQueryFn = null) {
   // Task 59: the governing type sets excerpts, acceptance, proposal rule and
-  // (via the review brief's shared helper) the checklist — never an item's
-  // own type. `checklistFor` lives in `loop/lib/review.mjs` and reads the same
-  // governing value through `governingTypeFor` (exported here so both brief
+  // the review brief's checklist — never an item's own type. The review brief
+  // (`loop/lib/review.mjs`) keys `checklistFor` on the same governing value
+  // through the `workOrder` accepted there (exported here so both brief
   // assemblers share one reader and no second definition drifts).
   const governing = governingTypeFor(job, workOrder ?? null);
   // The constituted union the caller passes in (selection constitutes it with
@@ -1576,6 +1563,13 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
     // the work source and before acceptance — by splicing on the acceptance
     // heading, so single-item briefs without work orders keep byte-identical
     // shape (no annex, no splice) and work-order briefs carry it early.
+    // DEFERRED (task 62's reviewed-brief mode): on a `reviewed:` brief the
+    // annex belongs appended after that page's reviewed surface (tasks.md's
+    // "filtered to the one page that invocation reviews and appended after
+    // that page's surface"), not spliced before acceptance. No brief renders
+    // a per-page surface section today, so there is nothing to append after;
+    // the `reviewedOnly` filter above is the half that can be proved now, and
+    // task 62 wires the placement when the mode lands. No behavior change here.
     const anchor = acceptanceChecksSection(governing);
     if (text.includes(anchor)) {
       text = text.replace(anchor, `${fitted}\n${anchor}`);

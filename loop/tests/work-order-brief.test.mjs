@@ -25,7 +25,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ASSEMBLED_BRIEF_MAX_CHARS,
   GRAPH_ANNEX_HEADING,
   GRAPH_ROW_MAX_CHARS,
   acceptanceChecksSection,
@@ -36,8 +35,9 @@ import {
   truncateAnnexToBudget,
   verificationEntriesForBrief,
 } from '../lib/brief.mjs';
+import { ASSEMBLED_BRIEF_MAX_CHARS } from '../lib/config.mjs';
 import { acceptanceChecksFor } from '../lib/brief.mjs';
-import { checklistFor } from '../lib/review.mjs';
+import { assembleReviewBrief, checklistFor } from '../lib/review.mjs';
 import {
   buildWorkOrderDeclaration,
   checkMergeGraphScope,
@@ -491,4 +491,122 @@ test('mutation F: dropping unresolved-graph rows silently fails H1(b) while H1(a
   assert.doesNotMatch(mutant, new RegExp(A.replace(/\//g, '\\/') + '.*unresolved-graph'), 'H1(b) fails under the mutant');
   assert.match(mutant, new RegExp(B.replace(/\//g, '\\/')), 'H1(a) still passes under the mutant');
   assert.match(production, new RegExp(B.replace(/\//g, '\\/')));
+});
+
+// ---------------------------------------------------------------------------
+// Fix-round arms (sealed review, verdict revise): F1, F2, F3, F7.
+// ---------------------------------------------------------------------------
+
+test('fix F1: a work order whose governing type differs from job.type gets the governing checklist', async (t) => {
+  const ctx = ctxWithSpecs(t);
+  const job = baseJob({ type: 'repair', title: 'Write up the change', detail: 'A synthesis of the week.' });
+  const workOrder = {
+    items: [{ bead: null, type: 'post', subjects: [P1], reason: 'Write up the change' }],
+    declared_subjects: [P1],
+    governingType: 'post',
+  };
+  const brief = assembleReviewBrief(ctx, {
+    jobId: 'j-20260912-54',
+    job,
+    diffText: 'diff --git a/content/wiki/model/p1.md b/content/wiki/model/p1.md\n',
+    pass: 1,
+    findings: '',
+    gates: null,
+    sha: '',
+    capMinutes: 30,
+    outPath: `${ctx.reviewsDir}/j-20260912-54.md`,
+    workOrder,
+  });
+  assert.match(brief, /# Review — job j-20260912-54 \(post\)/);
+  // The post checklist's form branch, never the repair (directory) checklist.
+  assert.match(brief, /Identify the form first/);
+  assert.doesNotMatch(brief, /Spot-check the changed rows against their sources/);
+  // And without a work order the same job still reads its own type's list.
+  const own = assembleReviewBrief(ctx, {
+    jobId: 'j-20260912-55',
+    job,
+    diffText: 'diff\n',
+    pass: 1,
+    findings: '',
+    outPath: `${ctx.reviewsDir}/j-20260912-55.md`,
+  });
+  assert.match(own, /# Review — job j-20260912-55 \(repair\)/);
+  assert.match(own, /Spot-check the changed rows against their sources/);
+});
+
+test('fix F2: a zero-budget annex still emits the subject-naming marker, never nothing', () => {
+  const { annexText } = assembleGraphContext({
+    declaredSubjects: [P1, P2],
+    graphQuery: stubQuery({
+      [P1]: { universe: true, symbols: ['s1'], callers: 1, processes: 0, risk: 'LOW' },
+      [P2]: { universe: true, symbols: ['s2'], callers: 1, processes: 0, risk: 'LOW' },
+    }),
+    indexId: 'test-index-1',
+  });
+  for (const budget of [0, -40]) {
+    const cut = truncateAnnexToBudget(annexText, [P1, P2], budget);
+    assert.ok(cut.length > 0, `budget ${budget} still emits a marker, never nothing`);
+    assert.match(cut, /\[\.\.\. CUT: graph context for/, 'the explicit cut marker');
+    for (const s of [P1, P2]) {
+      assert.match(cut, new RegExp(s.replace(/\//g, '\\/').replace(/\./g, '\\.')), `budget ${budget} still names ${s}`);
+    }
+  }
+});
+
+test('fix F3: an absent sidecar entry is not per-item evidence for a diff-retired subject', () => {
+  const source = srcOf([[A]]);
+  const analysis = present({ symbols: [{ name: 's', owner: A }], subjects: { [A]: uni(['s']) } });
+  const refused = checkMergeGraphScope({
+    source, declared: [A], contentPaths: [A], diffPaths: [A], resultText: '', analysis,
+    sidecar: { version: 1, index: 'test-index-1', subjects: { [A]: { absent: true, reason: 'no graph index wired on the brief path', index: 'test-index-1' } } },
+  });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.code, 'graph-incomplete');
+  assert.match(refused.reason, /graph:content\/wiki\/model\/alpha-page\.md/);
+  assert.match(refused.reason, /sidecar/);
+  // Outside any symbol universe the same absent entry stays complete on the
+  // path diff alone (the no-symbols exemption, as for a missing key).
+  const noSyms = checkMergeGraphScope({
+    source: srcOf([[Q1]]),
+    declared: [Q1],
+    contentPaths: [Q1],
+    diffPaths: [Q1],
+    resultText: '',
+    analysis: present({ symbols: [], subjects: { [Q1]: { universe: false } } }),
+    sidecar: { version: 1, index: 'test-index-1', subjects: { [Q1]: { absent: true, reason: 'no index', index: 'test-index-1' } } },
+  });
+  assert.equal(noSyms.ok, true, noSyms.reason ?? '');
+});
+
+test('fix F7: a page retired via carried resolution satisfies (b) under the declaring carried key', () => {
+  const CARRIED = 'data/carried/fixture-fix-7.md';
+  const PAGE = 'content/wiki/model/carry-page-7.md';
+  // The item declares both the carried finding and its resolved page, so the
+  // page diff retires it with and without the carried map — isolating the
+  // sidecar credit (with the map the declaring carried key evidences the
+  // page; without it the page key is missing and refuses).
+  const source = srcOf([[CARRIED, PAGE]]);
+  const carried = { [CARRIED]: [PAGE] };
+  const analysis = present({
+    symbols: [{ name: 's7', owner: PAGE }],
+    subjects: { [PAGE]: uni(['s7']), [CARRIED]: uni([]) },
+  });
+  const sidecar = {
+    version: 1,
+    index: 'test-index-1',
+    subjects: { [CARRIED]: { symbols: ['s7'], callers: 1, processes: 0, risk: 'LOW', partial: false, truncated: false, index: 'test-index-1' } },
+  };
+  const credited = checkMergeGraphScope({
+    source, declared: [CARRIED, PAGE], contentPaths: [PAGE], diffPaths: [PAGE],
+    resultText: '', analysis, sidecar, carried,
+  });
+  assert.equal(credited.ok, true, credited.reason ?? '');
+  // Without the carried map the same evidence refuses: the credit is what merges.
+  const uncredited = checkMergeGraphScope({
+    source, declared: [CARRIED, PAGE], contentPaths: [PAGE], diffPaths: [PAGE],
+    resultText: '', analysis, sidecar, carried: null,
+  });
+  assert.equal(uncredited.ok, false);
+  assert.equal(uncredited.code, 'graph-incomplete');
+  assert.match(uncredited.reason, /sidecar/);
 });

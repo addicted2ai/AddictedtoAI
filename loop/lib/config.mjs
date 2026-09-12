@@ -302,6 +302,19 @@ export const MIN_INVOCATION_MINUTES = 15;
  * ---------------------------------------------------------------------------
  */
 export const BRIEF_EXCERPT_MAX_CHARS = 24000;
+
+/**
+ * The assembled-brief bound task 8 asserts (the fixture's 30,000 characters
+ * on the whole assembled Desk brief, excerpts plus everything else).
+ *
+ * Exported here beside `BRIEF_EXCERPT_MAX_CHARS` so the bound has ONE home:
+ * the runtime budget in `loop/lib/brief.mjs` and the asserting test in
+ * `loop/tests/brief-excerpt-budget.test.mjs` both read this rather than
+ * restating the literal (a value restated outside the file that holds it is
+ * a second source that goes stale silently while reading exactly like a
+ * measurement).
+ */
+export const ASSEMBLED_BRIEF_MAX_CHARS = 30000;
 // `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
 // (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
 // quota-driven: no selector rule counts published posts. What limits volume now

@@ -39,7 +39,7 @@ import { PROSE_TYPES, requirementHeadings } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
-import { GROUND_RULES, polaritySection, subjectLines } from './brief.mjs';
+import { GROUND_RULES, polaritySection, subjectLines, governingTypeFor } from './brief.mjs';
 import { readLedger } from './ledger.mjs';
 import { loadRunners, pickRunner } from './runners.mjs';
 import { corroborationSection } from './lineage.mjs';
@@ -535,16 +535,22 @@ everything spent on it is lost. Do not leave the writing until last.
  */
 export function assembleReviewBrief(
   ctx,
-  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null },
+  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null },
 ) {
-  const prose = isProse(job.type);
-  const voice = needsReadsHuman(job.type);
+  // Task 59: the review checklist is keyed on the work order's governing type
+  // (via the shared `governingTypeFor`), never on an item's own type — the
+  // same governing value the author brief's excerpts and acceptance checks
+  // read. Without a work order this resolves to `job.type`, so every existing
+  // caller keeps its exact brief.
+  const governing = governingTypeFor(job, workOrder ?? null);
+  const prose = isProse(governing);
+  const voice = needsReadsHuman(governing);
   const fromProposal = job.source === 'proposal';
   const rejection = fromProposal
     ? `\n## The rejection index\n\nThis job originated from a proposal. Part of your checklist is the judgment\nhalf of duplicate suppression: confirm this piece is not a differently-worded\nre-tread of an idea already rejected. The mechanical half — exact slug match —\nalready ran and passed. Fuzzy matching is guessing, so this half is yours.\n\n${rejectionIndexText(ctx)}\n`
     : '';
 
-  return `# Review — job ${jobId} (${job.type})${pass > 1 ? `, delta review, pass ${pass}` : ''}
+  return `# Review — job ${jobId} (${governing})${pass > 1 ? `, delta review, pass ${pass}` : ''}
 
 You are the reviewer. You have fresh context: you have not seen the author's
 reasoning and you will not get it. You have the diff below and the checklist.
@@ -576,7 +582,7 @@ this site, and never once by an automated check.
 
 ## Checklist for this kind of work
 
-${checklistFor(job.type).map((c) => `- ${c}`).join('\n')}
+${checklistFor(governing).map((c) => `- ${c}`).join('\n')}
 ${rejection}
 ${corroborationSection()}
 ${polaritySection()}
@@ -1292,7 +1298,7 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
  *                    branchShaAfter: string, recordWritten: boolean}>}
  */
-export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null }) {
+export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = verdictPath(ctx, jobId, pass);
   const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}`);
@@ -1318,6 +1324,7 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
     mmSoFar,
     invocations,
     totalMinutes,
+    workOrder,
   });
   const run = await runExecutor({
     command: runner.command,

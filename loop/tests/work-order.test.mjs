@@ -808,6 +808,12 @@ test('task 56 H2(c): the same stub with a well-formed graph-ack entry merges', a
   );
   const calls = [];
   const res = await go(ctx, {
+    // Fix-round F3: an `absent: true` brief-side entry is not per-item
+    // evidence, so the selection flow's production-absent sidecar would refuse
+    // (b) here even with the ack answering the partial flag. The fixture
+    // stubs the brief seam with real evidence, keeping this arm on the
+    // incompleteness question it exists for.
+    briefGraphQuery: () => ({ universe: true, symbols: ['s'], callers: 1, processes: 0, risk: 'LOW' }),
     mergeGraphAnalysis: ({ base, subjects }) => {
       calls.push({ base, subjects: [...subjects] });
       return presentAnalysis({ partial: true, subjects: { [A]: uni(['s']) } });

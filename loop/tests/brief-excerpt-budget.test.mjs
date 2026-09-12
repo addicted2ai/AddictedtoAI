@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 
 import { assembleBrief } from '../lib/brief.mjs';
 import { excerptsFor, SPECS_FOR_TYPE } from '../lib/specs.mjs';
-import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES } from '../lib/config.mjs';
+import { BRIEF_EXCERPT_MAX_CHARS, ASSEMBLED_BRIEF_MAX_CHARS, JOB_TYPES } from '../lib/config.mjs';
 import { DEFAULT_REPO_ROOT } from '../lib/paths.mjs';
 import { makeRepo } from './helpers.mjs';
 import { join } from 'node:path';
@@ -181,6 +181,7 @@ test('assembleBrief does not fall back to excerptsFor default', () => {
 
 test('the excerpt ceiling is the measured 24,000-character value', () => {
   assert.equal(BRIEF_EXCERPT_MAX_CHARS, 24000, `observed max chars ${BRIEF_EXCERPT_MAX_CHARS}, expected 24000`);
+  assert.equal(ASSEMBLED_BRIEF_MAX_CHARS, 30000, `observed assembled bound ${ASSEMBLED_BRIEF_MAX_CHARS}, expected 30000`);
 });
 
 test('declared subject capabilities follow the governing capabilities', () => {
@@ -276,7 +277,7 @@ test('three pending changes do not change the whole named heading set', () => {
 test('the pinned repair brief stays under the 30,000-character artifact bound', () => {
   const ctx = pinnedCorpus();
   const brief = assembled(ctx, 'repair');
-  assert.ok(brief.length <= 30000, `observed brief length ${brief.length}, expected at most 30000`);
+  assert.ok(brief.length <= ASSEMBLED_BRIEF_MAX_CHARS, `observed brief length ${brief.length}, expected at most ${ASSEMBLED_BRIEF_MAX_CHARS}`);
   ctx.cleanup();
 });
 
@@ -285,7 +286,7 @@ test('the binding fixture is the artifact bound, not a live-tree assertion', () 
   const brief = assembled(ctx, 'repair');
   assert.match(brief, /PENDING AMENDMENT/);
   assert.match(brief, /CUT: requirement "pulse governing rule"/);
-  assert.ok(brief.length <= 30000, `observed brief length ${brief.length}, expected at most 30000`);
+  assert.ok(brief.length <= ASSEMBLED_BRIEF_MAX_CHARS, `observed brief length ${brief.length}, expected at most ${ASSEMBLED_BRIEF_MAX_CHARS}`);
   const ex = excerptsFor(ctx.repoRoot, 'repair', { maxChars: 24000, pendingRoot: ctx.pendingRoot });
   assert.ok(ex.text.length <= 24000, `observed excerpt length ${ex.text.length}, expected at most 24000`);
   ctx.cleanup();
@@ -324,7 +325,7 @@ test('surplus pending requirements do not change the whole excerpt set', () => {
 test('the surplus fixture remains within the assembled-brief bound', () => {
   const ctx = surplusCorpus();
   const brief = assembled(ctx, 'repair');
-  assert.ok(brief.length <= 30000, `observed brief length ${brief.length}, expected at most 30000`);
+  assert.ok(brief.length <= ASSEMBLED_BRIEF_MAX_CHARS, `observed brief length ${brief.length}, expected at most ${ASSEMBLED_BRIEF_MAX_CHARS}`);
   ctx.cleanup();
 });
 

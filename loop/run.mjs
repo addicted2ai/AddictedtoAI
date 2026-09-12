@@ -858,10 +858,45 @@ export function checkMergeGraphScope({
   // Absent tool/index never reaches here (early `graph: absent` return above);
   // `no-symbols`-only retirements still warn summary-only (complete, never
   // `unresolved-graph`).
+  //
+  // F3 decision (task 59 fix round): an `absent: true` sidecar entry is NOT
+  // per-item evidence. The writer records one per queried subject — including
+  // subjects the brief-side tool could not answer — but the gate reads key
+  // presence as evidence, so an absent entry would satisfy (b) vacuously once
+  // a merge-side index is wired while the brief side stays absent. A
+  // diff-retired subject whose only sidecar entry is absent refuses with the
+  // sidecar flag exactly as a missing key does (outside-universe subjects
+  // stay exempt: complete on the path diff alone).
+  //
+  // F7 (task 59 fix round): the gate credits the declaring carried key. An
+  // item declaring `data/carried/<slug>.md` retires on its resolved page's
+  // diff with `touched` naming the page, while the writer — querying the
+  // committed declaration — keys the sidecar under the carried path. Either
+  // key holding non-absent evidence satisfies (b) for that subject.
   const sidecarSubjects =
     sidecar && typeof sidecar.subjects === 'object' && sidecar.subjects !== null
       ? sidecar.subjects
       : null;
+  // Reverse carried-resolution map (page → declaring carried paths) from the
+  // same `resolved` map per-item retirement reads, so the sidecar credit below
+  // joins on the same constitution the retirement did.
+  const carriedEntries = carried instanceof Map
+    ? [...carried.entries()]
+    : Object.entries(carried ?? {});
+  const declarersOf = new Map();
+  for (const [cpath, pages] of carriedEntries) {
+    const declarer = normSubjectPath(cpath);
+    if (!declarer) continue;
+    for (const page of Array.isArray(pages) ? pages : [pages]) {
+      const p = normSubjectPath(page);
+      if (!p) continue;
+      if (!declarersOf.has(p)) declarersOf.set(p, []);
+      if (!declarersOf.get(p).includes(declarer)) declarersOf.get(p).push(declarer);
+    }
+  }
+  const hasSidecarEvidence = (key) =>
+    Object.prototype.hasOwnProperty.call(sidecarSubjects ?? {}, key) &&
+    !(sidecarSubjects[key] && typeof sidecarSubjects[key] === 'object' && sidecarSubjects[key].absent === true);
   if (!sidecarSubjects) {
     const diffRetired = retirement.retired.filter((r) => r.via === 'diff');
     if (diffRetired.length > 0) {
@@ -895,7 +930,11 @@ export function checkMergeGraphScope({
     for (const r of retirement.retired) {
       if (r.via !== 'diff') continue;
       for (const subject of r.touched ?? []) {
-        if (Object.prototype.hasOwnProperty.call(sidecarSubjects, subject)) continue;
+        if (hasSidecarEvidence(subject)) continue;
+        // F7: a page retired via carried resolution is evidenced under its
+        // declaring carried path as well as under the page itself.
+        const credited = (declarersOf.get(normSubjectPath(subject)) ?? []).some((d) => hasSidecarEvidence(d));
+        if (credited) continue;
         const entry = universes[subject];
         if (entry?.universe === false) {
           warnings.push(`graph: ${subject} answers no-symbols (outside any symbol universe) — retired on the path diff alone, graph recorded summary-only`);
@@ -931,6 +970,7 @@ async function executeJob(ctx, opts) {
     worktree,
     resumed,
     briefText,
+    workOrder = null,
     gates,
     ledger,
   } = opts;
@@ -1416,6 +1456,9 @@ async function executeJob(ctx, opts) {
       pass,
       findings,
       gates: gateReport,
+      // The committed work-order declaration: the review brief keys its
+      // checklist on the governing type (task 59), never on an item's type.
+      workOrder: workOrder ?? null,
       // The job's spend, not this run's: a resumed job carries what its earlier
       // runs cost, and the reviewer is told the number the ledger would show.
       mmSoFar: spent(),
@@ -1617,6 +1660,9 @@ async function executeJob(ctx, opts) {
       verdict: gate.verdict,
       findings,
       diffText,
+      // The committed work-order declaration: the revision brief's acceptance
+      // checks and fallback excerpts key on the governing type (task 59).
+      workOrder: workOrder ?? null,
     });
     // A revision is a second executor invocation into the same worktree, so it
     // gets the same brake window as the author run. This is also the ONLY place
@@ -2016,6 +2062,10 @@ export async function runLoop(ctx, opts = {}) {
   let branch;
   let briefText;
   let briefGraphSidecar = null;
+  // The committed work-order declaration for this run's branch: constituted
+  // at selection (new jobs) or read off the branch (resumed). Threaded into
+  // `executeJob` so the review brief's checklist keys on the governing type.
+  let runWorkOrder = null;
   let resumed = false;
   /**
    * The proposal this job was selected from, if any — `{slug, path}` with an
@@ -2111,6 +2161,10 @@ export async function runLoop(ctx, opts = {}) {
       };
     })());
     ctx.log(`resuming ${branch} (${resumeTarget.reason}, ${resumeTarget.ageDays.toFixed(1)} days old) — no retry consumed`);
+    // The work-order declaration committed at selection travels with the
+    // branch: the review brief keys its checklist on the governing type, so
+    // the resumed run reads the same declaration the author brief did.
+    runWorkOrder = origin ?? null;
     // The rest of what the branch records about its own selection — read once,
     // above, before the type was chosen.
     if (Array.isArray(origin?.issues) && origin.issues.length) {
@@ -2230,6 +2284,7 @@ export async function runLoop(ctx, opts = {}) {
       graphIndexId: 'brief-index:merge-base-tree',
     }, undefined, (typeof opts.briefGraphQuery === 'function' ? opts.briefGraphQuery : briefGraphQueryForSubject));
     briefGraphSidecar = briefSink.sidecar ?? null;
+    runWorkOrder = newWorkOrder;
     ctx.log(`selected: ${job.type} from ${job.source} — ${job.title}`);
     jobIssues = mergeIssueIds(job.issues);
     if (jobIssues.length) ctx.log(`this job serves ${jobIssues.join(', ')}`);
@@ -2355,6 +2410,7 @@ export async function runLoop(ctx, opts = {}) {
       worktree,
       resumed,
       briefText,
+      workOrder: runWorkOrder,
       gates: opts.noGates ? false : opts.gates,
       ledger,
       base: mergeBaseSha,
