@@ -8,6 +8,7 @@ outcome: >-
 prerequisites:
   - how-a-language-model-works
 mentions:
+  - technique/rlhf
   - technique/direct-preference-optimization
   - technique/low-rank-adaptation
 ---
@@ -119,8 +120,8 @@ and reported learning "complex novel behaviors with about an hour of human
 time". Fit a judge to the clicks, optimise against the judge: the same
 pipeline, before there was language anywhere in it.
 
-Assembled end to end on a language model, the pipeline is called reinforcement
-learning from human feedback — RLHF wherever you meet it. The March 2022 paper
+Assembled end to end on a language model, the pipeline is called [reinforcement
+learning from human feedback](/wiki/technique/rlhf) — RLHF wherever you meet it. The March 2022 paper
 [describing how GPT-3 was turned into an
 instruction-follower](https://arxiv.org/abs/2203.02155v1) walks this same
 staircase in its abstract — "fine-tune GPT-3 using supervised learning", then
