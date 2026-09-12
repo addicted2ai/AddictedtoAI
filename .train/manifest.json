@@ -1,0 +1,85 @@
+{
+  "train": "t-ba60687c",
+  "mainTip": "366c8cd04242508ca9c2d875680fbe518de80f4c",
+  "begunDate": "2026-09-11",
+  "baselinePaths": [
+    "DIRECTIVES.md",
+    "content/learn/ai-and-the-law.md",
+    "content/learn/how-ai-systems-get-attacked.md",
+    "content/learn/how-to-think-about-what-comes-next.md",
+    "content/learn/what-a-reasoning-model-does.md",
+    "content/learn/what-an-agent-is.md",
+    "content/learn/what-it-costs-to-build-and-run-ai.md",
+    "content/learn/what-models-are-trained-on.md",
+    "content/learn/who-builds-ai.md",
+    "data/ledger.jsonl",
+    "data/reviews/evidence/verify-ai-and-the-law-industry-submission.md",
+    "data/reviews/evidence/verify-ai-and-the-law-industry-submission.raw.txt",
+    "data/reviews/j-20260911-02.md",
+    "data/reviews/j-20260911-03.md",
+    "data/reviews/j-20260911-04.md",
+    "data/reviews/j-20260911-05.md",
+    "data/reviews/j-20260911-06.md",
+    "evidence/gate-run-2026-09-11-0f25911/summary.txt",
+    "evidence/gate-run-2026-09-11-7cb253c/summary.txt"
+  ],
+  "merges": [
+    {
+      "sha": "ba60687caeb90cc0e5ffd3ea301ba170f303ea81",
+      "jobId": "j-20260911-02",
+      "subjects": [
+        "content/learn/what-an-agent-is.md",
+        "content/learn/what-models-are-trained-on.md"
+      ]
+    },
+    {
+      "sha": "1365051aec3cdc9b181adae15af7b1bbd6c67579",
+      "jobId": "j-20260911-03",
+      "subjects": [
+        "content/learn/how-to-think-about-what-comes-next.md",
+        "content/learn/what-a-reasoning-model-does.md",
+        "content/learn/what-it-costs-to-build-and-run-ai.md"
+      ]
+    },
+    {
+      "sha": "87b17878987600e4b2b9041581f5b78267476de0",
+      "jobId": "j-20260911-04",
+      "subjects": [
+        "content/learn/who-builds-ai.md"
+      ]
+    },
+    {
+      "sha": "bb0641dd05ce605bb4de0e8e0157b66284e5305f",
+      "jobId": "j-20260911-05",
+      "subjects": [
+        "content/learn/how-ai-systems-get-attacked.md"
+      ]
+    },
+    {
+      "sha": "81e82b075dcc83549242bbcdfd925e6aa530d835",
+      "jobId": "j-20260911-06",
+      "subjects": [
+        "content/learn/ai-and-the-law.md"
+      ]
+    }
+  ],
+  "evictions": [],
+  "review_rounds": [],
+  "measuredPaths": [
+    "content/learn/what-an-agent-is.md",
+    "content/learn/what-models-are-trained-on.md",
+    "content/learn/how-to-think-about-what-comes-next.md",
+    "content/learn/what-a-reasoning-model-does.md",
+    "content/learn/what-it-costs-to-build-and-run-ai.md",
+    "content/learn/who-builds-ai.md",
+    "content/learn/how-ai-systems-get-attacked.md",
+    "content/learn/ai-and-the-law.md",
+    "data/reviews/evidence/verify-ai-and-the-law-industry-submission.md",
+    "data/reviews/evidence/verify-ai-and-the-law-industry-submission.raw.txt"
+  ],
+  "bounds": {
+    "maxReviewedBytes": 150000,
+    "maxSubjects": 12
+  },
+  "remainder": []
+}
