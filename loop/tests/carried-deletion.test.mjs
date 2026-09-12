@@ -136,8 +136,12 @@ function carriedRepo(authorMode) {
       reviewerCommand: mockCommand('review-approve'),
     }),
     files: {
+      // Task-56 amendment: the finding declares its page structurally — the
+      // merge constitutes the declared carried file's `subject:` field into
+      // the union, so the fixing page diff lies inside the declaration.
       [CARRIED]:
         '---\ntitle: "name the measurement on the fixture page"\n' +
+        'subject: content/wiki/model/fixture-model.md\n' +
         'origin: review of job j-seed\ndate: 2026-09-05\n---\n\n' +
         'The page asserts an interval it never measured.\n',
     },

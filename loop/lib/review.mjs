@@ -1267,6 +1267,21 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
  * ---------------------------------------------------------------------------
  */
 
+/**
+ * Content-path membership (Stage 2, task 56, F5): the membership half of
+ * `joinableSubjects`, exported so the merge-path graph scope in
+ * `loop/run.mjs` tests the same predicate instead of a second copy. Slashes
+ * are normalized; the deletion rule is NOT applied here — callers judging
+ * diff entries (`joinableSubjects`) apply their own status rule, and callers
+ * judging symbol owners have no status to apply.
+ *
+ * @param {string} p  a repo-relative path (backslashes tolerated)
+ */
+export function isContentPath(p) {
+  const n = String(p ?? '').replace(/\\/g, '/');
+  return n.startsWith('content/') && n.endsWith('.md');
+}
+
 /** Content files a review record can be joined to. Others cannot be, and are not claimed. */
 export function joinableSubjects(changed) {
   const out = [];
@@ -1275,7 +1290,7 @@ export function joinableSubjects(changed) {
     // A deletion is not a piece anything can review; `D` is the only status
     // whose path does not exist on main after the merge.
     if (typeof c === 'object' && c?.status === 'D') continue;
-    if (!p.startsWith('content/') || !p.endsWith('.md')) continue;
+    if (!isContentPath(p)) continue;
     if (!out.includes(p)) out.push(p);
   }
   return out.sort();

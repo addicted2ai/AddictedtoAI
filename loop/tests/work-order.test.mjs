@@ -28,7 +28,14 @@
  * graph-read assertion reads the stub's recorded argv. Copy-based mutants
  * only: each named mutation is a test-side copy of the production
  * expression it replaces, so nothing under test is edited and there is
- * nothing to restore. H1/D–F belong to task 59 (the brief annex), not here.
+ * nothing to restore (A, B, C, G, H, I, J1, J2). H1/D–F belong to task 59
+ * (the brief annex), not here.
+ *
+ * Task-56 amendment (in the branch): a declared `data/carried/*.md` path
+ * contributes its `subject:` front-matter field to the union (F1 arms
+ * below); the code-only exemption downgrades scope-violation only, never
+ * `graph-incomplete` (F2 arm below); the binds-nothing log names the
+ * declaration (F4 assertion on H2(a2)).
  */
 
 import test from 'node:test';
@@ -43,6 +50,7 @@ import {
   checkMergeGraphScope,
   constituteMergeSubjects,
   declarationMergeDecision,
+  resolveCarriedDeclaration,
   retireWorkOrderItems,
   runLoop,
 } from '../run.mjs';
@@ -297,6 +305,46 @@ test('task 56: an absent graph-ack block reads as no acknowledgement', () => {
     assert.equal(parsed.entries.length, 0);
     assert.equal(graphAckForSubject(parsed, A), null);
   }
+});
+
+test('task 56 F1: declared carried files resolve their subject: field into the union', () => {
+  const CARRIED_X = 'data/carried/fixture-x.md';
+  const readFile = (p) => (p === CARRIED_X ? `---\ntitle: x\nsubject: ${P1}\n---\n\nfinding\n` : null);
+  const r = resolveCarriedDeclaration([CARRIED_X, A], { readFile });
+  assert.deepEqual(r.subjects, [CARRIED_X, A, P1].sort());
+  assert.deepEqual(r.resolved, { [CARRIED_X]: [P1] });
+  assert.deepEqual(r.missing, []);
+
+  // Missing, unreadable, malformed and field-less files contribute nothing
+  // (fail closed toward refusal) and are reported, never silent.
+  const r2 = resolveCarriedDeclaration(
+    [CARRIED_X, 'data/carried/gone.md', 'data/carried/nosub.md', 'data/carried/bad.md', 'data/carried/README.md'],
+    {
+      readFile: (p) => {
+        if (p === CARRIED_X) return '---\nsubject: []\n---\n';
+        if (p.endsWith('bad.md')) return '---\nsubject: [unclosed\n---\n';
+        if (p.endsWith('nosub.md')) return '---\ntitle: no subject here\n---\n\nfinding\n';
+        return null;
+      },
+    },
+  );
+  assert.deepEqual(r2.subjects, [CARRIED_X, 'data/carried/README.md', 'data/carried/bad.md', 'data/carried/gone.md', 'data/carried/nosub.md'].sort());
+  assert.deepEqual(r2.resolved, {});
+  assert.deepEqual(r2.missing.map((m) => m.path).sort(), ['data/carried/bad.md', CARRIED_X, 'data/carried/gone.md', 'data/carried/nosub.md'].sort());
+  for (const m of r2.missing) assert.ok(m.why, 'every miss carries its reason');
+
+  // The README is not a finding: ignored entirely, not even missing.
+  const r3 = resolveCarriedDeclaration(['data/carried/README.md'], { readFile: () => null });
+  assert.deepEqual(r3.subjects, ['data/carried/README.md']);
+  assert.deepEqual(r3.missing, []);
+
+  // The resolved page counts as the declaring item's own subject at
+  // retirement: the fixing diff (on the page) retires the carried item.
+  const retired = retireWorkOrderItems(sourceOf([[CARRIED_X]]), {
+    diffPaths: [P1],
+    carried: { [CARRIED_X]: [P1] },
+  });
+  assert.deepEqual(retired.retired.map((e) => e.index), [0]);
 });
 
 // ---------------------------------------------------------------------------
@@ -592,6 +640,39 @@ test('mutation J1: dropping the graph corroboration retires the unattributed sha
   assert.deepEqual(four.retired.map((e) => e.index), [1]);
 });
 
+test('mutation J2: dropping the zero-symbol check retires the diff-evidenced shared item', () => {
+  // Same shared-file fixture as J1, but the present index answers ZERO
+  // symbols on the diff-evidenced subject: contradiction.
+  const source = sourceOf([[PA, F], [PB, F]]);
+  const graph = {
+    symbols: [{ name: 'symA', owner: PA }],
+    subjects: { [F]: uni([]), [PA]: uni(['symA']), [PB]: uni([]) },
+  };
+  const production = retireWorkOrderItems(source, { diffPaths: [F], graph });
+  assert.deepEqual(production.retired, [], 'contradiction retires nothing');
+  assert.equal(production.open.length, 2);
+  assert.deepEqual(production.open[0].contradiction, [F]);
+  // MUTANT COPY (J2): production's shared-hit branch with the contradiction
+  // early-return deleted — shared hit plus the item's own symbol evidence
+  // retires, exactly what the contradiction gate exists to stop.
+  const mutantSharedRetire = () => {
+    const subs = source.items.map((it) => [...new Set(it.subjects)].sort());
+    const counts = new Map();
+    for (const s of subs) for (const p of s) counts.set(p, (counts.get(p) ?? 0) + 1);
+    const out = [];
+    subs.forEach((s, index) => {
+      const sharedHit = s.filter((p) => [F].includes(p) && (counts.get(p) ?? 0) > 1);
+      const ownEvidence = graph.symbols.some(
+        (sym) => s.includes(sym.owner) && (counts.get(sym.owner) ?? 0) === 1,
+      );
+      // NOTE: no contradiction gate — the deleted expression.
+      if (sharedHit.length && ownEvidence) out.push(index);
+    });
+    return out;
+  };
+  assert.deepEqual(mutantSharedRetire(), [0], 'the mutant retires the diff-evidenced item the contradiction arm keeps open');
+});
+
 // ---------------------------------------------------------------------------
 // Merge-path fixtures: selection flow.
 // ---------------------------------------------------------------------------
@@ -665,8 +746,31 @@ test('task 56 H2(a2): a code-only merge with a non-empty declaration binds nothi
   assert.equal(res.outcome, 'done', ctx.output());
   assert.ok(res.mergedSha, 'a code-only merge lands');
   assert.match(ctx.output(), /binds nothing/);
+  // F4: the no-joinable-path state names the declaration.
+  assert.match(ctx.output(), /declaration: loop\/lib\/fixture-shared\.mjs/);
   assert.doesNotMatch(ctx.output(), /scope-violation/);
   assert.doesNotMatch(ctx.output(), /graph-incomplete/);
+});
+
+test('task 56 F2: a code-only merge with a partial analysis and no ack refuses graph-incomplete', async (t) => {
+  // The binds-nothing exemption downgrades scope-violation ONLY:
+  // incompleteness stays a refusal (spec: graph incompleteness is a merge
+  // refusal, not a pass — unscoped to content merges).
+  const ctx = selectionRepo(
+    t,
+    { type: 'repair', title: 'touch the shared helper', subjects: [F] },
+    'done-content-paths',
+    ` ${F}`,
+  );
+  const res = await go(ctx, {
+    mergeGraphAnalysis: () => presentAnalysis({ partial: true, subjects: { [F]: uni(['s']) } }),
+  });
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.equal(res.mergedSha, null);
+  assert.match(ctx.output(), /binds nothing/, 'the code-only state is still logged');
+  assert.match(ctx.output(), /graph-incomplete/);
+  assert.match(ctx.output(), /graph:loop\/lib\/fixture-shared\.mjs/);
+  assert.match(ctx.output(), /partial/);
 });
 
 test('task 56 H2(b): a partial stub with no acknowledgement refuses graph-incomplete naming graph:path and the flag', async (t) => {
@@ -722,6 +826,38 @@ function plantedRepo(t, id, list, extraFiles = {}, authorMode = 'done-content-pa
   const planted = plantWorkOrder(ctx, id, list, extraFiles);
   return { ctx, planted };
 }
+
+test('task 56 F1: a carried-file declaration plus its page diff merges (carried resolution)', async (t) => {
+  // The reconciliation GLM#1 demanded: the declared carried file's
+  // `subject:` field joins the union at constitution time (history-pinned at
+  // the merge base), so the fixing page diff lies inside the declaration.
+  const CARRIED_FIX = 'data/carried/fixture-fix-1.md';
+  const PAGE = 'content/wiki/model/carry-page.md';
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${PAGE}`),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  // The finding exists at the merge base with a structural subject:.
+  mkdirSync(join(ctx.repoRoot, 'data', 'carried'), { recursive: true });
+  writeFileSync(
+    join(ctx.repoRoot, CARRIED_FIX),
+    `---\ntitle: fix the carry page\nsubject: ${PAGE}\n---\n\nA finding with a structural subject.\n`,
+    'utf8',
+  );
+  git(ctx.repoRoot, ['add', '-A']);
+  git(ctx.repoRoot, ['commit', '--quiet', '--no-verify', '-m', 'fixture: a carried finding with a structural subject']);
+  plantWorkOrder(ctx, 'j-20260912-31', [[CARRIED_FIX]]);
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.ok(res.mergedSha);
+  assert.doesNotMatch(ctx.output(), /scope-violation/);
+  assert.match(ctx.output(), new RegExp(`carried resolution: ${CARRIED_FIX.replace(/\//g, '\\/')} contributes`));
+  assert.match(ctx.output(), new RegExp(PAGE.replace(/\//g, '\\/')));
+});
 
 test('task 56 H3: four items across four subjects with one file changed retires one, leaves three open, records partially-done', async (t) => {
   const id = 'j-20260912-21';

@@ -16,6 +16,7 @@
  */
 
 import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import matter from 'gray-matter';
 import { execFileSync } from 'node:child_process';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -60,7 +61,7 @@ import {
   withFailingGateRetry,
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
-import { isDiffRefusal, isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
+import { isDiffRefusal, isReissueRefusal, isContentPath, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
 import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, classifyRedTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
 import {
   brakeScan,
@@ -431,6 +432,10 @@ function itemSubjectsOf(item) {
  *   absent — absent proceeds on the path checks alone. The graph NEVER
  *   retires or unretires alone: it only refines shared-subject attribution
  *   and reports contradiction.
+ * - `carried`: `resolveCarriedDeclaration`'s `resolved` map
+ *   (`{<carried path>: [<page>, ...]}`), or null. A carried file declares
+ *   its page structurally, so the page counts as the declaring item's own
+ *   subject for diff hits and coverage alike.
  *
  * Shared-subject refinement: a diff hit on a subject the item ALONE declares
  * retires on the path evidence. A hit ONLY on subjects other items also
@@ -449,7 +454,7 @@ function itemSubjectsOf(item) {
  *   `retired` entries carry `{index, item, via: 'diff'|'reviewed', touched}`.
  *   `open` entries carry `{index, item, why, contradiction?}`.
  */
-export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = null, graph = null } = {}) {
+export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = null, graph = null, carried = null } = {}) {
   if (isOldContractSource(source)) {
     return { oldContract: true, retired: [], open: [], partiallyDone: false, note: null };
   }
@@ -464,8 +469,17 @@ export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = n
           .filter(Boolean),
       );
   const allSubjects = items.map(itemSubjectsOf);
+  // F1: a carried file declares its page structurally — the resolved page
+  // joins the declaring item's effective subjects, so the fixing diff (on
+  // the page) is a measured diff on the item's own subjects. Sharing is
+  // counted over the same effective surface the hits are measured on.
+  const carriedMap = carried instanceof Map ? carried : new Map(Object.entries(carried ?? {}));
+  const effectiveOf = (subs) => [
+    ...new Set([...subs, ...subs.flatMap((s) => carriedMap.get(s) ?? [])]),
+  ].sort();
+  const allEffective = allSubjects.map(effectiveOf);
   const declarerCount = new Map();
-  for (const subs of allSubjects) {
+  for (const subs of allEffective) {
     for (const s of subs) declarerCount.set(s, (declarerCount.get(s) ?? 0) + 1);
   }
   const symbols = Array.isArray(graph?.symbols) ? graph.symbols : [];
@@ -474,11 +488,12 @@ export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = n
   const open = [];
   items.forEach((item, index) => {
     const subjects = allSubjects[index];
-    const hit = subjects.filter((s) => diffSet.has(s));
+    const effective = allEffective[index];
+    const hit = effective.filter((s) => diffSet.has(s));
     const exclusiveHit = hit.filter((s) => (declarerCount.get(s) ?? 0) === 1);
     const sharedHit = hit.filter((s) => (declarerCount.get(s) ?? 0) > 1);
     const reviewedHit =
-      reviewedSet !== null && subjects.length > 0 && subjects.every((s) => reviewedSet.has(s));
+      reviewedSet !== null && effective.length > 0 && effective.every((s) => reviewedSet.has(s));
     if (reviewedHit) {
       retired.push({ index, item, via: 'reviewed', touched: [...hit] });
       return;
@@ -510,7 +525,7 @@ export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = n
       }
       const ownEvidence = symbols.some((sym) => {
         const owner = normSubjectPath(sym?.owner);
-        return owner && subjects.includes(owner) && (declarerCount.get(owner) ?? 0) === 1;
+        return owner && effective.includes(owner) && (declarerCount.get(owner) ?? 0) === 1;
       });
       if (ownEvidence) {
         retired.push({ index, item, via: 'diff', touched: [...hit] });
@@ -569,16 +584,88 @@ export function readCommittedGraphSidecar(repo, branch) {
 }
 
 /**
- * Whether a diff path is content-path-shaped for graph-scope purposes: the
- * same `content/*.md` membership `joinableSubjects` uses, minus the
- * deletion rule (symbols are not diff entries). Graph scope corroboration is
- * content-path-scoped: symbols with a content-path owner are checked against
- * the declaration; every other symbol and every transitive affected process
- * is reviewer information only and never refuses.
+ * Whether a path is content-path-shaped for graph-scope purposes: the
+ * shared `isContentPath` membership from `loop/lib/review.mjs` (F5 — one
+ * predicate, not two). Graph scope corroboration is content-path-scoped:
+ * symbols with a content-path owner are checked against the declaration;
+ * every other symbol and every transitive affected process is reviewer
+ * information only and never refuses.
  */
 function isContentPathShaped(p) {
+  return isContentPath(p);
+}
+
+/**
+ * A declared carried-finding path: `data/carried/*.md`, never the directory
+ * README — the same membership `unearnedCarriedDeletion` (`loop/lib/review.mjs`)
+ * uses for what counts as a finding. Such a path declares its page
+ * structurally (F1): its `subject:` front-matter field joins the union.
+ */
+const CARRIED_DECLARATION_RE = /^data\/carried\/[^/]+\.md$/;
+
+function isCarriedDeclarationPath(p) {
   const n = normSubjectPath(p);
-  return n.startsWith('content/') && n.endsWith('.md');
+  return CARRIED_DECLARATION_RE.test(n) && !n.endsWith('/README.md');
+}
+
+/**
+ * Resolve declared carried files into the constitution-time union (F1: the
+ * task-56 amendment). Each declared `data/carried/*.md` path contributes
+ * that file's `subject:` front-matter field — read structurally, never
+ * prose — so a carried fix's page diff lies inside the declared set.
+ *
+ * `readFile` is the history-pinned reader: the merge path reads each file at
+ * the merge base (`git show <base>:<path>`), the tree the diff is measured
+ * against — never worktree state, since the job's own diff deletes the
+ * finding it fixes. A missing or unreadable file, an unparseable block, or
+ * a missing/empty `subject:` field contributes NOTHING (fail closed toward
+ * refusal) and is reported in `missing` for the merge log.
+ *
+ * @param {string[]} declared  the constituted declaration (normalised)
+ * @param {{readFile?: ((path: string) => string|null)}} [opts]
+ * @returns {{subjects: string[], resolved: Record<string, string[]>, missing: Array<{path: string, why: string}>}}
+ *   `subjects` is the sorted union; `resolved` maps each carried path to the
+ *   page(s) it contributed (per-item retirement reads the same map, so the
+ *   page counts as the declaring item's own subject).
+ */
+export function resolveCarriedDeclaration(declared, { readFile = null } = {}) {
+  const union = new Set((Array.isArray(declared) ? declared : []).map(normSubjectPath).filter(Boolean));
+  const resolved = {};
+  const missing = [];
+  for (const path of [...union]) {
+    if (!isCarriedDeclarationPath(path)) continue;
+    if (typeof readFile !== 'function') {
+      missing.push({ path, why: 'no history reader available' });
+      continue;
+    }
+    let text = null;
+    try {
+      text = readFile(path);
+    } catch {
+      text = null;
+    }
+    if (typeof text !== 'string' || !text) {
+      missing.push({ path, why: 'not readable at the merge base' });
+      continue;
+    }
+    let field = null;
+    try {
+      field = matter(text).data?.subject ?? null;
+    } catch {
+      field = null;
+    }
+    const pages = (Array.isArray(field) ? field : [field])
+      .filter((s) => typeof s === 'string')
+      .map(normSubjectPath)
+      .filter(Boolean);
+    if (!pages.length) {
+      missing.push({ path, why: 'no subject: field in front matter' });
+      continue;
+    }
+    resolved[path] = [...new Set(pages)].sort();
+    for (const page of resolved[path]) union.add(page);
+  }
+  return { subjects: [...union].sort(), resolved, missing };
 }
 
 /**
@@ -606,6 +693,13 @@ function isContentPathShaped(p) {
  * - `sidecar`: the parsed `.job/graph.json` (or null). Its per-item
  *   evidence is required for every item retired on a measured diff; items
  *   retired on read-and-unchanged coverage are exempt.
+ * - `carried`: `resolveCarriedDeclaration`'s `resolved` map, forwarded to
+ *   per-item retirement so a carried file's page counts as its item's own
+ *   subject.
+ * - `advisoryScope`: downgrade ONLY the scope-violation arm ((a)) to a
+ *   warning — the code-only exemption, which the task scopes to (a)'s
+ *   quantifier. `graph-incomplete` (H2(b) incompleteness, the sidecar check)
+ *   stays a refusal under this flag.
  *
  * Three-way absence, fail-closed: absent tool/index → warning plus a
  * `graph: absent` status, merge proceeds on the path checks alone (absent is
@@ -630,11 +724,13 @@ export function checkMergeGraphScope({
   analyse = null,
   analysis = undefined,
   sidecar = null,
+  carried = null,
+  advisoryScope = false,
 }) {
   const warnings = [];
   const declaredList = (Array.isArray(declared) ? declared : []).map(normSubjectPath).filter(Boolean);
   const declaredSet = new Set(declaredList);
-  const retireWith = (graph) => retireWorkOrderItems(source, { diffPaths, reviewedPaths, graph });
+  const retireWith = (graph) => retireWorkOrderItems(source, { diffPaths, reviewedPaths, graph, carried });
   let resolved = analysis;
   if (resolved === undefined && typeof analyse === 'function') {
     resolved = analyse();
@@ -675,14 +771,23 @@ export function checkMergeGraphScope({
     );
   }
   if (scopeViolationOwner !== null) {
-    return {
-      ok: false,
-      code: 'scope-violation',
-      reason: `scope-violation: graph maps a changed symbol onto undeclared content path ${scopeViolationOwner} (outside the committed declaration)`,
-      warnings,
-      graphStatus: 'complete',
-      retirement: retireWith({ symbols, subjects: universes }),
-    };
+    if (advisoryScope) {
+      // F2: the code-only exemption is scoped to (a)'s quantifier — a merge
+      // that binds nothing logs the scope finding and merges. `graph-incomplete`
+      // below is NOT downgraded: incompleteness stays a refusal (H2(b)).
+      warnings.push(
+        `scope-violation (advisory on a merge that binds nothing): graph maps a changed symbol onto undeclared content path ${scopeViolationOwner} (outside the committed declaration)`,
+      );
+    } else {
+      return {
+        ok: false,
+        code: 'scope-violation',
+        reason: `scope-violation: graph maps a changed symbol onto undeclared content path ${scopeViolationOwner} (outside the committed declaration)`,
+        warnings,
+        graphStatus: 'complete',
+        retirement: retireWith({ symbols, subjects: universes }),
+      };
+    }
   }
   // Incompleteness is per declared subject inside a symbol universe: global
   // partial/truncated, per-subject flags, or UNKNOWN risk. A subject the
@@ -734,6 +839,13 @@ export function checkMergeGraphScope({
   // task-57 policy prove the merge through the seams alone). Where a sidecar
   // IS committed, a missing entry for a diff-retired subject refuses. A
   // missing entry is never silently filled: presence is the evidence.
+  //
+  // KNOWN HOLE, for task 59 to close deliberately (F6): the executor's output
+  // commit (`commitAll` minus `RESULT.md`) can delete a committed
+  // `.job/graph.json`, converting a would-be (b) refusal into this warning.
+  // Warn-only stands until the sidecar writer exists; once it does, a
+  // new-contract branch whose non-empty declaration retires on a diff while
+  // its committed `.job/` lacks the sidecar should refuse rather than warn.
   const sidecarSubjects =
     sidecar && typeof sidecar.subjects === 'object' && sidecar.subjects !== null
       ? sidecar.subjects
@@ -2346,7 +2458,7 @@ export async function runLoop(ctx, opts = {}) {
       outcome = 'failed';
       result.note = result.note ? `${result.note} — ${reason}` : reason;
     };
-    const runGraphScope = (constitutedSubjects) => {
+    const runGraphScope = (unionSubjects, carriedMap, scopeAdvisory) => {
       let resultText = '';
       try {
         const resultPath = join(worktree, RESULT_FILENAME);
@@ -2360,18 +2472,20 @@ export async function runLoop(ctx, opts = {}) {
       let analysis;
       if (typeof opts.mergeGraphAnalysis === 'function') {
         analysis = opts.mergeGraphAnalysis({
-          repoRoot: ctx.repoRoot, base: mergeBaseSha, branch, subjects: [...constitutedSubjects],
+          repoRoot: ctx.repoRoot, base: mergeBaseSha, branch, subjects: [...unionSubjects],
         });
       }
       return checkMergeGraphScope({
         source: committedSource,
-        declared: constitutedSubjects,
+        declared: unionSubjects,
         contentPaths,
         diffPaths: workDiffPaths,
         reviewedPaths: null,
         resultText,
         analysis,
         sidecar: readSidecar(ctx.repoRoot, branch),
+        carried: carriedMap,
+        advisoryScope: scopeAdvisory,
       });
     };
     if (!declCheck.ok) {
@@ -2383,17 +2497,13 @@ export async function runLoop(ctx, opts = {}) {
     } else {
       // New-contract merge with a non-empty declaration — content-carrying or
       // code-only. The graph analysis runs on both (the H2(a) arm pins the
-      // spawn even where the path check then refuses); on a merge that binds
-      // nothing its scope side is advisory (out of (a)'s quantifier: logged,
-      // never refusing), while per-item retirement still counts the code
-      // diff — a machinery item's subject is a code file, and binding
-      // nothing is about the record, not about whether the work was done.
+      // spawn even where the path check then refuses). F2: on a merge that
+      // binds nothing ONLY the scope-violation arm is advisory (the code-only
+      // exemption lives in (a)'s quantifier); `graph-incomplete` stays a
+      // refusal. Per-item retirement still counts the code diff — a machinery
+      // item's subject is a code file, and binding nothing is about the
+      // record, not about whether the work was done.
       const advisory = declCheck.bindsNothing;
-      if (advisory) {
-        ctx.log(`binds nothing: merged diff carries no content paths on ${branch} — merging with no subject binding`);
-      } else {
-        ctx.log(`merge declaration: ${declCheck.declared.length} subject(s): ${declCheck.declared.join(', ')}`);
-      }
       // Task 56 constitution: the set comes from the committed declaration.
       // (On the read-and-unchanged outcome the executor's declared paths are
       // intersected here — task 62's reader passes them; today: null.)
@@ -2401,12 +2511,34 @@ export async function runLoop(ctx, opts = {}) {
       if (!constituted.ok) {
         failMerge(constituted.reason);
       } else {
-        if (!advisory) {
-          ctx.log(`merge subjects constituted from declaration (${constituted.subjects.length}): ${constituted.subjects.join(', ') || '(none)'}`);
+        // F1 (amendment): each declared carried file contributes its page.
+        // History-pinned at the merge base — the tree the diff is measured
+        // against — never worktree state, since the fixing diff deletes the
+        // finding it resolves. Missing/unreadable fields contribute nothing
+        // (fail closed toward refusal) and are logged, never silent.
+        const readAtBase = (p) => {
+          const r = gitTry(ctx.repoRoot, ['show', `${mergeBaseSha}:${p}`]);
+          return r.ok ? r.stdout : null;
+        };
+        const carried = resolveCarriedDeclaration(constituted.subjects, { readFile: readAtBase });
+        for (const m of carried.missing) {
+          ctx.log(`carried declaration ${m.path} contributes nothing to the union (${m.why})`);
         }
-        const g = runGraphScope(constituted.subjects);
+        for (const [cpath, pages] of Object.entries(carried.resolved)) {
+          ctx.log(`carried resolution: ${cpath} contributes ${pages.join(', ')} to the declared union`);
+        }
+        const union = carried.subjects;
+        if (advisory) {
+          // F4: the no-joinable-path state names the declaration (the full
+          // union, carried-resolved pages included).
+          ctx.log(`binds nothing: merged diff carries no content paths on ${branch} — merging with no subject binding; declaration: ${union.join(', ') || '(none)'}`);
+        } else {
+          ctx.log(`merge declaration: ${union.length} subject(s): ${union.join(', ')}`);
+          ctx.log(`merge subjects constituted from declaration (${union.length}): ${union.join(', ') || '(none)'}`);
+        }
+        const g = runGraphScope(union, carried.resolved, advisory);
         for (const w of g.warnings) ctx.log(w);
-        const subset = checkDeclarationSubset(contentPaths, constituted.subjects);
+        const subset = checkDeclarationSubset(contentPaths, union);
         if (!subset.ok) {
           // The path check is primary; a graph scope refusal naming the same
           // path is logged as corroboration (H2(a): the mapping names the
@@ -2414,12 +2546,11 @@ export async function runLoop(ctx, opts = {}) {
           if (!g.ok) ctx.log(`graph corroboration agrees: ${g.reason}`);
           failMerge(`scope-violation: merged diff touches undeclared content path(s) ${subset.undeclared.join(', ')} — every diff content path must lie inside the committed declaration`);
           if (g.retirement?.note) ctx.log(g.retirement.note);
-        } else if (!g.ok && !advisory) {
+        } else if (!g.ok) {
           failMerge(g.reason);
           if (g.retirement?.note) ctx.log(g.retirement.note);
         } else {
-          if (!g.ok) ctx.log(`${g.reason} — advisory on a merge that binds nothing: merging anyway`);
-          if (!advisory) mergeSubjects = [...constituted.subjects];
+          if (!advisory) mergeSubjects = [...union];
           mergeRetirement = g.retirement;
           if (mergeRetirement?.note) {
             ctx.log(mergeRetirement.note);
