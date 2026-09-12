@@ -34,6 +34,7 @@
     "data/reviews/j-20260912-03.md",
     "data/reviews/j-20260912-04.md",
     "data/reviews/j-20260912-05.md",
+    "data/reviews/j-20260912-06.md",
     "data/reviews/t-ba60687c.md",
     "data/reviews/t-ba60687c.train-compare.md",
     "data/sources/llm-releases/state.json",
@@ -44,7 +45,11 @@
     "evidence/gate-run-2026-09-11-0f25911/summary.txt",
     "evidence/gate-run-2026-09-11-7cb253c/summary.txt",
     "loop/lib/gates.mjs",
-    "loop/tests/train-gate-resolution.test.mjs"
+    "loop/lib/git.mjs",
+    "loop/lib/train.mjs",
+    "loop/run.mjs",
+    "loop/tests/train-gate-resolution.test.mjs",
+    "loop/tests/train.test.mjs"
   ],
   "merges": [
     {
@@ -133,6 +138,7 @@
     "541c9f8b",
     "b2c23e6b",
     "fd40428d",
-    "d7e287ca"
+    "d7e287ca",
+    "6a80aa63"
   ]
 }
