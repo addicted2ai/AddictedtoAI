@@ -154,6 +154,54 @@ export function parseCorrections(data) {
 }
 
 /**
+ * ONE list-entry parser for the two per-piece forced-judgment fields
+ * (specs/review, two-desks task 60): `reads-human-from` entries
+ * (`{subject, record, why}`) and `would-cite-for` entries
+ * (`{subject, statement}`). Same scalar-or-list rule, same trimming, same
+ * backslash normalization on `subject`, same drop-with-warning on a
+ * malformed entry — so the two fields cannot drift apart. Dropping is the
+ * fail-closed direction: the piece that entry meant to answer for is then
+ * unanswered, and the merge gate refuses the approve on that piece rather
+ * than accepting a half-written entry as an answer.
+ *
+ * Each required key carries its own `{name, empty}` message pair, so the
+ * warnings for `reads-human-from` below are byte-identical to the ones the
+ * bespoke parser produced before this helper existed.
+ *
+ * @param {*} raw the front-matter value (scalar or list)
+ * @param {object} o
+ * @param {string} o.field the front-matter key, for warning prefixes
+ * @param {Array<{name: string, empty: (at: string, prior: object) => string}>} o.keys
+ *   required keys in read order; `prior` holds the already-read values
+ * @param {(entry: object) => object} o.shape map the read values to the entry shape
+ * @returns {{entries: object[], warnings: string[]}}
+ */
+function parseSubjectEntries(raw, { field, keys, shape }) {
+  if (raw === undefined || raw === null) return { entries: [], warnings: [] };
+  const list = Array.isArray(raw) ? raw : [raw];
+  const entries = [];
+  const warnings = [];
+  list.forEach((entry, i) => {
+    const at = `${field}[${i}]`;
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      warnings.push(`${at}: not a mapping with ${keys.map((k) => k.name).join('/')} — skipped`);
+      return;
+    }
+    const read = {};
+    for (const key of keys) {
+      const value = String(entry[key.name] ?? '').trim();
+      if (!value) {
+        warnings.push(key.empty(at, read));
+        return;
+      }
+      read[key.name] = key.subject ? value.replace(/\\/g, '/') : value;
+    }
+    entries.push(shape(read));
+  });
+  return { entries, warnings };
+}
+
+/**
  * `reads-human-from:` — a voice verdict CARRIED FORWARD, per post
  * (specs/review, beads addictedtoai-37rb).
  *
@@ -184,34 +232,66 @@ export function parseCorrections(data) {
 export function parseReadsHumanFrom(data) {
   const raw =
     data?.['reads-human-from'] ?? data?.reads_human_from ?? data?.readsHumanFrom;
-  if (raw === undefined || raw === null) return { readsHumanFrom: [], readsHumanFromWarnings: [] };
-  const list = Array.isArray(raw) ? raw : [raw];
-  const readsHumanFrom = [];
-  const readsHumanFromWarnings = [];
-  list.forEach((entry, i) => {
-    const at = `reads-human-from[${i}]`;
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-      readsHumanFromWarnings.push(`${at}: not a mapping with subject/record/why — skipped`);
-      return;
-    }
-    const subject = String(entry.subject ?? '').trim().replace(/\\/g, '/');
-    const record = String(entry.record ?? '').trim();
-    const why = String(entry.why ?? '').trim();
-    if (!subject) {
-      readsHumanFromWarnings.push(`${at}: no non-empty \`subject\` — skipped (an entry answers for ONE named post)`);
-      return;
-    }
-    if (!record) {
-      readsHumanFromWarnings.push(`${at} (${subject}): no non-empty \`record\` — skipped (a carry-forward stands on a named record)`);
-      return;
-    }
-    if (!why) {
-      readsHumanFromWarnings.push(`${at} (${subject}): no non-empty \`why\` — skipped (say in your own words why this diff did not move the post's voice)`);
-      return;
-    }
-    readsHumanFrom.push({ subject, record, why });
+  const { entries, warnings } = parseSubjectEntries(raw, {
+    field: 'reads-human-from',
+    keys: [
+      {
+        name: 'subject',
+        subject: true,
+        empty: (at) => `${at}: no non-empty \`subject\` — skipped (an entry answers for ONE named post)`,
+      },
+      {
+        name: 'record',
+        empty: (at, prior) =>
+          `${at} (${prior.subject}): no non-empty \`record\` — skipped (a carry-forward stands on a named record)`,
+      },
+      {
+        name: 'why',
+        empty: (at, prior) =>
+          `${at} (${prior.subject}): no non-empty \`why\` — skipped (say in your own words why this diff did not move the post's voice)`,
+      },
+    ],
+    shape: (read) => ({ subject: read.subject, record: read.record, why: read.why }),
   });
-  return { readsHumanFrom, readsHumanFromWarnings };
+  return { readsHumanFrom: entries, readsHumanFromWarnings: warnings };
+}
+
+/**
+ * `would-cite-for:` — the quality answer, per prose piece (specs/review,
+ * two-desks task 60).
+ *
+ * Where the merged subjects hold more than one prose piece, one record-wide
+ * sentence standing for all of them is the 1/N attention problem, so the
+ * record carries a LIST of entries — each naming its piece (`subject`, a
+ * merged-subject path) and carrying that piece's own answer (`statement`:
+ * who would link THIS piece, and in what argument).
+ *
+ * Read by the SAME code path as `reads-human-from` (`parseSubjectEntries`
+ * above): a single mapping where a list is expected is a one-entry list,
+ * and an entry missing `subject` or `statement` is DROPPED with a warning —
+ * the fail-closed direction, exactly as a half-written carry-forward leaves
+ * its post unanswered.
+ */
+export function parseWouldCiteFor(data) {
+  const raw =
+    data?.['would-cite-for'] ?? data?.would_cite_for ?? data?.wouldCiteFor;
+  const { entries, warnings } = parseSubjectEntries(raw, {
+    field: 'would-cite-for',
+    keys: [
+      {
+        name: 'subject',
+        subject: true,
+        empty: (at) => `${at}: no non-empty \`subject\` — skipped (an entry answers for ONE named piece)`,
+      },
+      {
+        name: 'statement',
+        empty: (at, prior) =>
+          `${at} (${prior.subject}): no non-empty \`statement\` — skipped (say in your own words who would link this piece, and in what argument)`,
+      },
+    ],
+    shape: (read) => ({ subject: read.subject, statement: read.statement }),
+  });
+  return { wouldCiteFor: entries, wouldCiteForWarnings: warnings };
 }
 
 /**
@@ -289,6 +369,11 @@ export function parseVerdict(text) {
   // never alter the verdict value, and a record carrying neither voice field
   // parses exactly as it did before this key existed.
   const { readsHumanFrom, readsHumanFromWarnings } = parseReadsHumanFrom(hasFrontMatter ? data : {});
+  // Read INDEPENDENTLY too, on the same terms: a record carrying no
+  // `would-cite-for` parses exactly as it did before this key existed, and a
+  // malformed entry drops itself (leaving its piece unanswered) rather than
+  // altering the verdict value.
+  const { wouldCiteFor, wouldCiteForWarnings } = parseWouldCiteFor(hasFrontMatter ? data : {});
 
   return {
     verdict,
@@ -297,6 +382,8 @@ export function parseVerdict(text) {
     readsHuman: String(readsHuman ?? '').trim(),
     readsHumanFrom,
     readsHumanFromWarnings,
+    wouldCiteFor,
+    wouldCiteForWarnings,
     carry,
     carryWarnings,
     corrections,

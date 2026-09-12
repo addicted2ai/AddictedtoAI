@@ -35,11 +35,11 @@ import matter from 'gray-matter';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { RESULT_FILENAME } from './result.mjs';
-import { PROSE_TYPES, requirementHeadings } from './specs.mjs';
+import { PROSE_TYPES, isProsePiece, prosePieces, requirementHeadings } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
-import { GROUND_RULES, polaritySection, subjectLines, governingTypeFor } from './brief.mjs';
+import { GROUND_RULES, formatGraphRow, polaritySection, subjectLines, governingTypeFor } from './brief.mjs';
 import { readLedger } from './ledger.mjs';
 import { loadRunners, pickRunner } from './runners.mjs';
 import { corroborationSection } from './lineage.mjs';
@@ -49,6 +49,7 @@ import {
   VERDICTS,
   parseVerdict,
   parseReadsHumanFrom,
+  parseWouldCiteFor,
   normalizeWouldCite,
   normalizeField,
 } from './verdict.mjs';
@@ -81,7 +82,8 @@ const DOMAIN_VOCABULARY = DOMAINS.join(', ');
  * the one parser without importing the Desk. Re-exported here because this is
  * where every caller already looks for it.
  */
-export { REASONS, VERDICTS, parseVerdict, parseReadsHumanFrom, normalizeWouldCite, normalizeField };
+export { REASONS, VERDICTS, parseVerdict, parseReadsHumanFrom, parseWouldCiteFor, normalizeWouldCite, normalizeField };
+export { isProsePiece, prosePieces };
 
 /**
  * Job types whose verdict must additionally answer the VOICE question
@@ -172,6 +174,8 @@ export function readRecordByName(ctx, name) {
 export const REISSUE_CODES = Object.freeze([
   'would-cite-empty',
   'would-cite-duplicate',
+  'would-cite-for-empty',
+  'would-cite-for-duplicate',
   'reads-human-empty',
   'reads-human-duplicate',
   'corrections-malformed',
@@ -602,6 +606,17 @@ ${prose ? `**Required, non-empty: \`would-cite\`.** In your own words: who would
 this, and in what argument? An \`approve\` with this field blank, or with text
 identical to another review record's, is refused at merge and you will be
 asked to re-issue the verdict. Answer the question; do not fill the field.
+
+**If this diff merges more than one prose piece, answer once PER PIECE.**
+One sentence standing for several pieces is the 1/N attention problem, and a
+record-wide \`would-cite\` alone satisfies nothing for N>1: carry a
+\`would-cite-for\` list with one entry per merged prose piece (a wiki entry,
+a learn page, a tutorial, a blog post or a delta — a directory row is not
+one), each naming its piece (\`subject:\`, the merged path) with that piece's
+own answer (\`statement:\`). A piece left with no entry is refused exactly as
+a blank \`would-cite\` is. Each statement must be non-empty and must not
+recycle another review's sentence; two of your own entries may share one
+statement where one correction really did land the same way twice.
 ` : ''}${voice ? `
 **Required, non-empty: \`reads-human\`.** In your own words: where does this
 post read machine-made, or why does it not? Same two mechanics as
@@ -729,6 +744,12 @@ verdict: approve            # or revise / reject
 reasons: []                 # from the closed list above; required unless approve
 would-cite: >-
   <your own-words answer: who would link this, and in what argument>
+# would-cite-for:          # required when the merged subjects hold MORE THAN ONE
+#   - subject: ...          # prose piece: one entry per piece, naming the merged
+#     statement: ...        # path, with THAT piece's own answer. A record-wide
+#                          # \`would-cite\` alone satisfies nothing for N>1; a piece
+#                          # left with no entry is refused as a blank \`would-cite\`
+#                          # is. Omit the key entirely for a single piece.
 # cites: [<exact heading text after \`### Requirement:\` on its heading line>]
 #        # Trimmed, exact and case-sensitive; \`(preamble)\` is not a heading.
 #        # Choose from every capability under \`openspec/specs/\`, using its
@@ -790,16 +811,18 @@ export function existingWouldCites(ctx, excludeJobId) {
  * as `would-cite`'s — and two sweeps that agree today are how the two rules
  * stop agreeing later.
  *
- * ONE sweep for the LIST-shaped field too (`readsHumanFrom`), rather than a
- * second walk of the same directory: a carry-forward's `why` is held to the
- * same duplicate rule, so it is collected here, one row per entry, and compared
- * with the same `normalizeField`. A record contributes as many rows as it
- * carries entries; the same record's own rows are excluded by the same job-id
- * rule, which is what lets two entries in ONE record share a statement (one job
- * making the same trivial correction to two posts has one honest sentence to
- * write about both) while a sentence recycled across reviews is refused.
+ * ONE sweep for the LIST-shaped fields too (`readsHumanFrom` and
+ * `wouldCiteFor`), rather than a second walk of the same directory: a
+ * carry-forward's `why` — and a per-piece entry's `statement` — are held to
+ * the same duplicate rule, so each is collected here, one row per entry, and
+ * compared with the same `normalizeField`. A record contributes as many rows
+ * as it carries entries; the same record's own rows are excluded by the same
+ * job-id rule, which is what lets two entries in ONE record share a statement
+ * (one job making the same trivial correction to two posts has one honest
+ * sentence to write about both) while a sentence recycled across reviews is
+ * refused.
  *
- * @param {'wouldCite'|'readsHuman'|'readsHumanFrom'} field the parsed key to collect
+ * @param {'wouldCite'|'readsHuman'|'readsHumanFrom'|'wouldCiteFor'} field the parsed key to collect
  * @returns {Array<{file: string, value: string}>}
  */
 export function existingFieldValues(ctx, excludeJobId, field) {
@@ -817,12 +840,36 @@ export function existingFieldValues(ctx, excludeJobId, field) {
     const v = parseVerdict(text);
     const val = v[field];
     if (Array.isArray(val)) {
-      for (const e of val) if (e?.why) out.push({ file: name, value: normalizeField(e.why) });
+      // List-shaped forced-judgment fields carry their statement under
+      // different keys (`why` for a carry-forward, `statement` for a
+      // per-piece cite) but one sweep reads both, so the two duplicate
+      // rules stay one rule.
+      for (const e of val) {
+        const statement = e?.why ?? e?.statement;
+        if (statement) out.push({ file: name, value: normalizeField(statement) });
+      }
     } else if (val) {
       out.push({ file: name, value: normalizeField(val) });
     }
   }
   return out;
+}
+
+/**
+ * Every other record's `would-cite` answers, for the duplicate check:
+ * record-wide fields AND per-piece entry statements, as ONE universe.
+ *
+ * specs/review refuses an `approve` whose `would-cite` is "exactly identical
+ * (after whitespace trimming) to the `would-cite` field or entry of any
+ * OTHER existing review record", "entry by entry" for `would-cite-for` —
+ * so a sentence recycled from another record's entry into this record's
+ * field (or entry) is refused, while two entries in THIS record may match.
+ */
+export function existingCiteValues(ctx, excludeJobId) {
+  return [
+    ...existingFieldValues(ctx, excludeJobId, 'wouldCite'),
+    ...existingFieldValues(ctx, excludeJobId, 'wouldCiteFor'),
+  ];
 }
 
 /**
@@ -985,7 +1032,13 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
     };
   }
   if (isProse(type)) {
-    if (!v.wouldCite) {
+    // A `would-cite-for`-only record carries no record-wide field: where the
+    // entries answer piece by piece, the field has nothing to add, and
+    // refusing its absence would make the per-piece shape unwritable. The
+    // per-piece coverage refusal below (after the `reviewed:` equality
+    // check) is what judges such a record.
+    const carriesEntries = (Array.isArray(v.wouldCiteFor) ? v.wouldCiteFor : []).length > 0;
+    if (!v.wouldCite && !carriesEntries) {
       return {
         ok: false,
         code: 'would-cite-empty',
@@ -997,14 +1050,18 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
       };
     }
     const mine = normalizeField(v.wouldCite);
-    const dup = existingFieldValues(ctx, jobId, 'wouldCite').find((e) => e.value === mine);
+    // The duplicate universe is fields AND entries: specs/review refuses a
+    // sentence identical to "the `would-cite` field or entry of any OTHER
+    // existing review record", so a sentence recycled from another record's
+    // per-piece entry into this record's field is refused here.
+    const dup = existingCiteValues(ctx, jobId).find((e) => e.value === mine);
     if (dup) {
       return {
         ok: false,
         code: 'would-cite-duplicate',
         reason:
           `\`approve\` whose \`would-cite\` is exactly identical (after whitespace trimming) to ` +
-          `the field in ${dup.file}. A recycled sentence is not an answer to the question.`,
+          `the field or entry in ${dup.file}. A recycled sentence is not an answer to the question.`,
         verdict: v,
       };
     }
@@ -1228,6 +1285,79 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
           verdict: v,
         };
       }
+    }
+  }
+  // ---------------------------------------------------------------------
+  // `would-cite-for`: the quality answer, per prose piece (specs/review,
+  // two-desks task 60).
+  //
+  // PLACED AFTER the `reviewed:`/`subject:` equality check above, and that
+  // order is pinned by `review.test.mjs`'s zlq arms: a record whose
+  // `reviewed:` names a different set than the merge measured is refused
+  // `reviewed-subject-mismatch`, even where its pieces would also fail here.
+  //
+  // SCOPE, and why a `repair` merging four wiki pages with a record-wide
+  // sentence still merges (`work-order.test.mjs`'s task-57 passing arm pins
+  // it): the per-entry demand lives INSIDE the would-cite obligation's
+  // existing scope. A prose-TYPE job whose merged subjects hold more than
+  // one prose piece must answer entry by entry — a record-wide `would-cite`
+  // alone satisfies nothing for N>1, and the refusal names the unanswered
+  // pieces. A non-prose type keeps its legacy rule (no cite demand), but a
+  // record that CARRIES entries is held to them whatever the type: entries
+  // present means every prose piece among the measured subjects needs its
+  // own entry, and every entry's statement is duplicate-checked. The
+  // duplicate rule itself is scope-free — "entry by entry", on every type —
+  // because a recycled sentence is recycled whatever job it rode in on.
+  //
+  // Two entries in the SAME record may carry the same statement (one job
+  // making the same trivial correction to two pieces has one honest
+  // sentence); the sweep excludes this record's own rows, exactly as the
+  // carry-forward's does. A directory row among the subjects requires no
+  // entry: it is not a prose piece (`isProsePiece` in `loop/lib/specs.mjs`,
+  // the one predicate both this gate and the launch check read).
+  //
+  // A call with no `subjects` measured is not gated here for coverage,
+  // exactly as the `reads-human` N1 branch above is not — but an entry the
+  // record carries is still duplicate-checked, which needs no subjects.
+  const wouldCiteForEntries = Array.isArray(v.wouldCiteFor) ? v.wouldCiteFor : [];
+  if (wouldCiteForEntries.length) {
+    const others = existingCiteValues(ctx, jobId);
+    for (const e of wouldCiteForEntries) {
+      const mine = normalizeField(e.statement);
+      const dup = others.find((o) => o.value === mine);
+      if (dup) {
+        return {
+          ok: false,
+          code: 'would-cite-for-duplicate',
+          reason:
+            `the \`would-cite-for\` statement for ${e.subject} is exactly identical (after ` +
+            `whitespace trimming) to the field or entry in ${dup.file}. A sentence pasted from another ` +
+            `review is not a judgment about THIS piece.`,
+          verdict: v,
+        };
+      }
+    }
+  }
+  if (Array.isArray(subjects)) {
+    const pieces = prosePieces(subjects);
+    const answeredFor = new Set(wouldCiteForEntries.map((e) => e.subject));
+    const unanswered = pieces.filter((p) => !answeredFor.has(p));
+    if (unanswered.length && (wouldCiteForEntries.length || (isProse(type) && pieces.length > 1))) {
+      return {
+        ok: false,
+        code: 'would-cite-for-empty',
+        reason:
+          `\`approve\` on merged subjects holding ${pieces.length} prose piece${pieces.length === 1 ? '' : 's'} ` +
+          `(${pieces.join(', ')}) leaves ${unanswered.length} unanswered: ${unanswered.join(', ')}. ` +
+          `A record-wide \`would-cite\` alone satisfies nothing where entries are carried or where more ` +
+          `than one prose piece is present — each piece requires its own \`would-cite-for\` entry naming ` +
+          `it with that piece's own answer (who would link THIS piece, and in what argument?). Re-issue ` +
+          `the verdict with an entry per piece.` +
+          (v.wouldCiteForWarnings?.length
+            ? ` (Entries skipped as malformed: ${v.wouldCiteForWarnings.join('; ')}.)`
+            : ''),
+        verdict: v,
+      };
     }
   }
   // A carried finding retired by deletion alone (beads addictedtoai-jdt8).
@@ -1524,11 +1654,16 @@ export function writeRecordSubjects(path, subjects, { repoRoot = '' } = {}) {
  * afresh or not at all", empty is "the reviewer wrote a carry-forward block
  * that answers for nothing". Written as a YAML list of mappings, one per post,
  * so the record round-trips through `parseReadsHumanFrom` unchanged.
+ *
+ * `wouldCiteFor` is written on exactly the same terms again: an EMPTY LIST
+ * produces no key, and one mapping per prose piece (`subject` + `statement`),
+ * round-tripping through `parseWouldCiteFor` unchanged.
  */
-export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', cites = [], readsHuman = '', readsHumanFrom = [], notes = '', pass = 1, reviewer = '' }) {
+export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', cites = [], readsHuman = '', readsHumanFrom = [], wouldCiteFor = [], notes = '', pass = 1, reviewer = '' }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const p = verdictPath(ctx, jobId, pass);
   const carried = (Array.isArray(readsHumanFrom) ? readsHumanFrom : [readsHumanFrom]).filter(Boolean);
+  const perPiece = (Array.isArray(wouldCiteFor) ? wouldCiteFor : [wouldCiteFor]).filter(Boolean);
   const cited = (Array.isArray(cites) ? cites : [cites])
     .map((heading) => String(heading ?? '').trim())
     .filter(Boolean);
@@ -1550,6 +1685,17 @@ export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCit
               `  - subject: ${JSON.stringify(String(e.subject ?? ''))}`,
               `    record: ${JSON.stringify(String(e.record ?? ''))}`,
               `    why: ${JSON.stringify(String(e.why ?? ''))}`,
+            ].join('\n'),
+          ),
+        ].join('\n')
+      : null,
+    perPiece.length
+      ? [
+          'would-cite-for:',
+          ...perPiece.map((e) =>
+            [
+              `  - subject: ${JSON.stringify(String(e.subject ?? ''))}`,
+              `    statement: ${JSON.stringify(String(e.statement ?? ''))}`,
             ].join('\n'),
           ),
         ].join('\n')
@@ -1711,19 +1857,142 @@ export function trainReviewerRung(registry, { reviewerId } = {}) {
 }
 
 /**
- * Assemble the TRAIN reviewer's brief (row 41): the whole train diff, the
- * committed manifest (merge shas, job ids, subjects), the checklists of
- * every kind the train touches (via the same `checklistFor` the sibling
- * assembly reads — an unknown kind throws, failing the assembly closed),
- * the reviewer rung read from the registry — and NO per-job verdict record.
- * The seal is by construction: this function never receives the records, so
- * no interpolation can leak them; the test proves the property on the text.
+ * The per-subject graph summary for a train review (two-desks task 60).
+ *
+ * ONE row per subject of the train's manifest subject set, rendered from a
+ * single graph change analysis run over the train range — the SAME analysis
+ * shape task 56's merge-path seam returns (`{absent, partial, truncated,
+ * symbols: [{name, owner}], processes, subjects: {<path>: {universe,
+ * symbols, risk}}}`): changed symbols with their content-path owners per
+ * subject, the subject's risk word, and the incomplete flags verbatim.
+ * Affected processes are train-wide in the analysis shape (no per-subject
+ * linkage exists to attribute them by), so they ride the intro line,
+ * labelled train-wide, rather than invented per row.
+ *
+ * NEVER from per-job verdict records: this function takes no records, reads
+ * no records, and its inputs (`subjects`, `analyse`) carry none — so a
+ * summary derived from verdict text (task 61's mutation C) cannot pass
+ * through this path, only around it. The seal arm proves the property on
+ * the assembled brief's text.
+ *
+ * Never throws and never refuses: absent analysis, a throwing seam, or a
+ * subject outside any symbol universe each render as a row (`graph: absent`
+ * / `no-symbols`), and incomplete flags appear verbatim without blocking —
+ * the train review gate reads the verdict's per-piece entries, never this
+ * summary. Rows share `formatGraphRow` with the per-job annex, so the row
+ * width and the cut marker stay one list.
+ *
+ * @param {object} o
+ * @param {string[]} o.subjects the manifest's subject set
+ * @param {() => object|null} [o.analyse] injected graph-analysis seam
+ *   (task-12 fixture pattern); tests stub it, production closes it over
+ *   the train range. Null/absent renders the absent note on every row.
+ * @param {{base?: string|null, ref?: string|null}} [o.range] the analysed
+ *   range, printed for provenance only
+ * @returns {{summaryText: string, rows: Array<{subject: string, text: string}>, absent: boolean}}
+ */
+export function assembleTrainGraphSummary({ subjects, analyse = null, range = null } = {}) {
+  const norm = (p) => String(p ?? '').replace(/\\/g, '/').trim();
+  const wanted = [...new Set((Array.isArray(subjects) ? subjects : []).map(norm).filter(Boolean))].sort();
+  const base = norm(range?.base ?? '');
+  const ref = norm(range?.ref ?? '');
+  const provenance = base || ref
+    ? `over the train range ${base ? `\`${base.slice(0, 12)}\`` : '(unpinned base)'}..${ref ? `\`${ref.slice(0, 12)}\`` : '(unpinned tip)'}`
+    : 'over the train range';
+  const intro =
+    `Derived from the graph change analysis ${provenance}, from the manifest's subject set and the diff — ` +
+    `never from per-job verdict records, which were redacted from this tree. One row per subject; ` +
+    `incomplete flags appear verbatim and never block the train alone.`;
+  let analysis = null;
+  let absentReason = 'no train graph analysis wired on this path';
+  if (typeof analyse === 'function') {
+    try {
+      analysis = analyse();
+    } catch (err) {
+      analysis = null;
+      absentReason = `the train graph analysis threw (${err?.message ?? String(err)})`;
+    }
+  }
+  if (!analysis || analysis.absent) {
+    const reason = (!analysis ? absentReason : null) ?? String(analysis?.reason ?? '').trim() ?? absentReason;
+    const rows = wanted.map((subject) => ({
+      subject,
+      text: formatGraphRow(subject, `graph: absent — ${reason || absentReason}; judge the diff without it`),
+    }));
+    return {
+      summaryText:
+        `## Per-subject graph summary\n\n${intro}\n\n${rows.map((r) => r.text).join('\n') || '- (no subjects)'}\n`,
+      rows,
+      absent: true,
+    };
+  }
+  const symbols = Array.isArray(analysis.symbols) ? analysis.symbols : [];
+  const universes =
+    analysis.subjects && typeof analysis.subjects === 'object' ? analysis.subjects : {};
+  const processes = Array.isArray(analysis.processes) ? analysis.processes : [];
+  const processNames = processes.map((p) => String(p?.name ?? p)).filter(Boolean);
+  const owned = new Map(wanted.map((s) => [s, []]));
+  for (const sym of symbols) {
+    const owner = norm(sym?.owner ?? '');
+    if (owner && owned.has(owner)) owned.get(owner).push(String(sym?.name ?? '?'));
+  }
+  const SEVERITY = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+  let highest = null;
+  const rows = wanted.map((subject) => {
+    const entry = universes[subject];
+    if (!entry || entry.universe === false) {
+      return { subject, text: formatGraphRow(subject, 'no-symbols — no changed symbol owned here; risk LOW') };
+    }
+    const names = [...new Set(owned.get(subject) ?? [])];
+    const symText = names.length ? names.join(', ') : '(no owned changed symbols)';
+    const risk = typeof entry.risk === 'string' && entry.risk ? entry.risk : 'UNKNOWN';
+    if (SEVERITY.includes(risk) && (highest === null || SEVERITY.indexOf(risk) > SEVERITY.indexOf(highest))) {
+      highest = risk;
+    }
+    const flags = [];
+    if (analysis.partial || entry.partial) flags.push('partial');
+    if (analysis.truncated || entry.truncated) flags.push('truncated');
+    if (risk === 'UNKNOWN') flags.push('UNKNOWN');
+    const body =
+      `symbols ${symText}; risk ${risk}` +
+      (flags.length ? `; unresolved-graph (${flags.join('/')})` : '');
+    return { subject, text: formatGraphRow(subject, body) };
+  });
+  const head =
+    `Affected processes (train-wide): ${processNames.length ? `${processNames.length} (${processNames.slice(0, 5).join(', ')}${processNames.length > 5 ? ', …' : ''})` : '0'}. ` +
+    `Highest subject risk: ${highest ?? 'UNKNOWN'}.`;
+  return {
+    summaryText:
+      `## Per-subject graph summary\n\n${intro}\n\n${head}\n\n${rows.map((r) => r.text).join('\n') || '- (no subjects)'}\n`,
+    rows,
+    absent: false,
+  };
+}
+
+/**
+ * Assemble the TRAIN reviewer's brief (row 41; per-subject graph summary row 60):
+ * the whole train diff, the committed manifest (merge shas, job ids, subjects),
+ * the checklists of every kind the train touches (via the same `checklistFor`
+ * the sibling assembly reads — an unknown kind throws, failing the assembly
+ * closed), the reviewer rung read from the registry, the per-subject graph
+ * summary — and NO per-job verdict record. The seal is by construction: this
+ * function never receives the records, so no interpolation can leak them; the
+ * test proves the property on the text.
+ *
+ * `trainGraphAnalysis` is the injected graph-analysis seam (task-12 fixture
+ * pattern): `({repoRoot, base, ref, subjects}) => analysis`, the train-range
+ * form of the merge-path seam task 56 runs. Tests stub it and assert on its
+ * recorded argv (the range pins, never verdict text); production passes
+ * nothing until a train-range analysis is wired, and the section then renders
+ * the absent note. The assembled summary lives in the brief text only — in no
+ * tree, counted by no bound — and no summary file is persisted anywhere by
+ * this path, so there is nothing to commit inside or outside `.train/`.
  */
 export function assembleTrainReviewBrief(
   ctx,
-  { trainId, diffText, manifest, kinds, rung, outPath, capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null },
+  { trainId, diffText, manifest, kinds, rung, outPath, capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null, trainGraphAnalysis = null, graphBase = null, graphRef = null },
 ) {
-  void ctx;
+  const repoRoot = ctx?.repoRoot ?? null;
   const uniqKinds = [...new Set(kinds ?? [])];
   if (!uniqKinds.length) {
     throw new Error('review: no kinds for the train brief — without a kind there is no checklist, so the brief is refused rather than assembled against the wrong list.');
@@ -1740,6 +2009,23 @@ export function assembleTrainReviewBrief(
   const merges = ((manifest && manifest.merges) || [])
     .map((m) => `- \`${String(m.sha).slice(0, 12)}\` job \`${m.jobId}\`: ${((m.subjects || []).join(', ') || '(no subjects)')}`)
     .join('\n');
+  // The per-subject graph summary (task 60): one analysis over the train
+  // range, from the manifest's subject set and the diff — never from per-job
+  // verdict records, which this function never receives. The seam's argv
+  // pins the range (base from the manifest's main tip unless the caller
+  // overrides it, ref from the caller); a stub that returns verdict text is
+  // a summary ABOUT verdict text, which the seal arm refuses — the shape
+  // cannot carry what its inputs never held.
+  const graphSubjects = [...subjects];
+  const graphRangeBase = graphBase ?? (manifest && manifest.mainTip) ?? null;
+  const graphSummary = assembleTrainGraphSummary({
+    subjects: graphSubjects,
+    analyse:
+      typeof trainGraphAnalysis === 'function'
+        ? () => trainGraphAnalysis({ repoRoot, base: graphRangeBase, ref: graphRef, subjects: [...graphSubjects] })
+        : null,
+    range: { base: graphRangeBase, ref: graphRef },
+  }).summaryText;
   return `# Train review — ${trainId}
 
 You are the train reviewer. You have fresh context: you have not seen any
@@ -1775,6 +2061,7 @@ uncommitted rederived data; it is not any author's account of what changed.
 ${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated at 200 KB]' : diffText}
 \`\`\`
 
+${graphSummary}
 ${runShapeSection({ capMinutes, mmSoFar, invocations, totalMinutes })}
 ## Your standing instruction
 
@@ -1802,6 +2089,8 @@ changes), or \`reject\`. Give one or more reasons **from this closed list**:
 ${REASONS.map((r) => `- \`${r}\``).join('\n')}
 
 ${proseKinds.length ? `**Required, non-empty: \`would-cite\`.** This train touches prose (kinds: ${proseKinds.map((k) => `\`${k}\``).join(', ')}). Answer in your own words, one sentence per prose merge: who would link it, and in what argument? An \`approve\` with this field blank, or with text identical to another review record's, is refused at merge. Answer the question; do not fill the field.
+
+**Where the train's subjects hold more than one prose piece, answer once PER PIECE** in a \`would-cite-for\` list — one entry per piece naming the merged path (\`subject:\`) with that piece's own answer (\`statement:\`); a record-wide \`would-cite\` alone satisfies nothing for N>1, and a piece left with no entry is refused exactly as a blank \`would-cite\` is. The graph summary above is presented beside each piece's entries for your judgment within the train's subject bound; it adds no piece list of its own.
 ` : `\`would-cite\`: this train touches no prose kind, so the field is not required. Leave it out rather than inventing an answer.
 `}${posts.length || uniqKinds.some((k) => needsReadsHuman(k)) ? `
 **Voice.** This train merges ${posts.length ? posts.join(', ') : 'a post kind'}: an \`approve\` must answer the voice question — where does it read machine-made, or why does it not? — in a non-empty \`reads-human\`, or carry the prior answer forward per post in a \`reads-human-from\` entry naming the post, the earlier approving record, and why this train's diff did not move its voice. Same duplicate rules as \`would-cite\`.
@@ -1839,6 +2128,10 @@ verdict: approve            # or revise / reject
 reasons: []                 # from the closed list above; required unless approve
 would-cite: >-
   <your own-words answer, one sentence per prose merge; omit when the train touches no prose>
+# would-cite-for:          # required when the train's subjects hold MORE THAN ONE
+#   - subject: ...          # prose piece: one entry per piece, naming the merged
+#     statement: ...        # path, with THAT piece's own answer. A record-wide
+#                          # \`would-cite\` alone satisfies nothing for N>1.
 findings:                   # omit the key entirely when there are no findings
   - text: <the finding>
     merges: [<sha or job id, ...>]   # or [] when it names no merge
@@ -1870,6 +2163,7 @@ ${GROUND_RULES}
 export async function runTrainReview(ctx, {
   trainId, ref, diffText, manifest, kinds, runner, capMinutes = 0,
   mmSoFar, invocations = 0, totalMinutes = null, invoke = null,
+  trainGraphAnalysis = null, graphBase = null,
 }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = trainVerdictPath(ctx, trainId);
@@ -1890,6 +2184,7 @@ export async function runTrainReview(ctx, {
   const brief = assembleTrainReviewBrief(ctx, {
     trainId, diffText, manifest, kinds, rung, outPath,
     capMinutes, mmSoFar, invocations, totalMinutes,
+    trainGraphAnalysis, graphBase, graphRef: ref,
   });
   const invoker = invoke ?? runExecutor;
   const run = await invoker({
@@ -2122,14 +2417,21 @@ export function trainFindingsNamingMerges(findings, manifest) {
 }
 
 /**
- * The train verdict protocol (row 42): the train review produces a verdict
- * record on the ORDINARY protocol — closed-list verdict, `would-cite` per
- * prose piece, the same refusals as `mergeGate` — by DELEGATING to
- * `mergeGate` once per kind the train touches, first refusal wins. Same
- * codes, same reasons, same sweeps (including the duplicate checks, which
- * read the train record like any other). An absent, empty or malformed
- * record fails closed: `no-record`, `malformed-verdict` and every other
- * refusal surface here unchanged.
+ * The train verdict protocol (row 42; per-piece entries row 60): the train
+ * review produces a verdict record on the ORDINARY protocol — closed-list
+ * verdict, `would-cite` per prose piece, the same refusals as `mergeGate` —
+ * by DELEGATING to `mergeGate` once per kind the train touches, first
+ * refusal wins. Same codes, same reasons, same sweeps (including the
+ * duplicate checks, which read the train record like any other). An absent,
+ * empty or malformed record fails closed: `no-record`, `malformed-verdict`
+ * and every other refusal surface here unchanged.
+ *
+ * The per-piece entries ride the delegation with no second list: the
+ * `subjects` here are the manifest's subject set, already bounded at train
+ * assembly by the `S_train` subject bound, so `would-cite-for` entries are
+ * bound within that same bound — the gate adds no piece list of its own.
+ * The graph summary is presented beside the entries for judgment; it adds
+ * no requirement the gate reads.
  *
  * `kinds` unknown to `checklistFor` fail closed before any gate runs: a
  * kind with no checklist cannot have been reviewed.
@@ -2175,8 +2477,8 @@ export function trainReviewGate(ctx, { trainId, kinds = [], subjects = [], chang
  * reviewer), so stubs keep the single-object shape and production gets
  * the sealed reviewer.
  */
-export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null, reviewerId } = {}) {
-  return ({ diffText, manifest, repo }) => reviewTrain(ctx, { diffText, manifest, repo, capMinutes, invoke, reviewerId });
+export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null, reviewerId, trainGraphAnalysis = null } = {}) {
+  return ({ diffText, manifest, repo }) => reviewTrain(ctx, { diffText, manifest, repo, capMinutes, invoke, reviewerId, trainGraphAnalysis });
 }
 
 /**
@@ -2201,7 +2503,7 @@ export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null, reviewerI
  * post-gate non-approve arm below is a defensive backstop, the road only
  * a mutated record can take.
  */
-export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null, reviewerId } = {}) {
+export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 10, invoke = null, reviewerId, trainGraphAnalysis = null } = {}) {
   const unwired = { runner: 'unwired-reviewer', provider: 'unwired-provider', tier: 'unwired-tier' };
   const trainId = manifest && manifest.train;
   if (!trainId) {
@@ -2232,6 +2534,7 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
   try {
     rev = await runTrainReview(ctx, {
       trainId, ref, diffText, manifest, kinds: k.kinds, runner: rung, capMinutes, invoke,
+      trainGraphAnalysis, graphBase: (manifest && manifest.mainTip) || null,
     });
   } catch (e) {
     return { verdict: 'reject', reason: `the sealed train review threw (${e.message ?? String(e)}) — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: [] };
@@ -2246,8 +2549,9 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
     // (`mergeGate` returns ok:false with `code === verdict` for a
     // well-formed revise/reject), so the refusal arm is where revise/reject
     // passes through; but an approve-with-defective-fields refusal
-    // (would-cite-empty/duplicate, reads-human-*, carried-deletion-
-    // unearned, corrections-malformed, cites-unresolved, ...) still carries
+    // (would-cite-empty/duplicate, would-cite-for-empty/duplicate,
+    // reads-human-*, carried-deletion-unearned, corrections-malformed,
+    // cites-unresolved, ...) still carries
     // verdict 'approve' on the refused record, and passing that through
     // finished the train done on an empty would-cite. Only the legitimate
     // non-approval shape passes through; every other refusal fails closed

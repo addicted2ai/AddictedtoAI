@@ -269,6 +269,10 @@ test('3.1 the re-issue refusals are named together, so callers need not list the
   assert.deepEqual([...REISSUE_CODES], [
     'would-cite-empty',
     'would-cite-duplicate',
+    // Task 60: an unanswered piece and a recycled per-piece statement are the
+    // same clerical class — the reviewer re-issues, the author never revises.
+    'would-cite-for-empty',
+    'would-cite-for-duplicate',
     'reads-human-empty',
     'reads-human-duplicate',
     'corrections-malformed',

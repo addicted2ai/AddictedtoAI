@@ -16,6 +16,8 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { CONTENT_TYPES } from '../../lib/paths.mjs';
+
 /**
  * The constitution: one capability's whole spec, `openspec/specs/<cap>/spec.md`.
  *
@@ -134,6 +136,80 @@ export const PROSE_TYPES = Object.freeze([
   'interpret',
   'prune',
 ]);
+
+/**
+ * The schema's prose SUBJECT kinds (specs/review, two-desks task 60).
+ *
+ * A "prose piece" is a property of a MERGED SUBJECT PATH, not of a job type:
+ * a wiki entry, a learn page, a tutorial, a blog post or a delta — each a
+ * content kind whose body is prose. A directory row (`tool`) or a
+ * data-shaped page (`claim`) is not one, and neither is a path no content
+ * type claims at all.
+ *
+ * WHY THIS IS NOT `PROSE_TYPES` FILTERED (stated with reason, as task 60
+ * demands): `PROSE_TYPES` classifies JOB TYPES, and the two classifications
+ * answer different questions in both directions. A `repair` merging three
+ * wiki entries IS a verdict on three prose pieces while `repair` is not in
+ * `PROSE_TYPES`; a `prune` touching only directory rows is NOT a verdict on
+ * any prose piece while `prune` IS in it. Filtering job-type names cannot
+ * tell `content/wiki/model/x.md` from `content/directory/tools/x.md`, which
+ * is exactly the directory-row distinction the merge refuses on (task 61's
+ * mutation B: a predicate of "any `content/**.md`" fails the directory-row
+ * case). So the predicate reads the path, through the schema's own
+ * `CONTENT_TYPES` directory table (`lib/paths.mjs`) — the dir-to-type
+ * mapping is derived, never retyped — while the PROSE SET below is stated
+ * once, here, mirroring the build's prose piece lists
+ * (`requiredRecordPieces` in `scripts/verify-launch.mjs`, the prose head of
+ * `reviewablePieces` in `lib/reviews.mjs`: entry/learn/tutorial/post/delta,
+ * never tool or claim). Both the merge gate and the launch check read THIS
+ * predicate; neither keeps a second list.
+ */
+export const PROSE_SUBJECT_TYPES = Object.freeze(['entry', 'learn', 'tutorial', 'post', 'delta']);
+
+/**
+ * The content type of a merged subject path, via the schema's own
+ * `CONTENT_TYPES` directory table — or null where no content type claims
+ * the path (a code file, or a content path outside every known directory).
+ *
+ * @param {string} subject a repo-relative path (backslashes tolerated)
+ * @returns {string|null} a `CONTENT_TYPES` key, or null
+ */
+export function subjectContentType(subject) {
+  const n = String(subject ?? '').replace(/\\/g, '/').replace(/^\.?\//, '');
+  for (const [type, spec] of Object.entries(CONTENT_TYPES)) {
+    const dir = String(spec?.dir ?? '').replace(/\\/g, '/').replace(/^\.?\//, '').replace(/\/$/, '');
+    if (dir && (n === `content/${dir}` || n.startsWith(`content/${dir}/`))) return type;
+  }
+  return null;
+}
+
+/**
+ * Whether a merged subject is a prose piece (specs/review).
+ *
+ * ONE exported place, read by the merge gate (`loop/lib/review.mjs`), the
+ * train review gate (by delegation through the merge gate) and
+ * `scripts/verify-launch.mjs`. A second predicate anywhere is the refusal
+ * nobody can reproduce: two implementers enumerating "prose" two ways.
+ *
+ * @param {string} subject a repo-relative path (backslashes tolerated)
+ * @returns {boolean}
+ */
+export function isProsePiece(subject) {
+  const type = subjectContentType(subject);
+  return type !== null && PROSE_SUBJECT_TYPES.includes(type);
+}
+
+/**
+ * The prose pieces among a set of merged subjects, de-duplicated and
+ * sorted — the set a `would-cite-for` record must answer entry by entry.
+ *
+ * @param {Array<string>} subjects repo-relative paths
+ * @returns {string[]} normalized prose-piece paths
+ */
+export function prosePieces(subjects) {
+  const norm = (p) => String(p ?? '').replace(/\\/g, '/').trim();
+  return [...new Set((Array.isArray(subjects) ? subjects : []).map(norm).filter(isProsePiece))].sort();
+}
 
 /** Split a spec file into its `### Requirement:` sections, with the preamble. */
 export function requirementSections(text) {

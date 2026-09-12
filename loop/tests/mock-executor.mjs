@@ -76,9 +76,40 @@ function writeVerdict({ verdict, reasons = [], wouldCite = '', readsHuman = null
       ? `The prose in ${p.replace(/\\/g, '/').split('/').pop()} varies its rhythm and is willing to be blunt; nothing here reads assembled.`
       : readsHuman;
   const voiceLine = asked ? `reads-human: ${JSON.stringify(value)}\n` : '';
+  // TWO prose pieces or more in the brief's diff, and this approval carries a
+  // non-empty record-wide cite: the merge gate (specs/review, two-desks task
+  // 60) refuses a record-wide sentence standing for several pieces, so the
+  // mock answers per piece — which is what a real reviewer of a multi-piece
+  // diff does too. Pieces are the brief diff's `+++ b/<path>` lines under a
+  // prose-piece directory (the canonical predicate is `isProsePiece` in
+  // `loop/lib/specs.mjs`; this mock restates its directory set the way the
+  // voice rule above restates `content/blog/`, because the mock imports
+  // nothing but node). One entry per piece, each statement embedding the
+  // record's own filename so two records can never collide on the merge
+  // gate's duplicate check — the same property the voice value above has,
+  // for the same reason. A single-piece diff stays entry-free (legacy
+  // records are byte-identical), and a blank record-wide cite stays
+  // entry-free too: `review-approve-blank-cite` means its refusal, and
+  // entries would rescue it into a pass.
+  const pieceLine = (() => {
+    if (!wouldCite) return '';
+    const seen = new Set();
+    for (const m of brief.matchAll(/^\+\+\+ b\/(\S+)\s*$/gm)) {
+      const sub = String(m[1]).replace(/\\/g, '/').trim();
+      if (/^content\/(wiki|learn|tutorials|blog|deltas)\//.test(sub)) seen.add(sub);
+    }
+    if (seen.size < 2) return '';
+    const base = p ? p.replace(/\\/g, '/').split('/').pop() : 'mock';
+    const rows = [...seen].sort().map(
+      (sub) =>
+        `  - subject: ${JSON.stringify(sub)}\n` +
+        `    statement: ${JSON.stringify(`A reader following ${sub} would link it; judged for ${base}.`)}`,
+    );
+    return `would-cite-for:\n${rows.join('\n')}\n`;
+  })();
   writeFileSync(
     p,
-    `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\nwould-cite: ${JSON.stringify(wouldCite)}\n${voiceLine}${carry}---\n\n${notes}\n`,
+    `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\nwould-cite: ${JSON.stringify(wouldCite)}\n${pieceLine}${voiceLine}${carry}---\n\n${notes}\n`,
     'utf8',
   );
   return true;

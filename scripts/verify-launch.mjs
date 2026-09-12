@@ -38,10 +38,13 @@
  * record, requires the verdict to be `approve`, requires `would-cite` to be
  * non-empty, re-applies the loop's duplicate-`would-cite` rule, and — on the
  * job types the merge gate scopes the voice question to — requires the same of
- * `reads-human`. So this check and `loop/lib/review.mjs`'s merge gate agree on
- * what a valid record is. A record nothing claims is reported as an orphan,
- * because an orphan beside a missing piece is a naming mismatch, not an
- * absence.
+ * `reads-human`. Where a record carries `would-cite-for` entries, the rule is
+ * re-applied PER PIECE through the same exported entry shape the gate reads:
+ * the piece is answered by the entry naming it, and a would-cite-for-only
+ * record fails every piece it does not answer. So this check and
+ * `loop/lib/review.mjs`'s merge gate agree on what a valid record is. A record
+ * nothing claims is reported as an orphan, because an orphan beside a missing
+ * piece is a naming mismatch, not an absence.
  *
  * That sentence was FALSE by one rule between the `reads-human` gate landing
  * and this being written, and the way it was false is the thing to keep in
@@ -775,15 +778,58 @@ function checkReviews(corpus, dataDir) {
       );
       continue;
     }
-    if (!v.wouldCite) {
+    // The per-piece entries, read through the ONE parser (`parseVerdict` in
+    // `loop/lib/verdict.mjs`, shared with the merge gate) — never a second
+    // list here. Malformed entries never reach this point: the parser drops
+    // them, leaving their piece unanswered.
+    const pieceEntries = Array.isArray(v.wouldCiteFor) ? v.wouldCiteFor : [];
+    if (!v.wouldCite && !pieceEntries.length) {
       problems.push(
         `${doc.file}: ${rec.name} approves with an EMPTY \`would-cite\`. specs/review: an ` +
           '`approve` with the field blank is not a valid verdict and the merge refuses it.',
       );
       continue;
     }
-    const norm = normalizeWouldCite(v.wouldCite);
-    const dup = seenCite.get(norm);
+    if (pieceEntries.length) {
+      // The per-piece re-application (specs/review, two-desks task 60): the
+      // piece is answered by the entry NAMING it — same exported entry shape
+      // the merge gate reads (`parseWouldCiteFor` in `loop/lib/verdict.mjs`),
+      // same normaliser (`normalizeWouldCite`), same duplicate universe
+      // (`seenCite`, keyed by record so two entries in ONE record may match).
+      // A would-cite-for-only record fails every piece it does not answer.
+      // A record-wide field beside entries is legacy present-but-answered:
+      // it still occupies the universe (a later record recycling it is
+      // refused) but answers no piece by itself.
+      const entry = pieceEntries.find((e) => e.subject === doc.file);
+      if (!entry) {
+        problems.push(
+          `${doc.file}: ${rec.name} carries \`would-cite-for\` entries but none names this piece. ` +
+            'specs/review: each prose piece among the merged subjects requires its own entry — a ' +
+            'would-cite-for-only record fails every piece it does not answer, and the merge refuses ' +
+            'such a record (`would-cite-for-empty`).',
+        );
+        continue;
+      }
+      const norm = normalizeWouldCite(entry.statement);
+      const dup = seenCite.get(norm);
+      // A record that covers several pieces is ONE review with SEVERAL
+      // answers, not several recycled ones — same self-exclusion the
+      // record-wide rule below carries (see the j-20260902-05 note there).
+      if (dup && dup !== rec.name) {
+        problems.push(
+          `${doc.file}: ${rec.name}'s \`would-cite-for\` entry for this piece is identical (after trimming) to ${dup}'s. ` +
+            'specs/review refuses a recycled sentence at merge; it does not become valid at launch.',
+        );
+        continue;
+      }
+      // Recorded here, before the voice checks below, on the same argument
+      // the record-wide note below states: a sentence a record carries is
+      // taken by that record whether or not it clears the rest of the gate.
+      seenCite.set(norm, rec.name);
+    }
+    if (v.wouldCite) {
+      const norm = normalizeWouldCite(v.wouldCite);
+      const dup = seenCite.get(norm);
     // A record that covers several pieces is ONE review with ONE `would-cite`,
     // not several recycled ones. The rule specs/review states is that a
     // REVIEWER must not reuse a sentence across reviews; comparing a record
@@ -804,6 +850,7 @@ function checkReviews(corpus, dataDir) {
     // it the same way. Registering it only on a fully clean piece would let a
     // later piece recycle a sentence the gate would have refused.
     seenCite.set(norm, rec.name);
+    }
 
     // The voice question — `post` only, on the gate's own scope. specs/review
     // holds a post's verdict to a non-empty, non-duplicate `reads-human` on the
