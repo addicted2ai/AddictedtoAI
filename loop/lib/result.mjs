@@ -108,7 +108,7 @@ export function parseReviewedLine(firstLine) {
  *            firstLine: string|null, text: string|null, why: string,
  *            paths?: string[]}}
  *   `paths` is present only on a `reviewed` status: the executor-declared
-+ *   page paths, normalised and de-duplicated, in the order named.
+ *   page paths, normalised and de-duplicated, in the order named.
  */
 export function readResult(worktree) {
   const path = join(worktree, RESULT_FILENAME);
