@@ -4,7 +4,7 @@
  * One JSON object per line:
  *   { ts, id, type, runner, provider, tier, mm, outcome,
  *     note?, signal?, phases?, issues?, brief_chars?, gate_seconds?, authority_sha?,
- *     lineage? }
+ *     lineage?, items?, partially_done? }
  *
  * The first eight are LEDGER_FIELDS and are required. The rest are additive and
  * optional: a reader that does not know them is unaffected, and a line written
@@ -29,6 +29,31 @@ export const LEDGER_FIELDS = Object.freeze([
   'tier',
   'mm',
   'outcome',
+]);
+
+/**
+ * The exact key allowlist for one `items` entry (task 67, spec/loop "The
+ * ledger line carries the join, as a list, additively"). The join fields are
+ * the item's own record — `index` (its position in the order, the join key
+ * per-item retirement and per-item consumption use), `bead` (the item's
+ * issue), `type`, `subjects` — plus the retirement status the merge measured
+ * (`via` for a retired item, `open` for one it did not) and the per-item
+ * additive summary keys the merge produced (`graph_symbols`,
+ * `graph_processes`, `graph_risk`, `graph_incomplete`). Nothing else may ride
+ * an entry: a writer that grows this list extends it here, deliberately, not
+ * by slipping a key past the reader.
+ */
+export const LEDGER_ITEM_KEYS = Object.freeze([
+  'index',
+  'bead',
+  'type',
+  'subjects',
+  'via',
+  'open',
+  'graph_symbols',
+  'graph_processes',
+  'graph_risk',
+  'graph_incomplete',
 ]);
 
 export function readLedger(ctx) {
@@ -110,6 +135,7 @@ export function makeLedgerLine({
   gate_seconds,
   authority_sha,
   lineage,
+  items,
 }) {
   const line = {
     ts: ts ?? new Date().toISOString(),
@@ -150,6 +176,55 @@ export function makeLedgerLine({
   // lineage is `loop/lib/lineage.mjs`'s work, and a ledger that refused to
   // record what it was given would be a second judge of the same claim.
   if (lineage !== undefined) line.lineage = lineage;
+  // `items` is optional and additive on the same terms as `issues` (task 67,
+  // spec/loop "The ledger line carries the join, as a list, additively"): the
+  // work order the job executed, one entry per item. The join fields — index,
+  // bead (the item's issue), type, subjects — name what the job carried; `via`
+  // and `open` carry the retirement status the merge measured, present only
+  // where the merge computed per-item retirement at all; the four per-item
+  // summary keys (`graph_symbols`, `graph_processes`, `graph_risk`,
+  // `graph_incomplete`) ride only where the merge had graph evidence for the
+  // item, each omitted when empty. The partially-done marker is the line-level
+  // `partially_done: true`, derived here from the list itself — present in the
+  // line iff the order retired fewer items than it carried — so the marker and
+  // the list cannot disagree about the same order. Omitted entirely when there
+  // is nothing to record, so every line written before this existed stays
+  // exactly as valid as it was, and LEDGER_FIELDS is deliberately not
+  // extended. The allowlist above is enforced, not advisory: an entry carrying
+  // a key outside it fails the write loudly rather than landing a line a later
+  // reader cannot parse.
+  if (Array.isArray(items) && items.length) {
+    for (const entry of items) {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new Error('ledger items entries must be objects');
+      }
+      for (const k of Object.keys(entry)) {
+        if (!LEDGER_ITEM_KEYS.includes(k)) {
+          throw new Error(
+            `ledger items entry carries key "${k}" outside the exact allowlist (${LEDGER_ITEM_KEYS.join(', ')})`,
+          );
+        }
+      }
+    }
+    // The four per-item summary keys are omitted when empty — enforced here,
+    // at the one place every writer passes through, so no caller can land a
+    // zero, an empty list or a blank risk and have it read as a measurement.
+    // The join fields pass through as the merge supplied them.
+    line.items = items.map((entry) => {
+      const out = {};
+      for (const k of LEDGER_ITEM_KEYS) {
+        if (!Object.hasOwn(entry, k)) continue;
+        const v = entry[k];
+        if (v === undefined) continue;
+        if ((k === 'graph_symbols' || k === 'graph_processes') && !(Number.isFinite(v) && v > 0)) continue;
+        if (k === 'graph_risk' && !(typeof v === 'string' && v)) continue;
+        if (k === 'graph_incomplete' && !(Array.isArray(v) && v.length)) continue;
+        out[k] = v;
+      }
+      return out;
+    });
+    if (line.items.some((e) => e.open === true)) line.partially_done = true;
+  }
   return line;
 }
 

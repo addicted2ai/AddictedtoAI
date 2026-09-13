@@ -1312,6 +1312,141 @@ export function retireWorkOrderItems(source, { diffPaths = [], reviewedPaths = n
 }
 
 /**
+ * Per-item graph summaries for the ledger's `items` join (task 67), derived
+ * from evidence the merge path already holds — the committed `.job/graph.json`
+ * sidecar (task 59's writer; task 56's per-item evidence seam), read at merge
+ * time and handed here as it stands. Nothing is re-queried: the sidecar is the
+ * one artifact that records graph evidence PER SUBJECT, so it is the one
+ * source that can attribute symbols, processes, risk and incompleteness to an
+ * item without inventing an attribution the merge never computed.
+ *
+ * The merge-time analysis (`resolved`) is deliberately NOT a source here: its
+ * `processes` list is global with no per-subject attribution, and mixing a
+ * merge-time figure under a key the sidecar also fills would put two
+ * provenances beside each other where a reader cannot tell them apart. The
+ * sidecar was written at brief assembly against the merge-base tree and is
+ * committed on the branch; what it says is what the job carried.
+ *
+ * @param {object} source  the committed work-order declaration
+ * @param {{sidecar?: object|null}} o  the parsed `.job/graph.json` (or null)
+ * @returns {Map<number, object>} keyed by item index; each value carries only
+ *   the non-empty summary keys:
+ *   - `graph_symbols`: total symbol count across the item's subjects'
+ *     sidecar entries (0 omitted),
+ *   - `graph_processes`: total transitive process count (0 omitted),
+ *   - `graph_risk`: the worst risk the entries report — UNKNOWN > HIGH >
+ *     MEDIUM > LOW, anything unrecognised ranked with UNKNOWN (conservative;
+ *     a sidecar entry without a risk field reads as UNKNOWN),
+ *   - `graph_incomplete`: the incompleteness flags the entries carry —
+ *     `partial`, `truncated`, `UNKNOWN` (risk), `absent` (the query could not
+ *     answer) — the same flag names the gate itself uses. Empty omitted.
+ *   A subject with no sidecar entry contributes nothing; a `no-symbols`
+ *   entry (outside any symbol universe) is complete evidence and contributes
+ *   its recorded risk, never a flag.
+ */
+export function itemGraphSummaries(source, { sidecar = null } = {}) {
+  const out = new Map();
+  if (isOldContractSource(source)) return out;
+  const items = Array.isArray(source.items) ? source.items : [];
+  if (!items.length) return out;
+  const subjectsMap =
+    sidecar && typeof sidecar.subjects === 'object' && sidecar.subjects !== null
+      ? sidecar.subjects
+      : null;
+  if (!subjectsMap) return out;
+  const RISK_RANK = { UNKNOWN: 3, HIGH: 2, MEDIUM: 1, LOW: 0 };
+  items.forEach((item, index) => {
+    let symbols = 0;
+    let processes = 0;
+    let worstRank = -1;
+    let worstRisk = null;
+    const flags = new Set();
+    for (const subject of itemSubjectsOf(item)) {
+      const entry = subjectsMap[subject];
+      if (!entry || typeof entry !== 'object') continue;
+      if (entry.absent === true) {
+        flags.add('absent');
+        continue;
+      }
+      if (Array.isArray(entry.symbols)) symbols += entry.symbols.length;
+      const proc = Number(entry.processes);
+      if (Number.isFinite(proc) && proc > 0) processes += proc;
+      const risk = typeof entry.risk === 'string' && entry.risk ? entry.risk : 'UNKNOWN';
+      const rank = RISK_RANK[risk] ?? RISK_RANK.UNKNOWN;
+      if (rank > worstRank) {
+        worstRank = rank;
+        worstRisk = risk;
+      }
+      if (entry.partial === true) flags.add('partial');
+      if (entry.truncated === true) flags.add('truncated');
+      if (risk === 'UNKNOWN') flags.add('UNKNOWN');
+    }
+    if (worstRank < 0 && flags.size === 0 && symbols === 0 && processes === 0) return;
+    const summary = {};
+    if (symbols > 0) summary.graph_symbols = symbols;
+    if (processes > 0) summary.graph_processes = processes;
+    if (worstRisk !== null) summary.graph_risk = worstRisk;
+    if (flags.size) summary.graph_incomplete = [...flags].sort();
+    if (Object.keys(summary).length) out.set(index, summary);
+  });
+  return out;
+}
+
+/**
+ * The ledger `items` join (task 67, spec/loop "The ledger line carries the
+ * join, as a list, additively"): one entry per work-order item, naming that
+ * item's issue (`bead`), its `type` and its `subjects`, with the join fields
+ * the retirement measured riding only where the merge computed per-item
+ * retirement at all — `via` on a retired item, `open` on one it did not — and
+ * the per-item graph summaries (task 56's seam, `itemGraphSummaries` above)
+ * riding only where the merge had them. `partially_done` is NOT built here:
+ * `makeLedgerLine` derives the marker from the list itself, so the marker and
+ * the list cannot disagree.
+ *
+ * Old-contract sources and orders with no items yield null — the key is
+ * omitted entirely on the line, and every line written before the key existed
+ * keeps its exact shape.
+ *
+ * @param {object|null} source  the work order the job executed under — the
+ *   committed declaration (recovered from the branch on a resumed run, never
+ *   re-derived)
+ * @param {{retirement?: object|null, itemGraph?: Map|null}} [o]
+ * @returns {Array<object>|null}
+ */
+export function ledgerItemsForOrder(source, { retirement = null, itemGraph = null } = {}) {
+  if (isOldContractSource(source)) return null;
+  const items = Array.isArray(source.items) ? source.items : [];
+  if (!items.length) return null;
+  const retiredByIndex = new Map();
+  for (const r of Array.isArray(retirement?.retired) ? retirement.retired : []) {
+    if (Number.isInteger(r?.index)) retiredByIndex.set(r.index, r);
+  }
+  const openIndexes = new Set(
+    (Array.isArray(retirement?.open) ? retirement.open : [])
+      .map((o) => o?.index)
+      .filter(Number.isInteger),
+  );
+  return items.map((item, index) => {
+    const entry = {
+      index,
+      bead: typeof item?.bead === 'string' && item.bead ? item.bead : null,
+      type: typeof item?.type === 'string' && item.type ? item.type : null,
+      subjects: itemSubjectsOf(item),
+    };
+    if (retiredByIndex.has(index)) entry.via = retiredByIndex.get(index).via;
+    else if (openIndexes.has(index)) entry.open = true;
+    const g = itemGraph instanceof Map ? itemGraph.get(index) : null;
+    if (g) {
+      if (g.graph_symbols !== undefined) entry.graph_symbols = g.graph_symbols;
+      if (g.graph_processes !== undefined) entry.graph_processes = g.graph_processes;
+      if (g.graph_risk !== undefined) entry.graph_risk = g.graph_risk;
+      if (g.graph_incomplete !== undefined) entry.graph_incomplete = g.graph_incomplete;
+    }
+    return entry;
+  });
+}
+
+/**
  * Read the committed merge-time graph sidecar (`.job/graph.json`, written at
  * brief assembly beside the brief — task 59's writer; consumed here and at
  * discard, never landing as a live path). Shape: `{subjects: {<declared
@@ -3377,7 +3512,11 @@ export async function runLoop(ctx, opts = {}) {
       'plus, when they apply: "note", "signal" (no-output), "phases" — one ' +
         '{role, runner, mm, killed, code, outcome} per invocation (author / review1 / ' +
         'revision / review2), the author\'s carrying "gates" {retried, passed, transport} ' +
-        'when a gate failure was retried — and "issues", the beads ids this job serves. "mm" above ' +
+        'when a gate failure was retried — "issues", the beads ids this job serves — and ' +
+        '"items", the work order the job executed (one entry per item: index, bead, type, ' +
+        'subjects, the merge\'s per-item retirement status, and the per-item graph summary ' +
+        'keys when the merge had them), with "partially_done" beside it when the order ' +
+        'retired fewer items than it carried. "mm" above ' +
         'stays the JOB TOTAL; "phases" is what says where a per-invocation cap belongs. ' +
         '"issues" is omitted when the job serves none, which is the common case: routine ' +
         'upkeep has nothing behind it and an id per job would manufacture backlog noise.',
@@ -3586,6 +3725,19 @@ export async function runLoop(ctx, opts = {}) {
         // (`addictedtoai-occ0`). Omitted when the job serves no issue, which is
         // the common and healthy case.
         issues: jobIssues,
+        // Task 67: the work order the job executed, as a list — one entry per
+        // item naming its issue (`bead`), its type and its subjects, with the
+        // retirement status and per-item graph summaries riding only where the
+        // merge computed them. The committed declaration is the source —
+        // recovered from the branch on a resumed run, never re-derived — and
+        // the key is omitted entirely on old-contract branches and
+        // housekeeping lines. `partially_done` is derived inside
+        // `makeLedgerLine` from this list, so the marker and the list cannot
+        // disagree about the same order.
+        items: ledgerItemsForOrder(runWorkOrder, {
+          retirement: mergeRetirement,
+          itemGraph: mergeItemGraph,
+        }),
         brief_chars: briefText.length,
         gate_seconds: result.gate_seconds,
         authority_sha: mergeBaseSha,
@@ -3655,6 +3807,10 @@ export async function runLoop(ctx, opts = {}) {
   };
   let mergeSubjects = null;
   let mergeRetirement = null;
+  // Task 67: the per-item graph summaries for the ledger `items` join, derived
+  // from the committed sidecar the merge already read — set wherever the
+  // per-item retirement is, null everywhere else (the key is then omitted).
+  let mergeItemGraph = null;
   // FIX-1 (task 64): the BINDING store re-measure, invoked by `mergeJobBranch`
   // INSIDE the locked merge window, immediately before the merge executes,
   // with the target ref resolved under the lock — the outer check below is
@@ -3665,6 +3821,10 @@ export async function runLoop(ctx, opts = {}) {
     const readSource = opts.declarationReader ?? readCommittedJobSource;
     const readSidecar = opts.graphSidecarReader ?? readCommittedGraphSidecar;
     const committedSource = readSource(ctx.repoRoot, branch);
+    // Read ONCE: the same sidecar the gate checks below is the per-item
+    // evidence the ledger `items` join records (task 67) — one read, two
+    // consumers, no re-query.
+    const committedSidecar = readSidecar(ctx.repoRoot, branch);
     const mergeDiff = changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch);
     const contentPaths = joinableSubjects(mergeDiff);
     // Scaffolding is committed on the branch at gate time (removed below, on
@@ -3700,7 +3860,7 @@ export async function runLoop(ctx, opts = {}) {
         reviewedPaths: null,
         resultText,
         analysis,
-        sidecar: readSidecar(ctx.repoRoot, branch),
+        sidecar: committedSidecar,
         carried: carriedMap,
         advisoryScope: scopeAdvisory,
       });
@@ -3745,7 +3905,7 @@ export async function runLoop(ctx, opts = {}) {
         diffPaths: workDiffPaths,
         resultText: reviewedResultText,
         analysis: reviewedAnalysis,
-        sidecar: readSidecar(ctx.repoRoot, branch),
+        sidecar: committedSidecar,
       });
       for (const w of checked.warnings ?? []) ctx.log(w);
       if (!checked.ok) {
@@ -3831,6 +3991,7 @@ export async function runLoop(ctx, opts = {}) {
           ctx.log(`merge subjects constituted from declaration ∩ reviewed (${checked.subjects.length}): ${checked.subjects.join(', ') || '(none)'}`);
           mergeSubjects = [...checked.subjects];
           mergeRetirement = checked.retirement;
+          mergeItemGraph = itemGraphSummaries(committedSource, { sidecar: committedSidecar });
           if (mergeRetirement?.note) {
             ctx.log(mergeRetirement.note);
             result.note = result.note ? `${result.note} — ${mergeRetirement.note}` : mergeRetirement.note;
@@ -3902,6 +4063,7 @@ export async function runLoop(ctx, opts = {}) {
         } else {
           if (!advisory) mergeSubjects = [...union];
           mergeRetirement = g.retirement;
+          mergeItemGraph = itemGraphSummaries(committedSource, { sidecar: committedSidecar });
           if (mergeRetirement?.note) {
             ctx.log(mergeRetirement.note);
             result.note = result.note ? `${result.note} — ${mergeRetirement.note}` : mergeRetirement.note;
