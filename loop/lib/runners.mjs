@@ -92,6 +92,12 @@ export function loadRunners(ctx) {
     if (r.escalates_to !== undefined && (typeof r.escalates_to !== 'string' || !r.escalates_to.trim())) {
       throw new Error(`${where}: "escalates_to" must be a non-empty string when present`);
     }
+    // OPTIONAL timeout guard: the operator-recorded exception that lets a
+    // timeout-prone reviewer take reviewed-outcome reviews anyway. Absent
+    // means none — same shape discipline as `effort` / `escalates_to`.
+    if (r.timeout_guard !== undefined && (typeof r.timeout_guard !== 'string' || !r.timeout_guard.trim())) {
+      throw new Error(`${where}: "timeout_guard" must be a non-empty string when present`);
+    }
     for (const key of ['capacity_stderr_pattern', 'startup_failure_stderr_pattern']) {
       if (!r[key]) continue;
       try {

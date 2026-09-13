@@ -29,7 +29,7 @@
  *     model-run verdict is the gate, and this field is what makes it look.
  */
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync, unlinkSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import matter from 'gray-matter';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
@@ -802,7 +802,6 @@ export function assembleReviewBrief(
   // `reviewedOnly` is absent the brief below is byte-identical to before.
   const reviewedPage = reviewedPageEarly;
   let reviewedTail = null;
-  let reviewedHashLine = null;
   if (reviewedPage) {
     const hasSurface = typeof reviewedSurfaceText === 'string' && reviewedSurfaceText;
     const surface = hasSurface
@@ -822,7 +821,6 @@ export function assembleReviewBrief(
     } else {
       hashLine = 'Reviewed hash: (no surface was supplied, so no hash is bound by this brief)';
     }
-    reviewedHashLine = hashLine;
     const seam = typeof reviewGraphQuery === 'function'
       ? reviewGraphQuery
       : () => ({ absent: true, reason: 'no graph index wired on the review path' });
@@ -1764,6 +1762,16 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
 export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index', reviewer = null, outPathOverride = null, reviewSuffix = null }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = typeof outPathOverride === 'string' && outPathOverride ? outPathOverride : verdictPath(ctx, jobId, pass);
+  // F8x: clear a stale record at the target before dispatch (best-effort
+  // unlink) so `recordWritten` means THIS invocation wrote — on every path
+  // (normal, single-page, per-page). Folded from F8's per-page caller-side
+  // clear; callers must not clear the same path twice.
+  try {
+    unlinkSync(outPath);
+    ctx.log(`review: cleared stale record at ${outPath} before dispatch`);
+  } catch {
+    /* best-effort: absent is the expected case */
+  }
   const suffix = typeof reviewSuffix === 'string' && reviewSuffix ? reviewSuffix : '';
   const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}${suffix}`);
   rmSync(reviewDir, { recursive: true, force: true });

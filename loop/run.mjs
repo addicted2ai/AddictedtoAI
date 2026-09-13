@@ -1838,13 +1838,13 @@ async function executeJob(ctx, opts) {
     }
     // The runner eligibility for reviewed outcomes (task 63): a timeout-prone
     // reviewer (last 3 reviewer invocations all killed, read from the ledger)
-    // is excluded unless an explicit guard is recorded. No guard is recorded
-    // anywhere in production today, so this is called with guard null — the
-    // guard path exists and is unit-proved, but fires on nothing until such a
-    // record exists. An exclusion settles `interrupted` (resumable, never a
-    // breaker input), never a verdict failure.
+    // is excluded unless an explicit timeout/interrupted-rate guard is
+    // recorded in the operator-owned runner registry (`runners.yml`
+    // `timeout_guard` on the reviewer entry; absent means none). An exclusion
+    // settles `interrupted` (resumable, never a breaker input), never a
+    // verdict failure.
     if (isReviewedOutcome) {
-      const eligibility = checkReviewedRunnerEligibility(reviewer, { ledger: Array.isArray(ledger) ? ledger : null, guard: null });
+      const eligibility = checkReviewedRunnerEligibility(reviewer, { ledger: Array.isArray(ledger) ? ledger : null, guard: reviewer?.timeout_guard ?? null });
       if (!eligibility.ok) {
         ctx.log(`reviewed: ${eligibility.reason} — booking interrupted, nothing merges`);
         return finish({ outcome: 'interrupted', mm, changed, note: eligibility.reason });
@@ -1889,14 +1889,9 @@ async function executeJob(ctx, opts) {
         ctx.log(`review pass ${pass} page ${pi + 1}/${declaredPages.length} (${page}): invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${pageAllowance.capMinutes}-minute cap${capNote(pageAllowance)}`);
         const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass);
         perPageOutPaths.push(outPath);
-        // F8: clear a stale per-page record before dispatch (best-effort
-        // unlink, new path only) so a record left by a killed prior run
-        // cannot make a no-write retry classify as `recorded`.
-        try {
-          unlinkSync(outPath);
-        } catch {
-          /* best-effort: absent is the expected case */
-        }
+        // F8 (folded into F8x): the stale-record clear lives in shared
+        // `runReview` (every path); no caller-side unlink here, never twice
+        // on one path.
         let surface = null;
         try {
           surface = readFileSync(join(worktree, page), 'utf8');
@@ -2034,6 +2029,15 @@ async function executeJob(ctx, opts) {
             reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly), 'utf8');
           } catch {
             reviewedSurfaceText = null;
+          }
+          // F4x: fail the single-page invocation closed before dispatch when
+          // its machine-generated surface cannot be read — task 63 requires
+          // each invocation to carry the page's surface AND its hash, so a
+          // page without its bytes is never sent to the reviewer.
+          if (reviewedSurfaceText == null) {
+            const reason = `reviewed: cannot review page ${reviewedOnly}: its machine-generated surface could not be read — failing closed, no review without its bytes`;
+            ctx.log(reason);
+            return finish({ outcome: 'failed', mm, changed, note: reason });
           }
         }
       }

@@ -56,7 +56,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -98,6 +98,7 @@ import {
 import { GRAPH_ANNEX_HEADING } from '../lib/brief.mjs';
 import { transcribeCarriedFindings } from '../lib/carry.mjs';
 import { reviewedHash } from '../../lib/review-hash.mjs';
+import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { git, makeRepo } from './helpers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -1102,13 +1103,131 @@ test('task 63 fix F7: single-page reviewed keeps the single record shape (struct
   assert.doesNotMatch(window, /reviewedPerPageRecordPath/, 'a record rename for single-page goes red here');
 });
 
-test('task 63 fix F8: per-page invocation clears its stale record before dispatch (structural)', () => {
+test('task 63 fix F8: per-page invocation clears its stale record before dispatch (structural; folded into F8x)', () => {
+  // F8x subsumes F8: the stale-record clear lives in shared `runReview`
+  // (every path); the per-page caller must not clear twice.
+  const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
+  assert.match(reviewSrc, /F8x: clear a stale record/, 'the shared stale-record clear is one named block');
+  assert.match(reviewSrc, /unlinkSync\(outPath\)/, 'best-effort unlink of the target record');
+  const outIdx = reviewSrc.indexOf('const outPath = typeof outPathOverride');
+  const unlinkIdx = reviewSrc.indexOf('unlinkSync(outPath)');
+  const dispatchIdx = reviewSrc.indexOf('const run = await runExecutor');
+  assert.ok(outIdx !== -1 && unlinkIdx !== -1 && dispatchIdx !== -1, 'outPath, clear and dispatch all exist in shared runReview');
+  assert.ok(outIdx < unlinkIdx && unlinkIdx < dispatchIdx, 'the clear runs after the outPath is final and before the spawn');
+  // Folded: no caller-side duplicate on the per-page path.
+  const runSrc = readFileSync(RUN_LIB, 'utf8');
+  assert.match(runSrc, /F8 \(folded into F8x\)/, 'the per-page caller names the fold');
+  const perOut = runSrc.indexOf('const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass)');
+  assert.ok(perOut !== -1, 'the per-page outPath still exists');
+  const perWindow = runSrc.slice(perOut, perOut + 2000);
+  assert.doesNotMatch(perWindow, /unlinkSync\(outPath\)/, 'no caller-side duplicate of the shared clear');
+});
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 63 FIX-2 (F4x, F8x, F9, F10).
+// ---------------------------------------------------------------------------
+
+test('task 63 fix F4x: an unreadable single-page surface fails closed before dispatch (structural)', () => {
   const src = readFileSync(RUN_LIB, 'utf8');
-  assert.match(src, /F8: clear a stale per-page record/, 'the stale-record clear is one named block');
-  assert.match(src, /unlinkSync\(outPath\)/, 'best-effort unlink of the per-page target record');
-  const outIdx = src.indexOf('const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass)');
-  const unlinkIdx = src.indexOf('unlinkSync(outPath)');
-  const dispatchIdx = src.indexOf('const one = await runReview');
-  assert.ok(outIdx !== -1 && unlinkIdx !== -1 && dispatchIdx !== -1, 'outPath, clear and dispatch all exist');
-  assert.ok(outIdx < unlinkIdx && unlinkIdx < dispatchIdx, 'the clear runs after the outPath is computed and before the review is dispatched');
+  // Fail-closed guard in the single-page branch: no surface, no review.
+  assert.match(src, /F4x: fail the single-page invocation closed/, 'the single-page fail-closed is one named block');
+  assert.match(src, /cannot review page \$\{reviewedOnly\}/, 'the failure names the single page');
+  assert.match(src, /if \(reviewedSurfaceText == null\)/, 'the null-surface guard');
+  // Ordered: the guard sits between the single-page surface read and the single dispatch.
+  const elseIdx = src.indexOf('// Single-page and non-reviewed paths, unchanged');
+  assert.ok(elseIdx !== -1, 'the single-page branch is one named block');
+  const window = src.slice(elseIdx, elseIdx + 6000);
+  const readIdx = window.indexOf('reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly)');
+  const guardIdx = window.indexOf('if (reviewedSurfaceText == null)');
+  const dispatchIdx = window.indexOf('rev = await runReview');
+  assert.ok(readIdx !== -1 && guardIdx !== -1 && dispatchIdx !== -1, 'read, guard and dispatch all exist in the single-page branch');
+  assert.ok(readIdx < guardIdx && guardIdx < dispatchIdx, 'the guard runs after the read and before any review is dispatched');
+  assert.match(window, /outcome: 'failed', mm, changed, note: reason/, 'an unreadable single-page surface fails the job closed');
+  // MUTANT COPY: the old fall-through — a null surface riding into the brief's
+  // no-surface fallback while the reviewer may still approve.
+  const mutantDispatchesWithoutSurface = guardIdx === -1;
+  assert.equal(mutantDispatchesWithoutSurface, false, 'production fails closed where the mutant would dispatch without bytes');
+  // Per-page F4 stays as built (F4x expands, never replaces).
+  assert.match(src, /if \(surface == null\)/, 'the per-page fail-closed still stands');
+});
+
+test('task 63 fix F8x: a stale record at the target with a killed run classifies interrupted, not recorded', (t) => {
+  const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
+  // Shared clear is one named block in runReview; the train review functions
+  // are separate, pre-existing, unflagged — untouched.
+  const runReviewIdx = reviewSrc.indexOf('export async function runReview(');
+  assert.ok(runReviewIdx !== -1, 'shared runReview exists');
+  const runReviewWindow = reviewSrc.slice(runReviewIdx, runReviewIdx + 6000);
+  assert.match(runReviewWindow, /unlinkSync\(outPath\)/, 'shared runReview clears its target before dispatch');
+  for (const name of ['export async function runTrainReview(', 'export async function runTrainComparison(', 'export async function reviewTrain(']) {
+    const idx = reviewSrc.indexOf(name);
+    assert.ok(idx !== -1, `${name} still exists`);
+    const window = reviewSrc.slice(idx, idx + 6000);
+    assert.doesNotMatch(window, /unlinkSync\(outPath\)/, `${name} gains no stale-record clear`);
+  }
+  // Behavioral: a stale record left at the target would make a killed,
+  // no-write retry read as `recorded`; cleared, it reads `interrupted`.
+  const ctx = reviewCtx63(t);
+  const jobId = 'j-20260912-63';
+  const target = verdictPath(ctx, jobId, 1);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, '---\njob: j-20260912-63\nverdict: approve\nwould-cite: "stale record from a killed prior run"\n---\n\nstale notes\n', 'utf8');
+  assert.equal(existsSync(target), true, 'the stale record exists before the clear');
+  // MUTANT COPY: no clear — the killed retry sees the stale record.
+  assert.equal(classifyReviewedRun({ killed: true, recordWritten: true }), 'recorded', 'without the clear a stale record misclassifies a killed run as recorded');
+  // Production effect: best-effort unlink of the target (single-file removal).
+  try {
+    unlinkSync(target);
+  } catch {
+    /* absent is the expected case on retry */
+  }
+  assert.equal(existsSync(target), false, 'the clear removes the stale record');
+  assert.equal(classifyReviewedRun({ killed: true, recordWritten: existsSync(target) }), 'interrupted', 'cleared, a killed no-write run classifies interrupted');
+});
+
+test('task 63 fix F9: the registry rejects a blank or non-string timeout guard', (t) => {
+  const bad = (guardLine) => {
+    const ctx = makeRepo({
+      now: () => NOW,
+      runners: `version: 1\ndefault: mock-a\nrunners:\n  - id: mock-a\n    provider: provider-a\n    tier: frontier\n    roles: [author, reviewer]\n    command: 'noop'\n    timeout_guard: ${guardLine}\n`,
+    });
+    t.after(() => ctx.cleanup());
+    return ctx;
+  };
+  for (const line of [`''`, `'   '`, `1`, `true`]) {
+    const ctx = bad(line);
+    assert.throws(() => loadRunners({ runnersPath: ctx.runnersPath }), /"timeout_guard" must be a non-empty string when present/);
+  }
+  // A bare key (null) also records nothing and is rejected.
+  const bareCtx = makeRepo({
+    now: () => NOW,
+    runners: `version: 1\ndefault: mock-a\nrunners:\n  - id: mock-a\n    provider: provider-a\n    tier: frontier\n    roles: [author, reviewer]\n    command: 'noop'\n    timeout_guard:\n`,
+  });
+  t.after(() => bareCtx.cleanup());
+  assert.throws(() => loadRunners({ runnersPath: bareCtx.runnersPath }), /"timeout_guard" must be a non-empty string when present/);
+});
+
+test('task 63 fix F9: a fixture registry carrying timeout_guard surfaces it on the loaded entry', (t) => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: `version: 1\ndefault: mock-a\nrunners:\n  - id: mock-a\n    provider: provider-a\n    tier: frontier\n    roles: [author, reviewer]\n    command: 'noop'\n    timeout_guard: 'timeout budget doubled, 2026-09-12'\n  - id: mock-b\n    provider: provider-b\n    tier: cheap\n    roles: [author, reviewer]\n    command: 'noop'\n`,
+  });
+  t.after(() => ctx.cleanup());
+  const registry = loadRunners({ runnersPath: ctx.runnersPath });
+  // Absent means none — same shape discipline as effort / escalates_to.
+  assert.equal(registry.byId.get('mock-b').timeout_guard, undefined);
+  // Present survives loadRunners/pickRunner passthrough with no new machinery.
+  assert.equal(registry.byId.get('mock-a').timeout_guard, 'timeout budget doubled, 2026-09-12');
+  assert.equal(pickRunner(registry, { id: 'mock-a', role: 'reviewer' }).timeout_guard, 'timeout budget doubled, 2026-09-12');
+  assert.equal(pickRunner(registry, { role: 'reviewer' }).timeout_guard, 'timeout budget doubled, 2026-09-12', 'the default reviewer carries its guard');
+});
+
+test('task 63 fix F9: the run path wires the registry guard into eligibility (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /reviewer\?\.timeout_guard \?\? null/, 'the eligibility call reads the registry guard');
+  const eligIdx = src.indexOf('checkReviewedRunnerEligibility(reviewer');
+  assert.ok(eligIdx !== -1, 'the reviewed eligibility call exists');
+  const window = src.slice(Math.max(0, eligIdx - 2000), eligIdx + 500);
+  assert.match(window, /runners\.yml/, 'the comment names the runner registry as the recording place');
+  assert.match(window, /timeout_guard/, 'the comment names timeout_guard as the recording key');
 });
