@@ -2218,7 +2218,7 @@ the brief under `evidence/reviews/`.
 
 ## Stage 2 — work orders
 
-- [x] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
+- [ ] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
       coherence key within the four bounds; it **splits** an over-bound set into
       more work orders and **refuses at selection**, with a recorded reason, an item
       that alone exceeds the per-subject bound. A candidate with no path
@@ -2232,6 +2232,14 @@ the brief under `evidence/reviews/`.
       category plus source cohort. Implements: *One job is one work
       order, ending in one merge or one discard*, the coherence, bounds and split
       bullets.
+
+      (deferral recorded 2026-09-13 — selection-time wiring, routing the
+      affordable candidate set through `bundleWorkOrders` in `loop/run.mjs`
+      with bounds from the `work_order` config block and selection-time
+      refusal-reason recording, is task-68b scope: 68b proves the bundler
+      through the real path before any live multi-item batching. The
+      bundler itself is implemented in select.mjs and unit-tested
+      (select-bundler.test.mjs).)
 - [x] 54. `data/config.json`, as a diff against the live file: add **only the
       `work_order` block** — `work_order.max_items` 4, `work_order.max_subjects`
       4, `work_order.max_reviewed_bytes` 60000,
