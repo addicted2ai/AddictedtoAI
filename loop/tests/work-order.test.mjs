@@ -50,9 +50,11 @@ import {
   checkMergeGraphScope,
   constituteMergeSubjects,
   declarationMergeDecision,
+  isOldContractSource,
   resolveCarriedDeclaration,
   retireWorkOrderItems,
   runLoop,
+  workOrderMergeMeasure,
 } from '../run.mjs';
 import { graphAckForSubject, parseGraphAck } from '../lib/result.mjs';
 import { checkWorkOrderMergeBounds, joinableSubjects, mergeGate, verdictPath, writeRecordSubjects, writeVerdictRecord } from '../lib/review.mjs';
@@ -1237,6 +1239,181 @@ test('task 57/58: an empty-diff outcome binding four pages exceeding a four-diff
   const mutant = checkWorkOrderMergeBounds({ workOrder, subjects: [], measure, bounds });
   assert.equal(mutant.ok, true, 'the mutant measures zero and merges when it must not');
   assert.equal(mutant.totalBytes, 0);
+});
+
+// ---------------------------------------------------------------------------
+// FIX-1 (task 68b delta-1): the three production mergeGate sites pass null
+// for an old-contract committed source — a resumed branch's `runWorkOrder` is
+// the committed SOURCE object, which carries NEITHER key, so it is truthy and
+// the pre-fix `workOrder ?? null` handed it to the bounds arm, enforcing byte
+// bounds where the pre-task-58 call ran no check — and the whole-diff site
+// passes the DECLARED SET explicitly on the empty-joinable outcome (never
+// `undefined`, which fell silent in the two other `Array.isArray(subjects)`-
+// gated arms: reads-human-from-unanchored and reviewed-subject-mismatch).
+// The structural re-pin of the call text lives in `reviewed-outcome.test.mjs`;
+// these arms bind the semantics.
+// ---------------------------------------------------------------------------
+
+test('FIX-1 (68b): an old-contract committed source is dormant at the gate — the fixed sites pass null, so no work-order-bound refusal and no new refusal class', (t) => {
+  // What a resumed old-contract branch actually carries at the gate: the
+  // committed source object itself, neither key present (task 55's detection
+  // is by key presence).
+  const oldContractSource = { job: 'j-fix1-old', type: 'repair', source: 'directive', slug: null, path: null, issues: [] };
+  assert.equal(isOldContractSource(oldContractSource), true, 'fixture precondition: neither key present');
+
+  const ctx = makeRepo({ now: () => NOW });
+  t.after(() => ctx.cleanup());
+  writeVerdictRecord(ctx, 'j-fix1-old-contract', {
+    verdict: 'approve',
+    wouldCite: 'A reader checking page dates would link this.',
+    notes: 'n',
+  });
+  // THE FIXED CALL (what the sites now pass for this branch): workOrder null.
+  // A diff whose measured bytes would refuse under any ENGAGED bound still
+  // merges — the arm never runs, which is the pre-task-58 call's outcome.
+  const dormant = mergeGate(ctx, {
+    jobId: 'j-fix1-old-contract',
+    type: 'repair',
+    subjects: [P1],
+    changed: [{ status: 'M', path: P1 }],
+    workOrder: null,
+    measure: () => 999999,
+    bounds: BOUNDS57,
+  });
+  assert.equal(dormant.ok, true, dormant.reason ?? '');
+  assert.equal(dormant.code, undefined, 'no refusal code at all — no new refusal class');
+
+  // RED-PROOF (copy-based, the file's convention): the PRE-FIX call — the
+  // truthy old-contract source object passed through `?? null` — ENGAGES the
+  // bounds arm and refuses the same diff. The fix is load-bearing, not
+  // cosmetic.
+  const preFix = mergeGate(ctx, {
+    jobId: 'j-fix1-old-contract',
+    type: 'repair',
+    subjects: [P1],
+    changed: [{ status: 'M', path: P1 }],
+    workOrder: oldContractSource,
+    measure: () => 999999,
+    bounds: BOUNDS57,
+  });
+  assert.equal(preFix.ok, false, 'the pre-fix call was NOT dormant: the truthy keyless source engaged the bounds arm');
+  assert.equal(preFix.code, 'work-order-bound');
+});
+
+test('FIX-1 (68b): on the empty-joinable outcome the measured set is the DECLARED pages — the bounds arm measures them through the surface half and the array-gated arms refuse seeded violations instead of falling silent', (t) => {
+  const workOrder = { items: [item([P1]), item([P2])], declared_subjects: [P1, P2] };
+  // The composed form the fixed whole-diff site evaluates when the diff joins
+  // nothing:
+  const diffSubjects = joinableSubjects([]);
+  assert.deepEqual(diffSubjects, [], 'fixture precondition: the empty diff joins nothing');
+  const subjects = workOrder && diffSubjects.length === 0 ? workOrder.declared_subjects : diffSubjects;
+  assert.deepEqual(subjects, [P1, P2], 'the DECLARED SET is passed explicitly, never omitted');
+
+  // (a) The bounds arm measures the declared pages through the measure's
+  // surface half: branch == base, so the diff half reads empty and the only
+  // bytes the real row-58 measure can return are `git show <branch>:<path>` —
+  // the pages' reviewed surfaces.
+  const pageBody = (n) => `---\nid: model/fix1-${n}\nkind: model\ndisplay_name: Fix1 ${n}\n---\n\n${'x'.repeat(6000)}\n`;
+  const ctx = makeRepo({ now: () => NOW, files: { [P1]: pageBody('p1'), [P2]: pageBody('p2') } });
+  t.after(() => ctx.cleanup());
+  const base = git(ctx.repoRoot, ['rev-parse', 'HEAD']).trim();
+  git(ctx.repoRoot, ['branch', 'job/fix1-empty']);
+  const surfaceMeasure = workOrderMergeMeasure(ctx.repoRoot, base, 'job/fix1-empty');
+  writeVerdictRecord(ctx, 'j-fix1-empty-bounds', {
+    verdict: 'approve',
+    wouldCite: 'A reader checking page dates would link this.',
+    notes: 'n',
+  });
+  const expectedTotal = Buffer.byteLength(pageBody('p1'), 'utf8') + Buffer.byteLength(pageBody('p2'), 'utf8');
+  const boundsRefused = mergeGate(ctx, {
+    jobId: 'j-fix1-empty-bounds',
+    type: 'repair',
+    subjects,
+    changed: [],
+    workOrder,
+    measure: surfaceMeasure,
+    bounds: { maxItems: 4, maxSubjects: 4, maxReviewedBytes: 8000, maxReviewedBytesPerSubject: 30000 },
+  });
+  assert.equal(boundsRefused.ok, false, 'the declared pages are measured through the surface half, never zero');
+  assert.equal(boundsRefused.code, 'work-order-bound');
+  assert.match(boundsRefused.reason, new RegExp(String(expectedTotal)), 'the total is the two declared pages’ surface bytes read off the branch, not zero');
+  assert.match(boundsRefused.reason, /over work_order\.max_reviewed_bytes 8000/, 'the bound it broke is the total bound sized for four diffs');
+
+  // (b) The reads-human arm keeps running against the declared set: an entry
+  // naming a page the job did not declare REFUSES. The mutant half proves the
+  // pre-fix omission (`subjects: undefined`) silenced exactly this arm — the
+  // same record merges when subjects is omitted.
+  const FOREIGN = Q1;
+  // The anchor the entry stands on is real and names the foreign page, so the
+  // ONLY violation is the subject mismatch.
+  const anchorP = writeVerdictRecord(ctx, 'j-fix1-anchor', {
+    verdict: 'approve',
+    wouldCite: 'the anchor record carries its own sentence.',
+    readsHuman: 'the anchor answers the voice question afresh; the prose varies its rhythm.',
+    notes: 'n',
+  });
+  writeRecordSubjects(anchorP, [FOREIGN], { repoRoot: ctx.repoRoot });
+  writeVerdictRecord(ctx, 'j-fix1-carry', {
+    verdict: 'approve',
+    wouldCite: 'the carry record carries its own sentence.',
+    notes: 'n',
+    readsHumanFrom: [{ subject: FOREIGN, record: 'j-fix1-anchor', why: 'the voice answer stands in the anchor record.' }],
+  });
+  const unanchored = mergeGate(ctx, {
+    jobId: 'j-fix1-carry',
+    type: 'repair',
+    subjects,
+    changed: [],
+    workOrder,
+    measure: () => 1000,
+    bounds: BOUNDS57,
+  });
+  assert.equal(unanchored.ok, false, 'the entry names a page outside the declared set — refused, not silent');
+  assert.equal(unanchored.code, 'reads-human-from-unanchored');
+  assert.match(unanchored.reason, new RegExp(FOREIGN.replace(/\//g, '\\/')));
+  const silent = mergeGate(ctx, {
+    jobId: 'j-fix1-carry',
+    type: 'repair',
+    subjects: undefined,
+    changed: [],
+    workOrder,
+    measure: () => 1000,
+    bounds: BOUNDS57,
+  });
+  assert.equal(silent.ok, true, 'with subjects OMITTED (the pre-fix form) the same record merges — the arm was silent');
+
+  // (c) The reviewed-subject-mismatch arm keeps running against the declared
+  // set: a record whose `reviewed:` names fewer pages than the merge measures
+  // REFUSES — and merged silently under the pre-fix omission.
+  const pMismatch = writeVerdictRecord(ctx, 'j-fix1-mismatch', {
+    verdict: 'approve',
+    wouldCite: 'the mismatch record carries its own sentence.',
+    notes: 'n',
+  });
+  const wrote = writeRecordSubjects(pMismatch, [P1], { repoRoot: ctx.repoRoot });
+  assert.equal(wrote.ok, true, wrote.why ?? '');
+  const mismatch = mergeGate(ctx, {
+    jobId: 'j-fix1-mismatch',
+    type: 'repair',
+    subjects,
+    changed: [],
+    workOrder,
+    measure: () => 1000,
+    bounds: BOUNDS57,
+  });
+  assert.equal(mismatch.ok, false, 'reviewed: names [P1] but the merge measures the declared [P1, P2] — refused');
+  assert.equal(mismatch.code, 'reviewed-subject-mismatch');
+  assert.match(mismatch.reason, new RegExp(P2.replace(/\//g, '\\/')));
+  const silentMismatch = mergeGate(ctx, {
+    jobId: 'j-fix1-mismatch',
+    type: 'repair',
+    subjects: undefined,
+    changed: [],
+    workOrder,
+    measure: () => 1000,
+    bounds: BOUNDS57,
+  });
+  assert.equal(silentMismatch.ok, true, 'with subjects OMITTED (the pre-fix form) the same record merges — the arm was silent');
 });
 
 // ---------------------------------------------------------------------------

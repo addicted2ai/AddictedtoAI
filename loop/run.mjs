@@ -1885,7 +1885,11 @@ export function checkMergeGraphScope({
  * ratification read the same bytes. The worktree-read `surfaceOf` at
  * review-brief assembly is the review-side pattern; the merge side reads the
  * branch ref. Absent or unreadable resolves to null, which the bound check
- * scores as zero — the seam's existing contract, never an invented size.
+ * scores as zero — the seam's existing contract, never an invented size. A
+ * null resolution from a real subject is recorded, not silent (FIX-2, 68b
+ * delta-1): a persistent git failure must not evaporate the second
+ * enforcement through an infrastructure door without a line naming the
+ * subject it zeroed.
  */
 export function workOrderMergeMeasure(repoRoot, base, branch) {
   return (subject) => {
@@ -1896,7 +1900,19 @@ export function workOrderMergeMeasure(repoRoot, base, branch) {
       return Buffer.byteLength(String(diff.stdout), 'utf8');
     }
     const surface = gitTry(repoRoot, ['show', `${branch}:${path}`]);
-    if (!surface.ok) return null;
+    if (!surface.ok) {
+      // FIX-2 (68b delta-1): the zero-on-absent contract stands — the bound
+      // check scores this null as zero, never an invented size — but the
+      // null must not evaporate silently. This is the measure's only door to
+      // null for a real subject (the guard above handles degenerate input),
+      // and it is a git read that failed, so the failure is recorded here
+      // naming the subject, the same posture the recorded-refusal language
+      // uses. No behavior change beyond the warning.
+      console.error(
+        `work-order merge measure: subject ${path} resolved to null (git show ${branch}:${path} failed) — the bound check scores it as zero`,
+      );
+      return null;
+    }
     return Buffer.byteLength(String(surface.stdout ?? ''), 'utf8');
   };
 }
@@ -2605,9 +2621,14 @@ async function executeJob(ctx, opts) {
           // measure the page through the row-58 measure (the produced work's
           // patch bytes where the diff carries the page, the branch-ref
           // reviewed surface where it does not — the empty-diff outcome's
-          // declared-page measurement). Dormant without an order: an
-          // old-contract branch keeps today's exact call, no new refusal.
-          workOrder: workOrder ?? null,
+          // declared-page measurement). Dormant without an order, and FIX-1
+          // (68b delta-1) keeps it dormant for old-contract branches: a
+          // resumed old-contract source is TRUTHY but carries neither key, so
+          // a bare `?? null` would hand the committed SOURCE object to the
+          // bounds arm and enforce byte bounds on [page] where the
+          // pre-task-58 call ran no check at all. The committed source
+          // reaches the gate only when it is a real work order.
+          workOrder: workOrder && !isOldContractSource(workOrder) ? workOrder : null,
           bounds: workOrderBounds(cfg),
           measure: workOrderMergeMeasure(ctx.repoRoot, base, branch),
         });
@@ -2759,8 +2780,11 @@ async function executeJob(ctx, opts) {
           // the per-page gate above — on the empty-diff outcome the page is
           // the declared page, and the measure reads its reviewed surface
           // from the branch ref (the same bytes the store binds and the
-          // ratification reads). Dormant without an order.
-          workOrder: workOrder ?? null,
+          // ratification reads). Dormant without an order — and for an
+          // old-contract committed source, same as the per-page gate above
+          // (FIX-1, 68b delta-1): the truthy-but-keyless source object is
+          // null here, never a work order.
+          workOrder: workOrder && !isOldContractSource(workOrder) ? workOrder : null,
           bounds: workOrderBounds(cfg),
           measure: workOrderMergeMeasure(ctx.repoRoot, base, branch),
         });
@@ -2773,21 +2797,26 @@ async function executeJob(ctx, opts) {
         // yields [] — passing that [] would measure ZERO and the second
         // enforcement would evaporate: `checkWorkOrderMergeBounds` engages
         // its declared-subjects fallback on ARRAY PRESENCE, not emptiness.
-        // So the site omits `subjects` and the arm measures the DECLARED
-        // PAGES' REVIEWED SURFACES through the same measure's branch-ref
-        // half — the surface `checkReviewedHashStore` verifies at merge
-        // time, so the measure and the ratification read the same bytes. An
-        // old-contract branch (workOrder null) keeps today's exact call:
-        // the arm is dormant without an order, no new refusal for any
-        // existing path.
+        // So the site passes the DECLARED SET explicitly
+        // (`workOrder.declared_subjects`; FIX-1, 68b delta-1 — never
+        // `undefined`): the bounds arm measures the declared pages' REVIEWED
+        // SURFACES through the same measure's branch-ref half — the surface
+        // `checkReviewedHashStore` verifies at merge time, so the measure and
+        // the ratification read the same bytes — and the two other
+        // `Array.isArray(subjects)`-gated arms (reads-human-from-unanchored,
+        // reviewed-subject-mismatch) keep running against the set the job
+        // was dispatched for instead of falling silent on a missing array.
+        // An old-contract branch (workOrder null, per the guard below) falls
+        // through to `diffSubjects` exactly as the pre-task-58 call: the arm
+        // is dormant without an order, no new refusal for any existing path.
         const diffSubjects = joinableSubjects(gateChanged);
         gate = mergeGate(ctx, {
           jobId,
           type: job.type,
           pass,
-          subjects: workOrder && diffSubjects.length === 0 ? undefined : diffSubjects,
+          subjects: workOrder && diffSubjects.length === 0 ? workOrder.declared_subjects : diffSubjects,
           changed: gateChanged,
-          workOrder: workOrder ?? null,
+          workOrder: workOrder && !isOldContractSource(workOrder) ? workOrder : null,
           bounds: workOrderBounds(cfg),
           measure: workOrderMergeMeasure(ctx.repoRoot, base, branch),
         });
@@ -3595,7 +3624,7 @@ export async function runLoop(ctx, opts = {}) {
     ctx.log(
       `work-order bundle: ${bundle.orders.length} order(s) from ${sel.affordable.length} affordable candidate(s)` +
         (bundle.orders.length
-          ? `; ` + bundle.orders.map((o, i) => `order ${i + 1}: ${o.items.length} item(s), key [${o.key.replace('\n', ' | ')}]`).join('; ')
+          ? `; ` + bundle.orders.map((o, i) => `order ${i + 1}: ${o.items.length} item(s), key [${o.key.replaceAll('\n', ' | ')}]`).join('; ')
           : '') +
         `, ${bundle.refusals.length} bundler refusal(s)` +
         (bundle.orders.length > 1
@@ -3603,8 +3632,8 @@ export async function runLoop(ctx, opts = {}) {
           : ''),
     );
     if (!bundle.orders.length) {
-      // Every affordable candidate was refused at the bundler (or the set was
-      // empty): the nothing-qualified path, with the recorded refusals — a
+      // Every affordable candidate was refused at the bundler: the
+      // nothing-qualified path, with the recorded refusals — a
       // bound that silently removes work from the list has become the work
       // list, so the refusals travel out with the run.
       ctx.log('nothing qualified — every affordable candidate was refused at the work-order bundler');

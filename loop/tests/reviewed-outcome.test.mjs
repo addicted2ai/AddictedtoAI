@@ -2450,23 +2450,29 @@ test('task 58 wiring (68b): all three production mergeGate call sites pass workO
   const sites = [...src.matchAll(/mergeGate\(ctx, \{/g)];
   assert.equal(sites.length, 3, 'exactly three production mergeGate call sites, no more');
   for (const { index } of sites) {
-    const window = src.slice(index, index + 1200);
-    assert.match(window, /workOrder: workOrder \?\? null/, 'the site passes the work order (dormant without one — no new refusal for any existing path)');
+    const window = src.slice(index, index + 1800);
+    assert.match(
+      window,
+      /workOrder: workOrder && !isOldContractSource\(workOrder\) \? workOrder : null/,
+      'the site passes the work order, null for an old-contract committed source (FIX-1, 68b delta-1: the truthy-but-keyless source object must never engage the bounds arm — dormant exactly as the pre-task-58 call)',
+    );
     assert.match(window, /bounds: workOrderBounds\(cfg\)/, 'the site passes the work_order config bounds');
     assert.match(window, /measure: workOrderMergeMeasure\(ctx\.repoRoot, base, branch\)/, 'the site passes the row-58 measure');
   }
   // The whole-diff site's measured set is part of the call-site construction:
-  // on the empty-joinable outcome the site omits `subjects` so the
-  // declared-subjects fallback engages (checkWorkOrderMergeBounds engages it
-  // on ARRAY PRESENCE, not emptiness — passing [] would measure zero and
-  // evaporate the second enforcement), and an old-contract branch keeps
-  // today's exact call.
+  // on the empty-joinable outcome the site passes the DECLARED SET explicitly
+  // (FIX-1, 68b delta-1 — never `undefined`), so the bounds arm measures the
+  // declared pages and the two other `Array.isArray(subjects)`-gated arms
+  // (reads-human-from-unanchored, reviewed-subject-mismatch) keep running
+  // instead of falling silent on a missing array; an old-contract branch
+  // (workOrder null) falls through to the diff-derived set exactly as the
+  // pre-task-58 call.
   const whole = src.indexOf('const diffSubjects = joinableSubjects(gateChanged);');
   assert.ok(whole !== -1, 'the whole-diff site constructs its measured set at the call site');
-  const wholeWindow = src.slice(whole, whole + 1200);
+  const wholeWindow = src.slice(whole, whole + 1800);
   assert.match(
     wholeWindow,
-    /subjects: workOrder && diffSubjects\.length === 0 \? undefined : diffSubjects/,
-    'the empty-joinable outcome passes the declared set (by omission), never the diff-derived []',
+    /subjects: workOrder && diffSubjects\.length === 0 \? workOrder\.declared_subjects : diffSubjects/,
+    'the empty-joinable outcome passes the declared set explicitly (array present, set = declared), never the diff-derived [] and never undefined',
   );
 });

@@ -135,7 +135,21 @@ test('a planted unsupported claim is rejected, and a second failure discards the
 });
 
 test('a reviewer that edits the reviewed tree has its edits discarded', async () => {
-  const ctx = repo('done-edit', 'review-edits-tree');
+  // FIX-1 (68b delta-1) fixture note: the default queue declares a blog post,
+  // and on this test's empty-joinable diff (the author writes only
+  // site-note.md) the fixed whole-diff gate now passes the DECLARED SET, so
+  // the reads-human arm demands an answer for the declared post the mock
+  // reviewer never wrote — a refusal from the fix working as specified, not
+  // what this arm judges. The declared subject here is the wiki model, so the
+  // arm's own purpose — the reviewer's edits are discarded and the author's
+  // merge lands — stays the thing under test, assertions untouched.
+  const ctx = repo('done-edit', 'review-edits-tree', {
+    queue: [{
+      type: 'entry',
+      title: 'write the entry for the fixture subject',
+      subjects: ['content/wiki/model/fixture-model.md'],
+    }],
+  });
   const res = await go(ctx);
   assert.equal(res.outcome, 'done', ctx.output());
   assert.match(ctx.output(), /the reviewer changed its worktree; those changes were discarded \(branch unchanged\)/);
