@@ -89,6 +89,7 @@ import {
   classifyReviewedRun,
   checkReviewedRunnerEligibility,
   reviewedPerPageRecordPath,
+  runReview,
   isRecordOfJob,
   REVIEWED_CONTENT_TO_GATE_TYPE,
   checklistFor,
@@ -1365,4 +1366,96 @@ test('task 63 fix G5: a persisting stale record refuses dispatch with a syntheti
   // MUTANT COPY: the old swallow-and-dispatch — a stale record read as this
   // invocation's. The persist check is what stands between them.
   assert.match(window, /if \(stillPresent\)/, 'without the persist check the catch would fall through to dispatch');
+});
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 63 FIX-4 (H1).
+// ---------------------------------------------------------------------------
+
+test('task 63 fix H1: a directory at the record path refuses dispatch without a spawn (behavioral)', async (t) => {
+  const ctx = reviewCtx63(t);
+  // A directory as outPath: unlinkSync throws non-ENOENT on every platform
+  // (EISDIR/POSIX, EPERM/Windows) while existsSync stays true — the G5
+  // persisting-record shape, from a fixture, no stale file to clean up.
+  const dirPath = join(ctx.reviewsDir, 'j-20260912-h1');
+  mkdirSync(dirPath, { recursive: true });
+  assert.equal(existsSync(dirPath), true, 'the directory record path exists before dispatch');
+  // The refusal returns before runExecutor, so this runner must never run: a
+  // nonexistent binary would fail loudly if spawned.
+  const neverRunner = { id: 'mock-never', provider: 'provider-a', tier: 'frontier', command: 'definitely-no-such-binary-atai-h1' };
+  const result = await runReview(ctx, {
+    jobId: 'j-20260912-h1',
+    job: baseJob63(),
+    branch: 'main',
+    diffText: '',
+    runner: neverRunner,
+    capMinutes: 30,
+    pass: 1,
+    outPathOverride: dirPath,
+  });
+  assert.match(result.clearRefused ?? '', /STALE: stale review record/, 'the refusal names the persisting record loudly');
+  assert.match(result.clearRefused ?? '', new RegExp(dirPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), 'the refusal names the path');
+  assert.equal(result.recordWritten, false, 'the synthetic failure claims no record');
+  assert.equal(result.run.code, 1, 'the synthetic run fails');
+  assert.equal(result.run.killed, false, 'the synthetic run was not killed');
+  assert.equal(result.run.stdout, '', 'the synthetic run carries no stdout');
+  assert.equal(result.run.stderr, result.clearRefused, 'the synthetic stderr is the refusal reason');
+  assert.equal(result.run.mm, 0, 'the synthetic run costs nothing');
+  assert.equal(existsSync(dirPath), true, 'the directory is untouched — nothing wrote through it');
+  assert.match(ctx.output(), /STALE: stale review record/, 'the refusal is logged loudly');
+  // MUTANT COPY: the old dispatch-over-stale — runExecutor spawns the runner
+  // command against the persisting path. The nonexistent binary proves the
+  // production path never reaches the spawn: a dispatched run could not return
+  // this synthetic shape.
+  assert.equal(result.run.command, neverRunner.command, 'the synthetic run names the unspawned command');
+});
+
+test('task 63 fix H1: both runReview dispatch sites fail closed on clearRefused before mergeGate (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  // Survey: exactly two runReview dispatch sites in loop/ — the per-page
+  // loop's `one` and the single path's `rev` in executeJob. The train review
+  // functions do NOT use runReview (separate, pre-existing, unflagged) and
+  // are untouched.
+  const dispatches = src.match(/await runReview\(ctx, \{/g) ?? [];
+  assert.equal(dispatches.length, 2, 'exactly two runReview dispatch sites, no more');
+  assert.match(src, /const one = await runReview/, 'the per-page dispatch site exists');
+  assert.match(src, /rev = await runReview/, 'the single-path dispatch site exists');
+  const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
+  for (const name of ['export async function runTrainReview(', 'export async function runTrainComparison(', 'export async function reviewTrain(']) {
+    const idx = reviewSrc.indexOf(name);
+    assert.ok(idx !== -1, `${name} still exists`);
+    const window = reviewSrc.slice(idx, idx + 6000);
+    assert.doesNotMatch(window, /clearRefused/, `${name} gains no clear-refusal shape`);
+  }
+  // Per-page site: dispatch → clearRefused guard → fail with the reason →
+  // mergeGate. The gate on this path reads `outPath`, the persisting path.
+  const perIdx = src.indexOf('const one = await runReview');
+  assert.ok(perIdx !== -1, 'the per-page dispatch exists');
+  const perWindow = src.slice(perIdx, perIdx + 12000);
+  assert.match(perWindow, /if \(one\.clearRefused\)/, 'the per-page site checks clearRefused');
+  assert.match(perWindow, /outcome: 'failed', mm, changed, note: one\.clearRefused/, 'the per-page refusal fails with the reason');
+  assert.match(perWindow, /STALE: stale review record/, 'the per-page refusal is logged loudly with the STALE prefix');
+  const perGuard = perWindow.indexOf('if (one.clearRefused)');
+  const perGate = perWindow.indexOf('mergeGate(ctx,');
+  assert.ok(perGuard !== -1 && perGate !== -1, 'per-page guard and gate both exist');
+  assert.ok(perGuard < perGate, 'the per-page guard runs before mergeGate ever sees the persisting path');
+  // MUTANT COPY: the old theater — the refusal returns but the caller still
+  // gates on the persisting path. Without the guard the stale record parses.
+  assert.equal(perGuard === -1, false, 'production consumes the refusal where the mutant would gate on stale bytes');
+  // Single site: dispatch → clearRefused guard → fail with the reason →
+  // mergeGate.
+  const elseIdx = src.indexOf('// Single-page and non-reviewed paths, unchanged');
+  assert.ok(elseIdx !== -1, 'the single-page branch is one named block');
+  const singleWindow = src.slice(elseIdx, elseIdx + 9000);
+  const singleDispatch = singleWindow.indexOf('rev = await runReview');
+  assert.ok(singleDispatch !== -1, 'the single dispatch exists');
+  const afterDispatch = singleWindow.slice(singleDispatch, singleDispatch + 6000);
+  assert.match(afterDispatch, /if \(rev\.clearRefused\)/, 'the single site checks clearRefused');
+  assert.match(afterDispatch, /outcome: 'failed', mm, changed, note: rev\.clearRefused/, 'the single refusal fails with the reason');
+  assert.match(afterDispatch, /STALE: stale review record/, 'the single refusal is logged loudly with the STALE prefix');
+  const singleGuard = afterDispatch.indexOf('if (rev.clearRefused)');
+  const singleGate = afterDispatch.indexOf('mergeGate(ctx,');
+  assert.ok(singleGuard !== -1 && singleGate !== -1, 'single guard and gate both exist');
+  assert.ok(singleGuard < singleGate, 'the single guard runs before mergeGate ever sees the persisting path');
+  assert.equal(singleGuard === -1, false, 'production consumes the refusal where the mutant would gate on stale bytes');
 });

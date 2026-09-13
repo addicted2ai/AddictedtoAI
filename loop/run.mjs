@@ -1948,6 +1948,15 @@ async function executeJob(ctx, opts) {
           outPathOverride: outPath,
           reviewSuffix: `-p${pi}`,
         });
+        // H1 (FIX-4): consume the G5 clear-refusal before mergeGate ever sees
+        // the persisting path — the refusal's premise is that the stale record
+        // is still on disk, so the per-page gate below would parse it as this
+        // invocation's. Failed, not interrupted: the environment is poisoned
+        // for this target and mergeGate must never see the path.
+        if (one.clearRefused) {
+          ctx.log(`STALE: stale review record at ${one.outPath ?? outPath} could not be cleared — failing closed before mergeGate: ${one.clearRefused}`);
+          return finish({ outcome: 'failed', mm, changed, note: one.clearRefused });
+        }
         perPageReviews.push(one);
         mm += one.run.mm; // "Review MM counts toward the job it reviews." Per page, summed.
         if (one.discarded.discardedAnything) {
@@ -2091,6 +2100,15 @@ async function executeJob(ctx, opts) {
         totalMinutes,
         reviewer,
       });
+      // H1 (FIX-4): consume the G5 clear-refusal before mergeGate ever sees
+      // the persisting path — the refusal's premise is that the stale record
+      // is still on disk, so the gate below would parse it as this
+      // invocation's. Failed, not interrupted: the environment is poisoned
+      // for this target and mergeGate must never see the path.
+      if (rev.clearRefused) {
+        ctx.log(`STALE: stale review record at ${rev.outPath} could not be cleared — failing closed before mergeGate: ${rev.clearRefused}`);
+        return finish({ outcome: 'failed', mm, changed, note: rev.clearRefused });
+      }
       mm += rev.run.mm; // "Review MM counts toward the job it reviews."
       if (rev.discarded.discardedAnything) {
         ctx.log(`the reviewer changed its worktree; those changes were discarded (branch ${rev.branchUnchanged ? 'unchanged' : 'CHANGED — investigate'})`);
