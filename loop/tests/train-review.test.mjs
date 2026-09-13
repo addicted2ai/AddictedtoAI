@@ -1003,6 +1003,40 @@ test('loop: the per-subject breakdown lands beside the not-in-any-record count',
   }
 });
 
+test('loop: a count-only verdict writes NO breakdown key beside the count, never {}', async () => {
+  const fx = trainRepo();
+  try {
+    const { repo } = fx;
+    ensureTrainBranch(repo, 'main');
+    admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+    appendJobLines(repo, ['job-1']);
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const asm = assembleTrain(repo, { trainId: 't-countonly', bounds: BOUNDS, now: () => T0 });
+    assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+    const gates = stubGates();
+    // Count-only: a measured nonzero count and NO breakdown object — the
+    // shape a verdict without the attribution carries. The line must omit
+    // the key entirely: an empty object beside a nonzero count is what
+    // Stage 2 reads past, turning the count into a zero measurement.
+    const review = stubReviewSeq([{ findingsNotInAnyRecord: 7 }]);
+    const tr = await runTrain(ctxFor(repo), {
+      repo, trainId: asm.manifest.train, manifest: asm.manifest,
+      gates, rederive: stubRederive(), review, now: () => T0,
+    });
+    assert.equal(tr.ok, true, tr.reason ?? 'counted train refused');
+    const head = git(repo, ['rev-parse', TRAIN_BRANCH]);
+    const lines = ledgerLines(readCommitted(repo, head, 'data/ledger.jsonl'));
+    const line = lines.find((l) => l.id === asm.manifest.train);
+    assert.ok(line, 'the train line is committed');
+    assert.equal(line.train.findings_not_in_any_record, 7, 'the count survives intact');
+    assert.equal(Object.hasOwn(line.train, 'findings_not_in_any_record_by_subject'), false,
+      'no breakdown key at all — never an empty object beside the count');
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
 test('attributeFindingsBySubject: missing entries attribute through findings, merges, manifest subjects', () => {
   const manifest = {
     merges: [
@@ -1040,6 +1074,53 @@ test('attributeFindingsBySubject: missing entries attribute through findings, me
 test('attributeFindingsBySubject: nothing missing is an empty breakdown', () => {
   assert.deepEqual(attributeFindingsBySubject([], [], { merges: [] }), {});
   assert.deepEqual(attributeFindingsBySubject(null, null, null), {});
+});
+
+test('attributeFindingsBySubject: exact match wins over an earlier containment-only candidate', () => {
+  const manifest = {
+    merges: [
+      { sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', jobId: 'job-1', subjects: ['content/a.md'] },
+      { sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', jobId: 'job-2', subjects: ['content/b.md'] },
+    ],
+  };
+  // The FIRST finding matches the entry by containment only; the second is
+  // the entry's exact text. First-match-by-containment would attribute the
+  // entry to job-1's subject; exact-first wins it for job-2's.
+  const findings = [
+    { text: 'the merge message lost its subject line', merges: ['job-1'] },
+    { text: 'the merge message lost its subject line and date', merges: ['job-2'] },
+  ];
+  const out = attributeFindingsBySubject(['the merge message lost its subject line and date'], findings, manifest);
+  assert.deepEqual(out, { 'content/b.md': 1 },
+    'the exact match wins outright, ahead of the earlier containment-only one');
+});
+
+test('attributeFindingsBySubject: two containment candidates are an ambiguity — unattributed, not the first', () => {
+  const manifest = {
+    merges: [
+      { sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', jobId: 'job-1', subjects: ['content/a.md'] },
+      { sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', jobId: 'job-2', subjects: ['content/b.md'] },
+    ],
+  };
+  // The entry matches BOTH findings by containment (neither exactly) — an
+  // ambiguity the helper refuses rather than resolving by order.
+  const findings = [
+    { text: 'defect two in the second merge', merges: ['job-1'] },
+    { text: 'defect two', merges: ['job-2'] },
+  ];
+  const out = attributeFindingsBySubject(['defect two in the second merge (expanded)'], findings, manifest);
+  assert.deepEqual(out, { unattributed: 1 },
+    'a two-way containment match lands under unattributed, never on the first candidate');
+});
+
+test('attributeFindingsBySubject: an entry matching zero findings lands under unattributed', () => {
+  const manifest = {
+    merges: [{ sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', jobId: 'job-1', subjects: ['content/a.md'] }],
+  };
+  const findings = [{ text: 'a defect the verdict stated plainly', merges: ['job-1'] }];
+  const out = attributeFindingsBySubject(['something the verdict never said'], findings, manifest);
+  assert.deepEqual(out, { unattributed: 1 },
+    'no candidate, no attribution: the reserved key, even with findings present');
 });
 
 test('loop: named merge evicted with reason review, full gates and review re-run', async () => {

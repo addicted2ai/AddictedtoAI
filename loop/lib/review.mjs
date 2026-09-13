@@ -2807,11 +2807,19 @@ const UNATTRIBUTED_KEY = 'unattributed';
 /**
  * The per-subject breakdown of the not-in-any-record count (task 68): each
  * `missing` entry the comparison reported — it quotes the finding's text —
- * is matched back to the verdict's findings, and a finding's subjects are the
- * union of the subjects of the manifest merges it names (by full sha, job id,
- * or unambiguous sha prefix — the same naming `trainFindingsNamingMerges`
- * accepts). An entry matching no finding, or a finding naming no merge, is
- * attributed to no subject: it lands under the reserved `unattributed` key.
+ * is matched back to the verdict's findings. Matching is tolerant of quoting
+ * drift but never a guess: an entry whose WHOLE normalized text equals a
+ * finding's wins that finding outright (exact first, ahead of any earlier
+ * containment-only candidate); failing an exact match, a containment match —
+ * the entry contains the finding's text or is contained by it,
+ * whitespace-collapsed — is accepted only when it is UNIQUE across the
+ * findings array. An entry matching nothing, or matching more than one
+ * finding by containment, is an ambiguity the helper refuses, never resolves
+ * by order: it lands under the reserved `unattributed` key, as does a
+ * matched finding's entry when the finding names no merge. A finding's
+ * subjects are the union of the subjects of the manifest merges it names (by
+ * full sha, job id, or unambiguous sha prefix — the same naming
+ * `trainFindingsNamingMerges` accepts).
  * A finding naming merges across several subjects counts under EACH — the
  * distribution is per subject, not a partition — so the values sum to at
  * least the count beside which the breakdown rides, and exactly to it when
@@ -2850,7 +2858,14 @@ export function attributeFindingsBySubject(missing, findings, manifest) {
   for (const missText of missing ?? []) {
     const mnorm = norm(missText);
     if (!mnorm) continue;
-    const f = parsed.find((p) => p.text === mnorm || mnorm.includes(p.text) || p.text.includes(mnorm));
+    // Exact normalized match first; else a containment candidate unique
+    // across the findings (either direction). More than one containment
+    // candidate is an ambiguity — no first-match guess, `unattributed`.
+    let f = parsed.find((p) => p.text === mnorm);
+    if (!f) {
+      const cands = parsed.filter((p) => mnorm.includes(p.text) || p.text.includes(mnorm));
+      if (cands.length === 1) f = cands[0];
+    }
     const subjects = f ? subjectsOf(f) : new Set();
     if (!subjects.size) {
       bump(UNATTRIBUTED_KEY);

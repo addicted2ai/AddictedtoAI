@@ -934,9 +934,14 @@ async function finishTrainRun(ctx, {
       // the same findings (the distribution belongs beside the count it sums
       // to). Measured only where a review actually ran; the hold/reject
       // lines' unmeasured zeros carry no breakdown rather than an empty one
-      // that could read as a measurement.
+      // that could read as a measurement. The same discipline here: the
+      // breakdown rides ONLY when the verdict carries one (Object.hasOwn) —
+      // a count-only verdict omits the key entirely, never an empty object
+      // beside the count, which Stage 2 would read as a zero measurement.
       findings_not_in_any_record: vr.findingsNotInAnyRecord ?? 0,
-      findings_not_in_any_record_by_subject: vr.findingsNotInAnyRecordBySubject ?? {},
+      ...(Object.hasOwn(vr, 'findingsNotInAnyRecordBySubject')
+        ? { findings_not_in_any_record_by_subject: vr.findingsNotInAnyRecordBySubject }
+        : {}),
       review_rounds: reviewRounds + roundsRun,
     },
   });
