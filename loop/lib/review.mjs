@@ -35,7 +35,7 @@ import matter from 'gray-matter';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { RESULT_FILENAME } from './result.mjs';
-import { PROSE_TYPES, isProsePiece, prosePieces, requirementHeadings } from './specs.mjs';
+import { PROSE_TYPES, isProsePiece, prosePieces, requirementHeadings, subjectContentType } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
@@ -53,7 +53,7 @@ import {
   normalizeWouldCite,
   normalizeField,
 } from './verdict.mjs';
-import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
+import { reviewedHash, reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { WORK_ORDER_DEFAULTS } from './select.mjs';
 import { recordFileName, recordNamesPath, reviewedOf } from '../../lib/reviews.mjs';
 import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
@@ -407,6 +407,98 @@ export function isProse(type) {
   return PROSE_TYPES.includes(type);
 }
 
+/**
+ * Per-page reviewed checklist mapping (Stage 2, task 63).
+ *
+ * The review brief for a `reviewed:` outcome carries the checklist for each
+ * declared page's KIND, not for the job's type — there is no diff whose type
+ * is the subject. A page's kind is its content type via the schema's own
+ * `CONTENT_TYPES` directory table (`subjectContentType` in `loop/lib/specs.mjs`,
+ * derived, never retyped — the same source task 60's `isProsePiece` reads).
+ * The gate type below is the job-type key whose checklist answers for that
+ * kind, so the brief and the merge gate read one mapping:
+ *
+ * - `entry` (wiki), `delta` (deltas, prose with no dedicated checklist — the
+ *   generic prose entry list answers) -> `entry`;
+ * - `learn` (learn) -> `education` (the education checklist is the learn
+ *   checklist; no `learn` job type exists);
+ * - `tutorial` (tutorials) -> `tutorial`;
+ * - `post` (blog) -> `post` (including the voice bar);
+ * - `tool` (directory rows), `claim` (data rows, non-prose) -> `repair`
+ *   (the directory checklist's spot-check rows; `repair` is non-prose so no
+ *   `would-cite` is demanded for non-prose pages, exactly as the merge gate
+ *   demands none for them).
+ *
+ * Unknown content types (a code file, or a content path outside every known
+ * directory) throw, failing the assembly closed — a review assembled against
+ * another kind's list would be silently wrong, on the same terms
+ * `checklistFor` refuses an unknown job type. Reused, never reimplemented:
+ * the checklist itself is still `checklistFor`, and the merge gate reads
+ * `reviewedGateTypeForPage` for its `type` argument.
+ */
+export const REVIEWED_CONTENT_TO_GATE_TYPE = Object.freeze({
+  entry: 'entry',
+  learn: 'education',
+  tutorial: 'tutorial',
+  post: 'post',
+  tool: 'repair',
+  delta: 'entry',
+  claim: 'repair',
+});
+
+export function reviewedGateTypeForPage(page) {
+  const norm = String(page ?? '').replace(/\\/g, '/').trim();
+  if (!norm) throw new Error('review: no page path for the reviewed checklist — without a page there is no kind, so the brief is refused rather than assembled against the wrong list.');
+  const contentType = subjectContentType(norm);
+  const mapped = contentType ? REVIEWED_CONTENT_TO_GATE_TYPE[contentType] : null;
+  if (!mapped) {
+    throw new Error(
+      `review: no checklist for reviewed page ${JSON.stringify(norm)} (content type ${JSON.stringify(contentType)}). ` +
+        `specs/review: what is checked depends on what the work is, so there is no default — a review assembled ` +
+        `against another kind's list would be silently wrong. Known content types: ${Object.keys(REVIEWED_CONTENT_TO_GATE_TYPE).join(', ')}.`,
+    );
+  }
+  return mapped;
+}
+
+export function checklistForReviewedPage(page) {
+  return checklistFor(reviewedGateTypeForPage(page));
+}
+
+/**
+ * The per-page verdict record path for a multi-page `reviewed:` outcome
+ * (Stage 2, task 63).
+ *
+ * Single-page outcomes keep `verdictPath` exactly (byte-stable naming); only
+ * multi-page gains invocations, each with its own record so no per-page
+ * verdict bypasses the merge gate. The name carries the page index and the
+ * revision pass (`<jobId>.reviewed-<i>.md`, `<jobId>.reviewed-<i>.pass2.md`),
+ * so a revision re-reviews every page without colliding with the first pass.
+ * The duplicate-`would-cite` sweep excludes every record of the same job
+ * (any name starting with `<jobId>.`), which is what lets two pages honestly
+ * share one sentence the way two entries in one record may.
+ *
+ * @param {number} pageIndex zero-based page position in the sorted declared list
+ */
+export function reviewedPerPageRecordPath(ctx, jobId, pageIndex, pass = 1) {
+  const i = Number(pageIndex);
+  if (!Number.isInteger(i) || i < 0) throw new Error('review: page index for a per-page reviewed record must be a non-negative integer');
+  const p = Number(pass) || 1;
+  const base = `${jobId}.reviewed-${i}`;
+  return join(ctx.reviewsDir, p === 1 ? `${base}.md` : `${base}.pass${p}.md`);
+}
+
+/**
+ * Whether a per-page reviewed record belongs to a job (for the duplicate
+ * sweep's exclusion): the job's own record plus every per-page sibling.
+ */
+export function isRecordOfJob(name, jobId) {
+  if (!jobId) return false;
+  const n = String(name ?? '');
+  const j = String(jobId);
+  return n === `${j}.md` || n.startsWith(`${j}.`);
+}
+
 export function verdictPath(ctx, jobId, pass = 1) {
   return join(ctx.reviewsDir, pass === 1 ? `${jobId}.md` : `${jobId}.pass${pass}.md`);
 }
@@ -493,6 +585,122 @@ is not that, and it is the one way this review can run out of time.
 }
 
 /**
+ * The gates section for a `reviewed:` review (Stage 2, task 63).
+ *
+ * The gates ran green on a tree identical to the merge base — the empty diff
+ * is empty because the executor changed nothing, so the tree under review IS
+ * the base tree. That makes the gates evidence that the base is green and
+ * NOT evidence about the pages under review: a green suite on unchanged
+ * bytes says nothing about whether those bytes are sound, which is the
+ * judgment this review exists to make. Every word a normal gates section
+ * prints on this outcome would otherwise imply the pages were checked, so
+ * this section replaces it (never supplements it) wherever `reviewedOnly`
+ * names a page. Reused measurements only: the gate lines render through the
+ * same `gateCommand` the normal section reads, duplicated nowhere.
+ */
+export function reviewedGatesSection(gates, sha = '') {
+  const on = sha ? ` on commit \`${String(sha).slice(0, 12)}\`` : '';
+  if (!gates || gates.ran === false) {
+    return `## What the loop has verified on this branch
+
+The loop did not run its gates this run${gates?.why ? ` (${gates.why})` : ''}. That changes nothing about this review:
+the gates run on a tree identical to the merge base, so they are evidence the base is green and NOT evidence
+about the page under review. Judge the page below on its own, and say in your notes what you ran and what you observed.
+`;
+  }
+  const lines = (gates.results ?? []).map(
+    (r) =>
+      `- \`${gateCommand(r)}\` — **${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}**`,
+  );
+  const retryNote = gates.retried
+    ? `
+These gates were run twice; the results above are the second run's. That, too, is evidence about the base tree, not about the page.
+`
+    : '';
+  return `## What the loop has verified on this branch
+
+The loop ran these itself, in this branch's own worktree, immediately before
+this review${on} — on a tree identical to the merge base, because this outcome carries no diff.
+They are therefore evidence that the base is green and NOT evidence about the page under review:
+a green suite on unchanged bytes says nothing about whether those bytes are sound, and that judgment is yours.
+
+${lines.join('\n') || '- (no gate ran)'}
+${retryNote}
+**Do not re-run them as a substitute for reading.** If a specific claim on the page needs a check, run
+**that** check — the one that would be red if the claim were false — and quote
+what it printed. Re-running the whole suite is the one way this review can run out of time.
+`;
+}
+
+/**
+ * How a `reviewed:` review invocation ended (Stage 2, task 63).
+ *
+ * A timeout (killed at the wall-clock cap) classifies as `interrupted` —
+ * resumable, never a breaker input — rather than as absent review
+ * (`no-record`/`failed`). Nothing was rejected; the reviewer simply did not
+ * finish writing, so the branch is kept and the review is retried. An
+ * invocation that ended on its own with no usable verdict is still absent
+ * review and fails closed downstream; only the killed shape is reclassified.
+ * Pure over its arguments so the run path and the tests share one predicate.
+ *
+ * @param {{killed?: boolean, recordWritten?: boolean}} o
+ * @returns {'interrupted'|'recorded'|'absent'}
+ */
+export function classifyReviewedRun({ killed = false, recordWritten = false } = {}) {
+  if (killed && !recordWritten) return 'interrupted';
+  if (recordWritten) return 'recorded';
+  return 'absent';
+}
+
+/**
+ * Whether a runner may take `reviewed:`-outcome reviews (Stage 2, task 63).
+ *
+ * A timeout-prone runner is excluded from reviewed-outcome reviews unless an
+ * explicit timeout/interrupted-rate guard is recorded. Timeout-prone here is
+ * measured from the ledger, not from a name: the last three reviewer-role
+ * invocations for this runner id all killed at their caps (the
+ * `review*`-role phases `loop/run.mjs` already writes, the same rows
+ * `health.mjs` reads for its no-output streak). Anything else — fewer than
+ * three reviewer invocations, any one that finished on its own — is not
+ * timeout-prone and is eligible with no guard. Where the runner IS
+ * timeout-prone, `guard` must be a non-empty string naming the recorded guard
+ * (carried in the brief/log by the caller); absent or blank refuses.
+ * No ledger (null/empty) is eligible: with no evidence the runner is
+ * timeout-prone, exclusion would be a refusal on nothing.
+ *
+ * @param {{id?: string}|string|null} runner the reviewer entry or its id
+ * @param {{ledger?: Array|null, guard?: string|null}} [opts]
+ * @returns {{ok: boolean, reason?: string, prone?: boolean}}
+ */
+export function checkReviewedRunnerEligibility(runner, { ledger = null, guard = null } = {}) {
+  const id = typeof runner === 'string' ? runner : runner?.id;
+  if (!id) return { ok: false, reason: 'reviewed: no reviewer runner to judge eligibility for', prone: false };
+  const rows = [];
+  if (Array.isArray(ledger)) {
+    for (const line of ledger) {
+      if (!line || !Array.isArray(line.phases)) continue;
+      for (const p of line.phases) {
+        if (!p || typeof p.role !== 'string' || !/^review/.test(p.role)) continue;
+        if (p.runner !== id) continue;
+        rows.push(p);
+      }
+    }
+  }
+  const last3 = rows.slice(-3);
+  const prone = last3.length === 3 && last3.every((p) => p.killed === true);
+  if (!prone) return { ok: true, prone: false };
+  const g = typeof guard === 'string' ? guard.trim() : '';
+  if (g) return { ok: true, prone: true };
+  return {
+    ok: false,
+    prone: true,
+    reason:
+      `reviewed: reviewer "${id}" is timeout-prone (its last 3 reviewer invocations were all killed at their caps) ` +
+      `and no explicit timeout/interrupted-rate guard is recorded — it is excluded from reviewed-outcome reviews until such a guard is recorded`,
+  };
+}
+
+/**
  * The reviewer's own run, stated: it has a cap, it gets one shot, and the record
  * is the only thing that survives it.
  */
@@ -537,47 +745,85 @@ everything spent on it is lost. Do not leave the writing until last.
  * Assemble the reviewer's brief: the diff and the checklist, and nothing of
  * the author's reasoning.
  *
- * Read-and-unchanged mode (Stage 2, task 62): where `reviewedOnly` names the
- * one page this invocation reviews, the brief carries that page's
+ * Read-and-unchanged mode (Stage 2, tasks 62-63): where `reviewedOnly` names
+ * the one page this invocation reviews, the brief carries that page's
  * machine-supplied surface (`reviewedSurfaceText`, injected — this function
- * generates no bytes and hashes nothing; the hash store is task 64's) and
- * the graph annex filtered to that page APPENDED AFTER the surface, and NO
- * diff section at all. The filter is task 59's `assembleGraphContext` with
- * the same `reviewedOnly` — reused, never reimplemented — so the row the
- * reviewer sees is the row the merge gate reads. The per-page invocation
- * split (one invocation per declared page, never a bundle) is task 63's;
- * this function renders one page, and callers pass one page.
+ * generates no bytes; the caller reads the tree) and its hash, the graph
+ * annex filtered to that page APPENDED AFTER the surface, and NO diff section
+ * at all. The filter is task 59's `assembleGraphContext` with the same
+ * `reviewedOnly` — reused, never reimplemented — so the row the reviewer sees
+ * is the row the merge gate reads. The hash is `reviewedHash` over the
+ * carried surface bytes, printed beside the surface so the equality the merge
+ * checks (`hash(brief bytes) === hash(record binding)`, task 64) is readable
+ * here. The gates section is the reviewed disclaimer (evidence the base is
+ * green, not evidence about the page), and the checklist is the checklist for
+ * the page's kind, not the job's type. The per-page invocation split (one
+ * invocation per declared page, never a bundle) is task 63's; this function
+ * renders one page, and callers pass one page.
  */
 export function assembleReviewBrief(
   ctx,
-  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index' },
+  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index', reviewer = null },
 ) {
   // Task 59: the review checklist is keyed on the work order's governing type
   // (via the shared `governingTypeFor`), never on an item's own type — the
   // same governing value the author brief's excerpts and acceptance checks
   // read. Without a work order this resolves to `job.type`, so every existing
-  // caller keeps its exact brief.
+  // caller keeps its exact brief. On a `reviewed:` invocation (below) the
+  // checklist, prose and voice are keyed on the PAGE's kind instead — there
+  // is no diff whose type is the subject.
   const governing = governingTypeFor(job, workOrder ?? null);
-  const prose = isProse(governing);
-  const voice = needsReadsHuman(governing);
+  const reviewedPageEarly = typeof reviewedOnly === 'string' && reviewedOnly.trim()
+    ? reviewedOnly.replace(/\\/g, '/').trim()
+    : null;
+  // The page kind is resolved once: it keys the checklist below and the
+  // prose/voice demands. Unknown kinds throw here, failing the assembly
+  // closed rather than reviewing against another kind's list. Resolved before
+  // any rendering so a page with no checklist never produces a half-brief.
+  let reviewedGateType = null;
+  if (reviewedPageEarly) {
+    reviewedGateType = reviewedGateTypeForPage(reviewedPageEarly);
+  }
+  const prose = reviewedGateType ? PROSE_TYPES.includes(reviewedGateType) : isProse(governing);
+  const voice = reviewedGateType
+    ? reviewedGateType === 'post' || blogPostSubjects([reviewedPageEarly]).length > 0
+    : needsReadsHuman(governing);
   const fromProposal = job.source === 'proposal';
   const rejection = fromProposal
     ? `\n## The rejection index\n\nThis job originated from a proposal. Part of your checklist is the judgment\nhalf of duplicate suppression: confirm this piece is not a differently-worded\nre-tread of an idea already rejected. The mechanical half — exact slug match —\nalready ran and passed. Fuzzy matching is guessing, so this half is yours.\n\n${rejectionIndexText(ctx)}\n`
     : '';
 
-  // Read-and-unchanged tail (task 62): the reviewed page's surface with the
-  // filtered graph annex APPENDED AFTER it, and no diff section at all. The
-  // annex is task 59's filter (`assembleGraphContext` with `reviewedOnly`),
-  // so the merge gate and the reviewer read one row assembled one way. Where
+  // Read-and-unchanged tail (tasks 62-63): the reviewed page's surface, its
+  // hash, and the filtered graph annex APPENDED AFTER the surface, and no diff
+  // section at all. The annex is task 59's filter (`assembleGraphContext`
+  // with `reviewedOnly`), so the merge gate and the reviewer read one row
+  // assembled one way. The surface is machine-generated from the tree by the
+  // caller (read from the worktree/branch, never from brief prose); the hash
+  // beside it is `reviewedHash` over those carried bytes. Where
   // `reviewedOnly` is absent the brief below is byte-identical to before.
-  const reviewedPage = typeof reviewedOnly === 'string' && reviewedOnly.trim()
-    ? reviewedOnly.replace(/\\/g, '/').trim()
-    : null;
+  const reviewedPage = reviewedPageEarly;
   let reviewedTail = null;
+  let reviewedHashLine = null;
   if (reviewedPage) {
-    const surface = typeof reviewedSurfaceText === 'string' && reviewedSurfaceText
+    const hasSurface = typeof reviewedSurfaceText === 'string' && reviewedSurfaceText;
+    const surface = hasSurface
       ? reviewedSurfaceText
       : '(no surface text was supplied for this page — judge nothing from memory; say so in your notes.)';
+    let hashLine;
+    if (hasSurface) {
+      let hash = null;
+      try {
+        hash = reviewedHash(reviewedSurfaceText);
+      } catch {
+        hash = null;
+      }
+      hashLine = hash
+        ? `Reviewed hash: \`${hash}\` (SHA-256 of the reviewed surface above, as the record will bind it)`
+        : 'Reviewed hash: (the surface above could not be hashed — say so in your notes and bind nothing)';
+    } else {
+      hashLine = 'Reviewed hash: (no surface was supplied, so no hash is bound by this brief)';
+    }
+    reviewedHashLine = hashLine;
     const seam = typeof reviewGraphQuery === 'function'
       ? reviewGraphQuery
       : () => ({ absent: true, reason: 'no graph index wired on the review path' });
@@ -598,6 +844,8 @@ unchanged. The absence of a diff is the finding.
 
 ${surface}
 
+${hashLine}
+
 ${built.annexText}`;
   }
   const diffTail = `## The diff under review
@@ -610,7 +858,26 @@ ${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated 
 \`\`\`
 `;
 
-  return `# Review — job ${jobId} (${governing})${pass > 1 ? `, delta review, pass ${pass}` : ''}
+  // Task 63: on a reviewed invocation the gates section is the disclaimer
+  // (evidence the base is green, not evidence about the page), the checklist
+  // is the page kind's, and the reviewer rung is named (the rung and route
+  // the invocation runs on, read at review time — no model is named here).
+  // Without the mode both read exactly as before.
+  const gatesBlock = reviewedPage ? reviewedGatesSection(gates, sha) : gatesSection(gates, sha);
+  const checklistList = reviewedGateType ? checklistFor(reviewedGateType) : checklistFor(governing);
+  const checklistHeading = reviewedPage
+    ? `## Checklist for this page's kind (\`${reviewedGateType}\`, from \`${reviewedPage}\`)`
+    : '## Checklist for this kind of work';
+  const rung = reviewer && typeof reviewer === 'object' && reviewer.id ? reviewer : null;
+  const rungBlock = reviewedPage
+    ? `## Reviewer rung
+
+${rung ? `\`${rung.id}\` (provider \`${rung.provider ?? '?'}\`, tier \`${rung.tier ?? '?'}\`) — read from the registry at review time; no model is named here.` : '(no rung — the review must not run)'}
+`
+    : '';
+
+  return `# Review — job ${jobId} (${reviewedGateType ?? governing})${pass > 1 ? `, delta review, pass ${pass}` : ''}${reviewedPage ? `
+(one page of a per-page reviewed outcome: this invocation reviews ONLY \`${reviewedPage}\`; never judge another page from this brief)` : ''}
 
 You are the reviewer. You have fresh context: you have not seen the author's
 reasoning and you will not get it. You have ${reviewedTail ? 'the reviewed page surface below' : 'the diff below'} and the checklist.
@@ -629,8 +896,8 @@ ${job.title}
 
 ${subjectLines(job)}${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
 ${runShapeSection({ capMinutes, mmSoFar, invocations, totalMinutes })}
-${gatesSection(gates, sha)}
-${pass > 1 ? `## What this delta review covers\n\nThe previous verdict asked for revisions. Review **only what changed since
+${gatesBlock}
+${rungBlock}${pass > 1 ? `## What this delta review covers\n\nThe previous verdict asked for revisions. Review **only what changed since
 then**, against these findings:\n\n${findings}\n\nThis is the last pass. A second non-approval discards the job.\n` : ''}
 ## Your standing instruction
 
@@ -640,9 +907,9 @@ review exists to catch is the claim written from intent rather than
 measurement — found repeatedly by skeptical readers on the previous version of
 this site, and never once by an automated check.
 
-## Checklist for this kind of work
+${checklistHeading}
 
-${checklistFor(governing).map((c) => `- ${c}`).join('\n')}
+${checklistList.map((c) => `- ${c}`).join('\n')}
 ${rejection}
 ${corroborationSection()}
 ${polaritySection()}
@@ -878,7 +1145,13 @@ export function existingFieldValues(ctx, excludeJobId, field) {
   const out = [];
   for (const name of readdirSync(ctx.reviewsDir)) {
     if (!name.endsWith('.md') || name === 'README.md') continue;
-    if (excludeJobId && (name === `${excludeJobId}.md` || name.startsWith(`${excludeJobId}.pass`))) continue;
+    // Task 63: the exclusion covers every record of the same job — the job's
+    // own record plus every per-page sibling (`<jobId>.reviewed-<i>.md`) —
+    // so two pages honestly sharing one sentence are allowed the way two
+    // entries in one record are. Previously this excluded only `<jobId>.md`
+    // and `<jobId>.pass*`; no such sibling existed then, so the set is
+    // unchanged for every existing path.
+    if (excludeJobId && isRecordOfJob(name, excludeJobId)) continue;
     let text;
     try {
       text = readFileSync(join(ctx.reviewsDir, name), 'utf8');
@@ -1036,8 +1309,14 @@ export function checkWorkOrderMergeBounds({ workOrder, subjects = null, measure 
  *
  * @returns {{ok: boolean, reason?: string, verdict?: object}}
  */
-export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workOrder = null, measure = null, bounds = null }) {
-  const path = verdictPath(ctx, jobId, pass);
+export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workOrder = null, measure = null, bounds = null, recordPath = null }) {
+  // Task 63: per-page reviews read their own record (`recordPath`, one per
+  // declared page) while the duplicate sweep still excludes every record of
+  // the same job — the caller passes the job's own `jobId` (not a suffixed
+  // id), so `jobId` already covers the job's own record plus every per-page
+  // sibling via `isRecordOfJob`. Without `recordPath` the path and the
+  // exclusion are exactly as before.
+  const path = typeof recordPath === 'string' && recordPath ? recordPath : verdictPath(ctx, jobId, pass);
   if (!existsSync(path)) {
     return {
       ok: false,
@@ -1473,13 +1752,21 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
 /**
  * Run the reviewer, then discard everything it touched.
  *
+ * Task 63's per-page split reuses this single implementation (extend, do not
+ * fork): callers pass one page per invocation via `reviewedOnly`, with a
+ * distinct `outPathOverride` (see `reviewedPerPageRecordPath`) and a distinct
+ * `reviewSuffix` for the disposable worktree/brief/log names, so N pages gain
+ * N invocations without a second code path. Without those overrides the paths
+ * are exactly as before (single-page and non-reviewed callers byte-stable).
+ *
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
  *                    branchShaAfter: string, recordWritten: boolean}>}
  */
-export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index' }) {
+export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index', reviewer = null, outPathOverride = null, reviewSuffix = null }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
-  const outPath = verdictPath(ctx, jobId, pass);
-  const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}`);
+  const outPath = typeof outPathOverride === 'string' && outPathOverride ? outPathOverride : verdictPath(ctx, jobId, pass);
+  const suffix = typeof reviewSuffix === 'string' && reviewSuffix ? reviewSuffix : '';
+  const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}${suffix}`);
   rmSync(reviewDir, { recursive: true, force: true });
   mkdirSync(ctx.worktreeRoot, { recursive: true });
 
@@ -1507,16 +1794,17 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
     reviewedSurfaceText,
     reviewGraphQuery,
     graphIndexId,
+    reviewer: reviewer ?? runner ?? null,
   });
   const run = await runExecutor({
     command: runner.command,
     cwd: reviewDir,
     promptText: brief,
-    promptPath: join(ctx.worktreeRoot, `${jobId}-review-${pass}-brief.md`),
+    promptPath: join(ctx.worktreeRoot, `${jobId}-review-${pass}${suffix}-brief.md`),
     timeoutMs: capMinutes * 60 * 1000,
     role: 'reviewer',
     jobId,
-    logPath: jobLogPath(ctx.worktreeRoot, jobId, `review${pass}`),
+    logPath: jobLogPath(ctx.worktreeRoot, jobId, `review${pass}${suffix}`),
   });
 
   // No edit rights, as a mechanism: throw the reviewer's tree away.

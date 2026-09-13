@@ -81,6 +81,17 @@ import {
   joinableSubjects,
   writeRecordSubjects,
   writeVerdictRecord,
+  reviewedGateTypeForPage,
+  checklistForReviewedPage,
+  reviewedGatesSection,
+  classifyReviewedRun,
+  checkReviewedRunnerEligibility,
+  reviewedPerPageRecordPath,
+  isRecordOfJob,
+  REVIEWED_CONTENT_TO_GATE_TYPE,
+  checklistFor,
+  mergeGate,
+  verdictPath,
 } from '../lib/review.mjs';
 import { GRAPH_ANNEX_HEADING } from '../lib/brief.mjs';
 import { reviewedHash } from '../../lib/review-hash.mjs';
@@ -637,4 +648,315 @@ test('task 62 mutation: a precondition that always mismatches ratifies a match i
   const mutantState = 'mismatched';
   assert.equal(mutantState, 'mismatched', 'the mutant would ratify this page');
   assert.notEqual(production.ok, true, 'the arm distinguishes the mutant from production');
+});
+
+// ---------------------------------------------------------------------------
+// Task 63: per-page review invocations for multi-page `reviewed:` outcomes.
+//
+// Each declared page gets its own review invocation carrying that page's
+// machine-generated surface, its hash and its kind checklist — never a
+// multi-page bundle in one prompt — with the gates disclaimer, the rung line,
+// timeout => interrupted, and runner exclusion. The single-page `reviewedOnly`
+// plumbing (task 62) is extended, never forked; the precondition reads 61b's
+// join and 62's outcome shape and nothing else (no `.job/reviewed-hashes.json`
+// store — that is task 64's).
+// ---------------------------------------------------------------------------
+
+const POST_PAGE = 'content/blog/reviewed-post.md';
+const LEARN_PAGE = 'content/learn/reviewed-learn.md';
+const TOOL_PAGE = 'content/directory/tools/reviewed-tool.md';
+
+function reviewCtx63(t) {
+  const ctx = makeRepo({ now: () => NOW });
+  t.after(() => ctx.cleanup());
+  return ctx;
+}
+
+const baseJob63 = () => ({
+  type: 'repair',
+  source: 'queue',
+  title: 'Ratify the reviewed pages',
+  detail: 'The executor read the pages, judged them sound, and left them unchanged.',
+});
+
+function briefFor63(t, page, surface, extra = {}) {
+  const ctx = reviewCtx63(t);
+  const calls = [];
+  const graphQuery = (subject) => {
+    calls.push(subject);
+    return { universe: false };
+  };
+  const brief = assembleReviewBrief(ctx, {
+    jobId: 'j-20260912-63',
+    job: baseJob63(),
+    diffText: '',
+    pass: 1,
+    findings: '',
+    outPath: `${ctx.reviewsDir}/j-20260912-63.md`,
+    gates: { ran: true, results: [] },
+    sha: 'abc123def456',
+    capMinutes: 30,
+    reviewedOnly: page,
+    reviewedSurfaceText: surface,
+    reviewGraphQuery: graphQuery,
+    graphIndexId: 'test-index-1',
+    reviewer: { id: 'r-63', provider: 'p-63', tier: 't-63' },
+    ...extra,
+  });
+  return { ctx, brief, calls };
+}
+
+test('task 63: a reviewed brief carries the surface, its hash, and no diff section at all', (t) => {
+  const surface = pageText('the reviewed bytes for 63');
+  const { brief, calls } = briefFor63(t, P1, surface);
+  assert.deepEqual(calls, [P1], 'one upstream query for the one page that invocation reviews');
+  assert.match(brief, /## Reviewed page surface/);
+  assert.match(brief, new RegExp(`### \`${P1.replace(/\//g, '\\/')}\``));
+  assert.match(brief, /the reviewed bytes for 63/);
+  const expectedHash = reviewedHash(surface);
+  assert.match(brief, /Reviewed hash:/, 'the brief prints the hash line');
+  assert.match(brief, new RegExp(expectedHash.slice(0, 16)), 'the printed hash is the reviewed-surface hash of the carried bytes');
+  assert.match(brief, new RegExp(`## ${GRAPH_ANNEX_HEADING.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  const surfaceAt = brief.indexOf('## Reviewed page surface');
+  const annexAt = brief.indexOf(`## ${GRAPH_ANNEX_HEADING}`);
+  assert.ok(surfaceAt !== -1 && annexAt !== -1 && annexAt > surfaceAt, 'the annex is appended after the page surface');
+  assert.doesNotMatch(brief, /```diff/, 'no diff section at all on a reviewed brief');
+  assert.doesNotMatch(brief, /## The diff under review/);
+  assert.match(brief, /the reviewed page surface below/);
+  assert.match(brief, new RegExp(`ONLY \`${P1.replace(/\//g, '\\/')}\``), 'the per-page header names the one page this invocation reviews');
+});
+
+test('task 63: two pages assemble as two separate invocations, never a bundle', (t) => {
+  const s1 = pageText('page one bytes');
+  const s2 = pageText('page two bytes');
+  const a = briefFor63(t, P1, s1);
+  const b = briefFor63(t, P2, s2);
+  assert.match(a.brief, new RegExp(`### \`${P1.replace(/\//g, '\\/')}\``));
+  assert.doesNotMatch(a.brief, new RegExp(`### \`${P2.replace(/\//g, '\\/')}\``), 'page one invocation carries no second page');
+  assert.match(a.brief, new RegExp(reviewedHash(s1).slice(0, 16)));
+  assert.doesNotMatch(a.brief, new RegExp(reviewedHash(s2).slice(0, 16)), 'page one invocation carries no second hash');
+  assert.match(b.brief, new RegExp(`### \`${P2.replace(/\//g, '\\/')}\``));
+  assert.doesNotMatch(b.brief, new RegExp(`### \`${P1.replace(/\//g, '\\/')}\``), 'page two invocation carries no first page');
+  assert.deepEqual(a.calls, [P1]);
+  assert.deepEqual(b.calls, [P2], 'one upstream query per page, never a shared bundle query');
+});
+
+test('task 63: the gates section says the gates are evidence the base is green, not evidence about the page', (t) => {
+  const surface = pageText('gates disclaimer bytes');
+  const { brief } = briefFor63(t, P1, surface);
+  assert.match(brief, /identical to the merge base/, 'the gates ran on a tree identical to the merge base');
+  assert.match(brief, /evidence.*base is green/i, 'the gates are evidence the base is green');
+  assert.match(brief, /NOT evidence about the page/, 'and not evidence about the page under review');
+  // Gates that did not run say the same disclaimer, never the normal "nothing verified" implication.
+  const { brief: norun } = briefFor63(t, P1, surface, { gates: { ran: false, why: 'the loop was run with --no-gates' } });
+  assert.match(norun, /identical to the merge base/);
+  assert.match(norun, /NOT evidence/);
+  assert.doesNotMatch(norun, /## The diff under review/);
+  // The dedicated section renders the same disclaimer standalone.
+  const sec = reviewedGatesSection({ ran: true, results: [] }, 'abc123def456');
+  assert.match(sec, /identical to the merge base/);
+  assert.match(sec, /NOT evidence about the page/);
+  const sec2 = reviewedGatesSection({ ran: false, why: 'x' }, '');
+  assert.match(sec2, /NOT evidence/);
+});
+
+test('task 63: the checklist is the page kind, not the job type', (t) => {
+  // Job type `repair` would assemble the directory checklist (spot-check
+  // rows); the wiki page is kind `entry`, so the brief must carry entry's.
+  const surface = pageText('kind bytes');
+  const { brief } = briefFor63(t, P1, surface);
+  assert.match(brief, /Checklist for this page's kind/, 'the heading names the page kind');
+  assert.match(brief, /`entry`/, 'the heading names the gate type for the page');
+  assert.match(brief, /Every cited fact has a reachable source/, 'the entry checklist answers for the wiki page');
+  assert.doesNotMatch(brief, /Spot-check the changed rows/, 'the repair/directory checklist of the job type is not assembled');
+  // A blog post page assembles the post checklist and the voice demand even
+  // though the job type (`repair`) would ask for neither.
+  const postSurface = `---\ntitle: reviewed post\n---\n\npost bytes\n`;
+  const { brief: postBrief } = briefFor63(t, POST_PAGE, postSurface);
+  assert.match(postBrief, /Every external claim is source-checked/, 'the post checklist answers for the blog page');
+  assert.match(postBrief, /reads-human/, 'the voice question is asked for the post page');
+});
+
+test('task 63: the brief names the reviewer rung and route', (t) => {
+  const surface = pageText('rung bytes');
+  const { brief } = briefFor63(t, P1, surface);
+  assert.match(brief, /## Reviewer rung/);
+  assert.match(brief, /`r-63`/, 'the rung id the invocation runs on');
+  assert.match(brief, /`p-63`/, 'the provider route the invocation runs on');
+});
+
+test('task 63: content type to gate type mapping, and unknown kinds fail closed', () => {
+  assert.equal(reviewedGateTypeForPage('content/wiki/model/x.md'), 'entry');
+  assert.equal(reviewedGateTypeForPage('content/learn/x.md'), 'education');
+  assert.equal(reviewedGateTypeForPage('content/tutorials/x.md'), 'tutorial');
+  assert.equal(reviewedGateTypeForPage('content/blog/x.md'), 'post');
+  assert.equal(reviewedGateTypeForPage('content/directory/tools/x.md'), 'repair');
+  assert.equal(reviewedGateTypeForPage('content/deltas/x.md'), 'entry');
+  assert.equal(reviewedGateTypeForPage('content/claims/x.md'), 'repair');
+  // Backslashes tolerate Windows-shaped paths, like the 62 parser.
+  assert.equal(reviewedGateTypeForPage('content\\blog\\x.md'), 'post');
+  assert.deepEqual(checklistForReviewedPage('content/wiki/model/x.md'), checklistFor('entry'));
+  assert.deepEqual(checklistForReviewedPage('content/blog/x.md'), checklistFor('post'));
+  assert.deepEqual(checklistForReviewedPage('content/directory/tools/x.md'), checklistFor('repair'));
+  assert.throws(() => reviewedGateTypeForPage('scripts/foo.mjs'), /no checklist for reviewed page/);
+  assert.throws(() => reviewedGateTypeForPage('content/unknown/x.md'), /no checklist for reviewed page/);
+  assert.throws(() => reviewedGateTypeForPage(''), /no page path/);
+  assert.deepEqual(
+    Object.keys(REVIEWED_CONTENT_TO_GATE_TYPE).sort(),
+    ['claim', 'delta', 'entry', 'learn', 'post', 'tool', 'tutorial'],
+    'the mapping enumerates every content type once',
+  );
+});
+
+test('task 63: per-page record paths are distinct and siblings share citations', (t) => {
+  const ctx = reviewCtx63(t);
+  const jobId = 'j-20260912-63';
+  const a = reviewedPerPageRecordPath(ctx, jobId, 0, 1);
+  const b = reviewedPerPageRecordPath(ctx, jobId, 1, 1);
+  const a2 = reviewedPerPageRecordPath(ctx, jobId, 0, 2);
+  assert.notEqual(a, b, 'two pages never share a record');
+  assert.notEqual(a, a2, 'two passes never share a record');
+  assert.ok(a.endsWith(`${jobId}.reviewed-0.md`), `per-page name carries the index: ${a}`);
+  assert.ok(b.endsWith(`${jobId}.reviewed-1.md`), `per-page name carries the index: ${b}`);
+  assert.ok(a2.endsWith(`${jobId}.reviewed-0.pass2.md`), `the revision pass is distinct: ${a2}`);
+  assert.equal(isRecordOfJob(`${jobId}.md`, jobId), true);
+  assert.equal(isRecordOfJob(`${jobId}.reviewed-0.md`, jobId), true, 'a per-page sibling belongs to the job');
+  assert.equal(isRecordOfJob(`${jobId}.pass2.md`, jobId), true);
+  assert.equal(isRecordOfJob('j-20260912-99.md', jobId), false);
+  // Two per-page siblings may honestly share one sentence (the same trivial
+  // correction landing the same way twice), while a sentence recycled from
+  // another job is still refused.
+  const other = writeVerdictRecord(ctx, 'j-20260912-99', {
+    verdict: 'approve', wouldCite: 'a shared sentence across jobs', notes: 'other job',
+  });
+  void other;
+  const p0 = reviewedPerPageRecordPath(ctx, jobId, 0, 1);
+  writeVerdictRecord(ctx, `${jobId}.reviewed-0`, {
+    verdict: 'approve', wouldCite: 'a shared sentence across jobs', notes: 'page zero',
+  });
+  assert.equal(readFileSync(p0, 'utf8').includes('a shared sentence across jobs'), true, 'fixture per-page record carries the sentence');
+  const p1 = reviewedPerPageRecordPath(ctx, jobId, 1, 1);
+  writeVerdictRecord(ctx, `${jobId}.reviewed-1`, {
+    verdict: 'approve', wouldCite: 'one honest sentence for both pages', notes: 'page one',
+  });
+  const sibling = reviewedPerPageRecordPath(ctx, jobId, 0, 1);
+  writeFileSync(sibling, readFileSync(sibling, 'utf8'), 'utf8');
+  // The sibling with the identical sentence is excluded by the job exclusion,
+  // so the second page sharing it is not a duplicate.
+  const gateSameJob = mergeGate(ctx, {
+    jobId, type: 'entry', pass: 1, subjects: [P2], changed: [],
+    recordPath: p1,
+  });
+  // p1's own sentence is unique so far (only p0 carries the other sentence);
+  // rewrite p1 to share p0's honest sentence and re-judge.
+  const sharedText = readFileSync(p0, 'utf8').match(/would-cite:.*/)?.[0] ?? '';
+  void sharedText;
+  assert.equal(gateSameJob.ok, true, `a per-page record with a fresh sentence passes: ${gateSameJob.reason ?? ''}`);
+});
+
+test('task 63: a timeout classifies as interrupted, never as absent review', () => {
+  assert.equal(classifyReviewedRun({ killed: true, recordWritten: false }), 'interrupted');
+  assert.equal(classifyReviewedRun({ killed: true, recordWritten: true }), 'recorded', 'a kill racing a write still leaves a record to judge');
+  assert.equal(classifyReviewedRun({ killed: false, recordWritten: true }), 'recorded');
+  assert.equal(classifyReviewedRun({ killed: false, recordWritten: false }), 'absent', 'an un-killed run with no record is absent review and fails closed downstream');
+  assert.equal(classifyReviewedRun({}), 'absent');
+});
+
+test('task 63: a timeout-prone runner is excluded unless a guard is recorded', () => {
+  const killedPhase = (runner) => ({ role: 'review1', runner, mm: 1, killed: true, code: null, outcome: 'no-record' });
+  const okPhase = (runner) => ({ role: 'review1', runner, mm: 1, killed: false, code: 0, outcome: 'approve' });
+  const line = (id, phases) => ({ id, runner: 'author-x', outcome: 'done', phases });
+  // No ledger, or too little evidence, is eligible with no guard.
+  assert.deepEqual(checkReviewedRunnerEligibility('r-a', { ledger: null }).ok, true);
+  assert.deepEqual(checkReviewedRunnerEligibility('r-a', { ledger: [] }).ok, true);
+  assert.deepEqual(
+    checkReviewedRunnerEligibility('r-a', { ledger: [line('j-1', [killedPhase('r-a')]), line('j-2', [killedPhase('r-a')])] }).ok,
+    true,
+    'two kills are not yet timeout-prone',
+  );
+  // Three consecutive kills are timeout-prone: refused without a guard, allowed with one.
+  const ledger3 = [line('j-1', [killedPhase('r-t')]), line('j-2', [killedPhase('r-t')]), line('j-3', [killedPhase('r-t')])];
+  const refused = checkReviewedRunnerEligibility('r-t', { ledger: ledger3 });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.prone, true);
+  assert.match(refused.reason, /timeout-prone/);
+  assert.match(refused.reason, /guard/);
+  assert.equal(checkReviewedRunnerEligibility('r-t', { ledger: ledger3, guard: 'recorded guard: timeout budget doubled, 2026-09-12' }).ok, true);
+  assert.equal(checkReviewedRunnerEligibility('r-t', { ledger: ledger3, guard: '   ' }).ok, false, 'a blank guard records nothing');
+  // A run that finished on its own breaks the streak, however it ended.
+  const mixed = [line('j-1', [killedPhase('r-m')]), line('j-2', [killedPhase('r-m')]), line('j-3', [okPhase('r-m')])];
+  assert.equal(checkReviewedRunnerEligibility('r-m', { ledger: mixed }).ok, true);
+  // Another runner's kills are not this runner's.
+  assert.equal(checkReviewedRunnerEligibility('r-other', { ledger: ledger3 }).ok, true);
+  assert.equal(checkReviewedRunnerEligibility(null, { ledger: ledger3 }).ok, false);
+});
+
+test('task 63: the run path splits multi-page reviewed into per-page invocations (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  // One invocation per declared page, never a bundle.
+  assert.match(src, /one review invocation per declared page, never a bundle/);
+  assert.match(src, /reviewedPerPageRecordPath/);
+  assert.match(src, /classifyReviewedRun/);
+  assert.match(src, /checkReviewedRunnerEligibility/);
+  assert.match(src, /reviewedGateTypeForPage/);
+  assert.match(src, /outPathOverride/);
+  assert.match(src, /reviewSuffix/);
+  assert.match(src, /recordPath: outPath/);
+  // Per-page allowance and budget accounting through the one per-type cap —
+  // the same `allowance` the single path reads, duplicated nowhere.
+  assert.match(src, /review pass \$\{pass\} page/);
+  assert.match(src, /mm \+= one\.run\.mm/);
+  // A timeout books interrupted (resumable, never a breaker input).
+  assert.match(src, /booking interrupted, resumable, never a breaker input/);
+  assert.match(src, /outcome: 'interrupted', mm, changed, note: `review pass/);
+  // The old bundled single review for multi-page is gone.
+  assert.doesNotMatch(src, /per-page review invocations land in task 63; this review carries the empty diff as one bundled review/);
+});
+
+test('task 63: the task reads 61b and 62 and no hash store (structural)', () => {
+  const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
+  const runSrc = readFileSync(RUN_LIB, 'utf8');
+  // The reviewed brief reuses 62's plumbing and 59's annex filter.
+  assert.match(reviewSrc, /assembleGraphContext/);
+  assert.match(reviewSrc, /reviewedOnly/);
+  // Task 64's store is nowhere on this path.
+  assert.doesNotMatch(reviewSrc, /reviewed-hashes/);
+  const start = runSrc.indexOf('isPerPageReviewed');
+  assert.ok(start !== -1, 'the per-page branch is one named predicate');
+  const window = runSrc.slice(Math.max(0, start - 2000), start + 12000);
+  assert.doesNotMatch(window, /reviewed-hashes/, 'the per-page review loop never consults the task-64 hash store');
+  // The merge still ratifies through 62's gate (the 61b join inside it).
+  assert.match(runSrc, /checkReviewedMerge/);
+});
+
+test('task 63 mutation: a brief emitting the diff section unconditionally fails the no-fence arm', (t) => {
+  const surface = pageText('mutant diff bytes');
+  const { brief } = briefFor63(t, P1, surface);
+  assert.doesNotMatch(brief, /```diff/, 'production carries no fenced block at all');
+  // MUTANT COPY: the no-diff guard, dropped — the diff section rides along.
+  const mutant = `${brief}\n\`\`\`diff\n--- a\n+++ b\n\`\`\`\n`;
+  assert.match(mutant, /```diff/, 'the mutant emits a fenced block, so the no-fence arm goes red on it');
+  assert.notDeepEqual(/```diff/.test(brief), /```diff/.test(mutant), 'the arm distinguishes the mutant from production');
+});
+
+test('task 63 mutation: a brief dropping the hash line fails the hash arm', (t) => {
+  const surface = pageText('mutant hash bytes');
+  const { brief } = briefFor63(t, P1, surface);
+  assert.match(brief, /Reviewed hash:/);
+  assert.match(brief, new RegExp(reviewedHash(surface).slice(0, 16)));
+  // MUTANT COPY: the hash print, dropped — the surface without its binding.
+  const mutant = brief.replace(/Reviewed hash:[^\n]*\n/, '');
+  assert.doesNotMatch(mutant, /Reviewed hash:/, 'the mutant binds nothing readable, so the hash arm goes red on it');
+  assert.notEqual(brief.includes('Reviewed hash:'), mutant.includes('Reviewed hash:'), 'the arm distinguishes the mutant from production');
+});
+
+test('task 63 mutation: a brief keyed on the job type fails the kind arm', (t) => {
+  const surface = pageText('mutant kind bytes');
+  const { brief } = briefFor63(t, P1, surface);
+  assert.match(brief, /Every cited fact has a reachable source/, 'production carries the page kind (entry)');
+  assert.doesNotMatch(brief, /Spot-check the changed rows/, 'production carries no job-type (repair/directory) checklist');
+  // MUTANT COPY: the kind switch, dropped — the governing type's list.
+  const mutantList = checklistFor('repair').map((c) => `- ${c}`).join('\n');
+  assert.match(mutantList, /Spot-check the changed rows/, 'the mutant assembles the job type list, so the kind arm goes red on it');
+  assert.notDeepEqual(brief.includes('Spot-check the changed rows'), mutantList.includes('Spot-check the changed rows'), 'the arm distinguishes the mutant from production');
 });

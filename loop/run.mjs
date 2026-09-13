@@ -61,7 +61,7 @@ import {
   withFailingGateRetry,
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
-import { isDiffRefusal, isReissueRefusal, isContentPath, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
+import { isDiffRefusal, isReissueRefusal, isContentPath, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects, reviewedPerPageRecordPath, classifyReviewedRun, checkReviewedRunnerEligibility, reviewedGateTypeForPage } from './lib/review.mjs';
 import { normalizeReviewStatePath, reviewStateForPageAtBase } from './lib/review-state.mjs';
 import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, classifyRedTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
 import {
@@ -1753,82 +1753,294 @@ async function executeJob(ctx, opts) {
     // at all — the merge gate then fails the job at `no-record`, which spends
     // the reviewer's minutes AND loses the work. A stub review is not a cheaper
     // review; it is the same loss with a worse record of why.
-    const reviewAllowance = allowance(`review pass ${pass}`);
+    // THE REVIEW IS WHERE THE BOUND MOST OFTEN BINDS, and where refusing is
+    // least comfortable: the author's work is already on the branch and nothing
+    // merges without an approval, so an abandon here loses that work. It is
+    // still the right answer. The alternative is a review capped at whatever
+    // scraps are left, and a review killed at its cap writes no verdict record
+    // at all — the merge gate then fails the job at `no-record`, which spends
+    // the reviewer's minutes AND loses the work. A stub review is not a cheaper
+    // review; it is the same loss with a worse record of why.
+    //
+    // Read-and-unchanged per-page split (Stage 2, task 63): on a multi-page
+    // `reviewed:` outcome each declared page gets its own review invocation
+    // (its surface, hash and kind checklist, never a bundle), each with its
+    // own per-type allowance and budget accounting, each record still passing
+    // the merge gate. Single-page and non-reviewed paths below are unchanged.
+    const isReviewedOutcome = classified.status === 'reviewed';
+    const declaredPages = isReviewedOutcome && Array.isArray(classified.paths)
+      ? [...new Set(classified.paths.map(normSubjectPath).filter(Boolean))].sort()
+      : [];
+    const isPerPageReviewed = isReviewedOutcome && declaredPages.length > 1;
+    // Per-page state for the shared post-review handling below (closure,
+    // phases, revision findings): populated only on the per-page branch.
+    let perPageReviews = null;
+    let perPageGates = null;
+    let perPageAllowances = null;
+    let perPageOutPaths = null;
+    let perPageRevisionFindings = null;
+    let reviewAllowance = allowance(`review pass ${pass}`);
     if (!reviewAllowance.ok) {
       ctx.log(`BUDGET: ${reviewAllowance.reason}`);
       ctx.log(`the work on ${branch} is left where it is; nothing merges without a review`);
       return finish({ outcome: 'abandoned', mm, changed, note: reviewAllowance.reason });
     }
-    ctx.log(`review pass ${pass}: invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${reviewAllowance.capMinutes}-minute cap${capNote(reviewAllowance)}`);
-    // Read-and-unchanged wiring (task 62): where the executor declared a
-    // single reviewed page, this review carries that page's surface with the
-    // filtered graph annex appended after it, and no diff section — the
-    // `reviewedOnly` production plumbing the task-59 deferred note names this
-    // task as its wirer. A multi-page declaration stays one bundled review
-    // until task 63's per-page split lands; that is logged, never silent.
-    let reviewedOnly = null;
-    let reviewedSurfaceText = null;
-    if (classified.status === 'reviewed') {
-      const declared = Array.isArray(classified.paths)
-        ? [...new Set(classified.paths.map(normSubjectPath).filter(Boolean))]
-        : [];
-      if (declared.length === 1) {
-        reviewedOnly = declared[0];
-        try {
-          reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly), 'utf8');
-        } catch {
-          reviewedSurfaceText = null;
-        }
-      } else if (declared.length > 1) {
-        ctx.log(
-          `reviewed: outcome names ${declared.length} pages (${declared.join(', ')}) — ` +
-          `per-page review invocations land in task 63; this review carries the empty diff as one bundled review`,
-        );
+    // The runner eligibility for reviewed outcomes (task 63): a timeout-prone
+    // reviewer (last 3 reviewer invocations all killed, read from the ledger)
+    // is excluded unless an explicit guard is recorded. No guard is recorded
+    // anywhere in production today, so this is called with guard null — the
+    // guard path exists and is unit-proved, but fires on nothing until such a
+    // record exists. An exclusion settles `interrupted` (resumable, never a
+    // breaker input), never a verdict failure.
+    if (isReviewedOutcome) {
+      const eligibility = checkReviewedRunnerEligibility(reviewer, { ledger: Array.isArray(ledger) ? ledger : null, guard: null });
+      if (!eligibility.ok) {
+        ctx.log(`reviewed: ${eligibility.reason} — booking interrupted, nothing merges`);
+        return finish({ outcome: 'interrupted', mm, changed, note: eligibility.reason });
+      }
+      if (eligibility.prone) {
+        ctx.log(`reviewed: reviewer "${reviewer.id}" is timeout-prone but an explicit guard is recorded — proceeding`);
       }
     }
-    const rev = await runReview(ctx, {
-      jobId,
-      job,
-      branch,
-      diffText,
-      runner: reviewer,
-      capMinutes: reviewAllowance.capMinutes,
-      pass,
-      findings,
-      gates: gateReport,
-      // The committed work-order declaration: the review brief keys its
-      // checklist on the governing type (task 59), never on an item's type.
-      workOrder: workOrder ?? null,
-      reviewedOnly,
-      reviewedSurfaceText,
-      reviewGraphQuery: briefGraphQueryForSubject,
-      graphIndexId: 'review-index:merge-base-tree',
-      // The job's spend, not this run's: a resumed job carries what its earlier
-      // runs cost, and the reviewer is told the number the ledger would show.
-      mmSoFar: spent(),
-      invocations: prior.invocations + phases.length,
-      totalMinutes,
-    });
-    mm += rev.run.mm; // "Review MM counts toward the job it reviews."
-    if (rev.discarded.discardedAnything) {
-      ctx.log(`the reviewer changed its worktree; those changes were discarded (branch ${rev.branchUnchanged ? 'unchanged' : 'CHANGED — investigate'})`);
+    if (isPerPageReviewed) {
+      ctx.log(`reviewed: outcome names ${declaredPages.length} pages (${declaredPages.join(', ')}) — one review invocation per declared page, never a bundle`);
     }
-    // The same measurement the post-merge write uses (`base` here IS
-    // `mergeBaseSha`), re-read from the branch rather than reused from `changed`
-    // above: a revision pass can add a file after the author run, and the gate
-    // must compare the record against what is actually about to merge.
-    //
-    // ONE measurement, two arguments: `subjects` is derived from the same list
-    // the carried-deletion check reads, so the gate cannot be judging one diff
-    // for the record's `reviewed:` and another for what the branch deleted.
-    const gateChanged = changedPathsWithStatus(ctx.repoRoot, base, branch);
-    let gate = mergeGate(ctx, {
-      jobId,
-      type: job.type,
-      pass,
-      subjects: joinableSubjects(gateChanged),
-      changed: gateChanged,
-    });
+    let reviewedOnly = null;
+    let reviewedSurfaceText = null;
+    let rev = null;
+    let gateChanged = null;
+    let gate = null;
+    if (isPerPageReviewed) {
+      // Per-page invocations, one per declared page. Each carries that page's
+      // machine-generated surface (read from the worktree, never invented),
+      // its hash and kind checklist (in the brief, via `runReview`'s
+      // `reviewedOnly`), and the filtered annex after it — reused single-page
+      // plumbing, extended with distinct record/worktree suffixes, never
+      // forked. Each invocation has its own per-type allowance (the same
+      // `allowance` the single path reads — duplicated nowhere) and its own
+      // budget accounting (`mm`, `phases`, brief `mmSoFar`/`invocations`).
+      // A timeout (killed, no record) settles `interrupted` immediately —
+      // resumable, never a breaker input — rather than absent review.
+      gateChanged = changedPathsWithStatus(ctx.repoRoot, base, branch);
+      perPageReviews = [];
+      perPageGates = [];
+      perPageAllowances = [];
+      perPageOutPaths = [];
+      for (let pi = 0; pi < declaredPages.length; pi++) {
+        const page = declaredPages[pi];
+        const pageAllowance = allowance(`review pass ${pass} page ${pi + 1}/${declaredPages.length} ${page}`);
+        if (!pageAllowance.ok) {
+          ctx.log(`BUDGET: ${pageAllowance.reason}`);
+          ctx.log(`the work on ${branch} is left where it is; nothing merges without a review`);
+          return finish({ outcome: 'abandoned', mm, changed, note: pageAllowance.reason });
+        }
+        perPageAllowances.push(pageAllowance);
+        ctx.log(`review pass ${pass} page ${pi + 1}/${declaredPages.length} (${page}): invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${pageAllowance.capMinutes}-minute cap${capNote(pageAllowance)}`);
+        let surface = null;
+        try {
+          surface = readFileSync(join(worktree, page), 'utf8');
+        } catch {
+          surface = null;
+        }
+        const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass);
+        perPageOutPaths.push(outPath);
+        const one = await runReview(ctx, {
+          jobId,
+          job,
+          branch,
+          diffText,
+          runner: reviewer,
+          capMinutes: pageAllowance.capMinutes,
+          pass,
+          findings,
+          gates: gateReport,
+          workOrder: workOrder ?? null,
+          reviewedOnly: page,
+          reviewedSurfaceText: surface,
+          reviewGraphQuery: briefGraphQueryForSubject,
+          graphIndexId: 'review-index:merge-base-tree',
+          mmSoFar: spent(),
+          invocations: prior.invocations + phases.length,
+          totalMinutes,
+          reviewer,
+          outPathOverride: outPath,
+          reviewSuffix: `-p${pi}`,
+        });
+        perPageReviews.push(one);
+        mm += one.run.mm; // "Review MM counts toward the job it reviews." Per page, summed.
+        if (one.discarded.discardedAnything) {
+          ctx.log(`the reviewer changed its worktree on page ${page}; those changes were discarded (branch ${one.branchUnchanged ? 'unchanged' : 'CHANGED — investigate'})`);
+        }
+        const timeoutClass = classifyReviewedRun({ killed: Boolean(one.run.killed), recordWritten: Boolean(one.recordWritten) });
+        // The reviewer analogue of no-output, per page (the same predicate
+        // the single path reads, never reimplemented): no record, not killed,
+        // nothing on stdout.
+        const producedNothing = reviewProducedNothing(one.run, one.recordWritten, reviewer);
+        if (producedNothing) {
+          ctx.log(
+            `review pass ${pass} page ${page} produced nothing at all: no verdict record and nothing on stdout. ` +
+              `Recording signal \`${NO_OUTPUT_SIGNAL}\` on this phase.`,
+          );
+        }
+        if (timeoutClass === 'interrupted') {
+          phase(`review${pass}-p${pi}`, reviewer, one.run, 'interrupted', producedNothing ? NO_OUTPUT_SIGNAL : undefined);
+          ctx.log(`review pass ${pass} page ${page}: reviewer was killed at the ${pageAllowance.capMinutes}-minute cap${pageAllowance.derived ? ` (which was the job's remaining total budget, not the ${capMinutes}-minute per-invocation cap)` : ''} with no verdict — booking interrupted, resumable, never a breaker input`);
+          // Push phases for the remaining unreviewed pages? No — they were
+          // never invoked, so there is nothing to record. The pages already
+          // reviewed keep their phases above; the run resumes from the branch.
+          return finish({ outcome: 'interrupted', mm, changed, note: `review pass ${pass} page ${page} timed out at its cap with no verdict — resumable` });
+        }
+        let pageKind = job.type;
+        try {
+          pageKind = reviewedGateTypeForPage(page);
+        } catch (e) {
+          // Fail closed: no checklist for this kind means no review for it.
+          const reason = `reviewed: cannot review page ${page}: ${String(e?.message ?? e)}`;
+          ctx.log(reason);
+          const iphase2 = phase(`review${pass}-p${pi}`, reviewer, one.run, 'reviewed-kind-unknown', producedNothing ? NO_OUTPUT_SIGNAL : undefined);
+          void iphase2;
+          return finish({ outcome: 'failed', mm, changed, note: reason });
+        }
+        const onegate = mergeGate(ctx, {
+          jobId,
+          type: pageKind,
+          pass,
+          subjects: [page],
+          changed: gateChanged,
+          recordPath: outPath,
+        });
+        perPageGates.push(onegate);
+        const iphase = phase(`review${pass}-p${pi}`, reviewer, one.run, onegate.ok ? 'approve' : onegate.code, producedNothing ? NO_OUTPUT_SIGNAL : undefined);
+        if (onegate.verdict) iphase.carried = Array.isArray(onegate.verdict.carry) ? onegate.verdict.carry.length : 0;
+        if (!onegate.ok) {
+          ctx.log(`review pass ${pass} page ${page}: merge refused — [${onegate.code}] ${onegate.reason}`);
+        } else {
+          ctx.log(`review pass ${pass} page ${page}: approve (would-cite recorded)`);
+        }
+      }
+      // All pages reviewed. The combined gate is the first failure (with all
+      // failing pages' findings carried for the revision brief), or ok with
+      // the first verdict for the shared post-review handling below (closure,
+      // approve). Every page's record already passed its own gate; the merge
+      // still re-checks every precondition via `checkReviewedMerge` at merge
+      // time (61b join, diff/graph emptiness) — no per-page verdict bypasses it.
+      const failures = perPageGates
+        .map((g, i) => ({ g, i }))
+        .filter(({ g }) => !g.ok);
+      if (!failures.length) {
+        gate = { ok: true, verdict: perPageGates[0].verdict, path: perPageOutPaths[0], perPage: true, outPaths: [...perPageOutPaths], pages: [...declaredPages] };
+        rev = perPageReviews[0];
+        reviewAllowance = perPageAllowances[perPageAllowances.length - 1];
+      } else {
+        const first = failures[0];
+        gate = { ...first.g, perPage: true, outPaths: [...perPageOutPaths], pages: [...declaredPages], failedPage: declaredPages[first.i], failedIndex: first.i };
+        rev = perPageReviews[first.i];
+        reviewAllowance = perPageAllowances[first.i];
+        // Revision findings carry every failing page, not just the first —
+        // one revision pass answers all of them, then pass 2 re-reviews all.
+        const parts = [];
+        for (const { g, i } of failures) {
+          const pg = declaredPages[i];
+          const v = g.verdict;
+          if (v) {
+            const r = Array.isArray(v.reasons) ? v.reasons.join(', ') : '';
+            const n = typeof v.notes === 'string' ? v.notes : '';
+            const block = [`page ${pg}: ${g.code}`, r, n, isDiffRefusal(g.code) ? g.reason : ''].filter((s) => String(s ?? '').trim()).join('\n\n');
+            if (block.trim()) parts.push(block);
+          } else {
+            parts.push(`page ${pg}: ${g.code} — ${g.reason}`);
+          }
+        }
+        perPageRevisionFindings = parts.filter((s) => String(s ?? '').trim()).join('\n\n');
+      }
+    } else {
+      // Single-page and non-reviewed paths, unchanged (task 62 wiring kept).
+      // A multi-page declaration never reaches here (handled above, never a
+      // bundle); a single-page reviewed outcome carries that page's surface.
+      if (isReviewedOutcome) {
+        const declared = declaredPages;
+        if (declared.length === 1) {
+          reviewedOnly = declared[0];
+          try {
+            reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly), 'utf8');
+          } catch {
+            reviewedSurfaceText = null;
+          }
+        }
+      }
+      const singleAllowance = reviewAllowance;
+      ctx.log(`review pass ${pass}: invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${singleAllowance.capMinutes}-minute cap${capNote(singleAllowance)}`);
+      rev = await runReview(ctx, {
+        jobId,
+        job,
+        branch,
+        diffText,
+        runner: reviewer,
+        capMinutes: singleAllowance.capMinutes,
+        pass,
+        findings,
+        gates: gateReport,
+        // The committed work-order declaration: the review brief keys its
+        // checklist on the governing type (task 59), never on an item's type.
+        // On a single-page reviewed invocation the brief keys on the page's
+        // kind instead (task 63, inside `assembleReviewBrief`).
+        workOrder: workOrder ?? null,
+        reviewedOnly,
+        reviewedSurfaceText,
+        reviewGraphQuery: briefGraphQueryForSubject,
+        graphIndexId: 'review-index:merge-base-tree',
+        // The job's spend, not this run's: a resumed job carries what its earlier
+        // runs cost, and the reviewer is told the number the ledger would show.
+        mmSoFar: spent(),
+        invocations: prior.invocations + phases.length,
+        totalMinutes,
+        reviewer,
+      });
+      mm += rev.run.mm; // "Review MM counts toward the job it reviews."
+      if (rev.discarded.discardedAnything) {
+        ctx.log(`the reviewer changed its worktree; those changes were discarded (branch ${rev.branchUnchanged ? 'unchanged' : 'CHANGED — investigate'})`);
+      }
+      // The same measurement the post-merge write uses (`base` here IS
+      // `mergeBaseSha`), re-read from the branch rather than reused from `changed`
+      // above: a revision pass can add a file after the author run, and the gate
+      // must compare the record against what is actually about to merge.
+      //
+      // ONE measurement, two arguments: `subjects` is derived from the same list
+      // the carried-deletion check reads, so the gate cannot be judging one diff
+      // for the record's `reviewed:` and another for what the branch deleted.
+      gateChanged = changedPathsWithStatus(ctx.repoRoot, base, branch);
+      if (reviewedOnly) {
+        // Single-page reviewed gate: the record answers for the one page it
+        // reviewed (subjects `[page]`, type the page's kind), still through
+        // the one `mergeGate` — every page's record passes 62's gate, one
+        // page or many. The empty-diff subjects (`[]`) would bind nothing and
+        // prove nothing (task 58's mutation), so the page is measured, not
+        // the diff.
+        let singleKind = job.type;
+        try {
+          singleKind = reviewedGateTypeForPage(reviewedOnly);
+        } catch (e) {
+          const reason = `reviewed: cannot review page ${reviewedOnly}: ${String(e?.message ?? e)}`;
+          ctx.log(reason);
+          return finish({ outcome: 'failed', mm, changed, note: reason });
+        }
+        gate = mergeGate(ctx, {
+          jobId,
+          type: singleKind,
+          pass,
+          subjects: [reviewedOnly],
+          changed: gateChanged,
+        });
+      } else {
+      gate = mergeGate(ctx, {
+        jobId,
+        type: job.type,
+        pass,
+        subjects: joinableSubjects(gateChanged),
+        changed: gateChanged,
+      });
+      }
+    }
     // Brief-closure gate (item 3 follow-up, bead 7dmp): the brief's Files list
     // against the merge-base diff, judged by pin-misses, not prose. Runs as a
     // SUBPROCESS (node scripts/brief-closure.mjs), not an import: the reviewer
@@ -1897,14 +2109,20 @@ async function executeJob(ctx, opts) {
     // own `existsSync`, and `run.stdout` from the executor). See
     // `reviewProducedNothing`'s doc comment for why a malformed-but-present
     // record does NOT count, and why `no-record` alone is not enough either.
-    const reviewerProducedNothing = reviewProducedNothing(rev.run, rev.recordWritten, reviewer);
+    // Task 63: on the per-page branch each page already recorded its own
+    // signal on its own phase above — this single-phase handling runs only
+    // for the single/non-reviewed paths.
+    let reviewerProducedNothing = false;
+    let reviewPhase = null;
+    if (!isPerPageReviewed) {
+    reviewerProducedNothing = reviewProducedNothing(rev.run, rev.recordWritten, reviewer);
     if (reviewerProducedNothing) {
       ctx.log(
         `review pass ${pass} produced nothing at all: no verdict record and nothing on stdout. ` +
           `Recording signal \`${NO_OUTPUT_SIGNAL}\` on this phase.`,
       );
     }
-    const reviewPhase = phase(
+    reviewPhase = phase(
       `review${pass}`,
       reviewer,
       rev.run,
@@ -1912,6 +2130,7 @@ async function executeJob(ctx, opts) {
       reviewerProducedNothing ? NO_OUTPUT_SIGNAL : undefined,
     );
     if (gate.verdict) reviewPhase.carried = Array.isArray(gate.verdict.carry) ? gate.verdict.carry.length : 0;
+    }
     if (gate.ok) {
       ctx.log(`review: approve (would-cite recorded)`);
       return finish({ outcome: 'approve', mm, changed, verdict: gate.verdict, pass, diffText });
@@ -1964,13 +2183,20 @@ async function executeJob(ctx, opts) {
     // findings that never mention why its work was refused. The predicate is
     // `review.mjs`'s, not a `gate.code === '…'` literal here, for the reason
     // `REISSUE_CODES` states.
-    findings = [
+    //
+    // Task 63: on the per-page branch the revision answers every failing
+    // page, not just the first — `perPageRevisionFindings` already carries
+    // each failing page's reasons/notes (one revision, then pass 2 re-reviews
+    // all pages). Otherwise the findings are the single gate's, as before.
+    findings = isPerPageReviewed && perPageRevisionFindings
+      ? perPageRevisionFindings
+      : [
       gate.verdict.reasons.join(', '),
       gate.verdict.notes,
       isDiffRefusal(gate.code) ? gate.reason : '',
     ]
-      .filter((s) => String(s ?? '').trim())
-      .join('\n\n');
+        .filter((s) => String(s ?? '').trim())
+        .join('\n\n');
     // And the revision is an invocation like any other, so it is asked for the
     // same permission. Refusing HERE rather than at the delta review is the
     // cheaper stop of the two: the job ends one invocation earlier and the
@@ -3315,6 +3541,42 @@ export async function runLoop(ctx, opts = {}) {
       // A merge that bound nothing records nothing: the join reads the record as the
       // piece(s) reviewed, and there is no piece.
       const subjects = mergeSubjects ?? joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
+      // Task 63: on a multi-page `reviewed:` outcome each page has its own
+      // review record (one invocation per page, never a bundle) — bind each
+      // record to its one page, still through the one `writeRecordSubjects`
+      // (hashes from the merged tree, never graph output). Detected by the
+      // per-page records the review loop wrote (not by any in-memory reviewed
+      // list, which lives in a narrower block): where the first per-page
+      // record exists and several subjects bound, this is that path.
+      // Single-page and non-reviewed paths keep the one-record write exactly
+      // as before.
+      let isMultiPageReviewedMerge = false;
+      try {
+        isMultiPageReviewedMerge =
+          Array.isArray(subjects) && subjects.length > 1 &&
+          existsSync(reviewedPerPageRecordPath(ctx, jobId, 0, result.pass ?? 1));
+      } catch {
+        isMultiPageReviewedMerge = false;
+      }
+      if (isMultiPageReviewedMerge) {
+        let boundCount = 0;
+        let hashCount = 0;
+        for (let mi = 0; mi < subjects.length; mi++) {
+          const page = subjects[mi];
+          const perPath = reviewedPerPageRecordPath(ctx, jobId, mi, result.pass ?? 1);
+          const w = writeRecordSubjects(perPath, [page], { repoRoot: ctx.repoRoot });
+          if (w.ok) {
+            boundCount++;
+            if (w.reviewed) hashCount += Object.keys(w.reviewed).length;
+            ctx.log(`recorded subject: ${page} on per-page verdict record ${perPath} — the join reads it as the piece reviewed`);
+          } else {
+            ctx.log(`could not record the reviewed file ${page} on per-page verdict record ${perPath}: ${w.why}`);
+          }
+        }
+        if (boundCount) {
+          ctx.log(`recorded reviewed: ${hashCount} reviewed-surface hash(es) across ${boundCount} per-page record(s) — an edit to any of these files now reads as mismatched, not as approved`);
+        }
+      } else {
       const wrote = writeRecordSubjects(verdictPath(ctx, jobId, result.pass ?? 1), subjects, {
         repoRoot: ctx.repoRoot,
       });
@@ -3330,6 +3592,7 @@ export async function runLoop(ctx, opts = {}) {
         }
       } else if (subjects.length) {
         ctx.log(`could not record the reviewed files on the verdict record: ${wrote.why}`);
+      }
       }
 
       // RETIRE THE PROPOSAL THIS JOB CONSUMED (observed 2026-08-30).
@@ -3500,6 +3763,72 @@ export async function runLoop(ctx, opts = {}) {
     }
     for (const w of c.warnings) {
       ctx.log(`the verdict record's carry: block ${w}`);
+    }
+  }
+
+  // Task 63: on a multi-page `reviewed:` outcome each page has its own record
+  // — transcribe noted proposals and carried findings from every per-page
+  // record, not just the job's own (which does not exist on this path, so the
+  // single-record attempts above quietly note "no verdict record"). Detected
+  // by the ratified set plus the per-page record on disk (the same order the
+  // review loop indexed by), never by any in-memory reviewed list.
+  {
+    let perPages = null;
+    try {
+      const subs = Array.isArray(mergeSubjects) && mergeSubjects.length > 1 ? [...mergeSubjects].sort() : null;
+      if (subs && existsSync(reviewedPerPageRecordPath(ctx, jobId, 0, result.pass ?? 1))) {
+        // Only where every page's record exists; a partial set is not a
+        // per-page outcome (single-page and done paths keep their one record).
+        let allExist = true;
+        for (let qi = 0; qi < subs.length; qi++) {
+          if (!existsSync(reviewedPerPageRecordPath(ctx, jobId, qi, result.pass ?? 1))) {
+            allExist = false;
+            break;
+          }
+        }
+        if (allExist) perPages = subs;
+      }
+    } catch {
+      perPages = null;
+    }
+    if (perPages) {
+      for (let pi = 0; pi < perPages.length; pi++) {
+        const perPath = reviewedPerPageRecordPath(ctx, jobId, pi, result.pass ?? 1);
+        // Noted proposals, one record at a time (at most one per record by
+        // the brief's contract, so N pages yield at most N proposals).
+        try {
+          const t = transcribeNotedProposal(ctx, { jobId, jobType: job.type, verdictPath: perPath, reviewer: reviewer.id });
+          if (t.transcribed) {
+            transcribedPaths.push(relative(ctx.repoRoot, t.dest));
+            ctx.log(`transcribed the page ${perPages[pi]} reviewer's noted proposal to ${t.dest}, naming job ${jobId} as its origin`);
+          } else if (t.malformed || (t.why && !/notes no proposal|no verdict record/.test(t.why))) {
+            ctx.log(`per-page verdict record ${perPath}'s noted proposal was not transcribed: ${t.why}`);
+          }
+        } catch (e) {
+          ctx.log(`per-page verdict record ${perPath}'s noted proposal was not transcribed: ${String(e?.message ?? e).slice(0, 160)}`);
+        }
+        try {
+          const c2 = transcribeCarriedFindings(ctx, {
+            jobId,
+            verdictPath: perPath,
+            reviewer: reviewer.id,
+            subjectMustExist: outcome === 'discarded',
+          });
+          orphanedFindings.push(...c2.orphaned);
+          for (const t of c2.transcribed) {
+            transcribedPaths.push(relative(ctx.repoRoot, t.dest));
+            ctx.log(`carried finding transcribed to ${t.dest} from page ${perPages[pi]}: ${JSON.stringify(t.title)}`);
+          }
+          for (const s of c2.skipped) {
+            ctx.log(`a carried finding was not transcribed from page ${perPages[pi]}: ${s.why}`);
+          }
+          for (const w of c2.warnings) {
+            ctx.log(`per-page verdict record ${perPath}'s carry: block ${w}`);
+          }
+        } catch (e) {
+          ctx.log(`per-page verdict record ${perPath}'s carry: block could not be read: ${String(e?.message ?? e).slice(0, 160)}`);
+        }
+      }
     }
   }
 
