@@ -930,7 +930,13 @@ async function finishTrainRun(ctx, {
       gate_seconds: gateSeconds,
       evictions,
       pre_existing_hold: false,
+      // Task 44's count, and — beside it, task 68's per-subject breakdown of
+      // the same findings (the distribution belongs beside the count it sums
+      // to). Measured only where a review actually ran; the hold/reject
+      // lines' unmeasured zeros carry no breakdown rather than an empty one
+      // that could read as a measurement.
       findings_not_in_any_record: vr.findingsNotInAnyRecord ?? 0,
+      findings_not_in_any_record_by_subject: vr.findingsNotInAnyRecordBySubject ?? {},
       review_rounds: reviewRounds + roundsRun,
     },
   });

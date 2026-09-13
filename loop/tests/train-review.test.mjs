@@ -69,6 +69,7 @@ import { LEDGER_FIELDS, appendLedger, makeLedgerLine } from '../lib/ledger.mjs';
 import { loadRunners } from '../lib/runners.mjs';
 import {
   assembleTrainReviewBrief,
+  attributeFindingsBySubject,
   makeReviewTrain,
   parseTrainComparison,
   parseTrainFindings,
@@ -954,6 +955,91 @@ test('loop: not-in-any-record count lands on the committed line', async () => {
   } finally {
     fx.cleanup();
   }
+});
+
+// ---------------------------------------------------------------------------
+// Task 68: the per-subject breakdown rides the `train:` key beside the
+// task-44 count — on the committed line, and attributed by the pure helper
+// the seam uses.
+// ---------------------------------------------------------------------------
+
+test('loop: the per-subject breakdown lands beside the not-in-any-record count', async () => {
+  const fx = trainRepo();
+  try {
+    const { repo } = fx;
+    ensureTrainBranch(repo, 'main');
+    admitJob(repo, 'job-1', { 'content/a.md': '# a\n' });
+    admitJob(repo, 'job-2', { 'content/b.md': '# b\n' });
+    appendJobLines(repo, ['job-1', 'job-2']);
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const asm = assembleTrain(repo, { trainId: 't-bysubj', bounds: BOUNDS, now: () => T0 });
+    assert.equal(asm.ok, true, asm.reason ?? 'assembly refused');
+    const gates = stubGates();
+    const breakdown = { 'content/a.md': 2, 'content/b.md': 1 };
+    const review = stubReviewSeq([
+      { findingsNotInAnyRecord: 3, findingsNotInAnyRecordBySubject: breakdown },
+    ]);
+    const tr = await runTrain(ctxFor(repo), {
+      repo, trainId: asm.manifest.train, manifest: asm.manifest,
+      gates, rederive: stubRederive(), review, now: () => T0,
+    });
+    assert.equal(tr.ok, true, tr.reason ?? 'counted train refused');
+    const head = git(repo, ['rev-parse', TRAIN_BRANCH]);
+    const lines = ledgerLines(readCommitted(repo, head, 'data/ledger.jsonl'));
+    const line = lines.find((l) => l.id === asm.manifest.train);
+    assert.ok(line, 'the train line is committed');
+    assert.equal(line.train.findings_not_in_any_record, 3, 'the count lands on the line');
+    assert.deepEqual(line.train.findings_not_in_any_record_by_subject, breakdown,
+      'the per-subject breakdown rides the additive train: key BESIDE the count');
+    // The breakdown's values sum to the count it sits beside.
+    assert.equal(
+      Object.values(line.train.findings_not_in_any_record_by_subject).reduce((s, v) => s + v, 0),
+      line.train.findings_not_in_any_record,
+      'the distribution accounts for the count (here exactly: each finding names one subject)',
+    );
+    assert.equal(fx.remoteRefs(), '', 'the bare origin is empty: never pushed');
+  } finally {
+    fx.cleanup();
+  }
+});
+
+test('attributeFindingsBySubject: missing entries attribute through findings, merges, manifest subjects', () => {
+  const manifest = {
+    merges: [
+      { sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', jobId: 'job-1', subjects: ['content/a.md'] },
+      { sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', jobId: 'job-2', subjects: ['content/b.md', 'content/c.md'] },
+    ],
+  };
+  const findings = [
+    { text: 'defect one in the first merge', merges: ['job-1'] },
+    { text: 'defect two in the second merge', merges: ['bbbbbbb'] }, // unambiguous sha prefix (≥7 chars, the naming protocol's minimum)
+    { text: 'a finding naming no merge', merges: [] },
+  ];
+  const missing = [
+    'defect one in the first merge',            // exact text → job-1's subject
+    'defect two in the second merge (expanded)', // contains the finding text → prefix match
+    'a finding naming no merge',                // matched, but names no merge → unattributed
+    'something the verdict never said',         // matches no finding → unattributed
+  ];
+  const out = attributeFindingsBySubject(missing, findings, manifest);
+  assert.deepEqual(out, {
+    'content/a.md': 1,
+    'content/b.md': 1,
+    'content/c.md': 1,
+    unattributed: 2,
+  }, 'each missing entry lands on its finding\'s merge subjects, or under unattributed');
+  // Keys are sorted. The distribution is per subject, not a partition: the
+  // second finding names merges across two subjects and counts under each,
+  // so the values sum to MORE than the missing count here — and exactly to
+  // it when every finding names one subject.
+  assert.deepEqual(Object.keys(out), Object.keys(out).sort());
+  assert.ok(Object.values(out).reduce((s, v) => s + v, 0) >= missing.length,
+    'the distribution accounts for every missing entry');
+});
+
+test('attributeFindingsBySubject: nothing missing is an empty breakdown', () => {
+  assert.deepEqual(attributeFindingsBySubject([], [], { merges: [] }), {});
+  assert.deepEqual(attributeFindingsBySubject(null, null, null), {});
 });
 
 test('loop: named merge evicted with reason review, full gates and review re-run', async () => {

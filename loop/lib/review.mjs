@@ -2801,6 +2801,68 @@ export function trainFindingsNamingMerges(findings, manifest) {
   return { named: merges.map((m) => m.sha).filter((s) => namedSet.has(s)), unnamed };
 }
 
+/** The reserved key unattributable not-in-any-record findings land under. */
+const UNATTRIBUTED_KEY = 'unattributed';
+
+/**
+ * The per-subject breakdown of the not-in-any-record count (task 68): each
+ * `missing` entry the comparison reported — it quotes the finding's text —
+ * is matched back to the verdict's findings, and a finding's subjects are the
+ * union of the subjects of the manifest merges it names (by full sha, job id,
+ * or unambiguous sha prefix — the same naming `trainFindingsNamingMerges`
+ * accepts). An entry matching no finding, or a finding naming no merge, is
+ * attributed to no subject: it lands under the reserved `unattributed` key.
+ * A finding naming merges across several subjects counts under EACH — the
+ * distribution is per subject, not a partition — so the values sum to at
+ * least the count beside which the breakdown rides, and exactly to it when
+ * every finding names one subject. Keys are sorted; the map is the shape the
+ * train line's additive `train:` key carries as
+ * `findings_not_in_any_record_by_subject`.
+ */
+export function attributeFindingsBySubject(missing, findings, manifest) {
+  const norm = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+  const subjectsByName = new Map();
+  for (const m of (manifest && manifest.merges) || []) {
+    if (!m) continue;
+    const subs = [...new Set((m.subjects || []).map((s) => norm(s)).filter(Boolean))].sort();
+    if (m.sha != null) subjectsByName.set(String(m.sha), subs);
+    if (m.jobId != null) subjectsByName.set(String(m.jobId), subs);
+  }
+  const parsed = (findings ?? []).map((f) => {
+    const text = norm(f && f.text);
+    const merges = ((f && f.merges) || []).map((n) => String(n ?? ''));
+    return { text, merges };
+  }).filter((f) => f.text);
+  const subjectsOf = (f) => {
+    const out = new Set();
+    for (const name of f.merges) {
+      let subs = subjectsByName.get(name);
+      if (!subs && name.length >= 7) {
+        const hits = [...subjectsByName.keys()].filter((k) => k.startsWith(name));
+        if (hits.length === 1) subs = subjectsByName.get(hits[0]);
+      }
+      for (const s of subs ?? []) out.add(s);
+    }
+    return out;
+  };
+  const bySubject = new Map();
+  const bump = (key) => bySubject.set(key, (bySubject.get(key) ?? 0) + 1);
+  for (const missText of missing ?? []) {
+    const mnorm = norm(missText);
+    if (!mnorm) continue;
+    const f = parsed.find((p) => p.text === mnorm || mnorm.includes(p.text) || p.text.includes(mnorm));
+    const subjects = f ? subjectsOf(f) : new Set();
+    if (!subjects.size) {
+      bump(UNATTRIBUTED_KEY);
+      continue;
+    }
+    for (const s of subjects) bump(s);
+  }
+  const out = {};
+  for (const k of [...bySubject.keys()].sort()) out[k] = bySubject.get(k);
+  return out;
+}
+
 /**
  * The train verdict protocol (row 42; per-piece entries row 60): the train
  * review produces a verdict record on the ORDINARY protocol — closed-list
@@ -2872,7 +2934,10 @@ export function makeReviewTrain(ctx, { capMinutes = 10, invoke = null, reviewerI
  * kinds off the ledger, the rung off the registry, runs the sealed review,
  * gates the record, runs the comparison, and returns the seam shape —
  * `{verdict, reason, runner, provider, tier, findingsNotInAnyRecord,
- * findings}`.
+ * findingsNotInAnyRecordBySubject, findings}`. The per-subject breakdown
+ * (task 68) rides beside the count on every verdict that carries a measured
+ * count: the same `missing` entries, attributed per subject through the
+ * manifest's merge subjects.
  *
  * Every failure is a fail-closed `reject` with no publish: missing kinds, a
  * missing or ambiguous rung, a thrown or unwritten review, a refused record,
@@ -2965,7 +3030,9 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
     return {
       verdict: refusedVerdict,
       reason: `train review did not approve (${refusedVerdict}${g.verdict.reasons.length ? `: ${g.verdict.reasons.join(', ')}` : ''})`,
-      ...reviewer, findingsNotInAnyRecord: cmpLegit.missing.length, findings: vLegit.findings,
+      ...reviewer, findingsNotInAnyRecord: cmpLegit.missing.length,
+      findingsNotInAnyRecordBySubject: attributeFindingsBySubject(cmpLegit.missing, vLegit.findings, manifest),
+      findings: vLegit.findings,
     };
   }
   const v = parseTrainFindings(g.verdict);
@@ -2982,7 +3049,11 @@ export async function reviewTrain(ctx, { diffText, manifest, repo, capMinutes = 
   if (!cmp.ok) {
     return { verdict: 'reject', reason: `${cmp.reason} — fail closed: no fast-forward, no publish`, ...reviewer, findingsNotInAnyRecord: 0, findings: v.findings };
   }
-  return { verdict: 'approve', reason: '', ...reviewer, findingsNotInAnyRecord: cmp.missing.length, findings: v.findings };
+  return {
+    verdict: 'approve', reason: '', ...reviewer, findingsNotInAnyRecord: cmp.missing.length,
+    findingsNotInAnyRecordBySubject: attributeFindingsBySubject(cmp.missing, v.findings, manifest),
+    findings: v.findings,
+  };
 }
 
 /**
