@@ -67,6 +67,7 @@ import {
   runnersYaml,
   writeLedger,
   writeQueue,
+  DEFAULT_CONFIG,
 } from './helpers.mjs';
 
 const NOW = new Date('2026-09-12T12:00:00.000Z');
@@ -1236,4 +1237,242 @@ test('task 57/58: an empty-diff outcome binding four pages exceeding a four-diff
   const mutant = checkWorkOrderMergeBounds({ workOrder, subjects: [], measure, bounds });
   assert.equal(mutant.ok, true, 'the mutant measures zero and merges when it must not');
   assert.equal(mutant.totalBytes, 0);
+});
+
+// ---------------------------------------------------------------------------
+// Task 53 wiring (task 68b): the run-side bundling. The run routes the whole
+// affordable set through `bundleWorkOrders` and commits the FIRST order as
+// the job's work order; the remainder returns to intake untouched. These are
+// run-level arms on the task-12 fixture pattern (throwaway repo, stubbed
+// spawn seams through the mock executor/reviewer commands); each names its
+// own red-proof, because they are not interchangeable.
+//
+// The reviewer mode is `review-nothing` in the selection arms: a run that
+// fails at the merge gate keeps its branch, and the committed
+// `.job/source.json` — the thing these arms assert — is readable from it.
+// ---------------------------------------------------------------------------
+
+test('task 53 wiring (68b): two same-key candidates select as ONE N=2 order with both items and the union declared', async (t) => {
+  // RED-PROOF: bypassing the bundling — selecting the bare top candidate as a
+  // one-item declaration, ignoring the set — commits one item, and the
+  // items.length assertion below goes red.
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${A}`),
+      reviewerCommand: mockCommand('review-nothing'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [
+    { type: 'repair', title: 'the first alpha repair', subjects: [A] },
+    { type: 'repair', title: 'the second alpha repair', subjects: [A] },
+  ]);
+  writeLedger(ctx, []);
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output()); // review-nothing: the branch is kept for the assertion
+  assert.match(
+    ctx.output(),
+    /work-order bundle: 1 order\(s\) from 2 affordable candidate\(s\); order 1: 2 item\(s\)/,
+    'the bundle outcome is logged: one order, both candidates, taken',
+  );
+  const committed = JSON.parse(git(ctx.repoRoot, ['show', `${res.branch}:.job/source.json`]));
+  assert.equal(committed.items.length, 2, 'both items committed');
+  assert.deepEqual(committed.items[0].subjects, [A]);
+  assert.deepEqual(committed.items[1].subjects, [A]);
+  assert.equal(committed.items[0].reason, 'the first alpha repair');
+  assert.equal(committed.items[1].reason, 'the second alpha repair');
+  assert.deepEqual(committed.declared_subjects, [A], 'the sorted union of every item\'s subjects');
+});
+
+test('task 53 wiring (68b): a one-candidate intake commits an N=1 source.json byte-identical to buildWorkOrderDeclaration through the same write (golden capture)', async (t) => {
+  // The comparator is the PRE-CHANGE builder — `buildWorkOrderDeclaration`
+  // is not edited in this task (the brief's working rule), so this is not a
+  // live-vs-live tautology: the committed bytes must equal what the untouched
+  // builder produces for the same candidate through the same serialization.
+  // RED-PROOF: a committed declaration whose items[0] lost its origin or
+  // whose union is not the sorted item-union fails the byte equality.
+  const queueItem = { type: 'repair', title: 'the alpha repair', subjects: [A] };
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${A}`),
+      reviewerCommand: mockCommand('review-nothing'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [queueItem]);
+  writeLedger(ctx, []);
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  const jobId = res.branch.replace(/^job\//, '');
+  const committed = git(ctx.repoRoot, ['show', `${res.branch}:.job/source.json`]);
+  const decl = buildWorkOrderDeclaration(queueItem);
+  const expected = JSON.stringify(
+    {
+      job: jobId,
+      type: queueItem.type,
+      source: 'queue',
+      slug: null,
+      path: null,
+      issues: [],
+      items: decl.items,
+      declared_subjects: decl.declared_subjects,
+    },
+    null,
+    2,
+  ) + '\n';
+  assert.equal(committed, expected, 'byte-identical to the untouched builder through the same write');
+});
+
+test('task 53 wiring (68b): an over-items-bound set splits — orders[0] carries the bound, the remainder returns to intake unrefused', async (t) => {
+  // RED-PROOF: consuming or refusing the remainder turns this arm red — the
+  // queue-file assertion and the absence of a bundler refusal for the third
+  // candidate are what bind "returns to intake, never truncated".
+  const ctx = makeRepo({
+    now: () => NOW,
+    config: {
+      ...DEFAULT_CONFIG,
+      work_order: { max_items: 2, max_subjects: 4, max_reviewed_bytes: 60000, max_reviewed_bytes_per_subject: 30000 },
+    },
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${A}`),
+      reviewerCommand: mockCommand('review-nothing'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [
+    { type: 'repair', title: 'the first split repair', subjects: [A] },
+    { type: 'repair', title: 'the second split repair', subjects: [A] },
+    { type: 'repair', title: 'the third split repair', subjects: [A] },
+  ]);
+  writeLedger(ctx, []);
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /work-order bundle: 2 order\(s\) from 3 affordable candidate\(s\)/, 'the set split into more work orders');
+  assert.match(ctx.output(), /order 1: 2 item\(s\)/);
+  assert.match(ctx.output(), /order 2: 1 item\(s\)/);
+  assert.match(ctx.output(), /the orders beyond order 1 stay selectable/, 'the remainder note is logged');
+  assert.doesNotMatch(ctx.output(), /work-order:(total-bound|per-subject-bound|subject-count)/, 'the remainder is NOT refused');
+  const committed = JSON.parse(git(ctx.repoRoot, ['show', `${res.branch}:.job/source.json`]));
+  assert.equal(committed.items.length, 2, 'the taken order carries exactly the bound');
+  assert.deepEqual(committed.declared_subjects, [A]);
+  // Intake untouched: the queue file still carries all three candidates, so
+  // the remainder is re-bundled on a later run.
+  const queue = JSON.parse(readFileSync(ctx.queuePath, 'utf8'));
+  assert.equal((queue.items ?? queue).length, 3, 'the remainder stays in intake');
+});
+
+test('task 53 wiring (68b): an over-per-subject-bound candidate is refused at selection with the bound and the measured size named', async (t) => {
+  // RED-PROOF: a refusal printed without the bound and the measured size
+  // turns this arm red — the two regexes below are the requirement's own
+  // wording ("naming the bound and the measured size").
+  const big = 'content/wiki/model/big-page.md';
+  const ctx = makeRepo({
+    now: () => NOW,
+    config: {
+      ...DEFAULT_CONFIG,
+      work_order: { max_items: 4, max_subjects: 4, max_reviewed_bytes: 60000, max_reviewed_bytes_per_subject: 100 },
+    },
+    files: { [big]: 'x'.repeat(200) },
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${B}`),
+      reviewerCommand: mockCommand('review-nothing'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [
+    { type: 'repair', title: 'the oversized repair', subjects: [big] },
+    { type: 'repair', title: 'the fitting repair', subjects: [B] },
+  ]);
+  writeLedger(ctx, []);
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /work-order:per-subject-bound/, 'the refusal is recorded where refusals are recorded');
+  assert.match(ctx.output(), /measures 200 reviewed bytes on subject/, 'the measured size is named');
+  assert.match(ctx.output(), /work_order\.max_reviewed_bytes_per_subject 100/, 'the bound is named');
+  assert.match(ctx.output(), /work-order bundle: 1 order\(s\) from 2 affordable candidate\(s\)/);
+  assert.match(ctx.output(), /1 bundler refusal\(s\)/);
+});
+
+test('task 53 wiring (68b): the run executes orders[0], opened by the next-ranked executable candidate, not the bundler-refused top candidate', async (t) => {
+  // RED-PROOF: executing the bundler-refused top candidate, or taking the
+  // nothing-qualified return while `orders` is non-empty, turns this arm red.
+  const big = 'content/wiki/model/big-page.md';
+  const ctx = makeRepo({
+    now: () => NOW,
+    config: {
+      ...DEFAULT_CONFIG,
+      work_order: { max_items: 4, max_subjects: 4, max_reviewed_bytes: 60000, max_reviewed_bytes_per_subject: 100 },
+    },
+    files: { [big]: 'x'.repeat(200) },
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${B}`),
+      reviewerCommand: mockCommand('review-nothing'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [
+    { type: 'repair', title: 'the oversized repair', subjects: [big] },
+    { type: 'repair', title: 'the fitting repair', subjects: [B] },
+  ]);
+  writeLedger(ctx, []);
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.notEqual(res.nothingQualified, true, 'orders was non-empty — the nothing-qualified return would be the defect');
+  const committed = JSON.parse(git(ctx.repoRoot, ['show', `${res.branch}:.job/source.json`]));
+  assert.equal(committed.items.length, 1);
+  assert.deepEqual(committed.items[0].subjects, [B], 'the identity shifted to the next-ranked executable candidate');
+  assert.doesNotMatch(
+    JSON.stringify(committed),
+    new RegExp(big.replace(/\//g, '\\/')),
+    'the bundler-refused candidate is not in the executed order',
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Task 58 wiring (task 68b): the whole-diff gate's empty-diff second
+// measurement, observed through the real path. The author changes ONLY a
+// non-content file, so `joinableSubjects(gateChanged)` is [] — the shape
+// that measures zero and evaporates the second enforcement if the site
+// passed the diff-derived set. The wiring omits `subjects` on that outcome,
+// so the declared-subjects fallback engages and the declared pages are
+// measured through the row-58 measure's branch-ref half.
+// ---------------------------------------------------------------------------
+
+test('task 58 wiring (68b): the whole-diff gate on the empty-joinable outcome measures the declared pages\' surfaces — a diff-sizer wiring measures zero and merges (evaporation arm)', async (t) => {
+  // RED-PROOF: a diff-sizer wiring — the site passing the diff-derived []
+  // with a diff measure — measures ZERO, the merge proceeds, and the refusal
+  // assertions below go red. The declared page alpha-page.md is NOT in the
+  // diff (the author changed only the non-content helper), so the measured
+  // total can only include its 600-byte branch surface if the surface half
+  // of the measure fired.
+  const ctx = makeRepo({
+    now: () => NOW,
+    config: {
+      ...DEFAULT_CONFIG,
+      work_order: { max_items: 4, max_subjects: 4, max_reviewed_bytes: 700, max_reviewed_bytes_per_subject: 30000 },
+    },
+    files: { [A]: 'y'.repeat(600) },
+    runners: runnersYaml({
+      command: mockCommand('done-content-paths', ` ${F}`),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writeQueue(ctx, [{ type: 'repair', title: 'the helper-and-page repair', subjects: [A, F] }]);
+  writeLedger(ctx, []);
+  const res = await go(ctx);
+  // A non-approval at the gate sends one revision pass, then discards on the
+  // second refusal — the loop's revise-once policy. What the arm asserts is
+  // that the bound refusal fired and nothing merged.
+  assert.equal(res.outcome, 'discarded', ctx.output());
+  assert.equal(res.mergedSha ?? null, null, 'nothing merged');
+  assert.match(ctx.output(), /review: merge refused — \[work-order-bound\]/, 'the merge gate refused on the re-measured bounds');
+  const m = /work-order-bound: produced (\d+) reviewed bytes over work_order\.max_reviewed_bytes 700/.exec(ctx.output());
+  assert.ok(m, 'the refusal names the measured total and the bound', ctx.output());
+  assert.ok(
+    Number(m[1]) >= 600,
+    `the measured total (${m[1]}) includes the declared page's 600-byte branch surface — a diff-sizer wiring on the empty-joinable set measures zero and merges`,
+  );
 });

@@ -26,7 +26,7 @@ import { loadConfig, JOB_TYPES } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
-import { selectJob, escalationTarget, formatRefusals, candidateSubjects } from './lib/select.mjs';
+import { selectJob, escalationTarget, formatRefusals, candidateSubjects, bundleWorkOrders, workOrderBounds } from './lib/select.mjs';
 import { assembleBrief, assembleRevisionBrief, governingTypeFor, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import {
   classifyClaim,
@@ -248,6 +248,49 @@ export function briefGraphQueryForSubject(subject) {
 export function buildWorkOrderDeclaration(candidate) {
   const item = workOrderItemForCandidate(candidate);
   return { items: [item], declared_subjects: [...item.subjects] };
+}
+
+/**
+ * Task 53 wiring (68b): a bundled work order converted to the committed
+ * declaration's shape. `items` reuses `workOrderItemForCandidate` per
+ * candidate — the same item shape, the same declared-metadata-only subjects —
+ * and `declared_subjects` is the sorted union of every item's subjects (the
+ * contract the comment above states). The order's `governingType` (its first
+ * item's type, set by `bundleWorkOrders`) rides the IN-MEMORY declaration so
+ * the caps key through `governingTypeFor` on the whole order; it is NOT
+ * serialized into `.job/source.json`, whose shape stays `{ items,
+ * declared_subjects }` beside the run's own wrapper fields. For an N=1 order
+ * this is byte-identical, through the same write path, to
+ * `buildWorkOrderDeclaration` on the same candidate: the same item builder,
+ * and the sorted union of one already-sorted, de-duplicated subject list is
+ * that list.
+ */
+export function declarationFromOrder(order) {
+  const items = (order?.items ?? []).map(workOrderItemForCandidate);
+  const declared_subjects = [...new Set(items.flatMap((it) => it.subjects ?? []))].sort();
+  return { items, declared_subjects, governingType: order?.governingType ?? null };
+}
+
+/**
+ * The selection-time measure (task 53 wiring, 68b): the subject's existing
+ * surface at selection — the file the subject string names (a repo-relative
+ * POSIX path), read at the repository root, UTF-8 byte length. A subject that
+ * is not a file path, or names no existing file, resolves to null — the
+ * estimate fallback then applies exactly as `measureCandidate` already
+ * implements it (row 53: the size the candidate's declared metadata gives for
+ * the subject, never zero and never a refusal for pathlessness). No mapping
+ * beyond that join is invented.
+ */
+export function selectionMeasureFor(repoRoot) {
+  return (subject) => {
+    const path = String(subject ?? '').replace(/\\/g, '/').trim();
+    if (!path) return null;
+    try {
+      return readFileSync(join(repoRoot, path)).length;
+    } catch {
+      return null;
+    }
+  };
 }
 
 /**
@@ -1827,6 +1870,37 @@ export function checkMergeGraphScope({
   return { ok: true, warnings, graphStatus, retirement };
 }
 
+/**
+ * The row-58 merge-side measure (task 58 wiring, 68b): ONE shared
+ * construction, reused by all three production `mergeGate` call sites. For a
+ * subject the branch diff carries content on, the measured object is the
+ * PRODUCED WORK — the UTF-8 byte length of the patch text
+ * (`git diff <base>...<branch> -- <subject>`), which is what a reviewer is
+ * asked to read of produced work; the whole-file post-state would
+ * over-measure. For a subject the diff does not carry — the empty-diff
+ * outcome's declared pages — the measured object is the DECLARED PAGE'S
+ * REVIEWED SURFACE: the page's content as the branch being merged carries it
+ * (`git show <branch>:<path>`), the same surface `checkReviewedHashStore`
+ * verifies store-vs-branch/target at merge time, so the measure and the
+ * ratification read the same bytes. The worktree-read `surfaceOf` at
+ * review-brief assembly is the review-side pattern; the merge side reads the
+ * branch ref. Absent or unreadable resolves to null, which the bound check
+ * scores as zero — the seam's existing contract, never an invented size.
+ */
+export function workOrderMergeMeasure(repoRoot, base, branch) {
+  return (subject) => {
+    const path = String(subject ?? '').replace(/\\/g, '/').trim();
+    if (!path || !base || !branch) return null;
+    const diff = gitTry(repoRoot, ['diff', '--no-color', `${base}...${branch}`, '--', path]);
+    if (diff.ok && String(diff.stdout ?? '').length > 0) {
+      return Buffer.byteLength(String(diff.stdout), 'utf8');
+    }
+    const surface = gitTry(repoRoot, ['show', `${branch}:${path}`]);
+    if (!surface.ok) return null;
+    return Buffer.byteLength(String(surface.stdout ?? ''), 'utf8');
+  };
+}
+
 async function executeJob(ctx, opts) {
   const {
     cfg,
@@ -2525,6 +2599,17 @@ async function executeJob(ctx, opts) {
           subjects: [page],
           changed: gateChanged,
           recordPath: outPath,
+          // Task 58 wiring (68b): the per-page gate re-measures all four
+          // bounds with the page as the measured set — the order-level items
+          // and declared-subjects bounds read the work order; the byte bounds
+          // measure the page through the row-58 measure (the produced work's
+          // patch bytes where the diff carries the page, the branch-ref
+          // reviewed surface where it does not — the empty-diff outcome's
+          // declared-page measurement). Dormant without an order: an
+          // old-contract branch keeps today's exact call, no new refusal.
+          workOrder: workOrder ?? null,
+          bounds: workOrderBounds(cfg),
+          measure: workOrderMergeMeasure(ctx.repoRoot, base, branch),
         });
         perPageGates.push(onegate);
         const iphase = phase(`review${pass}-p${pi}`, reviewer, one.run, onegate.ok ? 'approve' : onegate.code, producedNothing ? NO_OUTPUT_SIGNAL : undefined);
@@ -2669,15 +2754,43 @@ async function executeJob(ctx, opts) {
           pass,
           subjects: [reviewedOnly],
           changed: gateChanged,
+          // Task 58 wiring (68b): the single reviewed-page gate re-measures
+          // all four bounds with the page as the measured set, exactly like
+          // the per-page gate above — on the empty-diff outcome the page is
+          // the declared page, and the measure reads its reviewed surface
+          // from the branch ref (the same bytes the store binds and the
+          // ratification reads). Dormant without an order.
+          workOrder: workOrder ?? null,
+          bounds: workOrderBounds(cfg),
+          measure: workOrderMergeMeasure(ctx.repoRoot, base, branch),
         });
       } else {
-      gate = mergeGate(ctx, {
-        jobId,
-        type: job.type,
-        pass,
-        subjects: joinableSubjects(gateChanged),
-        changed: gateChanged,
-      });
+        // Task 58 wiring (68b): the whole-diff gate re-measures all four
+        // bounds, and the measured set is part of the call-site construction.
+        // On a diff carrying joinable content paths the set is the diff's
+        // subjects and the measure reads the PRODUCED WORK (the patch text
+        // per subject). On the empty-diff outcome — `joinableSubjects`
+        // yields [] — passing that [] would measure ZERO and the second
+        // enforcement would evaporate: `checkWorkOrderMergeBounds` engages
+        // its declared-subjects fallback on ARRAY PRESENCE, not emptiness.
+        // So the site omits `subjects` and the arm measures the DECLARED
+        // PAGES' REVIEWED SURFACES through the same measure's branch-ref
+        // half — the surface `checkReviewedHashStore` verifies at merge
+        // time, so the measure and the ratification read the same bytes. An
+        // old-contract branch (workOrder null) keeps today's exact call:
+        // the arm is dormant without an order, no new refusal for any
+        // existing path.
+        const diffSubjects = joinableSubjects(gateChanged);
+        gate = mergeGate(ctx, {
+          jobId,
+          type: job.type,
+          pass,
+          subjects: workOrder && diffSubjects.length === 0 ? undefined : diffSubjects,
+          changed: gateChanged,
+          workOrder: workOrder ?? null,
+          bounds: workOrderBounds(cfg),
+          measure: workOrderMergeMeasure(ctx.repoRoot, base, branch),
+        });
       }
     }
     // Brief-closure gate (item 3 follow-up, bead 7dmp): the brief's Files list
@@ -3458,7 +3571,56 @@ export async function runLoop(ctx, opts = {}) {
       ctx.log('nothing qualified — the run ends here, and that is a normal, healthy outcome');
       return { started: true, selected: null, refusals: sel.refusals, nothingQualified: true };
     }
-    job = sel.selected;
+    // Task 53 wiring (68b): the affordable set — the ranked, gate-passed,
+    // floor-applied candidates `selectJob` now returns — is routed through the
+    // bundler, which groups it by coherence key within the four work-order
+    // bounds, splits an over-bound set into more work orders, and refuses at
+    // selection a candidate that alone exceeds a bound it can never fit. The
+    // bundling composes after the FINAL `sel` — escalation above may have
+    // replaced it — so `orders[0]` always opens with that selection's top
+    // executable candidate. The measure reads each declared subject's real
+    // surface at selection; a subject naming no existing file falls to the
+    // candidate's declared estimate, never zero and never a refusal for
+    // pathlessness.
+    const bundle = bundleWorkOrders(sel.affordable, { cfg, measure: selectionMeasureFor(ctx.repoRoot) });
+    if (bundle.refusals.length) {
+      // Recorded where refusals are recorded: merged into the SAME
+      // `sel.refusals` list the run logs through `formatRefusals`, each reason
+      // keeping its bound-and-measured-size wording verbatim. The list is
+      // logged above only before this point, so the refusal lines are printed
+      // here, where the bundler produced them.
+      sel.refusals.push(...bundle.refusals);
+      for (const l of formatRefusals(bundle.refusals)) ctx.log(l);
+    }
+    ctx.log(
+      `work-order bundle: ${bundle.orders.length} order(s) from ${sel.affordable.length} affordable candidate(s)` +
+        (bundle.orders.length
+          ? `; ` + bundle.orders.map((o, i) => `order ${i + 1}: ${o.items.length} item(s), key [${o.key.replace('\n', ' | ')}]`).join('; ')
+          : '') +
+        `, ${bundle.refusals.length} bundler refusal(s)` +
+        (bundle.orders.length > 1
+          ? ` — the orders beyond order 1 stay selectable: they return to intake untouched and are re-bundled on a later run`
+          : ''),
+    );
+    if (!bundle.orders.length) {
+      // Every affordable candidate was refused at the bundler (or the set was
+      // empty): the nothing-qualified path, with the recorded refusals — a
+      // bound that silently removes work from the list has become the work
+      // list, so the refusals travel out with the run.
+      ctx.log('nothing qualified — every affordable candidate was refused at the work-order bundler');
+      return { started: true, selected: null, refusals: sel.refusals, nothingQualified: true };
+    }
+    // The job's work order is the bundle's FIRST order, and the job itself is
+    // that order's first item's candidate — the top-ranked EXECUTABLE
+    // candidate. In the normal case that is the same object as today's
+    // `sel.selected`; when the top-ranked affordable candidate was
+    // bundler-refused (it alone exceeds a bound, so it is unfittable in ANY
+    // order), the identity shifts to the next-ranked executable one and the
+    // refusal above names the refused one. The candidates in `orders[1..]`
+    // are not consumed, not refused and not dropped: intake is untouched, so
+    // they are re-bundled on a later run — split into more work orders, never
+    // truncated into silence.
+    job = bundle.orders[0].items[0];
     jobId = nextJobId(ledger, now, scan.resumable.concat(scan.other, scan.abandonable).map((b) => b.id));
     branch = `job/${jobId}`;
     // Task 59: constitute the declaration BEFORE assembling the brief, so the
@@ -3468,7 +3630,9 @@ export async function runLoop(ctx, opts = {}) {
     // per-subject queries (one query per subject) and committed beside the
     // brief. `opts.briefGraphQuery` is the injected seam tests stub (task-12
     // fixture pattern); production answers absent (no wired index).
-    const newWorkOrder = buildWorkOrderDeclaration(job);
+    // Task 53 wiring (68b): the declaration is the bundle's first order
+    // converted through `declarationFromOrder` — one order per cycle.
+    const newWorkOrder = declarationFromOrder(bundle.orders[0]);
     const newGoverning = governingTypeFor(job, newWorkOrder);
     const briefSink = {};
     briefText = assembleBrief(ctx, {
@@ -3556,15 +3720,20 @@ export async function runLoop(ctx, opts = {}) {
     // machine. `.job/` is removed from the branch before the merge, so this
     // never reaches `main`.
     //
-    // Stage-2 task 55: the work-order declaration. `items` (one entry today:
-    // bead, type, subjects, reason) and the union `declared_subjects` are
-    // committed here, before any executor runs. Subjects come from
+    // Stage-2 task 55: the work-order declaration. `items` (one entry per
+    // item: bead, type, subjects, reason) and the union `declared_subjects`
+    // are committed here, before any executor runs. Subjects come from
     // `candidateSubjects` — declared metadata only, never the brief text —
     // so a prohibition naming a path in the brief can never authorise it.
-    // Task 59 reuses the same declaration the brief was assembled from (built
-    // before `assembleBrief` above): rebuilding it here from the same job is
-    // byte-identical by construction, not a second detector.
-    const workOrder = buildWorkOrderDeclaration(job);
+    // Task 53 wiring (68b): the declaration committed here IS the bundled
+    // work order the brief was assembled from (`runWorkOrder`, built before
+    // `assembleBrief` above) — no second detector. For an N=1 order with no
+    // bundler refusal it is byte-identical to what
+    // `buildWorkOrderDeclaration(job)` produced here before, because the
+    // conversion reuses the same item builder and the same sorted union. The
+    // in-memory `governingType` rides the object for the caps and is not a
+    // key of the written record below.
+    const workOrder = runWorkOrder;
     // Task 66: an item's proposal origin is written repo-relative and POSIX,
     // exactly like the top-level `path` beside it, so a resumed run on
     // another worktree or machine resolves the same file. What the candidate

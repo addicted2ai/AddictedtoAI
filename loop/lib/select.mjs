@@ -108,7 +108,8 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
 /**
  * Select one job for `runner`, or report why nothing qualified.
  *
- * @returns {{selected: object|null, topRanked: object|null, refusals: Array,
+ * @returns {{selected: object|null, topRanked: object|null,
+ *            affordable: object[], refusals: Array,
  *            warnings: string[], notes: string[], shares: object, shed: object,
  *            lane: object, conformanceEntries?: number}}
  */
@@ -158,6 +159,10 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     return {
       selected: null,
       topRanked: null,
+      // Task 53 wiring (68b): the affordable set rides every return shape, so
+      // a caller composing the bundler after the FINAL selection never reads
+      // an absent field. Empty here: nothing was gathered yet.
+      affordable: [],
       refusals: [{ candidate: null, rule: 'runner:disabled', reason }],
       warnings: [],
       notes: [],
@@ -173,6 +178,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     return {
       selected: null,
       topRanked: null,
+      affordable: [],
       refusals: [{ candidate: null, rule: 'conformance:recorded-fail', reason: conformance.reason }],
       warnings: [],
       notes: [],
@@ -192,6 +198,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     return {
       selected: null,
       topRanked: null,
+      affordable: [],
       refusals: [{ candidate: null, rule: health.rule, reason: health.reason }],
       warnings: [],
       notes: [],
@@ -207,6 +214,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
     return {
       selected: null,
       topRanked: null,
+      affordable: [],
       refusals: [{ candidate: null, rule: 'capacity:lane-paused', reason: lane.reason }],
       warnings: [],
       notes: [],
@@ -265,6 +273,15 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   return {
     selected,
     topRanked,
+    // Task 53 wiring (68b): the affordable set — the ranked, gate-passed,
+    // floor-applied candidate list — exposed on the return so the caller can
+    // route the WHOLE set through the bundler instead of dropping
+    // `candidates[1..]` on the floor. `affordable[0] === selected` whenever
+    // `selected` is not null, by construction; the escalation re-selection
+    // carries the field by the same construction, so the bundling composes
+    // after the FINAL `sel`, whichever produced it. `selected` keeps its
+    // shape and semantics; existing callers and tests are unaffected.
+    affordable: floor.candidates,
     refusals,
     warnings,
     notes,

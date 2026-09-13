@@ -2433,3 +2433,40 @@ test('task 65 (b2): with the tool/index absent the merge proceeds on the path, h
   assert.deepEqual(checked.subjects, [P1], 'the path check constitutes the subject set');
   assert.ok(checked.retirement.retired.some((r) => r.via === 'reviewed'), 'the precondition joins and the item retires on reviewed coverage');
 });
+
+// ---------------------------------------------------------------------------
+// Task 58 wiring (task 68b): the three production `mergeGate` call sites pass
+// the work order, the `work_order` config bounds and the row-58 measure, so
+// the four-bound re-measure fires live at every gate moment. Structural
+// source-check, the same pattern the task-63 H1 arm above uses; the SEMANTICS
+// (the re-measure and task 58's named mutation) are bound by
+// `work-order.test.mjs`'s task-57/58 arms and are not duplicated here.
+// RED-PROOF: removing the `workOrder` pass from any one site turns that
+// site's window match red.
+// ---------------------------------------------------------------------------
+
+test('task 58 wiring (68b): all three production mergeGate call sites pass workOrder, bounds and the row-58 measure (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const sites = [...src.matchAll(/mergeGate\(ctx, \{/g)];
+  assert.equal(sites.length, 3, 'exactly three production mergeGate call sites, no more');
+  for (const { index } of sites) {
+    const window = src.slice(index, index + 1200);
+    assert.match(window, /workOrder: workOrder \?\? null/, 'the site passes the work order (dormant without one — no new refusal for any existing path)');
+    assert.match(window, /bounds: workOrderBounds\(cfg\)/, 'the site passes the work_order config bounds');
+    assert.match(window, /measure: workOrderMergeMeasure\(ctx\.repoRoot, base, branch\)/, 'the site passes the row-58 measure');
+  }
+  // The whole-diff site's measured set is part of the call-site construction:
+  // on the empty-joinable outcome the site omits `subjects` so the
+  // declared-subjects fallback engages (checkWorkOrderMergeBounds engages it
+  // on ARRAY PRESENCE, not emptiness — passing [] would measure zero and
+  // evaporate the second enforcement), and an old-contract branch keeps
+  // today's exact call.
+  const whole = src.indexOf('const diffSubjects = joinableSubjects(gateChanged);');
+  assert.ok(whole !== -1, 'the whole-diff site constructs its measured set at the call site');
+  const wholeWindow = src.slice(whole, whole + 1200);
+  assert.match(
+    wholeWindow,
+    /subjects: workOrder && diffSubjects\.length === 0 \? undefined : diffSubjects/,
+    'the empty-joinable outcome passes the declared set (by omission), never the diff-derived []',
+  );
+});

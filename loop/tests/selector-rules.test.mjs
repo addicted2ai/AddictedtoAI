@@ -15,7 +15,8 @@ import { fileURLToPath } from 'node:url';
 import { loadConfig, JOB_TYPES } from '../lib/config.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
-import { selectJob, formatRefusals, runnerJobTypeGate } from '../lib/select.mjs';
+import { selectJob, formatRefusals, runnerJobTypeGate, bundleWorkOrders } from '../lib/select.mjs';
+import { NO_OUTPUT_SIGNAL } from '../lib/health.mjs';
 import { readProposals } from '../lib/proposals.mjs';
 import {
   makeRepo,
@@ -25,6 +26,7 @@ import {
   writeFreshness,
   hoursAgo,
   daysAgo,
+  DEFAULT_CONFIG,
 } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
@@ -445,4 +447,129 @@ test('every clearance the shipped registry declares is actually enforced by the 
   for (const r of reg.runners.filter((x) => !Array.isArray(x.job_types))) {
     for (const t of JOB_TYPES) assert.equal(runnerJobTypeGate(r, { type: t }).ok, true);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Task 53 wiring (task 68b): the affordable exposure on `selectJob`'s return,
+// and the FINAL-sel composition the run-side bundling reads. The early-return
+// shapes carry `affordable: []` so the field is always present; the main
+// return carries the ranked, gate-passed, floor-applied list with
+// `affordable[0] === selected` by construction.
+// ---------------------------------------------------------------------------
+
+test('task 53 wiring (68b): selectJob returns the affordable set ranked, with affordable[0] === selected', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  writeQueue(ctx, [
+    { type: 'repair', title: 'first repair', subjects: ['content/wiki/model/one.md'] },
+    { type: 'repair', title: 'second repair', subjects: ['content/wiki/model/two.md'] },
+  ]);
+  const sel = select(ctx);
+  assert.equal(sel.selected?.title, 'first repair', sel.text);
+  assert.ok(Array.isArray(sel.affordable), 'the affordable set rides the return', sel.text);
+  assert.equal(sel.affordable.length, 2, 'both gate-passed candidates are exposed, not just the first', sel.text);
+  assert.equal(sel.affordable[0], sel.selected, 'affordable[0] is the selection, by construction');
+  assert.equal(sel.affordable[1].title, 'second repair', 'the set is ranked, not a singleton');
+  ctx.cleanup();
+});
+
+test('task 53 wiring (68b): the early-return shapes carry affordable: []', () => {
+  // runner disabled
+  const disabledCtx = makeRepo({ now: () => NOW });
+  const disabled = selectJob(disabledCtx, {
+    cfg: loadConfig(disabledCtx),
+    ledger: readLedger(disabledCtx),
+    runner: { id: 'mock-disabled', enabled: false, provider: 'provider-a', tier: 'frontier' },
+    dryRun: true,
+  });
+  assert.equal(disabled.selected, null);
+  assert.deepEqual(disabled.affordable, [], 'the disabled-runner return carries the field, empty');
+  disabledCtx.cleanup();
+
+  // conformance fail: a recorded standing FAIL for the runner
+  const confCtx = makeRepo({ now: () => NOW });
+  mkdirSync(join(confCtx.repoRoot, 'data'), { recursive: true });
+  writeFileSync(
+    join(confCtx.repoRoot, 'data', 'conformance.json'),
+    JSON.stringify({
+      'mock-frontier': { date: '2026-09-12', checks: [{ name: 'trivial-edit', result: 'FAIL' }] },
+    }, null, 2) + '\n',
+    'utf8',
+  );
+  const conf = select(confCtx);
+  assert.equal(conf.selected, null);
+  assert.deepEqual(conf.affordable, [], 'the conformance-fail return carries the field, empty');
+  confCtx.cleanup();
+
+  // lane paused: one recent capacity classification on the runner's provider
+  const laneCtx = makeRepo({ now: () => NOW });
+  writeLedger(laneCtx, [
+    ledgerLine({ id: 'j-20260912-01', outcome: 'capacity', ts: hoursAgo(NOW, 0.5) }),
+  ]);
+  const lane = select(laneCtx);
+  assert.equal(lane.selected, null);
+  assert.deepEqual(lane.affordable, [], 'the lane-paused return carries the field, empty');
+  laneCtx.cleanup();
+
+  // health gate: three consecutive produced-nothing runs for the runner
+  const healthCtx = makeRepo({ now: () => NOW });
+  writeLedger(
+    healthCtx,
+    [0, 1, 2].map((i) =>
+      ledgerLine({
+        id: `j-20260912-0${i + 1}`,
+        outcome: 'interrupted',
+        signal: NO_OUTPUT_SIGNAL,
+        ts: hoursAgo(NOW, i + 1),
+      }),
+    ),
+  );
+  const health = select(healthCtx);
+  assert.equal(health.selected, null);
+  assert.deepEqual(health.affordable, [], 'the health-gate return carries the field, empty');
+  healthCtx.cleanup();
+});
+
+test('task 53 wiring (68b): the FINAL-sel composition — bundling the returned affordable set opens orders[0] with the top executable candidate', () => {
+  // Whatever `sel` finally is, its `affordable` rides the return shape and the
+  // run-side wiring composes `bundleWorkOrders(sel.affordable, ...)` after it.
+  // These arms bind that composition at the unit level: the escalated path
+  // re-enters `selectJob` and carries the same field by construction, so the
+  // property proved here holds for whichever selection produced it.
+  const ctx = makeRepo({ now: () => NOW });
+  writeQueue(ctx, [
+    { type: 'repair', title: 'first repair', subjects: ['content/wiki/model/one.md'] },
+    { type: 'repair', title: 'second repair', subjects: ['content/wiki/model/one.md'] },
+  ]);
+  const sel = select(ctx);
+  const bundle = bundleWorkOrders(sel.affordable, { cfg: loadConfig(ctx), measure: () => null });
+  assert.equal(bundle.refusals.length, 0, sel.text);
+  assert.equal(bundle.orders.length, 1, 'two same-key candidates cohere into one order');
+  assert.equal(bundle.orders[0].items.length, 2);
+  assert.equal(bundle.orders[0].items[0], sel.selected, 'orders[0] opens with the selection');
+  ctx.cleanup();
+});
+
+test('task 53 wiring (68b): a bundler-refused top candidate leaves orders[0] opened by the next-ranked executable candidate', () => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    config: {
+      ...DEFAULT_CONFIG,
+      work_order: { max_items: 4, max_subjects: 4, max_reviewed_bytes: 5000, max_reviewed_bytes_per_subject: 50 },
+    },
+  });
+  writeQueue(ctx, [
+    { type: 'repair', title: 'too big for any order', reviewedBytes: 70000, subjects: ['content/wiki/model/big.md'] },
+    { type: 'repair', title: 'fits fine', subjects: ['content/wiki/model/one.md'] },
+  ]);
+  const sel = select(ctx);
+  assert.equal(sel.selected?.title, 'too big for any order', 'the ranked selection is still the top affordable candidate', sel.text);
+  const bundle = bundleWorkOrders(sel.affordable, { cfg: loadConfig(ctx), measure: () => null });
+  assert.equal(bundle.refusals.length, 1, sel.text);
+  assert.equal(bundle.refusals[0].rule, 'work-order:total-bound');
+  assert.match(bundle.refusals[0].reason, /work_order\.max_reviewed_bytes 5000/, 'the refusal names the bound');
+  assert.match(bundle.refusals[0].reason, /70000/, 'the refusal names the measured size');
+  assert.equal(bundle.orders.length, 1);
+  assert.equal(bundle.orders[0].items[0].title, 'fits fine', 'orders[0] opens with the next-ranked EXECUTABLE candidate');
+  assert.notEqual(bundle.orders[0].items[0], sel.selected, 'the refused candidate does not open the order');
+  ctx.cleanup();
 });
