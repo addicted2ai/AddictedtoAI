@@ -32,27 +32,24 @@ export const RESULT_FILENAME = 'RESULT.md';
 /** The exact instruction every brief carries. Kept here so brief and parser cannot drift. */
 export const RESULT_PROTOCOL_INSTRUCTION = `## How to end (required)
 
-End by writing a file named \`RESULT.md\` at the root of this worktree. Its
-**first line** must be exactly one of:
+Write \`RESULT.md\` at this worktree's root; **first line** must be exactly
+one of:
 
 - \`done\` — you attempted the outcome; the diff is your claim.
-- \`blocked: <one-line reason>\` — the task could not be done honestly
-  (missing information, an acceptance check that cannot be met, a forbidden
-  action). This is a **successful** outcome, recorded as such. Reporting
-  blocked is always better than producing something plausible.
-- \`capacity\` — you observed your own provider's limit.
-- \`reviewed: <path>[, <path>…]\` — the declared pages were read, judged sound,
-  and correctly left unchanged. Name every page, comma-separated. This is the
-  read-and-unchanged outcome: the branch diff stays empty, and the merge
-  ratifies the pages against the work order's committed declared subjects and
-  their review state — it never takes your word for which pages count.
+- \`blocked: <one-line reason>\` — the task could not be done honestly (a
+  missing fact, an unmeetable acceptance check, a forbidden action); a
+  recorded **success** — reporting blocked beats plausible output.
+- \`capacity\` — you observed your provider's limit.
+- \`reviewed: <path>[, <path>…]\` — every named page: read, judged sound, left
+  unchanged; name each, comma-separated. The read-and-unchanged outcome:
+  an empty diff; the merge ratifies the pages against the work order's
+  committed declared subjects and review state — never your word for which
+  pages count.
 
-Everything after the first line is free-form notes; nothing reads them
-mechanically except the sibling \`graph-ack:\` block a later section names.
-Write no other status anywhere: this file is the only channel.
-If \`RESULT.md\` is absent or its first line is not one of the four forms, the
-run is recorded as interrupted — the work is kept on the branch and resumed
-later, and no retry is consumed.`;
+After the first line, free-form notes — this is the only status channel;
+only the sibling \`graph-ack:\` block is read mechanically. Absent, or not one
+of the four forms, records the run as interrupted: work kept on the branch,
+resumed later, no retry consumed.`;
 
 const BLOCKED_RE = /^blocked:\s*(\S.*)$/;
 
