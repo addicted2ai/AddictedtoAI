@@ -2547,7 +2547,7 @@ the brief under `evidence/reviews/`.
       excluded from reviewed-outcome reviews unless an explicit timeout/interrupted-rate
       guard is recorded. Implements: *A review of unchanged pages is a
       review of the pages, never of an empty diff*.
-- [ ] 64. `loop/run.mjs`: record each declared page's reviewed-surface hash on the
+- [x] 64. `loop/run.mjs`: record each declared page's reviewed-surface hash on the
       branch at review-brief assembly — in `.job/reviewed-hashes.json`, committed
       at assembly before the reviewer runs and consumed with the branch at
       merge/discard (it never lands on `main`/`train` as a live path); re-measure
@@ -2559,7 +2559,7 @@ the brief under `evidence/reviews/`.
       argument recorded, or `no-symbols`, plus flags) is recorded in the merge
       report beside the hash equality assertion; the graph output never enters
       the hash.
-- [ ] 65. `loop/tests/reviewed-outcome.test.mjs`: a declared, already-mismatched page
+- [x] 65. `loop/tests/reviewed-outcome.test.mjs`: a declared, already-mismatched page
       ratifies and its record binds the current bytes; an undeclared path is
       refused; a page that was not mismatched is refused; a `reviewed:` outcome
       with a non-empty diff on a declared subject is refused naming the path; a
@@ -2579,7 +2579,7 @@ the brief under `evidence/reviews/`.
       the path, hash, and precondition checks. **Mutation C**: report zero
       symbols unconditionally from the stub seam and confirm (a) merges when it
       must not. Tests tasks 62–64 including the graph arms.
-- [ ] 66. `loop/lib/proposals.mjs` and `loop/run.mjs`: proposal consumption and
+- [x] 66. `loop/lib/proposals.mjs` and `loop/run.mjs`: proposal consumption and
       directive marking run per item, gated on the same per-item evidence task 56
       requires (a measured diff on the item's own subjects or `reviewed:`
       coverage of them). Implements: *A proposal a merged job consumed is
@@ -2588,13 +2588,13 @@ the brief under `evidence/reviews/`.
       Consumption follows the same per-item gate task 56 requires — a proposal
       belonging to an unretired item is not consumed; the graph never retires or
       unretires alone.
-- [ ] 67. `loop/lib/ledger.mjs`: the `items` key and the partially-done marker,
+- [x] 67. `loop/lib/ledger.mjs`: the `items` key and the partially-done marker,
       omitted when empty, `LEDGER_FIELDS` unextended. Implements: *The ledger line
       carries the join, as a list, additively*, its `items` bullets. Same additive
       mutation as task 26. The `items` entries gain per-item additive summary
       keys only (`graph_symbols`, `graph_processes`, `graph_risk`,
       `graph_incomplete`), omitted when empty; `LEDGER_FIELDS` unextended.
-- [ ] 68. **Stage-2 measurement, and the decision rule stated in advance.** Record,
+- [x] 68. **Stage-2 measurement, and the decision rule stated in advance.** Record,
       append-only in the task-52 store (never a gate-rewritten file): merged items
       per train, distinct subjects per work order, **train-review findings present
       in no per-job record, per subject** — extending task 36's additive `train:`
