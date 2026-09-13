@@ -377,7 +377,55 @@ switch (mode) {
     break;
   }
 
+  // Task 64 — the read-and-unchanged outcome as a real first-line form: the
+  // author writes NOTHING but RESULT.md, whose first line declares the pages
+  // it read, judged sound, and left byte-for-byte unchanged. The empty diff
+  // IS the finding. Page paths arrive as argv[4..] (via
+  // `mockCommand('reviewed-unchanged', ' <path> ...')`), the same channel
+  // `done-content-paths` uses; a pathless invocation would write a malformed
+  // `reviewed:` line, which the loop refuses at the parse.
+  case 'reviewed-unchanged': {
+    const pages = process.argv.slice(4).filter((a) => a && !a.startsWith('--'));
+    result(`reviewed: ${pages.join(', ')}\n\nRead every declared page, judged each sound, and left every byte unchanged.\n`);
+    break;
+  }
   // ---- reviewer modes -----------------------------------------------------
+  // Task 64's ordering witness: the reviewer can only approve when the
+  // committed `.job/reviewed-hashes.json` store is present in its own
+  // worktree (a checkout of the job branch AT DISPATCH) and binds the one
+  // page this invocation reviews with a 64-hex hash matching the hash the
+  // brief prints beside the surface. Absent store, unbound page, or missing
+  // brief hash → exit 1 with no verdict, which the merge gate refuses as
+  // no-record: a run that ends `done` therefore PROVES the store was
+  // committed before the reviewer was dispatched (design D10), and the
+  // verdict's notes carry the store's hash and the brief's printed hash as
+  // two independent producers the test can compare against its own
+  // re-derivation.
+  case 'review-approve-store-checked': {
+    let store = null;
+    try {
+      store = JSON.parse(readFileSync(join(cwd, '.job', 'reviewed-hashes.json'), 'utf8'));
+    } catch {
+      store = null;
+    }
+    const pageMatch = /^### `(.+)`$/m.exec(brief);
+    const briefHashMatch = /^Reviewed hash: `([0-9a-f]{64})`/m.exec(brief);
+    const page = pageMatch ? pageMatch[1].replace(/\\/g, '/').trim() : null;
+    const stored = store && store.pages && typeof store.pages === 'object' ? store.pages[page] : undefined;
+    if (store && store.version === 1 && page && /^[0-9a-f]{64}$/.test(stored ?? '') && briefHashMatch) {
+      writeVerdict({
+        verdict: 'approve',
+        wouldCite: 'A reader checking the reviewed-surface binding would cite the store that binds it.',
+        notes: `store-page: ${page}\nstore-hash: ${stored}\nbrief-hash: ${briefHashMatch[1]}\nThe store was present at dispatch and bound the reviewed page.`,
+      });
+      result('done\n');
+    } else {
+      process.stderr.write('MOCK-STORE-MISSING: .job/reviewed-hashes.json absent, malformed, or not binding the reviewed page at dispatch\n');
+      process.exit(1);
+    }
+    break;
+  }
+
   case 'review-approve':
     writeVerdict({ verdict: 'approve', wouldCite: 'A reader arguing that price changes need dating would link this.' });
     result('done\n');

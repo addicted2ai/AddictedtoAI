@@ -59,6 +59,7 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import matter from 'gray-matter';
 
 import {
   RESULT_PROTOCOL_INSTRUCTION,
@@ -67,6 +68,8 @@ import {
   readResult,
 } from '../lib/result.mjs';
 import {
+  REVIEWED_HASH_STORE_REL,
+  checkReviewedHashStore,
   checkCommittedDeclaration,
   checkReviewedDiffEmpty,
   checkReviewedGraphEmptiness,
@@ -75,8 +78,14 @@ import {
   emptyDiffFailsOutcome,
   jobPerPageRecordRelPaths,
   perPageRecordPathsForPass,
+  readReviewedHashStore,
+  reviewedEmptySymbolAssertion,
   reviewedPathsFromResultText,
+  reviewedHashAtRef,
+  runLoop,
+  writeReviewedHashStore,
 } from '../run.mjs';
+import { gitTry } from '../lib/git.mjs';
 import { reviewStateForPageAtBase } from '../lib/review-state.mjs';
 import {
   assembleReviewBrief,
@@ -98,9 +107,9 @@ import {
 } from '../lib/review.mjs';
 import { GRAPH_ANNEX_HEADING } from '../lib/brief.mjs';
 import { transcribeCarriedFindings } from '../lib/carry.mjs';
-import { reviewedHash } from '../../lib/review-hash.mjs';
+import { reviewedHash, reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
-import { git, makeRepo } from './helpers.mjs';
+import { git, makeRepo, mockCommand, runnersYaml, writeQueue } from './helpers.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RUN_LIB = resolve(HERE, '..', 'run.mjs');
@@ -925,18 +934,29 @@ test('task 63: the run path splits multi-page reviewed into per-page invocations
   assert.doesNotMatch(src, /per-page review invocations land in task 63; this review carries the empty diff as one bundled review/);
 });
 
-test('task 63: the task reads 61b and 62 and no hash store (structural)', () => {
+test('task 63 (scoping pin amended by task 64): the brief machinery reads 61b and 62; the store writer stands at assembly (structural)', () => {
   const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
   const runSrc = readFileSync(RUN_LIB, 'utf8');
-  // The reviewed brief reuses 62's plumbing and 59's annex filter.
+  // The reviewed brief reuses 62's plumbing and 59's annex filter, and the
+  // brief/checklist machinery itself still never consults the task-64 store —
+  // the store is the LOOP's binding, written at assembly and read at merge,
+  // never a brief-side input.
   assert.match(reviewSrc, /assembleGraphContext/);
   assert.match(reviewSrc, /reviewedOnly/);
-  // Task 64's store is nowhere on this path.
   assert.doesNotMatch(reviewSrc, /reviewed-hashes/);
   const start = runSrc.indexOf('isPerPageReviewed');
   assert.ok(start !== -1, 'the per-page branch is one named predicate');
   const window = runSrc.slice(Math.max(0, start - 2000), start + 12000);
-  assert.doesNotMatch(window, /reviewed-hashes/, 'the per-page review loop never consults the task-64 hash store');
+  // Task 64 landed the store writer INSIDE this window, at review-brief
+  // assembly — task 63's original pin ("the per-page review loop never
+  // consults the task-64 hash store") described the pre-64 world and is
+  // superseded by the stronger ordering claim below: the loop now WRITES the
+  // store here, committed before the first reviewer dispatch.
+  assert.match(window, /writeReviewedHashStore\(/, 'task 64: the store is written at review-brief assembly');
+  const writeIdx = window.indexOf('writeReviewedHashStore(');
+  const dispatchIdx = window.indexOf('const one = await runReview');
+  assert.ok(dispatchIdx !== -1, 'the per-page dispatch exists in the window');
+  assert.ok(writeIdx !== -1 && writeIdx < dispatchIdx, 'the store is written and committed before the first reviewer dispatch');
   // The merge still ratifies through 62's gate (the 61b join inside it).
   assert.match(runSrc, /checkReviewedMerge/);
 });
@@ -1454,4 +1474,558 @@ test('task 63 fix H1: both runReview dispatch sites fail closed on clearRefused 
   const singleGate = afterDispatch.indexOf('mergeGate(ctx,');
   assert.ok(singleGuard !== -1 && singleGate !== -1, 'single guard and gate both exist');
   assert.ok(singleGuard < singleGate, 'the single guard runs before mergeGate ever sees the persisting path');
+});
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 64: the `.job/reviewed-hashes.json` reviewed-surface hash store.
+//
+// The store binds the bytes the brief carries: written and committed at
+// review-brief assembly, before any reviewer is dispatched (D2/D10); its key
+// set must EXACTLY equal the declared reviewed paths (D4); at merge the
+// surface is re-derived at BOTH the job branch head and the merge target and
+// both must equal the stored hash (D3), any difference being the page having
+// moved (D7) — refused, the run settled `failed`, naming the path. The store
+// rides the task-59 `.job/` sidecar precedent and never lands on
+// `main`/`train` as a live path (D8). The graph output never enters the hash
+// (D9): the merge report records the empty-symbol assertion BESIDE the hash
+// equality assertion, never inside it.
+// ---------------------------------------------------------------------------
+
+/** A real git worktree on a new branch, as the loop's job worktrees are. */
+function storeWorktree(t, ctx, branch) {
+  const dir = join(ctx.testRoot, `store-wt-${branch.replace(/[^a-z0-9]+/gi, '-')}`);
+  git(ctx.repoRoot, ['worktree', 'add', '-b', branch, dir, 'HEAD']);
+  t.after(() => {
+    // ctx.cleanup may already have removed the whole tree; git would then
+    // only print a fatal chdir error. Remove only while the repo stands.
+    if (!existsSync(ctx.repoRoot)) return;
+    try {
+      git(ctx.repoRoot, ['worktree', 'remove', '--force', dir]);
+    } catch {
+      /* the tree is going away anyway */
+    }
+  });
+  return dir;
+}
+
+/** Commit a file on a branch's worktree, the way the loop's commits are made. */
+function commitInWorktree(dir, msg) {
+  git(dir, ['add', '-A']);
+  git(dir, ['commit', '--quiet', '--no-verify', '-m', msg]);
+}
+
+function readStoreAt(ctx, ref) {
+  return readReviewedHashStore(ctx.repoRoot, ref);
+}
+
+test('task 64: the store writes fresh per assembly — exact shape, overwrite never merge (D1/D2)', (t) => {
+  const ctx = reviewCtx63(t);
+  const dir = storeWorktree(t, ctx, 'job/store-shape');
+  const surfaces = new Map([[P1, pageText('page one bytes')], [P2, pageText('page two bytes')]]);
+  const surfaceOf = (p) => surfaces.get(p) ?? null;
+  const first = writeReviewedHashStore({ worktree: dir, jobId: 'j-20260912-64', pass: 1, pages: [P1, P2], surfaceOf });
+  assert.equal(first.ok, true, first.reason ?? '');
+  assert.equal(first.committed, true, 'the store is committed to the branch at assembly');
+  const onBranch = JSON.parse(git(ctx.repoRoot, ['show', 'job/store-shape:.job/reviewed-hashes.json']));
+  assert.deepEqual(
+    onBranch,
+    { version: 1, pages: { [P1]: reviewedHash(surfaces.get(P1)), [P2]: reviewedHash(surfaces.get(P2)) } },
+    'the store is exactly { version: 1, pages: { <normalized path>: <64-hex sha256> } }',
+  );
+  // A SECOND assembly with a different page set OVERWRITES: the old extra
+  // entry is gone, not merged — the store binds the newest review actually
+  // shown to a reviewer.
+  const second = writeReviewedHashStore({ worktree: dir, jobId: 'j-20260912-64', pass: 2, pages: [P1], surfaceOf });
+  assert.equal(second.ok, true, second.reason ?? '');
+  const afterSecond = readStoreAt(ctx, 'job/store-shape');
+  assert.equal(afterSecond.ok, true, afterSecond.reason ?? '');
+  assert.deepEqual(Object.keys(afterSecond.hashes).sort(), [P1], 'the first pass\'s extra entry did not survive the overwrite');
+  assert.equal(afterSecond.hashes[P1], reviewedHash(surfaces.get(P1)));
+  // An identical overwrite commits nothing and does not fail loudly: the
+  // branch already carries exactly this store.
+  const third = writeReviewedHashStore({ worktree: dir, jobId: 'j-20260912-64', pass: 2, pages: [P1], surfaceOf });
+  assert.equal(third.ok, true, third.reason ?? '');
+  assert.equal(third.committed, false, 'an identical re-assembly creates no commit');
+});
+
+test('task 64: a store that cannot be written or committed fails loudly (fail-closed, both arms)', (t) => {
+  const ctx = reviewCtx63(t);
+  // Write arm: `.job` exists as a FILE, so the store's path is unwritable.
+  const dirW = join(ctx.testRoot, 'store-unwritable');
+  mkdirSync(dirW, { recursive: true });
+  writeFileSync(join(dirW, '.job'), 'a file where the store directory must be', 'utf8');
+  const w = writeReviewedHashStore({ worktree: dirW, jobId: 'j-20260912-64', pass: 1, pages: [P1], surfaceOf: () => pageText('bytes') });
+  assert.equal(w.ok, false, 'the write arm fails closed');
+  assert.match(w.reason, /could not write/);
+  assert.match(w.reason, /failing closed/);
+  // Commit arm: git refuses to stage (an index.lock is held), so nothing can
+  // be committed — the run must fail loudly rather than review unbound bytes.
+  const dirC = join(ctx.testRoot, 'store-commit-fail');
+  mkdirSync(dirC, { recursive: true });
+  git(dirC, ['init', '--quiet']);
+  mkdirSync(join(dirC, '.job'), { recursive: true });
+  writeFileSync(join(dirC, '.git', 'index.lock'), 'a held lock', 'utf8');
+  const c = writeReviewedHashStore({ worktree: dirC, jobId: 'j-20260912-64', pass: 1, pages: [P1], surfaceOf: () => pageText('bytes') });
+  assert.equal(c.ok, false, 'the commit arm fails closed');
+  assert.match(c.reason, /could not stage|could not commit/);
+  assert.match(c.reason, /failing closed/);
+  // A page with no surface bytes builds no store either — the same
+  // fail-closed direction the surface guard takes before dispatch.
+  const dirS = storeWorktree(t, ctx, 'job/store-nosurface');
+  const s = writeReviewedHashStore({ worktree: dirS, jobId: 'j-20260912-64', pass: 1, pages: [P1], surfaceOf: () => null });
+  assert.equal(s.ok, false, 'no bytes, no store');
+  assert.match(s.reason, /no surface bytes to bind/);
+});
+
+test('task 64: brief hash === store hash === re-derived hash, one assertion over three producers (D10)', (t) => {
+  const ctx = reviewCtx63(t);
+  const dir = storeWorktree(t, ctx, 'job/store-threeway');
+  const surface = pageText('three-way bytes');
+  mkdirSync(dirname(join(dir, P1)), { recursive: true });
+  writeFileSync(join(dir, P1), surface, 'utf8');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  // Producer 1: the hash the BRIEF prints beside the surface it carries.
+  const brief = assembleReviewBrief(ctx, {
+    jobId: 'j-20260912-64',
+    job: baseJob63(),
+    diffText: '',
+    pass: 1,
+    findings: '',
+    outPath: `${ctx.reviewsDir}/j-20260912-64.md`,
+    gates: null,
+    sha: '',
+    capMinutes: 30,
+    reviewedOnly: P1,
+    reviewedSurfaceText: surface,
+    reviewGraphQuery: () => ({ universe: false }),
+    graphIndexId: 'test-index-64',
+  });
+  const briefHash = /^Reviewed hash: `([0-9a-f]{64})`/m.exec(brief)?.[1] ?? null;
+  // Producer 2: the hash the STORE committed at assembly.
+  const store = readStoreAt(ctx, 'job/store-threeway');
+  assert.equal(store.ok, true, store.reason ?? '');
+  // Producer 3: this test's own re-derivation from the tree, through the one
+  // reviewed-surface hash the record binds.
+  const rederived = reviewedHashOfFile(join(dir, P1));
+  assert.ok(
+    briefHash && store.hashes[P1] === briefHash && store.hashes[P1] === rederived,
+    `three-way equality over ${P1}: brief printed ${briefHash}, store bound ${store.hashes[P1]}, re-derived ${rederived}`,
+  );
+});
+
+test('task 64: a stale copy between assembly and merge refuses, the run failed, the path named (D3/D7)', (t) => {
+  const ctx = reviewCtx63(t);
+  for (const p of [P1, P2]) {
+    const full = join(ctx.repoRoot, p);
+    mkdirSync(dirname(full), { recursive: true });
+    writeFileSync(full, pageText('the bytes the brief carried'), 'utf8');
+  }
+  commitAll(ctx, 'fixture: the pages the review saw');
+  const base = headOf(ctx);
+  const dir = storeWorktree(t, ctx, 'job/store-stale');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1, P2],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  // Everything still binds at both refs.
+  const ok = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-stale', targetRef: base, paths: [P1, P2] });
+  assert.equal(ok.ok, true, ok.reason ?? '');
+  assert.deepEqual(ok.paths, [P1, P2]);
+  // A stale copy: the page's bytes move on the branch AFTER the store was
+  // committed — the stored hash no longer binds what the branch carries.
+  writeFileSync(join(dir, P1), pageText('an edit after the store was written'), 'utf8');
+  commitInWorktree(dir, 'fixture: the page moved after assembly');
+  const stale = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-stale', targetRef: base, paths: [P1, P2] });
+  assert.equal(stale.ok, false, 'the stale copy refuses');
+  assert.equal(stale.code, 'reviewed-hash-mismatch');
+  assert.equal(stale.path, P1, 'the refusal names the offending page');
+  assert.match(stale.reason, new RegExp(P1.replace(/\//g, '\\/')), 'the reason names the path');
+  assert.match(stale.reason, /reviewed-hash-mismatch/);
+});
+
+test('task 64: a page moved on the merge target refuses, the path named (D7)', (t) => {
+  const ctx = reviewCtx63(t);
+  for (const p of [P1, P2]) {
+    const full = join(ctx.repoRoot, p);
+    mkdirSync(dirname(full), { recursive: true });
+    writeFileSync(full, pageText('the bytes the brief carried'), 'utf8');
+  }
+  commitAll(ctx, 'fixture: the pages the review saw');
+  const base = headOf(ctx);
+  const dir = storeWorktree(t, ctx, 'job/store-target');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1, P2],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  // The target moved UNDER the job: the page was modified on `train` between
+  // assembly and merge.
+  git(ctx.repoRoot, ['branch', 'train', base]);
+  const trainDir = join(ctx.testRoot, 'store-target-train');
+  git(ctx.repoRoot, ['worktree', 'add', trainDir, 'train']);
+  t.after(() => {
+    if (!existsSync(ctx.repoRoot)) return;
+    try {
+      git(ctx.repoRoot, ['worktree', 'remove', '--force', trainDir]);
+    } catch {
+      /* cleanup removes the tree anyway */
+    }
+  });
+  writeFileSync(join(trainDir, P1), pageText('someone moved the page on the target'), 'utf8');
+  commitInWorktree(trainDir, 'fixture: the page moved on the target');
+  const moved = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-target', targetRef: 'train', paths: [P1, P2] });
+  assert.equal(moved.ok, false, 'the moved page refuses');
+  assert.equal(moved.code, 'reviewed-hash-mismatch');
+  assert.equal(moved.path, P1, 'the refusal names the page that moved');
+  // A page DELETED on the target is the same refusal — the bytes cannot be
+  // read there, so the store binds nothing the target carries. P1 is
+  // restored first, so the deletion is the only difference left and the
+  // refusal names the deleted page.
+  writeFileSync(join(trainDir, P1), pageText('the bytes the brief carried'), 'utf8');
+  commitInWorktree(trainDir, 'fixture: the first page restored on the target');
+  git(trainDir, ['rm', '-q', P2]);
+  git(trainDir, ['commit', '--quiet', '--no-verify', '-m', 'fixture: the page deleted on the target']);
+  const deleted = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-target', targetRef: 'train', paths: [P1, P2] });
+  assert.equal(deleted.ok, false, 'the deleted page refuses');
+  assert.equal(deleted.code, 'reviewed-hash-mismatch');
+  assert.equal(deleted.path, P2, 'the deletion arm names the deleted page');
+  assert.match(deleted.reason, /could not be read/);
+});
+
+test('task 64: a missing or malformed store refuses with a named reason', (t) => {
+  const ctx = reviewCtx63(t);
+  const full = join(ctx.repoRoot, P1);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, pageText('bytes'), 'utf8');
+  commitAll(ctx, 'fixture: a page');
+  const base = headOf(ctx);
+  const dir = storeWorktree(t, ctx, 'job/store-armed');
+  // Missing: the branch carries no store at all.
+  const missing = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-armed', targetRef: base, paths: [P1] });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.code, 'reviewed-hash-store-missing');
+  assert.match(missing.reason, /reviewed-hash-store-missing/);
+  assert.match(missing.reason, /reviewed-hashes\.json/, 'the reason names the store');
+  // Malformed, arm 1: not the store's shape.
+  mkdirSync(join(dir, '.job'), { recursive: true });
+  writeFileSync(join(dir, '.job', 'reviewed-hashes.json'), JSON.stringify({ version: 2, pages: { [P1]: '0'.repeat(64) } }), 'utf8');
+  commitInWorktree(dir, 'fixture: a store with the wrong version');
+  const wrongVersion = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-armed', targetRef: base, paths: [P1] });
+  assert.equal(wrongVersion.ok, false);
+  assert.equal(wrongVersion.code, 'reviewed-hash-store-malformed');
+  // Malformed, arm 2: a value that is not a 64-hex digest.
+  writeFileSync(join(dir, '.job', 'reviewed-hashes.json'), JSON.stringify({ version: 1, pages: { [P1]: 'not-a-hash' } }), 'utf8');
+  commitInWorktree(dir, 'fixture: a store with a non-digest value');
+  const badValue = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-armed', targetRef: base, paths: [P1] });
+  assert.equal(badValue.ok, false);
+  assert.equal(badValue.code, 'reviewed-hash-store-malformed');
+  // Malformed, arm 3: unparseable JSON.
+  writeFileSync(join(dir, '.job', 'reviewed-hashes.json'), '{not json', 'utf8');
+  commitInWorktree(dir, 'fixture: a store that does not parse');
+  const unparseable = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-armed', targetRef: base, paths: [P1] });
+  assert.equal(unparseable.ok, false);
+  assert.equal(unparseable.code, 'reviewed-hash-store-malformed');
+});
+
+test('task 64: the store\'s page set must EXACTLY equal the declared set — extras and missing both refuse (D4)', (t) => {
+  const ctx = reviewCtx63(t);
+  for (const p of [P1, P2]) {
+    const full = join(ctx.repoRoot, p);
+    mkdirSync(dirname(full), { recursive: true });
+    writeFileSync(full, pageText('bytes'), 'utf8');
+  }
+  commitAll(ctx, 'fixture: two pages');
+  const base = headOf(ctx);
+  const dir = storeWorktree(t, ctx, 'job/store-scope');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1, P2],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  // Extras: the store binds a page the current pass does not declare.
+  const extras = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-scope', targetRef: base, paths: [P1] });
+  assert.equal(extras.ok, false);
+  assert.equal(extras.code, 'reviewed-hash-store-scope');
+  assert.match(extras.reason, new RegExp(P2.replace(/\//g, '\\/')), 'the refusal names the extra page');
+  // Missing: the current pass declares a page the store does not bind.
+  const missing = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-scope', targetRef: base, paths: [P1, P2, OTHER] });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.code, 'reviewed-hash-store-scope');
+  assert.match(missing.reason, new RegExp(OTHER.replace(/\//g, '\\/')), 'the refusal names the missing page');
+  // The exact set passes.
+  const exact = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-scope', targetRef: base, paths: [P2, P1] });
+  assert.equal(exact.ok, true, exact.reason ?? '');
+  assert.deepEqual(exact.paths, [P1, P2], 'the declared paths come back normalised and sorted');
+});
+
+test('task 64: the graph output never enters the hash — independence in both directions (D9)', (t) => {
+  const ctx = reviewCtx63(t);
+  const full = join(ctx.repoRoot, P1);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, pageText('graph-independent bytes'), 'utf8');
+  commitAll(ctx, 'fixture: a page');
+  const base = headOf(ctx);
+  const dir = storeWorktree(t, ctx, 'job/store-graph');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  // Direction 1: DIFFERING graph sidecar bytes with IDENTICAL page bytes →
+  // the merge proceeds. The check reads the store and the pages, never the
+  // sidecar, so the graph's shape cannot move the answer.
+  mkdirSync(join(dir, '.job'), { recursive: true });
+  writeFileSync(join(dir, '.job', 'graph.json'), `${JSON.stringify({ subjects: { [P1]: { universe: true, symbols: ['s1'], risk: 'LOW' } } }, null, 2)}\n`, 'utf8');
+  commitInWorktree(dir, 'fixture: one graph sidecar');
+  const withGraphA = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-graph', targetRef: base, paths: [P1] });
+  assert.equal(withGraphA.ok, true, withGraphA.reason ?? '');
+  writeFileSync(join(dir, '.job', 'graph.json'), `${JSON.stringify({ subjects: { [P1]: { universe: false, risk: 'HIGH', partial: true, truncated: true } } }, null, 2)}\n`, 'utf8');
+  commitInWorktree(dir, 'fixture: a DIFFERENT graph sidecar, same pages');
+  const withGraphB = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-graph', targetRef: base, paths: [P1] });
+  assert.equal(withGraphB.ok, true, 'differing graph bytes with identical page bytes proceed: ' + (withGraphB.reason ?? ''));
+  assert.deepEqual(withGraphA.hashes, withGraphB.hashes, 'the answer is invariant over the graph bytes');
+  // Direction 2: DIFFERING page bytes with IDENTICAL graph bytes → refuses.
+  writeFileSync(join(dir, P1), pageText('an edit nobody reviewed'), 'utf8');
+  commitInWorktree(dir, 'fixture: the page moved, graph bytes unchanged');
+  const moved = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-graph', targetRef: base, paths: [P1] });
+  assert.equal(moved.ok, false, 'differing page bytes refuse');
+  assert.equal(moved.code, 'reviewed-hash-mismatch');
+  assert.equal(moved.path, P1);
+});
+
+test('task 64: the store never lands as a live path — the scaffolding removal consumes it (D8)', (t) => {
+  const ctx = reviewCtx63(t);
+  const full = join(ctx.repoRoot, P1);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, pageText('bytes that merge'), 'utf8');
+  commitAll(ctx, 'fixture: a page');
+  const base = headOf(ctx);
+  const dir = storeWorktree(t, ctx, 'job/store-lands');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  assert.equal(readStoreAt(ctx, 'job/store-lands').ok, true, 'the store is on the branch before the merge');
+  // The exact removal the merge path runs before `mergeJobBranch` — the
+  // whole `.job/` directory, wholesale, so the store cannot land on
+  // `main`/`train` on ANY merge path.
+  git(dir, ['rm', '-r', '-q', '--ignore-unmatch', '.job']);
+  git(dir, ['commit', '--quiet', '--no-verify', '-m', 'job j-20260912-64: remove job scaffolding before merge']);
+  assert.equal(gitTry(ctx.repoRoot, ['show', 'job/store-lands:.job/reviewed-hashes.json']).ok, false, 'the store is gone from the branch the merge would land');
+  assert.equal(gitTry(ctx.repoRoot, ['show', `job/store-lands:${P1}`]).ok, true, 'the page bytes are not scaffolding — they land');
+  // Structural: the production removal covers `.job` wholesale and runs
+  // before the merge, and the store lives under `.job/` by construction.
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /\['rm', '-r', '-q', '--ignore-unmatch', '\.job', RESULT_FILENAME\]/, 'the pre-merge removal takes the whole .job directory');
+  const rmIdx = src.indexOf("['rm', '-r', '-q', '--ignore-unmatch', '.job', RESULT_FILENAME]");
+  const mergeIdx = src.indexOf('await mergeJobBranch(ctx, {');
+  assert.ok(rmIdx !== -1 && mergeIdx !== -1 && rmIdx < mergeIdx, 'the removal runs before the merge, so nothing under .job/ can land');
+  assert.equal(REVIEWED_HASH_STORE_REL.startsWith('.job/'), true, 'the store lives under .job/ by construction');
+});
+
+test('task 64: the merge report records the empty-symbol assertion beside the hash assertion (D9 fields)', () => {
+  // Absent analysis: the assertion could not run, and the report says so.
+  const absent = reviewedEmptySymbolAssertion({ mergeBase: 'abc123def4567890', analysis: absentAnalysis, paths: [P1] });
+  assert.deepEqual(absent, { mergeBase: 'abc123def4567890', state: 'absent', symbolCount: null, noSymbols: [], flags: [] });
+  // Present, empty: changed-symbol count 0 with the merge-base recorded.
+  const empty = reviewedEmptySymbolAssertion({ mergeBase: 'abc123def4567890', analysis: emptyPresent, paths: [P1] });
+  assert.deepEqual(empty, { mergeBase: 'abc123def4567890', state: 'empty', symbolCount: 0, noSymbols: [], flags: [] });
+  // `no-symbols`: a declared page outside any symbol universe is complete.
+  const noSymbols = reviewedEmptySymbolAssertion({
+    mergeBase: 'abc123def4567890',
+    analysis: { absent: false, partial: false, truncated: false, symbols: [], subjects: { [P1]: { universe: false } } },
+    paths: [P1],
+  });
+  assert.deepEqual(noSymbols, { mergeBase: 'abc123def4567890', state: 'empty', symbolCount: 0, noSymbols: [P1], flags: [] });
+  // The flags the analysis reports ride along, top-level and per subject.
+  const flagged = reviewedEmptySymbolAssertion({
+    mergeBase: 'abc123def4567890',
+    analysis: {
+      absent: false, partial: true, truncated: false, symbols: [],
+      subjects: { [P1]: { universe: true, symbols: [], risk: 'UNKNOWN', truncated: true } },
+    },
+    paths: [P1],
+  });
+  assert.deepEqual(flagged.flags, ['partial', 'truncated'], 'both reported flags are recorded');
+  // A non-empty symbol set over a declared subject reads as non-empty — the
+  // state the merge refuses downstream (never a hash input either way).
+  const nonEmpty = reviewedEmptySymbolAssertion({
+    mergeBase: 'abc123def4567890',
+    analysis: { absent: false, partial: false, truncated: false, symbols: [{ name: 's', owner: P1 }], subjects: { [P1]: { universe: true, symbols: ['s'], risk: 'LOW' } } },
+    paths: [P1],
+  });
+  assert.equal(nonEmpty.state, 'non-empty');
+  assert.equal(nonEmpty.symbolCount, 1);
+  // Structural: the merge site logs both report lines beside each other,
+  // after the reviewed gate and before the merge lands.
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const gateIdx = src.indexOf('const checked = checkReviewedMerge({');
+  const hashLine = src.indexOf('`reviewed-hash: hash equality holds for');
+  const graphLine = src.indexOf('`reviewed-graph: empty-symbol assertion — merge-base');
+  assert.ok(gateIdx !== -1 && hashLine !== -1 && graphLine !== -1, 'the reviewed gate and both report lines exist');
+  assert.ok(gateIdx < hashLine && hashLine < graphLine, 'the report lines stand beside the hash assertion, after the gate');
+  assert.match(src, /reviewedEmptySymbolAssertion\(\{ mergeBase: mergeBaseSha, analysis: reviewedAnalysis, paths: reviewedPaths \}\)/, 'the assertion records the merge-base argument the analysis was invoked with');
+});
+
+test('task 64: the merge wiring refuses on the store and settles failed, naming the path (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const gateIdx = src.indexOf('const checked = checkReviewedMerge({');
+  const checkIdx = src.indexOf('checkReviewedHashStore(ctx.repoRoot, { branch, targetRef: hashTargetRef, paths: reviewedPaths })');
+  assert.ok(gateIdx !== -1 && checkIdx !== -1, 'the merge-site hash check exists');
+  assert.ok(gateIdx < checkIdx, 'the hash check runs where checkReviewedMerge is consulted, after its preconditions');
+  assert.match(src, /const hashTargetRef = branchExists\(ctx\.repoRoot, TRAIN_BRANCH\) \? TRAIN_BRANCH : mergeBaseSha;/, 'the target ref is the train branch, or the base where the train does not exist yet');
+  assert.match(src, /failMerge\(hashChecked\.reason\);/, 'a store refusal settles the run failed through the merge\'s own failure path');
+  assert.match(src, /code: 'reviewed-hash-mismatch',\n          path: page,/, 'the mismatch carries the offending page');
+  // Task-65 interface contract, quoted in the source where task 65 finds it.
+  assert.match(src, /readReviewedHashStore\(repo, ref\)/);
+  assert.match(src, /checkReviewedHashStore\(repo, \{ branch, targetRef, paths \}\)/);
+});
+
+test('task 64: a full reviewed run commits the store before dispatch, merges on hash equality, and never lands the store (behavioral)', async (t) => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('reviewed-unchanged', ` ${P1}`),
+      reviewerCommand: mockCommand('review-approve-store-checked'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  // The page is approved, then edited: at the job's merge base it reads
+  // `mismatched` — the reviewed outcome's only precondition (the 61b join).
+  writePage(ctx, P1, 'the approved version');
+  commitAll(ctx, 'fixture: the page');
+  approveWithSubjects(ctx, 'j-seed-approver', [P1]);
+  commitAll(ctx, 'fixture: the approving record');
+  writePage(ctx, P1, 'an edit nobody reviewed');
+  commitAll(ctx, 'fixture: later edits');
+  writeQueue(ctx, [{ type: 'repair', title: 'Ratify the reviewed page', subjects: [P1] }]);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+  assert.equal(res.outcome, 'done', ctx.output());
+  // D10: the reviewer could only approve because the store was committed to
+  // the branch BEFORE dispatch — its worktree (a checkout of the branch at
+  // dispatch) carried it, and its verdict notes record the store's hash and
+  // the brief's printed hash as two independent producers.
+  const record = readFileSync(join(ctx.reviewsDir, `${res.jobId}.md`), 'utf8');
+  const storeHash = /store-hash: ([0-9a-f]{64})/.exec(record)?.[1] ?? null;
+  const briefHash = /brief-hash: ([0-9a-f]{64})/.exec(record)?.[1] ?? null;
+  // THREE-WAY equality in ONE assertion over the same input path: the brief's
+  // printed hash, the store's committed hash, and this test's own
+  // re-derivation from the merged tree.
+  const rederived = reviewedHashOfFile(join(ctx.repoRoot, P1));
+  assert.ok(
+    storeHash && briefHash && storeHash === briefHash && storeHash === rederived,
+    `three-way hash equality over ${P1}: store ${storeHash}, brief ${briefHash}, re-derived ${rederived} — ${ctx.output()}`,
+  );
+  // D5 (non-regression): the approving record carries a would-cite, and binds
+  // by `subject:` and `reviewed:` exactly as a merging job's record does.
+  const rec = matter(record).data;
+  assert.ok(String(rec['would-cite'] ?? '').trim().length > 0, 'the record carries a non-empty would-cite');
+  const bound = (Array.isArray(rec.subject) ? rec.subject : [rec.subject]).map((s) => String(s).replace(/\\/g, '/')).sort();
+  assert.deepEqual(bound, [P1], 'subject: binds the declared page');
+  assert.equal(rec.reviewed?.[P1], rederived, 'reviewed: binds the reviewed-surface hash of the same bytes');
+  // The merge report, beside the hash assertion: both lines in the run log.
+  assert.match(ctx.output(), /reviewed-hash: hash equality holds for 1 page\(s\)/);
+  assert.match(ctx.output(), /reviewed-graph: empty-symbol assertion — merge-base [0-9a-f]{12}/);
+  assert.match(ctx.output(), /committed \.job\/reviewed-hashes\.json to .* at review-brief assembly/, 'the assembly commit is logged');
+  // D8: the store never lands as a live path — not on the train the merge
+  // landed on, not on the frozen main.
+  assert.equal(gitTry(ctx.repoRoot, ['show', 'train:.job/reviewed-hashes.json']).ok, false, 'the store is not on train');
+  assert.equal(gitTry(ctx.repoRoot, ['show', 'main:.job/reviewed-hashes.json']).ok, false, 'the store is not on main');
+});
+
+test('task 64 (D5, per-page shape): each declared page\'s record carries its own would-cite and binding', (t) => {
+  const ctx = reviewCtx63(t);
+  // The pages exist in the tree: `writeRecordSubjects` hashes the merged
+  // tree's bytes, so a record can only bind what is really there.
+  for (const page of [P1, P2]) {
+    const full = join(ctx.repoRoot, page);
+    mkdirSync(dirname(full), { recursive: true });
+    writeFileSync(full, pageText(`the approved bytes of ${page}`), 'utf8');
+  }
+  // The per-page flow writes one record per page; each record binds its ONE
+  // page and carries its own non-empty would-cite — the authority's SHALL
+  // (a would-cite for each declared page), proved on the shape the flow
+  // produces.
+  const pages = [P1, P2];
+  pages.forEach((page, pi) => {
+    const p = writeVerdictRecord(ctx, `j-20260912-64.reviewed-${pi}`, {
+      verdict: 'approve',
+      wouldCite: `A reader checking page ${pi} would cite it.`,
+      notes: `page ${pi} reviewed as it stands`,
+    });
+    const wrote = writeRecordSubjects(p, [page], { repoRoot: ctx.repoRoot });
+    assert.equal(wrote.ok, true, wrote.why ?? '');
+  });
+  pages.forEach((page, pi) => {
+    const rec = matter(readFileSync(reviewedPerPageRecordPath(ctx, 'j-20260912-64', pi, 1), 'utf8')).data;
+    assert.ok(String(rec['would-cite'] ?? '').trim().length > 0, `page ${pi}'s record carries a non-empty would-cite`);
+    assert.deepEqual((Array.isArray(rec.subject) ? rec.subject : [rec.subject]).map((s) => String(s).replace(/\\/g, '/')), [page], `page ${pi}'s record binds its one page by subject:`);
+    assert.ok(rec.reviewed && typeof rec.reviewed === 'object', `page ${pi}'s record binds by reviewed:`);
+    assert.ok(Object.keys(rec.reviewed).length === 1, `page ${pi}'s record binds exactly its one page`);
+  });
+});
+
+test('task 64 (D6, non-regression): the brief carries the tree\'s bytes and prints each declared page\'s hash', (t) => {
+  const ctx = reviewCtx63(t);
+  const dir = storeWorktree(t, ctx, 'job/store-brief-bytes');
+  // The carried page bytes equal the reviewed surface re-derived from the
+  // tree at assembly — not a placeholder, not a re-typed copy.
+  const raw = pageText('the tree\'s own bytes');
+  mkdirSync(dirname(join(dir, P1)), { recursive: true });
+  writeFileSync(join(dir, P1), raw, 'utf8');
+  const brief = assembleReviewBrief(ctx, {
+    jobId: 'j-20260912-64',
+    job: baseJob63(),
+    diffText: '',
+    pass: 1,
+    findings: '',
+    outPath: `${ctx.reviewsDir}/j-20260912-64.md`,
+    gates: null,
+    sha: '',
+    capMinutes: 30,
+    reviewedOnly: P1,
+    reviewedSurfaceText: readFileSync(join(dir, P1), 'utf8'),
+    reviewGraphQuery: () => ({ universe: false }),
+    graphIndexId: 'test-index-64',
+  });
+  assert.ok(brief.includes(raw), 'the brief carries the page\'s bytes as they stand in the tree');
+  assert.equal(
+    reviewedHash(readFileSync(join(dir, P1), 'utf8')),
+    reviewedHashOfFile(join(dir, P1)),
+    'the carried bytes\' reviewed surface is the surface re-derived from the tree',
+  );
+  // Each declared page's hash is printed in ITS invocation's brief, and it is
+  // the hash the store binds for that page.
+  const s1 = pageText('page one bytes');
+  const s2 = pageText('page two bytes');
+  const a = briefFor63(t, P1, s1);
+  const b = briefFor63(t, P2, s2);
+  const hashOf = (text) => /^Reviewed hash: `([0-9a-f]{64})`/m.exec(text)?.[1] ?? null;
+  assert.equal(hashOf(a.brief), reviewedHash(s1), 'page one\'s brief prints page one\'s hash');
+  assert.equal(hashOf(b.brief), reviewedHash(s2), 'page two\'s brief prints page two\'s hash');
+  assert.notEqual(hashOf(a.brief), hashOf(b.brief), 'the two pages never print one shared hash');
 });

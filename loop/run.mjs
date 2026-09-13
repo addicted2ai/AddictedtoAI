@@ -39,6 +39,7 @@ import { readResult, classifyRun, reviewProducedNothing, parseGraphAck, parseRev
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
   addWorktree,
+  branchExists,
   changedPathsWithStatus,
   commitAll,
   currentBranch,
@@ -89,6 +90,7 @@ import {
   transcribeNotedProposal,
 } from './lib/proposals.mjs';
 import { transcribeCarriedFindings } from './lib/carry.mjs';
+import { reviewedHash } from '../lib/review-hash.mjs';
 
 // Process-lifetime outcome-lineage store (item 5 follow-up: first
 // producer + judgment). `recordOutcome` classifies each outcome's
@@ -549,6 +551,319 @@ export function checkReviewedDiffEmpty(contentPaths, union) {
       `reviewed-with-diff: the reviewed: outcome carries a non-empty diff on declared subject(s) ${offending.join(', ')} — ` +
       `a read-and-unchanged outcome binds pages without a diff, so an accompanying diff is refused`,
     paths: offending,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The reviewed-surface hash store (Stage 2, task 64).
+//
+// The defect this closes: a `reviewed:` outcome's review could appear to show
+// a page while the record binds a different byte set — the brief's bytes, the
+// bytes a record approves, and the bytes that merge were three measurements
+// with nothing tying them together. Task 64 binds them: at review-brief
+// assembly the loop hashes every declared page's reviewed surface (through
+// `lib/review-hash.mjs`'s `reviewedHash` — the ONLY hash, never a second
+// detector), writes `.job/reviewed-hashes.json`, and commits it to the job
+// branch BEFORE any reviewer is dispatched. At merge the surface is
+// re-derived from the page bytes at the JOB BRANCH head and at the MERGE
+// TARGET ref, and both must equal the stored hash — equality, not
+// containment. Binding the new bytes would record an approval of something
+// nobody read; binding the old bytes would write a record mismatched the
+// moment it lands; both are wrong, so any difference refuses the merge and
+// settles the run `failed`, naming the path.
+//
+// The store rides the task-59 `.job/graph.json` sidecar precedent exactly:
+// committed to the branch at assembly, consumed at merge/discard, and never
+// a live path on `main`/`train` — the pre-merge scaffolding removal
+// (`git rm -r .job` before `mergeJobBranch`) takes the whole `.job/`
+// directory, so the store cannot land on any merge path, and a discarded
+// branch keeps it only as branch history. The graph output never enters the
+// hash: the store's bytes and the sidecar's bytes are independent, and the
+// merge report records the graph's empty-symbol assertion BESIDE the hash
+// equality assertion, never inside it.
+//
+// TASK-65 INTERFACE CONTRACT (the shape task 65 imports, quoted exactly):
+//   readReviewedHashStore(repo, ref)
+//     -> { ok: true, hashes }                       on success
+//     -> { ok: false, code, reason }                on failure, `code` one of
+//       'reviewed-hash-store-missing' | 'reviewed-hash-store-malformed'
+//   checkReviewedHashStore(repo, { branch, targetRef, paths })
+//     -> { ok: true, hashes, paths }                on success
+//     -> { ok: false, code, path?, reason }         on failure, `code` one of
+//       the reader's codes plus 'reviewed-hash-store-scope' (the store's key
+//       set is not EXACTLY the declared set) and 'reviewed-hash-mismatch'
+//       (a re-derived surface hash differs from the stored hash); `path` is
+//       REQUIRED — naming the offending page — whenever the code is
+//       'reviewed-hash-mismatch', and the refusal text names the path.
+// ---------------------------------------------------------------------------
+
+/** The store's repo-relative path. Under `.job/`, so it never lands live. */
+export const REVIEWED_HASH_STORE_REL = '.job/reviewed-hashes.json';
+
+/**
+ * Build the store payload for one assembly: `{ version: 1, pages }`, keys
+ * normalised exactly as the reviewed flow's subject paths are (POSIX slashes,
+ * trimmed — the same `normSubjectPath` the declaration join reads), values
+ * the 64-hex SHA-256 of the page's reviewed surface. `surfaceOf(page)`
+ * supplies the page's raw bytes; a page with no bytes builds nothing — the
+ * caller fails closed before any reviewer is dispatched.
+ *
+ * @param {string[]} pages  the current pass's declared reviewed paths
+ * @param {(page: string) => string|null} surfaceOf
+ * @returns {{ version: number, pages: Record<string, string> }}
+ */
+export function buildReviewedHashStore(pages, surfaceOf) {
+  const entries = {};
+  for (const page of [...new Set((Array.isArray(pages) ? pages : []).map(normSubjectPath).filter(Boolean))].sort()) {
+    const raw = surfaceOf(page);
+    if (typeof raw !== 'string' || raw === '') {
+      throw new Error(`page ${page} has no surface bytes to bind`);
+    }
+    entries[page] = reviewedHash(raw);
+  }
+  return { version: 1, pages: entries };
+}
+
+/**
+ * Write and commit the store at review-brief assembly (design D1/D2). Each
+ * assembly writes the store FRESH with the current pass's declared pages —
+ * overwrite, never merge/extend — so the store at the branch head always
+ * binds the bytes of the newest review actually shown to a reviewer. The
+ * write and the commit are fail-closed: a store that cannot be written or
+ * committed fails the run loudly (the caller settles `failed` on
+ * `ok: false`); there is no silent continue without the store. An
+ * identical overwrite (a re-assembly that hashes the same bytes) commits
+ * nothing and reads `committed: false` — the branch already carries exactly
+ * this store, which is the overwrite semantics holding, not a skip.
+ *
+ * @param {{ worktree: string, jobId: string, pass: number|string, pages: string[], surfaceOf: (page: string) => string|null }} o
+ * @returns {{ ok: true, hashes: Record<string, string>, committed: boolean } |
+ *            { ok: false, reason: string }}
+ */
+export function writeReviewedHashStore({ worktree, jobId, pass, pages, surfaceOf }) {
+  let payload;
+  try {
+    payload = `${JSON.stringify(buildReviewedHashStore(pages, surfaceOf), null, 2)}\n`;
+  } catch (e) {
+    return {
+      ok: false,
+      reason: `reviewed-hash-store: ${String(e?.message ?? e)} — failing closed, no review without a store that binds the brief's bytes`,
+    };
+  }
+  try {
+    mkdirSync(join(worktree, '.job'), { recursive: true });
+    writeFileSync(join(worktree, REVIEWED_HASH_STORE_REL), payload, 'utf8');
+  } catch (e) {
+    return {
+      ok: false,
+      reason: `reviewed-hash-store: could not write ${REVIEWED_HASH_STORE_REL} in the job worktree (${e?.message ?? e}) — failing closed, no review without the store`,
+    };
+  }
+  const add = gitTry(worktree, ['add', REVIEWED_HASH_STORE_REL]);
+  if (!add.ok) {
+    return {
+      ok: false,
+      reason: `reviewed-hash-store: could not stage ${REVIEWED_HASH_STORE_REL} on the job branch — ${describeGitFailure(add, 'git add')} — failing closed, no review without the committed store`,
+    };
+  }
+  const commit = gitTry(worktree, [
+    'commit', '--no-verify', '-m', `job ${jobId}: reviewed-surface hash store (pass ${pass})`,
+  ]);
+  if (!commit.ok && !/nothing to commit|nothing added/i.test(`${commit.stdout}\n${commit.stderr}`)) {
+    return {
+      ok: false,
+      reason: `reviewed-hash-store: could not commit ${REVIEWED_HASH_STORE_REL} to the job branch — ${describeGitFailure(commit, 'git commit')} — failing closed, no review without the committed store`,
+    };
+  }
+  return {
+    ok: true,
+    hashes: JSON.parse(payload).pages,
+    committed: commit.ok,
+  };
+}
+
+/**
+ * Read the committed store off a ref (task-65 contract). Shape-checked
+ * fail-closed: `version` must be 1, `pages` an object of normalised path →
+ * 64-hex SHA-256, and two keys that normalise to the same path are
+ * malformed rather than silently merged. Absent or unparseable never
+ * invents a binding — the caller refuses naming the defect.
+ *
+ * @param {string} repo  the repository root
+ * @param {string} ref   any git ref the store is committed on
+ * @returns {{ ok: true, hashes: Record<string, string> } |
+ *            { ok: false, code: 'reviewed-hash-store-missing' | 'reviewed-hash-store-malformed', reason: string }}
+ */
+export function readReviewedHashStore(repo, ref) {
+  const r = gitTry(repo, ['show', `${String(ref ?? '')}:${REVIEWED_HASH_STORE_REL}`]);
+  if (!r.ok) {
+    return {
+      ok: false,
+      code: 'reviewed-hash-store-missing',
+      reason: `reviewed-hash-store-missing: no committed ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} — the store is written at review-brief assembly and consumed with the branch; a merge without it refuses (${describeGitFailure(r, 'git show')})`,
+    };
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(r.stdout);
+  } catch (e) {
+    return {
+      ok: false,
+      code: 'reviewed-hash-store-malformed',
+      reason: `reviewed-hash-store-malformed: ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} does not parse as JSON (${e?.message ?? e})`,
+    };
+  }
+  if (
+    !parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+    parsed.version !== 1 ||
+    !parsed.pages || typeof parsed.pages !== 'object' || Array.isArray(parsed.pages)
+  ) {
+    return {
+      ok: false,
+      code: 'reviewed-hash-store-malformed',
+      reason: `reviewed-hash-store-malformed: ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} is not { version: 1, pages: { <path>: <64-hex sha256> } }`,
+    };
+  }
+  const hashes = {};
+  for (const [key, value] of Object.entries(parsed.pages)) {
+    const path = normSubjectPath(key);
+    if (!path || typeof value !== 'string' || !/^[0-9a-f]{64}$/.test(value)) {
+      return {
+        ok: false,
+        code: 'reviewed-hash-store-malformed',
+        reason: `reviewed-hash-store-malformed: ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} carries a malformed entry for ${JSON.stringify(key)} — keys are normalised content paths and values are 64-hex SHA-256`,
+      };
+    }
+    if (path in hashes) {
+      return {
+        ok: false,
+        code: 'reviewed-hash-store-malformed',
+        reason: `reviewed-hash-store-malformed: ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} binds ${path} under two keys that normalise to one path`,
+      };
+    }
+    hashes[path] = value;
+  }
+  return { ok: true, hashes };
+}
+
+/**
+ * The reviewed surface's hash, re-derived from the page bytes AT a ref —
+ * never from a worktree, never from the graph output. `null` when the bytes
+ * cannot be read or cannot be hashed (a moved/deleted page, or bytes that
+ * are not a parseable content file): the caller decides what null means,
+ * and at merge it means a mismatch naming the path.
+ */
+export function reviewedHashAtRef(repo, ref, path) {
+  const r = gitTry(repo, ['show', `${String(ref ?? '')}:${normSubjectPath(path)}`]);
+  if (!r.ok) return null;
+  try {
+    return reviewedHash(r.stdout);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The merge-time check (designs D3/D4/D7; task-65 contract above). The
+ * store's key set must EXACTLY equal the declared reviewed paths — extras
+ * refuse, missing refuse, the refusal naming the defect — and then, for
+ * each page, the surface re-derived at the JOB BRANCH head and at the MERGE
+ * TARGET ref must BOTH equal the stored hash. Any difference counts as the
+ * page having moved (or been modified) on that ref: refuse, naming the
+ * path, so a review that appears to show one byte set can never ratify
+ * another.
+ *
+ * @param {string} repo  the repository root
+ * @param {{ branch: string, targetRef: string, paths: string[] }} o
+ * @returns {{ ok: true, hashes: Record<string, string>, paths: string[] } |
+ *            { ok: false, code: string, path?: string, reason: string }}
+ */
+export function checkReviewedHashStore(repo, { branch, targetRef, paths }) {
+  const store = readReviewedHashStore(repo, branch);
+  if (!store.ok) return store;
+  const declared = [...new Set((Array.isArray(paths) ? paths : [paths]).map(normSubjectPath).filter(Boolean))].sort();
+  const storedKeys = Object.keys(store.hashes).sort();
+  const declaredSet = new Set(declared);
+  const extras = storedKeys.filter((p) => !declaredSet.has(p));
+  const missing = declared.filter((p) => !(p in store.hashes));
+  if (extras.length || missing.length || !declared.length) {
+    const parts = [];
+    if (!declared.length) parts.push('no declared reviewed paths — nothing to bind');
+    if (extras.length) parts.push(`the store binds page(s) outside the declared set: ${extras.join(', ')}`);
+    if (missing.length) parts.push(`declared page(s) missing from the store: ${missing.join(', ')}`);
+    return {
+      ok: false,
+      code: 'reviewed-hash-store-scope',
+      reason:
+        `reviewed-hash-store-scope: the store's page set does not EXACTLY equal the declared reviewed set — ` +
+        `${parts.join('; ')} (store keys: ${storedKeys.join(', ') || '(none)'}; declared: ${declared.join(', ') || '(none)'})`,
+    };
+  }
+  for (const page of declared) {
+    for (const [label, ref] of [['the job branch', branch], ['the merge target', targetRef]]) {
+      const measured = reviewedHashAtRef(repo, ref, page);
+      if (measured === null || measured !== store.hashes[page]) {
+        return {
+          ok: false,
+          code: 'reviewed-hash-mismatch',
+          path: page,
+          reason:
+            `reviewed-hash-mismatch: page ${page}'s reviewed surface at ${label} (${String(ref).slice(0, 12)}) ` +
+            (measured === null
+              ? 'could not be read or hashed'
+              : `hashes ${measured.slice(0, 12)}…`) +
+            ` but the store binds ${store.hashes[page].slice(0, 12)}… — the bytes the record binds are not the bytes ` +
+            `on ${label}; the page moved or was modified there, and the merge is refused`,
+        };
+      }
+    }
+  }
+  return { ok: true, hashes: store.hashes, paths: declared };
+}
+
+/**
+ * The empty-symbol graph assertion's reportable fields, recorded in the
+ * merge report BESIDE the hash equality assertion (never inside it — the
+ * graph output never enters the hash). `mergeBase` is the merge-base
+ * argument the analysis was invoked with, recorded so the assertion is
+ * checkable rather than asserted; `symbolCount` is the changed-symbol count
+ * over the declared subjects (0 where the assertion holds); `noSymbols`
+ * lists declared pages outside any symbol universe (`no-symbols` is
+ * complete on this check); `flags` carries every partial/truncated flag the
+ * analysis reports, top-level or per declared subject. A graph-absent merge
+ * reports `state: 'absent'` — the assertion could not run, and the merge
+ * proceeds on the path, hash, and precondition checks alone.
+ *
+ * @param {{ mergeBase?: string, analysis?: object|null, paths?: string[] }} o
+ * @returns {{ mergeBase: string, state: 'absent'|'empty'|'non-empty',
+ *             symbolCount: number|null, noSymbols: string[], flags: string[] }}
+ */
+export function reviewedEmptySymbolAssertion({ mergeBase, analysis, paths }) {
+  const declared = [...new Set((Array.isArray(paths) ? paths : []).map(normSubjectPath).filter(Boolean))].sort();
+  const base = normSubjectPath(mergeBase);
+  const flags = new Set();
+  const present = analysis && !analysis.absent;
+  if (!present) {
+    return { mergeBase: base, state: 'absent', symbolCount: null, noSymbols: [], flags: [] };
+  }
+  if (analysis.partial) flags.add('partial');
+  if (analysis.truncated) flags.add('truncated');
+  const universes = analysis.subjects && typeof analysis.subjects === 'object' ? analysis.subjects : {};
+  for (const page of declared) {
+    const entry = universes[page];
+    if (entry?.partial) flags.add('partial');
+    if (entry?.truncated) flags.add('truncated');
+  }
+  const declaredSet = new Set(declared);
+  const owned = (Array.isArray(analysis.symbols) ? analysis.symbols : [])
+    .filter((s) => declaredSet.has(normSubjectPath(s?.owner)));
+  const noSymbols = declared.filter((p) => universes[p] && universes[p].universe === false);
+  return {
+    mergeBase: base,
+    state: owned.length === 0 ? 'empty' : 'non-empty',
+    symbolCount: owned.length,
+    noSymbols,
+    flags: [...flags].sort(),
   };
 }
 
@@ -1864,6 +2179,42 @@ async function executeJob(ctx, opts) {
       if (eligibility.prone) {
         ctx.log(`reviewed: reviewer "${reviewer.id}" is timeout-prone but an explicit guard is recorded — proceeding`);
       }
+    }
+    if (isReviewedOutcome && declaredPages.length) {
+      // Task 64: the reviewed-surface hash store, written and committed at
+      // review-brief assembly — BEFORE any reviewer is dispatched, so the
+      // store binds the exact bytes the briefs are about to carry. Each
+      // assembly overwrites the store with the CURRENT pass's declared pages
+      // (design D2): the store at the branch head always binds the newest
+      // review actually shown to a reviewer, never a union with an earlier
+      // pass's set. The hash is `reviewedHash` over the surface read from the
+      // worktree — the same surface, through the same function, the review
+      // brief prints beside it, so the hash the record binds equals the hash
+      // of the bytes the brief carried. Fail-closed: a store that cannot be
+      // written or committed fails the run loudly here, before a reviewer
+      // spends minutes on bytes nothing binds.
+      const storeWrite = writeReviewedHashStore({
+        worktree,
+        jobId,
+        pass,
+        pages: declaredPages,
+        surfaceOf: (p) => {
+          try {
+            return readFileSync(join(worktree, p), 'utf8');
+          } catch {
+            return null;
+          }
+        },
+      });
+      if (!storeWrite.ok) {
+        ctx.log(storeWrite.reason);
+        return finish({ outcome: 'failed', mm, changed, note: storeWrite.reason });
+      }
+      ctx.log(
+        `reviewed: committed ${REVIEWED_HASH_STORE_REL} to ${branch} at review-brief assembly ` +
+        `(pass ${pass}, ${Object.keys(storeWrite.hashes).length} page(s)${storeWrite.committed ? '' : ', unchanged from the previous assembly'}) — ` +
+        `the store binds the bytes the brief carries`,
+      );
     }
     if (isPerPageReviewed) {
       ctx.log(`reviewed: outcome names ${declaredPages.length} pages (${declaredPages.join(', ')}) — one review invocation per declared page, never a bundle`);
@@ -3340,18 +3691,52 @@ export async function runLoop(ctx, opts = {}) {
         failMerge(checked.reason);
         if (checked.retirement?.note) ctx.log(checked.retirement.note);
       } else {
-        // A reviewed outcome BINDS pages: `mergeSubjects` is set EVEN
-        // though the diff is empty (and the merge otherwise advisory) — a
-        // null here falls back to the diff-derived set below, which is
-        // empty by construction, and the record would bind nothing for
-        // pages dispatched to ratify (mutation A's defect on this branch).
-        ctx.log(`reviewed: outcome ratifies ${checked.subjects.length} page(s): ${checked.subjects.join(', ')}`);
-        ctx.log(`merge subjects constituted from declaration ∩ reviewed (${checked.subjects.length}): ${checked.subjects.join(', ') || '(none)'}`);
-        mergeSubjects = [...checked.subjects];
-        mergeRetirement = checked.retirement;
-        if (mergeRetirement?.note) {
-          ctx.log(mergeRetirement.note);
-          result.note = result.note ? `${result.note} — ${mergeRetirement.note}` : mergeRetirement.note;
+        // Task 64: the store re-measured at BOTH refs before the merge lands
+        // (designs D3/D4/D7). The store must be present and well-formed, its
+        // key set must EXACTLY equal the declared reviewed paths, and every
+        // page's surface re-derived at the job branch head AND at the merge
+        // target must equal the stored hash — any difference is the page
+        // having moved (or been modified) on that ref. Refusal settles the
+        // run `failed` naming the path. The target ref is the train branch
+        // the merge is about to land on; where the train does not exist yet
+        // the merge creates it at the base (ensureTrainBranch below), so the
+        // target tree these pages would land on IS the base tree and the
+        // base is the honest stand-in.
+        const hashTargetRef = branchExists(ctx.repoRoot, TRAIN_BRANCH) ? TRAIN_BRANCH : mergeBaseSha;
+        const hashChecked = checkReviewedHashStore(ctx.repoRoot, { branch, targetRef: hashTargetRef, paths: reviewedPaths });
+        if (!hashChecked.ok) {
+          failMerge(hashChecked.reason);
+        } else {
+          // The merge report, beside the hash assertion: hash equality per
+          // page, and the empty-symbol graph assertion with the merge-base
+          // argument recorded (changed-symbol count 0, or `no-symbols`, plus
+          // the partial/truncated flags the analysis reports). The graph
+          // output never enters the hash — the two assertions are recorded
+          // side by side, never merged.
+          const graphAssertion = reviewedEmptySymbolAssertion({ mergeBase: mergeBaseSha, analysis: reviewedAnalysis, paths: reviewedPaths });
+          ctx.log(
+            `reviewed-hash: hash equality holds for ${hashChecked.paths.length} page(s) (${hashChecked.paths.join(', ')}) ` +
+            `at the job branch and at the merge target ${hashTargetRef} — the store binds the bytes both refs carry`,
+          );
+          ctx.log(
+            `reviewed-graph: empty-symbol assertion — merge-base ${String(mergeBaseSha).slice(0, 12)}, ` +
+            (graphAssertion.state === 'absent'
+              ? 'graph absent (the assertion could not run; the merge proceeds on the path, hash, and precondition checks alone)'
+              : `changed-symbol count ${graphAssertion.symbolCount} on the declared subject(s), no-symbols: ${graphAssertion.noSymbols.join(', ') || '(none)'}, flags: ${graphAssertion.flags.join('/') || 'none'}`),
+          );
+          // A reviewed outcome BINDS pages: `mergeSubjects` is set EVEN
+          // though the diff is empty (and the merge otherwise advisory) — a
+          // null here falls back to the diff-derived set below, which is
+          // empty by construction, and the record would bind nothing for
+          // pages dispatched to ratify (mutation A's defect on this branch).
+          ctx.log(`reviewed: outcome ratifies ${checked.subjects.length} page(s): ${checked.subjects.join(', ')}`);
+          ctx.log(`merge subjects constituted from declaration ∩ reviewed (${checked.subjects.length}): ${checked.subjects.join(', ') || '(none)'}`);
+          mergeSubjects = [...checked.subjects];
+          mergeRetirement = checked.retirement;
+          if (mergeRetirement?.note) {
+            ctx.log(mergeRetirement.note);
+            result.note = result.note ? `${result.note} — ${mergeRetirement.note}` : mergeRetirement.note;
+          }
         }
       }
     } else if (!declCheck.ok) {
