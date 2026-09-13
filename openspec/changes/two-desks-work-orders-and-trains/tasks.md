@@ -2398,15 +2398,27 @@ the brief under `evidence/reviews/`.
       shared-code-file arm fails; (J2) stub zero symbols on the diff-evidenced
       shared-file subject and confirm the contradiction arm fails. Tests tasks
       53, 55, 56, 58, including the graph arms tasks 55, 56, 59, 66, 67 add.
-- [x] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
+- [ ] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
       work the job produced, and **against the declared pages' reviewed surfaces**
       on the empty-diff outcome. Implements the same requirement's enforced-twice
       bullet. Test in `loop/tests/work-order.test.mjs` (task 57's file, whose
       Tests line names this task): passing arm as stated there, with a **mutation**
-      measuring the empty diff instead, which must let four whole pages through a
+      measuring the empty       diff instead, which must let four whole pages through a
       bound sized for four diffs (the arm goes red). The graph scope
       re-measurement rides this same gate moment under task 56's checks and
       three-way absence; it adds no second gate.
+
+      (deferral recorded 2026-09-13 — merge-time wiring, threading
+      `workOrder` with bounds from the `work_order` config block and the
+      row-58 measure into loop/run.mjs's three mergeGate call sites
+      (:2521, :2666, :2674) so the four-bound re-measure and task 55's
+      empty-diff reviewed-surface second measurement fire live, is
+      task-68b scope: 68b runs gates/review/merge for real with real gates
+      and includes the deliberate `reviewed:` ratification (empty diff),
+      proving this arm through the real path exactly as it proves the
+      bundler. The re-measure arm is implemented in review.mjs:1731-1746
+      and unit-tested in loop/tests/work-order.test.mjs per this row's
+      Tests line.)
 - [x] 59. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
       one scope rule, keyed on the governing type, including intake's verification
       results where present. `acceptanceChecksFor` and `checklistFor` read the
