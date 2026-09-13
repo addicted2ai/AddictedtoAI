@@ -47,6 +47,8 @@ evidence: >
   inside that one line (the rendered markup and its RSC payload copy), so the
   successor's arrival is not on the home page at any wording. The home page
   says a model was retired and carries nothing that says otherwise.
+proposed_by_job: j-20260913-01
+proposed_by_type: repair
 ---
 
 Noticed while repairing the vanished `inception/mercury-2.5-preview` row. The
