@@ -2218,7 +2218,7 @@ the brief under `evidence/reviews/`.
 
 ## Stage 2 — work orders
 
-- [ ] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
+- [x] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
       coherence key within the four bounds; it **splits** an over-bound set into
       more work orders and **refuses at selection**, with a recorded reason, an item
       that alone exceeds the per-subject bound. A candidate with no path
@@ -2232,7 +2232,7 @@ the brief under `evidence/reviews/`.
       category plus source cohort. Implements: *One job is one work
       order, ending in one merge or one discard*, the coherence, bounds and split
       bullets.
-- [ ] 54. `data/config.json`, as a diff against the live file: add **only the
+- [x] 54. `data/config.json`, as a diff against the live file: add **only the
       `work_order` block** — `work_order.max_items` 4, `work_order.max_subjects`
       4, `work_order.max_reviewed_bytes` 60000,
       `work_order.max_reviewed_bytes_per_subject` 30000. Top-level `workers` is
@@ -2244,7 +2244,7 @@ the brief under `evidence/reviews/`.
       (`config.workers`); there is no `train.workers`. The 1→3 raise lives in
       the Stage-3 block (task 84), after the four concurrency controls are
       re-derived. **[orchestrator]**
-- [ ] 55. `loop/run.mjs`: `.job/source.json` gains `items` and `declared_subjects`,
+- [x] 55. `loop/run.mjs`: `.job/source.json` gains `items` and `declared_subjects`,
       committed at selection before any executor runs; a missing or empty
       declaration is a merge refusal where the merged diff carries content
       paths — nothing to bind needs no refusal, so a merge with no content
@@ -2255,7 +2255,7 @@ the brief under `evidence/reviews/`.
       gates on this rule holding. The committed declaration is the sole subject
       source the brief's graph annex reads; old-contract branches take no graph
       arm — no annex, no sidecar, no marker.
-- [ ] 56. **The root fix, and it is one task because it is one defect.**
+- [x] 56. **The root fix, and it is one task because it is one defect.**
       `loop/run.mjs`: the merge's subject set is **constituted** from the
       committed `declared_subjects` — on the `reviewed:` outcome, from the
       executor's declared paths intersected with it — and the measured diff is used
@@ -2329,7 +2329,7 @@ the brief under `evidence/reviews/`.
       and closed states named here, no other result-file shape changes.
       Old-contract branches (selected before task 55) take no graph arm here and
       merge or refuse exactly as before.
-- [ ] 57. `loop/tests/work-order.test.mjs`: four repairs on one page bundle into one
+- [x] 57. `loop/tests/work-order.test.mjs`: four repairs on one page bundle into one
       order; a mixed-category pair does not; an undeclared diff path is refused; a
       bundle inside the total but over the per-subject limit is refused; **four
       items declared and one file changed retires one item and leaves three open**;
@@ -2390,7 +2390,7 @@ the brief under `evidence/reviews/`.
       shared-code-file arm fails; (J2) stub zero symbols on the diff-evidenced
       shared-file subject and confirm the contradiction arm fails. Tests tasks
       53, 55, 56, 58, including the graph arms tasks 55, 56, 59, 66, 67 add.
-- [ ] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
+- [x] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
       work the job produced, and **against the declared pages' reviewed surfaces**
       on the empty-diff outcome. Implements the same requirement's enforced-twice
       bullet. Test in `loop/tests/work-order.test.mjs` (task 57's file, whose
@@ -2399,7 +2399,7 @@ the brief under `evidence/reviews/`.
       bound sized for four diffs (the arm goes red). The graph scope
       re-measurement rides this same gate moment under task 56's checks and
       three-way absence; it adds no second gate.
-- [ ] 59. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
+- [x] 59. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
       one scope rule, keyed on the governing type, including intake's verification
       results where present. `acceptanceChecksFor` and `checklistFor` read the
       governing type. Implements the same requirement, brief side. Graph annex:
@@ -2456,7 +2456,7 @@ the brief under `evidence/reviews/`.
       on this branch: a paraphrase that lost the single word "both" cost packet
       A a full round, and the assembled brief's cut marker is the mechanism that
       would have made the loss visible.
-- [ ] 60. `loop/lib/review.mjs` and `loop/lib/verdict.mjs`: `would-cite-for` as a
+- [x] 60. `loop/lib/review.mjs` and `loop/lib/verdict.mjs`: `would-cite-for` as a
       list of entries sharing `reads-human-from`'s parser and entry shape; the
       duplicate check per entry across other records; two entries in one record may
       match; **"prose piece" is the schema's prose kinds**, not any content file —
@@ -2486,7 +2486,7 @@ the brief under `evidence/reviews/`.
       graph summary outside `.train/` is forbidden. Fixture-proved in task 44's
       file until the first real post-H5 train, which live-proves it; task 68b
       does not prove this.
-- [ ] 61. `loop/tests/would-cite.test.mjs`: three prose subjects with one
+- [x] 61. `loop/tests/would-cite.test.mjs`: three prose subjects with one
       record-wide field is refused naming the unanswered two; an entry per subject
       passes; two identical entries in one record pass; an entry duplicating
        another record's statement is refused; a directory row among the subjects
@@ -2505,7 +2505,7 @@ the brief under `evidence/reviews/`.
       arm fails. **Mutation D**: treat an absent record as approval and confirm
       fail-closed goes green when it must not. Tests task 60 including its train
       graph entries.
-- [ ] 61b. `loop/lib/review-state.mjs` (new) or equivalent: expose the review-state
+- [x] 61b. `loop/lib/review-state.mjs` (new) or equivalent: expose the review-state
       join to the loop as a named capability answering `missing` / `matched` /
       `mismatched` for a declared page **pinned at the job's merge base**, with a
       stated concurrency rule (re-read at merge; never a gate-rewritten file as
@@ -2515,7 +2515,7 @@ the brief under `evidence/reviews/`.
       answers with it, and a gate-rewritten file is never consulted. Implements:
       *The executor result protocol is how outcomes are known*, the
       reviewed-precondition bullets.
-- [ ] 62. `loop/lib/result.mjs`: `reviewed: <path>[, <path>…]` as a fourth first-line
+- [x] 62. `loop/lib/result.mjs`: `reviewed: <path>[, <path>…]` as a fourth first-line
       form, accepted only when every path is in `declared_subjects` **and** already
       reads `mismatched` at the merge base — read from the task-61b capability as
       its only source of truth (blocked until 61b merges); `failed` naming the
@@ -2535,7 +2535,7 @@ the brief under `evidence/reviews/`.
       ratified; absent tool/index yields `graph: absent` and ratification
       proceeds on the path, hash, and precondition checks. Binds only where a
       committed declaration exists.
-- [ ] 63. `loop/lib/review.mjs`: the review brief for that outcome carries each
+- [x] 63. `loop/lib/review.mjs`: the review brief for that outcome carries each
       declared page's **machine-generated** reviewed surface and its hash, **no diff
       section at all**, a gates section stating the gates ran on a tree identical to
       the merge base and are therefore not evidence about the pages, and the
