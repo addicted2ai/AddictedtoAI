@@ -351,3 +351,64 @@ test('a real run transcribes the reviewer-carried findings, drops the malformed 
   assert.match(git(ctx.repoRoot, ['log', '-1', '--name-only']), new RegExp(`data/carried/${res.jobId}-carry-1\\.md`));
   ctx.cleanup();
 });
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 63 FIX-3 (G2): per-page carried findings must not collide.
+// Each F2 per-page call transcribes with the record's page index as destTag;
+// untagged callers keep the legacy shape byte-identical.
+// ---------------------------------------------------------------------------
+
+test("task 63 fix G2: two pages' first findings transcribe to distinct dests with correct titles", () => {
+  const ctx = makeRepo({ now: () => NOW });
+  const jobId = 'j-20260912-63';
+  const record = (pi, title) => {
+    mkdirSync(ctx.reviewsDir, { recursive: true });
+    const p = join(ctx.reviewsDir, `${jobId}.reviewed-${pi}.md`);
+    writeFileSync(
+      p,
+      `---\njob: ${jobId}\nverdict: approve\nwould-cite: "fixture cite ${pi}"\ncarry:\n  - title: ${title}\n    detail: finding detail for ${title}\n    subject: content/wiki/model/page-${pi}.md\n---\n\nfixture notes ${pi}\n`,
+      'utf8',
+    );
+    return p;
+  };
+  const p0 = record(0, 'page zero finding');
+  const p1 = record(1, 'page one finding');
+  // The F2 per-page call site tags each call with the record's page index.
+  const c0 = transcribeCarriedFindings(ctx, { jobId, verdictPath: p0, reviewer: 'r-63', destTag: '0' });
+  const c1 = transcribeCarriedFindings(ctx, { jobId, verdictPath: p1, reviewer: 'r-63', destTag: '1' });
+  assert.equal(c0.transcribed.length, 1);
+  assert.equal(c1.transcribed.length, 1);
+  assert.notEqual(c0.transcribed[0].dest, c1.transcribed[0].dest, "two pages' first findings land apart");
+  assert.deepEqual(
+    [c0.transcribed[0].title, c1.transcribed[0].title].sort(),
+    ['page one finding', 'page zero finding'],
+  );
+  assert.ok(existsSync(c0.transcribed[0].dest) && existsSync(c1.transcribed[0].dest), 'both findings are transcribed');
+  assert.deepEqual(readdirSync(ctx.carriedDir).sort(), [`${jobId}-carry-0-1.md`, `${jobId}-carry-1-1.md`]);
+  const one = matter(readFileSync(join(ctx.carriedDir, `${jobId}-carry-1-1.md`), 'utf8'));
+  assert.equal(one.data.title, 'page one finding');
+  assert.equal(one.data.subject, 'content/wiki/model/page-1.md');
+  ctx.cleanup();
+});
+
+test('task 63 fix G2: page index 0 tags and the legacy untagged shape is unchanged', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  const jobId = 'j-20260912-63';
+  mkdirSync(ctx.reviewsDir, { recursive: true });
+  const p = join(ctx.reviewsDir, `${jobId}.reviewed-0.md`);
+  writeFileSync(
+    p,
+    `---\njob: ${jobId}\nverdict: approve\nwould-cite: "fixture cite"\ncarry:\n  - title: zero finding\n    detail: finding detail\n    subject: content/wiki/model/page-0.md\n---\n\nfixture notes\n`,
+    'utf8',
+  );
+  // Numeric 0 is falsy — the tag check is null/empty, never truthiness.
+  const tagged = transcribeCarriedFindings(ctx, { jobId, verdictPath: p, destTag: 0 });
+  assert.equal(tagged.transcribed.length, 1);
+  assert.ok(tagged.transcribed[0].dest.endsWith(`${jobId}-carry-0-1.md`), `page 0 tags: ${tagged.transcribed[0].dest}`);
+  // Legacy: no tag keeps the byte-identical dests the existing arms pin
+  // (`j-two-carry-1.md`, `j-five-carry-N.md`, `j-retry-carry-1.md` above).
+  const legacy = transcribeCarriedFindings(ctx, { jobId: 'j-legacy', verdictPath: p });
+  assert.equal(legacy.transcribed.length, 1);
+  assert.ok(legacy.transcribed[0].dest.endsWith('j-legacy-carry-1.md'), `legacy shape unchanged: ${legacy.transcribed[0].dest}`);
+  ctx.cleanup();
+});

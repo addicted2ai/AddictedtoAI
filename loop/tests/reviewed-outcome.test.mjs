@@ -1069,11 +1069,13 @@ test('task 63 fix F4: an unreadable page fails closed before dispatch (structura
   const src = readFileSync(RUN_LIB, 'utf8');
   // Fail-closed guard in the per-page loop: no surface, no review.
   assert.match(src, /its machine-generated surface could not be read — failing closed, no review without its bytes/);
-  assert.match(src, /if \(surface == null\)/);
+  // G4 widened the guard to the empty string (fail-closed, never dispatched);
+  // the pin below tracks the widened expression — strictly stronger, never weaker.
+  assert.match(src, /if \(surface == null \|\| surface === ''\)/);
   assert.match(src, /outcome: 'failed', mm, changed, note: reason/);
   // Ordered: the guard sits between the surface read and the dispatch.
   const readIdx = src.indexOf('surface = readFileSync(join(worktree, page)');
-  const guardIdx = src.indexOf('if (surface == null)');
+  const guardIdx = src.indexOf(`if (surface == null || surface === '')`);
   const dispatchIdx = src.indexOf('const one = await runReview');
   assert.ok(readIdx !== -1 && guardIdx !== -1 && dispatchIdx !== -1, 'read, guard and dispatch all exist');
   assert.ok(readIdx < guardIdx && guardIdx < dispatchIdx, 'the guard runs after the read and before any review is dispatched');
@@ -1132,13 +1134,15 @@ test('task 63 fix F4x: an unreadable single-page surface fails closed before dis
   // Fail-closed guard in the single-page branch: no surface, no review.
   assert.match(src, /F4x: fail the single-page invocation closed/, 'the single-page fail-closed is one named block');
   assert.match(src, /cannot review page \$\{reviewedOnly\}/, 'the failure names the single page');
-  assert.match(src, /if \(reviewedSurfaceText == null\)/, 'the null-surface guard');
+  // G4 widened the guard to the empty string (fail-closed, never dispatched);
+  // the pin below tracks the widened expression — strictly stronger, never weaker.
+  assert.match(src, /if \(reviewedSurfaceText == null \|\| reviewedSurfaceText === ''\)/, 'the null-or-empty-surface guard');
   // Ordered: the guard sits between the single-page surface read and the single dispatch.
   const elseIdx = src.indexOf('// Single-page and non-reviewed paths, unchanged');
   assert.ok(elseIdx !== -1, 'the single-page branch is one named block');
   const window = src.slice(elseIdx, elseIdx + 6000);
   const readIdx = window.indexOf('reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly)');
-  const guardIdx = window.indexOf('if (reviewedSurfaceText == null)');
+  const guardIdx = window.indexOf(`if (reviewedSurfaceText == null || reviewedSurfaceText === '')`);
   const dispatchIdx = window.indexOf('rev = await runReview');
   assert.ok(readIdx !== -1 && guardIdx !== -1 && dispatchIdx !== -1, 'read, guard and dispatch all exist in the single-page branch');
   assert.ok(readIdx < guardIdx && guardIdx < dispatchIdx, 'the guard runs after the read and before any review is dispatched');
@@ -1147,8 +1151,9 @@ test('task 63 fix F4x: an unreadable single-page surface fails closed before dis
   // no-surface fallback while the reviewer may still approve.
   const mutantDispatchesWithoutSurface = guardIdx === -1;
   assert.equal(mutantDispatchesWithoutSurface, false, 'production fails closed where the mutant would dispatch without bytes');
-  // Per-page F4 stays as built (F4x expands, never replaces).
-  assert.match(src, /if \(surface == null\)/, 'the per-page fail-closed still stands');
+  // Per-page F4 stays as built (F4x expands, never replaces) — G4 widened it
+  // in place, so the pin tracks the widened expression here too.
+  assert.match(src, /if \(surface == null \|\| surface === ''\)/, 'the per-page fail-closed still stands');
 });
 
 test('task 63 fix F8x: a stale record at the target with a killed run classifies interrupted, not recorded', (t) => {
@@ -1164,6 +1169,10 @@ test('task 63 fix F8x: a stale record at the target with a killed run classifies
     assert.ok(idx !== -1, `${name} still exists`);
     const window = reviewSrc.slice(idx, idx + 6000);
     assert.doesNotMatch(window, /unlinkSync\(outPath\)/, `${name} gains no stale-record clear`);
+    // G5 is runReview-only: no clear-refusal shape and no STALE log on the
+    // train path (additive — the F8x arm above is untouched).
+    assert.doesNotMatch(window, /clearRefused/, `${name} gains no clear-refusal shape`);
+    assert.doesNotMatch(window, /STALE: stale review record/, `${name} gains no stale-refusal log`);
   }
   // Behavioral: a stale record left at the target would make a killed,
   // no-write retry read as `recorded`; cleared, it reads `interrupted`.
@@ -1230,4 +1239,130 @@ test('task 63 fix F9: the run path wires the registry guard into eligibility (st
   const window = src.slice(Math.max(0, eligIdx - 2000), eligIdx + 500);
   assert.match(window, /runners\.yml/, 'the comment names the runner registry as the recording place');
   assert.match(window, /timeout_guard/, 'the comment names timeout_guard as the recording key');
+});
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 63 FIX-3 (G1-G5).
+// ---------------------------------------------------------------------------
+
+test('task 63 fix G1: a gap in the per-page records loses nothing past it', (t) => {
+  const ctx = reviewCtx63(t);
+  const jobId = 'j-20260912-63';
+  // Records at indices 0 and 2, none at 1: a page-0 review that wrote no
+  // record (silent reviewer → the gate refuses no-record, the loop continues)
+  // followed by a page-1 approval leaves a record past a gap.
+  for (const pi of [0, 2]) {
+    const perPath = reviewedPerPageRecordPath(ctx, jobId, pi, 1);
+    mkdirSync(dirname(perPath), { recursive: true });
+    writeFileSync(
+      perPath,
+      `---\njob: ${jobId}\nverdict: approve\nwould-cite: "fixture cite ${pi}"\n---\n\nfixture notes ${pi}\n`,
+      'utf8',
+    );
+  }
+  assert.equal(existsSync(reviewedPerPageRecordPath(ctx, jobId, 1, 1)), false, 'index 1 is the gap');
+  const found = perPageRecordPathsForPass(ctx, jobId, 1);
+  assert.deepEqual(found, [
+    reviewedPerPageRecordPath(ctx, jobId, 0, 1),
+    reviewedPerPageRecordPath(ctx, jobId, 2, 1),
+  ], 'both records are found, in ascending index order');
+  // MUTANT COPY: the old early break — probing stops at the first gap.
+  const mutant = [];
+  for (let i = 0; i < 100; i++) {
+    const perPath = reviewedPerPageRecordPath(ctx, jobId, i, 1);
+    if (!existsSync(perPath)) break;
+    mutant.push(perPath);
+  }
+  assert.deepEqual(mutant, [reviewedPerPageRecordPath(ctx, jobId, 0, 1)], 'the mutant stops at the gap');
+  assert.notDeepEqual(found, mutant, 'the arm distinguishes production from the break-restored mutant');
+  // Production holds no early break on this probe.
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const fnIdx = src.indexOf('export function perPageRecordPathsForPass(');
+  assert.ok(fnIdx !== -1, 'the probe is one named function');
+  const fnWindow = src.slice(fnIdx, fnIdx + 1500);
+  assert.doesNotMatch(fnWindow, /if \(!present\) break/, 'no early break on a missing record');
+});
+
+test('task 63 fix G3: a non-ENOENT reviews-dir read error is loud, an absent dir stays silent', (t) => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const fnIdx = src.indexOf('export function jobPerPageRecordRelPaths(');
+  assert.ok(fnIdx !== -1, 'the staging reader is one named function');
+  const window = src.slice(fnIdx, fnIdx + 1500);
+  assert.match(window, /e\?\.code === 'ENOENT'/, 'the catch discriminates ENOENT');
+  assert.match(window, /STAGING/, 'a non-ENOENT read error is logged loudly with the STAGING prefix');
+  // Behavioral EACCES injection is platform-flaky (Windows ACLs vs POSIX
+  // modes diverge, and an elevated runner ignores modes) — not attempted; the
+  // structural arm above pins the loud path instead.
+  // Behavioral: an absent reviews dir stays silent [].
+  const ctx = reviewCtx63(t);
+  const missing = { ...ctx, reviewsDir: join(ctx.repoRoot, 'data', 'reviews-no-such-dir') };
+  assert.equal(existsSync(missing.reviewsDir), false, 'the fixture dir is absent');
+  assert.deepEqual(jobPerPageRecordRelPaths(missing, 'j-20260912-63'), [], 'an absent reviews dir stages nothing');
+  assert.doesNotMatch(ctx.output(), /STAGING/, 'the absent-dir path logs nothing');
+});
+
+test('task 63 fix G4: a readable-but-empty page surface fails closed before dispatch (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /if \(surface == null \|\| surface === ''\)/, 'the per-page guard covers the empty string');
+  assert.match(src, /its machine-generated surface is empty — failing closed, no review without its bytes/, 'the refusal names the empty surface');
+  const readIdx = src.indexOf('surface = readFileSync(join(worktree, page)');
+  const guardIdx = src.indexOf(`if (surface == null || surface === '')`);
+  const dispatchIdx = src.indexOf('const one = await runReview');
+  assert.ok(readIdx !== -1 && guardIdx !== -1 && dispatchIdx !== -1, 'read, guard and dispatch all exist');
+  assert.ok(readIdx < guardIdx && guardIdx < dispatchIdx, 'the guard runs after the read and before any review is dispatched');
+  // MUTANT COPY: the old null-only guard — an empty surface rides into the
+  // brief's no-surface fallback with no bound hash while the reviewer may
+  // still approve.
+  assert.equal('' == null, false, 'the old guard lets an empty surface through, so the empty-string arm goes red on it');
+  // The brief's fallback is defense-in-depth and stays untouched.
+  const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
+  assert.match(reviewSrc, /const hasSurface = typeof reviewedSurfaceText === 'string' && reviewedSurfaceText;/, 'the brief fallback is untouched');
+});
+
+test('task 63 fix G4: a readable-but-empty single-page surface fails closed before dispatch (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const elseIdx = src.indexOf('// Single-page and non-reviewed paths, unchanged');
+  assert.ok(elseIdx !== -1, 'the single-page branch is one named block');
+  const window = src.slice(elseIdx, elseIdx + 6000);
+  assert.match(window, /if \(reviewedSurfaceText == null \|\| reviewedSurfaceText === ''\)/, 'the single-page guard covers the empty string');
+  assert.match(window, /its machine-generated surface is empty — failing closed, no review without its bytes/, 'the refusal names the empty surface');
+  const readIdx = window.indexOf('reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly)');
+  const guardIdx = window.indexOf(`if (reviewedSurfaceText == null || reviewedSurfaceText === '')`);
+  const dispatchIdx = window.indexOf('rev = await runReview');
+  assert.ok(readIdx !== -1 && guardIdx !== -1 && dispatchIdx !== -1, 'read, guard and dispatch all exist in the single-page branch');
+  assert.ok(readIdx < guardIdx && guardIdx < dispatchIdx, 'the guard runs after the read and before any review is dispatched');
+  // MUTANT COPY: same null-only fall-through as the per-page site.
+  assert.equal('' == null, false, 'the old guard lets an empty surface through, so the empty-string arm goes red on it');
+});
+
+test('task 63 fix G5: a persisting stale record refuses dispatch with a synthetic failure (structural)', () => {
+  const reviewSrc = readFileSync(resolve(HERE, '..', 'lib', 'review.mjs'), 'utf8');
+  const runReviewIdx = reviewSrc.indexOf('export async function runReview(');
+  assert.ok(runReviewIdx !== -1, 'shared runReview exists');
+  const window = reviewSrc.slice(runReviewIdx, runReviewIdx + 6000);
+  // ENOENT-vs-persist discrimination: absent/gone proceeds, present refuses.
+  assert.match(window, /e\?\.code !== 'ENOENT'/, 'the unlink catch discriminates ENOENT');
+  assert.match(window, /stillPresent = existsSync\(outPath\)/, 'persistence is measured on disk, not assumed from the error');
+  // The refusal is loud and shaped for the existing absent-review machinery.
+  assert.match(window, /STALE: stale review record/, 'the refusal is logged loudly with the STALE prefix');
+  assert.match(window, /clearRefused: reason/, 'the synthetic failure carries clearRefused');
+  assert.match(window, /recordWritten: false/, 'the synthetic failure claims no record');
+  assert.match(window, /code: 1, killed: false, stdout: '', stderr: reason, mm: 0, ms: 0/, 'the synthetic run matches the runExecutor contract shape');
+  // Full shape: every field the callers read exists without a dispatch.
+  assert.match(window, /command: runner\.command/, 'the synthetic run names the runner command');
+  assert.match(window, /discarded: \{ dirtyBefore: '', dirtyAfter: '', discardedAnything: false \}/, 'the synthetic discard claims nothing discarded');
+  assert.match(window, /branchShaBefore/, 'the synthetic shape carries the before-sha');
+  assert.match(window, /branchShaAfter/, 'the synthetic shape carries the after-sha');
+  assert.match(window, /branchUnchanged: true/, 'the synthetic shape claims the branch unchanged');
+  // Ordered: outPath final → clear → persist check → synthetic return → (only
+  // then) dispatch. The refusal returns before any spawn.
+  const outIdx = window.indexOf('const outPath = typeof outPathOverride');
+  const unlinkIdx = window.indexOf('unlinkSync(outPath)');
+  const refuseIdx = window.indexOf('clearRefused: reason');
+  const dispatchIdx = window.indexOf('const run = await runExecutor');
+  assert.ok(outIdx !== -1 && unlinkIdx !== -1 && refuseIdx !== -1 && dispatchIdx !== -1, 'outPath, clear, refusal and dispatch all exist in shared runReview');
+  assert.ok(outIdx < unlinkIdx && unlinkIdx < refuseIdx && refuseIdx < dispatchIdx, 'the refusal returns before any review is dispatched');
+  // MUTANT COPY: the old swallow-and-dispatch — a stale record read as this
+  // invocation's. The persist check is what stands between them.
+  assert.match(window, /if \(stillPresent\)/, 'without the persist check the catch would fall through to dispatch');
 });

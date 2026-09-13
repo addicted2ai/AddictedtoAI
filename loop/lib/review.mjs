@@ -1757,7 +1757,14 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
  * are exactly as before (single-page and non-reviewed callers byte-stable).
  *
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
- *                    branchShaAfter: string, recordWritten: boolean}>}
+ *                    branchShaAfter: string, recordWritten: boolean, clearRefused?: string}>}
+ *
+ * G5: when the pre-dispatch stale-record clear fails and the record persists,
+ * the review is NEVER dispatched — the return is a synthetic failure (`run`
+ * shaped like `runExecutor`'s contract with `code: 1`, `recordWritten:
+ * false`, `clearRefused` naming the refusal), so the existing absent-review
+ * machinery fails the job closed with the reason. The train review functions
+ * are separate, pre-existing and unflagged — untouched.
  */
 export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index', reviewer = null, outPathOverride = null, reviewSuffix = null }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
@@ -1766,10 +1773,41 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
   // unlink) so `recordWritten` means THIS invocation wrote — on every path
   // (normal, single-page, per-page). Folded from F8's per-page caller-side
   // clear; callers must not clear the same path twice.
+  //
+  // G5: absent is the expected case — but a record that is STILL THERE after
+  // a failed unlink (Windows EPERM/EBUSY locks) must never be dispatched
+  // over: `recordWritten: existsSync(outPath)` below would then read the
+  // stale record as this invocation's. Absent/gone (ENOENT or a raced
+  // deletion) proceeds as before; a persisting record refuses loudly with a
+  // synthetic failure shaped like `runExecutor`'s contract, skipping the
+  // spawn but returning the full shape — no control-flow changes downstream.
   try {
     unlinkSync(outPath);
     ctx.log(`review: cleared stale record at ${outPath} before dispatch`);
-  } catch {
+  } catch (e) {
+    let stillPresent = e?.code !== 'ENOENT';
+    try {
+      stillPresent = existsSync(outPath);
+    } catch {
+      /* an unreadable answer keeps the conservative one above */
+    }
+    if (stillPresent) {
+      const reason =
+        `STALE: stale review record at ${outPath} could not be cleared (${e?.message ?? e}) — ` +
+        `refusing to dispatch over a record this invocation did not write`;
+      ctx.log(reason);
+      const shaBefore = gitTry(ctx.repoRoot, ['rev-parse', branch]).stdout.trim();
+      return {
+        run: { code: 1, killed: false, stdout: '', stderr: reason, mm: 0, ms: 0, command: runner.command },
+        outPath,
+        recordWritten: false,
+        clearRefused: reason,
+        discarded: { dirtyBefore: '', dirtyAfter: '', discardedAnything: false },
+        branchShaBefore: shaBefore,
+        branchShaAfter: shaBefore,
+        branchUnchanged: true,
+      };
+    }
     /* best-effort: absent is the expected case */
   }
   const suffix = typeof reviewSuffix === 'string' && reviewSuffix ? reviewSuffix : '';

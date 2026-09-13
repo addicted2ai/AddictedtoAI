@@ -71,12 +71,12 @@ import { localDate } from './dates.mjs';
  * happened to the branch it was reviewing.
  *
  * @param {object} ctx
- * @param {{jobId: string, verdictPath: string, reviewer?: string, dryRun?: boolean, subjectMustExist?: boolean}} args
+ * @param {{jobId: string, verdictPath: string, reviewer?: string, dryRun?: boolean, subjectMustExist?: boolean, destTag?: string|number}} args
  * @returns {{transcribed: Array<{dest: string, title: string}>, skipped: Array<{title: string, why: string}>, orphaned: Array<{title: string, detail: string, subject: string}>, warnings: string[], why?: string}}
  */
 export function transcribeCarriedFindings(
   ctx,
-  { jobId, verdictPath, reviewer = '', dryRun = false, subjectMustExist = false },
+  { jobId, verdictPath, reviewer = '', dryRun = false, subjectMustExist = false, destTag = null },
 ) {
   if (!verdictPath || !existsSync(verdictPath)) {
     return { transcribed: [], skipped: [], orphaned: [], warnings: [], why: 'no verdict record' };
@@ -99,7 +99,14 @@ export function transcribeCarriedFindings(
       orphaned.push({ title: entry.title, detail: entry.detail, subject: entry.subject });
       return;
     }
-    const dest = join(dir, `${jobId}-carry-${i + 1}.md`);
+    // G2: an optional per-call tag (the F2 per-page loop passes the record's
+    // page index) so N calls for one job cannot collide on
+    // `${jobId}-carry-1.md` — each call's first finding derived that dest
+    // because `i` restarts at 0 per call. Absent keeps the legacy shape
+    // byte-identical. The check is null/empty, never truthiness, so page
+    // index 0 tags rather than falling through to the legacy shape.
+    const tag = destTag === undefined || destTag === null || String(destTag) === '' ? null : String(destTag);
+    const dest = join(dir, tag === null ? `${jobId}-carry-${i + 1}.md` : `${jobId}-carry-${tag}-${i + 1}.md`);
     if (existsSync(dest)) {
       skipped.push({ title: entry.title, why: `a file already exists at ${dest}; the entry was not transcribed over it` });
       return;

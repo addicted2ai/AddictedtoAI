@@ -459,14 +459,17 @@ export function reviewedPathsFromResultText(text) {
 
 /**
  * Per-page verdict record paths for one pass, in page-index order (Stage 2,
- * task 63 fix F2).
+ * task 63 fix F2, G1).
  *
- * Probes `reviewedPerPageRecordPath(ctx, jobId, i, pass)` from `i = 0`
- * upward while the record exists and returns the existing prefix. The
- * transcription block and its tests share this one reader, so the per-page
- * set is detected from the records on disk plus `result.verdict` — never
- * from `mergeSubjects`, which is only ever set on approve and is null on
- * discard.
+ * Probes `reviewedPerPageRecordPath(ctx, jobId, i, pass)` for every `i` in
+ * 0..99 and returns every existing record in ascending index order. There is
+ * deliberately NO early break at the first gap: a page-0 review that writes
+ * no record (silent reviewer → the gate refuses no-record, the loop
+ * continues) followed by a page-1 approval leaves page 1's record past a
+ * gap, and stopping at the gap would lose it. The transcription block and
+ * its tests share this one reader, so the per-page set is detected from the
+ * records on disk plus `result.verdict` — never from `mergeSubjects`, which
+ * is only ever set on approve and is null on discard.
  */
 export function perPageRecordPathsForPass(ctx, jobId, pass) {
   const out = [];
@@ -476,7 +479,7 @@ export function perPageRecordPathsForPass(ctx, jobId, pass) {
     try {
       perPath = reviewedPerPageRecordPath(ctx, jobId, i, p);
     } catch {
-      break;
+      continue;
     }
     let present = false;
     try {
@@ -484,7 +487,7 @@ export function perPageRecordPathsForPass(ctx, jobId, pass) {
     } catch {
       present = false;
     }
-    if (!present) break;
+    if (!present) continue;
     out.push(perPath);
   }
   return out;
@@ -504,7 +507,16 @@ export function jobPerPageRecordRelPaths(ctx, jobId) {
   let names;
   try {
     names = readdirSync(ctx.reviewsDir);
-  } catch {
+  } catch (e) {
+    // G3: an absent reviews dir stays silent `[]` —
+    // early-exit paths may never have created it, and that half of the catch
+    // is load-bearing. Any OTHER read error (permissions/AV lock) is logged
+    // LOUDLY: silently omitting per-page records from the records commit is
+    // the exact defect class F1 closed. Either way the caller stages what
+    // this returns, so the ledger line still commits — failing the records
+    // commit over this would lose the budget.
+    if (e?.code === 'ENOENT') return [];
+    ctx.log(`STAGING: could not read reviews dir ${ctx.reviewsDir}: ${e?.message ?? e} — staging no per-page records, the ledger line still commits`);
     return [];
   }
   const out = [];
@@ -1898,13 +1910,19 @@ async function executeJob(ctx, opts) {
         } catch {
           surface = null;
         }
-        // F4: fail the page invocation closed before dispatch when its
-        // machine-generated surface cannot be read — task 63 requires each
-        // invocation to carry the page's surface AND its hash, so a page
-        // without its bytes is never sent to the reviewer. Single-page
-        // fallback below (task 62) is untouched.
-        if (surface == null) {
-          const reason = `reviewed: cannot review page ${page}: its machine-generated surface could not be read — failing closed, no review without its bytes`;
+        // F4 (G4: also the empty string): fail the page invocation closed
+        // before dispatch when its machine-generated surface cannot be read
+        // — task 63 requires each invocation to carry the page's surface AND
+        // its hash, so a page without its bytes is never sent to the
+        // reviewer. A readable-but-empty page carries no bytes to bind: the
+        // brief's truthy `hasSurface` would substitute the no-surface
+        // fallback with no bound hash while the reviewer may still approve —
+        // an unbound approval. Single-page fallback below (task 62) is
+        // untouched.
+        if (surface == null || surface === '') {
+          const reason = surface === ''
+            ? `reviewed: cannot review page ${page}: its machine-generated surface is empty — failing closed, no review without its bytes`
+            : `reviewed: cannot review page ${page}: its machine-generated surface could not be read — failing closed, no review without its bytes`;
           ctx.log(reason);
           return finish({ outcome: 'failed', mm, changed, note: reason });
         }
@@ -2031,11 +2049,15 @@ async function executeJob(ctx, opts) {
             reviewedSurfaceText = null;
           }
           // F4x: fail the single-page invocation closed before dispatch when
-          // its machine-generated surface cannot be read — task 63 requires
-          // each invocation to carry the page's surface AND its hash, so a
-          // page without its bytes is never sent to the reviewer.
-          if (reviewedSurfaceText == null) {
-            const reason = `reviewed: cannot review page ${reviewedOnly}: its machine-generated surface could not be read — failing closed, no review without its bytes`;
+          // its machine-generated surface cannot be read (G4: also when it
+          // is the empty string) — task 63 requires each invocation to carry
+          // the page's surface AND its hash, so a page without its bytes is
+          // never sent to the reviewer. An empty surface fails the same way:
+          // it carries no bytes to bind (see the per-page F4 note above).
+          if (reviewedSurfaceText == null || reviewedSurfaceText === '') {
+            const reason = reviewedSurfaceText === ''
+              ? `reviewed: cannot review page ${reviewedOnly}: its machine-generated surface is empty — failing closed, no review without its bytes`
+              : `reviewed: cannot review page ${reviewedOnly}: its machine-generated surface could not be read — failing closed, no review without its bytes`;
             ctx.log(reason);
             return finish({ outcome: 'failed', mm, changed, note: reason });
           }
@@ -3874,11 +3896,18 @@ export async function runLoop(ctx, opts = {}) {
           ctx.log(`per-page verdict record ${perPath}'s noted proposal was not transcribed: ${String(e?.message ?? e).slice(0, 160)}`);
         }
         try {
+          // G2: one transcription call per per-page record — tag each call's
+          // dests with the record's page index so page N's first finding
+          // cannot collide with page M's (`${jobId}-carry-${tag}-${i+1}.md`).
+          // Parsed from the record path itself, never the loop counter: a gap
+          // in the probed indices (G1) would misalign a counter with the page.
+          const perTag = String(perPath).match(/\.reviewed-(\d+)/)?.[1] ?? String(pi);
           const c2 = transcribeCarriedFindings(ctx, {
             jobId,
             verdictPath: perPath,
             reviewer: reviewer.id,
             subjectMustExist: outcome === 'discarded',
+            destTag: perTag,
           });
           orphanedFindings.push(...c2.orphaned);
           for (const t of c2.transcribed) {
