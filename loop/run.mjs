@@ -4272,15 +4272,22 @@ export async function runLoop(ctx, opts = {}) {
       //
       // Task 66: consumption runs PER ITEM, gated on the same per-item
       // evidence task 56 requires (a measured diff on the item's own
-      // subjects, or `reviewed:` coverage of them). A proposal belonging to an
-      // item the merge did not retire is NOT consumed — it stays selectable,
-      // because what would retire it is work the merge never measured. The
-      // graph never retires or unretires alone: it reaches this gate only
-      // through `mergeRetirement`, whose retirements already demand diff or
-      // `reviewed:` evidence. Where the merge computed no per-item retirement
-      // at all (an old-contract branch; a merge that binds nothing with an
-      // empty declaration), the gate is inactive and the whole-job rule stands
-      // exactly as this block left it.
+      // subjects, or `reviewed:` coverage of them). A proposal belonging to
+      // an item the merge did not retire is NOT consumed — it stays
+      // selectable, because what would retire it is work the merge never
+      // measured. The graph never retires or unretires alone: it reaches this
+      // gate only through `mergeRetirement`, whose retirements already demand
+      // diff or `reviewed:` evidence.
+      //
+      // Task 66 FIX-1: where the merge computed no per-item retirement at all
+      // (`mergeRetirement === null` — an old-contract branch; a merge that
+      // binds nothing with an empty declaration), the gate is inactive and the
+      // whole-job rule stands: ONLY what the job was selected from is
+      // consumed/marked — `proposalOrigin` (the record's selected proposal)
+      // for a proposal job, `job.lineNumber` for a directive job. Every other
+      // committed origin stays open, logged loudly below — a merge with no
+      // per-item evidence has nothing to attribute any other origin's
+      // consumption to.
       const committedItems = Array.isArray(runWorkOrder?.items) ? runWorkOrder.items : [];
       const originEntries = [];
       committedItems.forEach((it, index) => {
@@ -4290,6 +4297,11 @@ export async function runLoop(ctx, opts = {}) {
           originEntries.push({ index, origin: o });
         }
       });
+      const wholeJobFallback = proposalOrigin
+        ? { kind: 'proposal', slug: proposalOrigin.slug, path: proposalOrigin.path }
+        : job.source === 'directive' && Number.isInteger(job.lineNumber)
+          ? { kind: 'directive', lineNumber: job.lineNumber }
+          : null;
       // The record's own proposal origin joins when no committed item names
       // its slug — the shape every selection predating the per-item origin
       // key left on its branch. Attached to the order's first item: with one
@@ -4302,13 +4314,20 @@ export async function runLoop(ctx, opts = {}) {
           origin: { kind: 'proposal', slug: proposalOrigin.slug, path: proposalOrigin.path },
         });
       }
-      const perItem = perItemConsumptionPlan(originEntries, mergeRetirement);
+      const perItem = perItemConsumptionPlan(originEntries, mergeRetirement, wholeJobFallback);
       for (const e of perItem.filter((x) => x.origin.kind === 'proposal')) {
         const originPath = isAbsolute(e.origin.path) ? e.origin.path : join(ctx.repoRoot, e.origin.path);
         if (e.open) {
+          // FIX-1: with the gate INACTIVE (`gated === false`) there is no
+          // per-item evidence at all — the origin was simply not what this job
+          // was selected from. Say so, loudly, in the same voice as the
+          // gate-active log.
           ctx.log(
-            `the proposal \`${e.origin.slug}\` was not consumed: its item (${e.index + 1}) did not retire ` +
-              `on the merge's per-item evidence — a proposal belonging to an unretired item stays selectable`,
+            e.gated
+              ? `the proposal \`${e.origin.slug}\` was not consumed: its item (${e.index + 1}) did not retire ` +
+                `on the merge's per-item evidence — a proposal belonging to an unretired item stays selectable`
+              : `the proposal \`${e.origin.slug}\` was not consumed: the merge computed no per-item evidence and this job ` +
+                `was not selected from it — only the job's own proposal origin is consumed under the whole-job rule`,
           );
           continue;
         }
@@ -4384,11 +4403,18 @@ export async function runLoop(ctx, opts = {}) {
         // the merge did not retire keeps its directive line open — the order
         // is recorded partially done (the retirement's note rides the ledger
         // line) and the work returns to intake by staying unmarked.
+        // FIX-1: with the gate INACTIVE (`gated === false`) there is no
+        // per-item evidence at all — only the line the job itself was
+        // selected from is marked; every other line stays open, loudly.
         for (const e of directiveMarks) {
           if (e.open) {
             ctx.log(
-              `DIRECTIVES.md line ${e.origin.lineNumber} (item ${e.index + 1}) was not marked: its item did not ` +
-                `retire on the merge's per-item evidence — the directive stays open`,
+              e.gated
+                ? `DIRECTIVES.md line ${e.origin.lineNumber} (item ${e.index + 1}) was not marked: its item did not ` +
+                  `retire on the merge's per-item evidence — the directive stays open`
+                : `DIRECTIVES.md line ${e.origin.lineNumber} (item ${e.index + 1}) was not marked: the merge computed ` +
+                  `no per-item evidence and this job was not selected from it — only the job's own directive line ` +
+                  `is marked under the whole-job rule`,
             );
             continue;
           }

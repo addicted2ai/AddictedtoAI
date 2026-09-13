@@ -97,11 +97,15 @@ const presentAnalysis = (overrides = {}) => ({
  * per-item origins. The author writes exactly the paths `authorExtra` names,
  * so the merge measures one item's subjects and not the other's.
  */
-function plantedOrder(t, id, { items, source, directives, authorExtra, sidecar = {} } = {}) {
+function plantedOrder(
+  t,
+  id,
+  { items, source, directives, authorExtra, authorMode = 'done-content-paths', declaredSubjects, sidecar = {} } = {},
+) {
   const ctx = makeRepo({
     now: () => NOW,
     runners: runnersYaml({
-      command: mockCommand('done-content-paths', authorExtra),
+      command: mockCommand(authorMode, authorExtra),
       reviewerCommand: mockCommand('review-approve'),
     }),
     directives,
@@ -119,7 +123,10 @@ function plantedOrder(t, id, { items, source, directives, authorExtra, sidecar =
     path: source === 'directive' ? null : SPA,
     issues: [],
     items,
-    declared_subjects: [...new Set(items.flatMap((i) => i.subjects))].sort(),
+    declared_subjects:
+      declaredSubjects !== undefined
+        ? [...declaredSubjects]
+        : [...new Set(items.flatMap((i) => i.subjects))].sort(),
   };
   plantJobBranch(ctx, id, {
     brief: '# a planted work-order brief\n',
@@ -487,4 +494,89 @@ test('task 66: an unattributable origin with the gate active fails closed — no
   assert.equal(gated.oldContract, undefined);
   assert.deepEqual(gated.retired, []);
   assert.deepEqual(gated.open, []);
+});
+
+test('task 66 FIX-1 (merge): with the gate inactive, a merged done consumes only the origin the job was selected from', async (t) => {
+  // The gate INACTIVE through the REAL merged-done path: the author writes
+  // only a non-content file, so the merged diff carries no content paths, and
+  // the committed declaration is empty — the merge binds nothing with an
+  // empty declaration, computes NO per-item retirement (`retirement ===
+  // null` in the plan), and pre-FIX-1 the merged done consumed EVERY
+  // committed origin here. The whole-job rule consumes only what the job was
+  // selected from: the record's own proposal origin (slug A).
+  const id = 'j-20260912-56';
+  const { ctx } = plantedOrder(t, id, {
+    items: [proposalItem([P1], SLUG_A, SPA), proposalItem([P2], SLUG_B, SPB)],
+    authorExtra: ' notes.txt',
+    declaredSubjects: [],
+  });
+  const res = await go(ctx, {});
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.match(ctx.output(), /binds nothing: merged diff carries no content paths/, ctx.output());
+
+  // The whole-job fallback origin IS consumed — the existing shape, exactly
+  // (`consumeProposal`'s one-way move, note appended).
+  assert.deepEqual(active(ctx), ['second-idea.md'], ctx.output());
+  assert.equal(consumed(ctx).length, 1, consumed(ctx).join(', '));
+  assert.match(consumed(ctx)[0], /^first-idea\.consumed-/);
+  assert.match(ctx.output(), /retired the consumed proposal to .*consumed/);
+
+  // THE FIX: every other origin is open — not consumed, the file was never
+  // moved, and the loud log names it in the same voice as the gate-active
+  // open log.
+  assert.ok(existsSync(join(ctx.repoRoot, SPB)), 'the non-selected proposal file was never moved');
+  assert.match(
+    ctx.output(),
+    /the proposal `second-idea` was not consumed: the merge computed no per-item evidence and this job was not selected from it/,
+    ctx.output(),
+  );
+  assert.doesNotMatch(ctx.output(), /its item \(2\) did not retire/, 'the gate-active voice must not fire with the gate inactive');
+});
+
+test('task 66 FIX-1 (gate inactive): a directive job marks only its own line; the other line stays open', async (t) => {
+  // The same gate-inactive shape on the directive half, driven through the
+  // production plan plus the same marking shape the merged-done block uses
+  // (`markDirectiveDone` for every closed entry), mirroring the graph-alone
+  // test's style. The real merge path cannot carry this scenario: a resumed
+  // run's synthetic job carries no lineNumber, so the caller's whole-job
+  // fallback is null there and consumes nothing (asserted below) — the plan
+  // is the one place the two-origin directive order and the job's own line
+  // number can be exercised together.
+  const ctx = makeRepo({
+    now: () => NOW,
+    directives: '# DIRECTIVES.md\n\n- repair: fix the first item\n- repair: fix the second item\n',
+  });
+  t.after(() => ctx.cleanup());
+  const DIRECTIVE_ORIGINS = [
+    { index: 0, origin: { kind: 'directive', lineNumber: 3 } },
+    { index: 1, origin: { kind: 'directive', lineNumber: 4 } },
+  ];
+  const plan = perItemConsumptionPlan(DIRECTIVE_ORIGINS, null, { kind: 'directive', lineNumber: 3 });
+  assert.equal(plan.length, 2);
+  assert.equal(plan[0].open, false, 'the job\u2019s own line is consumed/marked');
+  assert.equal(plan[0].gated, false, 'the gate is inactive — the whole-job rule, not per-item evidence');
+  assert.equal(plan[1].open, true, 'the other directive origin stays open');
+  assert.equal(plan[1].gated, false);
+  for (const e of plan.filter((x) => x.origin.kind === 'directive' && !x.open)) {
+    markDirectiveDone(ctx, e.origin.lineNumber, 'j-20260912-57', '2026-09-12');
+  }
+  const lines = readFileSync(ctx.directivesPath, 'utf8').split(/\r?\n/);
+  assert.match(lines[2], /\[done 2026-09-12 j-20260912-57\]/, `line 3 marked: ${lines[2]}`);
+  assert.ok(!/\[done/.test(lines[3]), `line 4 stays open: ${lines[3]}`);
+
+  // And a null fallback with the gate inactive consumes NOTHING — no fallback,
+  // no whole-job attribution, nothing consumed or marked.
+  const nothing = perItemConsumptionPlan(DIRECTIVE_ORIGINS, null, null);
+  assert.ok(nothing.every((e) => e.open === true), JSON.stringify(nothing));
+
+  // And with the gate ACTIVE the fallback is never consulted: the same two
+  // origins against a retirement that retires only item 0 behave exactly as
+  // they did before FIX-1, whatever the fallback names.
+  const gated = perItemConsumptionPlan(
+    DIRECTIVE_ORIGINS,
+    { retired: [{ index: 0 }], open: [{ index: 1 }], partiallyDone: true, note: null },
+    { kind: 'directive', lineNumber: 4 },
+  );
+  assert.equal(gated[0].open, false, 'the retired item\u2019s line is marked');
+  assert.equal(gated[1].open, true, 'the open item\u2019s line is not');
 });

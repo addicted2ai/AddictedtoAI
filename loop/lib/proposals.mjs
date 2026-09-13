@@ -546,23 +546,49 @@ export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [
  * `retirement === null` means the merge never computed per-item retirement at
  * all — an old-contract branch, or a merge that binds nothing with an empty
  * declaration. The per-item gate is INACTIVE there and the whole-job rule
- * that predates this task stands verbatim: a merged `done` consumes and
- * marks what the job was selected from, exactly as before.
+ * that predates this task stands verbatim (task 66 FIX-1): a merged `done`
+ * consumes and marks ONLY what the job was selected from — the `fallback`
+ * origin, matched by `slug` for proposals and by `lineNumber` for directives.
+ * Every OTHER origin in the plan is `open: true` — not consumed, not marked —
+ * and the caller logs it loudly: a merge that computed no per-item evidence
+ * has nothing to attribute any other origin's consumption to. A `fallback`
+ * of null, or one matching no entry, with the gate inactive consumes nothing.
+ * With the gate active `fallback` is never consulted.
  *
  * @param {Array<{index?: number, origin: object}>} originEntries
  * @param {{retired: Array<{index: number}>, open: Array, partiallyDone: boolean}|null} retirement
+ * @param {{kind: 'proposal', slug: string, path?: string}|{kind: 'directive', lineNumber: number}|null} [fallback]
+ *   the whole-job origin the job was selected from, as the caller knows it
+ *   (the merged-done block in `loop/run.mjs`); consulted only when
+ *   `retirement === null`
  * @returns {Array<{index: number|null, origin: object, gated: boolean, open: boolean}>}
  *   `open: true` — the item is unretired (or, with the gate active, its index
  *   is unattributable, which fails closed); its proposal is NOT consumed and
  *   its directive line is NOT marked.
  */
-export function perItemConsumptionPlan(originEntries, retirement) {
+export function perItemConsumptionPlan(originEntries, retirement, fallback = null) {
   const retiredIdx = retirement
     ? new Set(
       (Array.isArray(retirement.retired) ? retirement.retired : [])
         .map((r) => (Number.isInteger(r?.index) ? r.index : null)),
     )
     : null;
+  // Task 66 FIX-1: with the gate inactive (retirement === null) the whole-job
+  // rule consumes ONLY the fallback origin — the record's selected proposal
+  // slug, or the directive job's own line number. Keyed the same way the
+  // entries themselves are, so a malformed fallback can match nothing and
+  // consumes nothing rather than being guessed at.
+  const fallbackKey = retiredIdx !== null
+    ? null
+    : (() => {
+      if (fallback?.kind === 'proposal' && typeof fallback.slug === 'string' && fallback.slug) {
+        return `proposal:${fallback.slug}`;
+      }
+      if (fallback?.kind === 'directive' && Number.isInteger(fallback.lineNumber)) {
+        return `directive:${fallback.lineNumber}`;
+      }
+      return null;
+    })();
   const plan = [];
   const seen = new Set();
   for (const e of Array.isArray(originEntries) ? originEntries : []) {
@@ -585,7 +611,7 @@ export function perItemConsumptionPlan(originEntries, retirement) {
       index: Number.isInteger(e.index) ? e.index : null,
       origin: o,
       gated: retiredIdx !== null,
-      open: retiredIdx !== null ? !retiredIdx.has(Number.isInteger(e.index) ? e.index : null) : false,
+      open: retiredIdx !== null ? !retiredIdx.has(Number.isInteger(e.index) ? e.index : null) : key !== fallbackKey,
     });
   }
   return plan;
