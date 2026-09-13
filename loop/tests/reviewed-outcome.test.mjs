@@ -86,6 +86,7 @@ import {
   writeReviewedHashStore,
 } from '../run.mjs';
 import { gitTry } from '../lib/git.mjs';
+import { mergeLockPath } from '../lib/train.mjs';
 import { reviewStateForPageAtBase } from '../lib/review-state.mjs';
 import {
   assembleReviewBrief,
@@ -113,6 +114,7 @@ import { git, makeRepo, mockCommand, runnersYaml, writeQueue } from './helpers.m
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RUN_LIB = resolve(HERE, '..', 'run.mjs');
+const TRAIN_LIB = resolve(HERE, '..', 'lib', 'train.mjs');
 
 // Local date, read from the machine clock (2026-09-12, Mountain).
 const NOW = new Date('2026-09-12T12:00:00');
@@ -1739,6 +1741,17 @@ test('task 64: a missing or malformed store refuses with a named reason', (t) =>
   const unparseable = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-armed', targetRef: base, paths: [P1] });
   assert.equal(unparseable.ok, false);
   assert.equal(unparseable.code, 'reviewed-hash-store-malformed');
+  // Malformed, arm 4 (FIX-4): an unexpected TOP-LEVEL key — the format is
+  // exactly { version: 1, pages: {...} }, and a reader that ignores extra keys
+  // would consume a payload no producer of this store wrote. The refusal names
+  // the key it does not understand.
+  writeFileSync(join(dir, '.job', 'reviewed-hashes.json'), JSON.stringify({ version: 1, pages: { [P1]: '0'.repeat(64) }, notes: { injected: true } }), 'utf8');
+  commitInWorktree(dir, 'fixture: a store with an unexpected top-level key');
+  const extraKey = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-armed', targetRef: base, paths: [P1] });
+  assert.equal(extraKey.ok, false, 'an unexpected top-level key refuses');
+  assert.equal(extraKey.code, 'reviewed-hash-store-malformed');
+  assert.match(extraKey.reason, /unexpected top-level key/, 'the refusal says what is wrong with the shape');
+  assert.match(extraKey.reason, /notes/, 'the refusal names the offending key');
 });
 
 test('task 64: the store\'s page set must EXACTLY equal the declared set — extras and missing both refuse (D4)', (t) => {
@@ -1832,19 +1845,225 @@ test('task 64: the store never lands as a live path — the scaffolding removal 
   assert.equal(readStoreAt(ctx, 'job/store-lands').ok, true, 'the store is on the branch before the merge');
   // The exact removal the merge path runs before `mergeJobBranch` — the
   // whole `.job/` directory, wholesale, so the store cannot land on
-  // `main`/`train` on ANY merge path.
+  // `main`/`train` on ANY merge path — and its pathspec-scoped commit
+  // (FIX-3), the exact production command shape.
   git(dir, ['rm', '-r', '-q', '--ignore-unmatch', '.job']);
-  git(dir, ['commit', '--quiet', '--no-verify', '-m', 'job j-20260912-64: remove job scaffolding before merge']);
+  git(dir, ['commit', '--quiet', '--no-verify', '-m', 'job j-20260912-64: remove job scaffolding before merge', '--', '.job']);
   assert.equal(gitTry(ctx.repoRoot, ['show', 'job/store-lands:.job/reviewed-hashes.json']).ok, false, 'the store is gone from the branch the merge would land');
   assert.equal(gitTry(ctx.repoRoot, ['show', `job/store-lands:${P1}`]).ok, true, 'the page bytes are not scaffolding — they land');
   // Structural: the production removal covers `.job` wholesale and runs
   // before the merge, and the store lives under `.job/` by construction.
   const src = readFileSync(RUN_LIB, 'utf8');
-  assert.match(src, /\['rm', '-r', '-q', '--ignore-unmatch', '\.job', RESULT_FILENAME\]/, 'the pre-merge removal takes the whole .job directory');
-  const rmIdx = src.indexOf("['rm', '-r', '-q', '--ignore-unmatch', '.job', RESULT_FILENAME]");
+  assert.match(src, /\['rm', '-r', '-q', '--ignore-unmatch', \.\.\.scaffoldPaths\]/, 'the pre-merge removal takes the whole .job directory');
+  const rmIdx = src.indexOf("['rm', '-r', '-q', '--ignore-unmatch', ...scaffoldPaths]");
   const mergeIdx = src.indexOf('await mergeJobBranch(ctx, {');
   assert.ok(rmIdx !== -1 && mergeIdx !== -1 && rmIdx < mergeIdx, 'the removal runs before the merge, so nothing under .job/ can land');
+  assert.match(src, /const scaffoldPaths = \[\n      '\.job',/, 'the removal pathspec leads with the whole .job directory, wholesale');
   assert.equal(REVIEWED_HASH_STORE_REL.startsWith('.job/'), true, 'the store lives under .job/ by construction');
+});
+
+// ---------------------------------------------------------------------------
+// Task 64 FIX-1..FIX-5 (the five verified findings).
+// ---------------------------------------------------------------------------
+
+test('task 64 FIX-3: the assembly commit is pathspec-scoped — an unrelated staged file is not swept in', (t) => {
+  const ctx = reviewCtx63(t);
+  const full = join(ctx.repoRoot, P1);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, pageText('bytes'), 'utf8');
+  commitAll(ctx, 'fixture: a page');
+  const dir = storeWorktree(t, ctx, 'job/store-scope-commit');
+  // An unrelated staged file sits in the index at assembly time — the index
+  // state a dirty executor or an earlier mechanism could leave behind.
+  writeFileSync(join(dir, 'notes-unrelated.txt'), 'staged by something else\n', 'utf8');
+  git(dir, ['add', 'notes-unrelated.txt']);
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-64',
+    pass: 1,
+    pages: [P1],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  // The store commit records ONLY the store.
+  const names = git(ctx.repoRoot, ['show', '--format=', '--name-only', 'job/store-scope-commit']).trim().split('\n').map((s) => s.trim());
+  assert.deepEqual(names, [REVIEWED_HASH_STORE_REL], 'the store commit carries exactly the store');
+  // The unrelated staged file did not ride the commit — and it remains
+  // staged, uncommitted, exactly as it was.
+  assert.equal(gitTry(ctx.repoRoot, ['show', 'job/store-scope-commit:notes-unrelated.txt']).ok, false, 'the unrelated staged file did not ride the store commit');
+  const status = git(dir, ['status', '--porcelain']);
+  assert.match(status, /^A[ \t]+notes-unrelated\.txt/m, 'the unrelated file stays staged after the store commit');
+});
+
+test('task 64 FIX-3: the scaffolding removal commit with a pathspec records the rm — both RESULT.md states, fixture-verified', (t) => {
+  // This is the charge's explicit verification, run as a fixture: the exact
+  // production sequence (ls-files probe → rm → pathspec commit), over the
+  // state git actually keeps. Measured 2026-09-13 while writing the fix:
+  // `git commit -- <untracked path>` FAILS outright ("pathspec did not match
+  // any file(s) known to git"), so the production pathspec carries
+  // RESULT.md only when `git ls-files` shows it tracked — this arm exercises
+  // both halves.
+  //
+  // Arm 1 — RESULT.md untracked (the ordinary flow): pathspec `.job` alone.
+  const ctxA = reviewCtx63(t);
+  const dirA = storeWorktree(t, ctxA, 'job/store-scaffold-untracked');
+  mkdirSync(join(dirA, '.job'), { recursive: true });
+  writeFileSync(join(dirA, '.job', 'brief.md'), 'brief\n', 'utf8');
+  git(dirA, ['add', '.job/brief.md']);
+  git(dirA, ['commit', '--quiet', '--no-verify', '-m', 'fixture: brief committed']);
+  writeFileSync(join(dirA, 'notes-unrelated.txt'), 'staged by something else\n', 'utf8');
+  git(dirA, ['add', 'notes-unrelated.txt']);
+  writeFileSync(join(dirA, 'RESULT.md'), 'done\n', 'utf8'); // untracked, as the real flow leaves it
+  const trackedA = git(dirA, ['ls-files', '--', 'RESULT.md']).trim();
+  const scaffoldA = ['.job', ...(trackedA ? ['RESULT.md'] : [])];
+  assert.deepEqual(scaffoldA, ['.job'], 'untracked RESULT.md stays out of the pathspec');
+  git(dirA, ['rm', '-r', '-q', '--ignore-unmatch', ...scaffoldA]);
+  git(dirA, ['commit', '--quiet', '--no-verify', '-m', 'fixture: remove job scaffolding', '--', ...scaffoldA]);
+  assert.equal(gitTry(dirA, ['show', 'HEAD:.job/brief.md']).ok, false, 'the pathspec commit RECORDS the rm (arm 1)');
+  const statusA = git(dirA, ['status', '--porcelain']);
+  assert.match(statusA, /^A[ \t]+notes-unrelated\.txt/m, 'the unrelated staged file stays staged (arm 1)');
+  assert.match(statusA, /^\?\?[ \t]+RESULT\.md/m, 'the untracked RESULT.md stays untracked (arm 1)');
+
+  // Arm 2 — RESULT.md tracked (the historical j-20260830-01 leak shape): the
+  // pathspec carries both, and BOTH removals are recorded.
+  const ctxB = reviewCtx63(t);
+  const dirB = storeWorktree(t, ctxB, 'job/store-scaffold-tracked');
+  mkdirSync(join(dirB, '.job'), { recursive: true });
+  writeFileSync(join(dirB, '.job', 'brief.md'), 'brief\n', 'utf8');
+  writeFileSync(join(dirB, 'RESULT.md'), 'done\n', 'utf8');
+  git(dirB, ['add', '-A']);
+  git(dirB, ['commit', '--quiet', '--no-verify', '-m', 'fixture: brief and RESULT.md committed']);
+  writeFileSync(join(dirB, 'notes-unrelated.txt'), 'staged by something else\n', 'utf8');
+  git(dirB, ['add', 'notes-unrelated.txt']);
+  const trackedB = git(dirB, ['ls-files', '--', 'RESULT.md']).trim();
+  const scaffoldB = ['.job', ...(trackedB ? ['RESULT.md'] : [])];
+  assert.deepEqual(scaffoldB, ['.job', 'RESULT.md'], 'tracked RESULT.md rides the pathspec (arm 2)');
+  git(dirB, ['rm', '-r', '-q', '--ignore-unmatch', ...scaffoldB]);
+  git(dirB, ['commit', '--quiet', '--no-verify', '-m', 'fixture: remove job scaffolding', '--', ...scaffoldB]);
+  assert.equal(gitTry(dirB, ['show', 'HEAD:.job/brief.md']).ok, false, 'the .job removal is recorded (arm 2)');
+  assert.equal(gitTry(dirB, ['show', 'HEAD:RESULT.md']).ok, false, 'the tracked RESULT.md removal is recorded too (arm 2)');
+  const statusB = git(dirB, ['status', '--porcelain']);
+  assert.match(statusB, /^A[ \t]+notes-unrelated\.txt/m, 'the unrelated staged file stays staged (arm 2)');
+});
+
+test('task 64 FIX-2: the scaffolding gate is fail-closed and pathspec-scoped (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /pre-merge scaffolding removal failed/, 'the rm result is checked — a failure refuses the merge');
+  assert.match(src, /pre-merge scaffolding-removal commit failed/, 'the commit result is checked — a failure refuses the merge');
+  // The gate stands ahead of the merge, and BOTH results flow through
+  // failMerge (which settles the run failed).
+  const rmIdx = src.indexOf('const rmScaffold = gitTry(worktree,');
+  const rmCommitIdx = src.indexOf('const rmCommit = gitTry(worktree,');
+  const mergeIdx = src.indexOf('await mergeJobBranch(ctx, {');
+  assert.ok(rmIdx !== -1 && rmCommitIdx !== -1 && mergeIdx !== -1, 'the checked removal and its commit exist');
+  assert.ok(rmIdx < rmCommitIdx && rmCommitIdx < mergeIdx, 'the removal and its commit are checked before the merge');
+  assert.match(src, /if \(!rmScaffold\.ok\) \{\n      failMerge\(/, 'a failed rm refuses through failMerge');
+  assert.match(src, /if \(!rmCommit\.ok && !\/nothing to commit\|nothing added\/i\.test\(/, 'the commit result is checked, tolerating only a genuine nothing-to-commit');
+  assert.match(src, /'--', \.\.\.scaffoldPaths,/, 'the removal commit is pathspec-scoped to the scaffolding');
+  assert.match(src, /gitTry\(worktree, \['ls-files', '--', RESULT_FILENAME\]\)/, 'the pathspec asks git what is actually tracked');
+});
+
+test('task 64 FIX-1: the binding re-measure sits inside the locked merge window (structural)', () => {
+  const tsrc = readFileSync(TRAIN_LIB, 'utf8');
+  const lockIdx = tsrc.indexOf('const lock = await acquireMergeLock({ waitMs: lockWaitMs });');
+  const preIdx = tsrc.indexOf("if (typeof preMergeCheck === 'function') {");
+  const mergeIdx = tsrc.indexOf('const m = mergeLocal(repo, branch, message);');
+  assert.ok(lockIdx !== -1 && preIdx !== -1 && mergeIdx !== -1, 'the lock, the locked re-measure, and the merge exist in train.mjs');
+  assert.ok(lockIdx < preIdx, 'the re-measure is invoked AFTER the lock is acquired — inside the locked window');
+  assert.ok(preIdx < mergeIdx, 'the re-measure is invoked BEFORE the merge executes');
+  assert.match(tsrc, /preMergeRefusal: true, reason: pre\.reason/, 'a locked refusal returns a plain refusal, which the caller books failed');
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /preMergeCheck: preMergeStoreCheck,/, 'the locked re-measure is threaded through the merge call');
+  assert.match(src, /baseStandIn: mergeBaseSha,/, 'the base stand-in is the same one the outer check resolved');
+  // The store rides the PINNED pre-removal head: the scaffolding removal
+  // commits the store's removal to the branch before the merge, so a locked
+  // re-measure reading the branch HEAD would find nothing.
+  assert.match(src, /const branchShaAtStoreCheck = gitTry\(ctx\.repoRoot, \['rev-parse', branch\]\)\.stdout\.trim\(\);/, 'the branch head the store was validated at is pinned before the removal');
+  const pinIdx = src.indexOf('const branchShaAtStoreCheck = gitTry(ctx.repoRoot, [\'rev-parse\', branch]).stdout.trim();');
+  const hashCheckedIdx = src.indexOf('const hashChecked = checkReviewedHashStore(ctx.repoRoot, { branch, targetRef: hashTargetRef, paths: reviewedPaths });');
+  assert.ok(pinIdx !== -1 && hashCheckedIdx !== -1 && pinIdx < hashCheckedIdx, 'the pin is captured before the outer check reads the store');
+  assert.match(src, /const locked = checkReviewedHashStore\(ctx\.repoRoot, \{ branch: branchShaAtStoreCheck, targetRef, paths: reviewedPaths \}\);/, 'the locked re-measure re-measures the store at the pinned head and the lock-resolved target');
+});
+
+test('task 64 FIX-1: the train target moves between the outer check and the locked re-measure — the merge refuses, the run failed, the path named (behavioral)', async (t) => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('reviewed-unchanged', ` ${P1}`),
+      reviewerCommand: mockCommand('review-approve-store-checked'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writePage(ctx, P1, 'the approved version');
+  commitAll(ctx, 'fixture: the page');
+  approveWithSubjects(ctx, 'j-seed-approver', [P1]);
+  commitAll(ctx, 'fixture: the approving record');
+  writePage(ctx, P1, 'an edit nobody reviewed');
+  commitAll(ctx, 'fixture: later edits');
+  // The train exists at the base tip, so the OUTER check (resolved before the
+  // lock) passes: the store binds the base bytes and the train carries them.
+  git(ctx.repoRoot, ['branch', 'train', headOf(ctx)]);
+  writeQueue(ctx, [{ type: 'repair', title: 'Ratify the reviewed page', subjects: [P1] }]);
+  // The concurrent worker's merge: it happens INSIDE the locked window — the
+  // seam first proves the merge lock is held, then moves the page on the
+  // train in the same checkout the train runs in, then the production
+  // re-measure runs against the moved target.
+  const mover = ({ repo, targetRef, check }) => {
+    if (!existsSync(mergeLockPath())) {
+      return { ok: false, reason: 'TEST PROBE: the pre-merge check ran with no merge lock held — the re-measure is not inside the locked window' };
+    }
+    const on = git(repo, ['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+    assert.equal(on, 'train', 'the desk checkout is on the train the merge is about to land on');
+    writeFileSync(join(repo, P1), pageText('a concurrent worker moved the page on the train'), 'utf8');
+    git(repo, ['add', P1]);
+    git(repo, ['commit', '--quiet', '--no-verify', '-m', 'concurrent worker: the page moved on the train']);
+    return check({ targetRef });
+  };
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true, preMergeCheck: mover });
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /merge failed: reviewed-hash-mismatch/, ctx.output());
+  assert.match(ctx.output(), new RegExp(P1.replace(/\//g, '\\/')), 'the refusal names the offending page');
+  // The report lines report the locked re-measure: it refused, so neither logged.
+  assert.doesNotMatch(ctx.output(), /reviewed-hash: hash equality holds/, 'no equality report on a refused merge');
+  assert.doesNotMatch(ctx.output(), /reviewed-graph: empty-symbol assertion/, 'no graph report either — the re-measure refused before the merge');
+  // Nothing landed: the train carries the MOVER's bytes, and the store is
+  // not on it (D8 holds on the refused path too).
+  const trainBytes = gitTry(ctx.repoRoot, ['show', `train:${P1}`]);
+  assert.equal(trainBytes.ok, true, 'the train still resolves the page');
+  assert.match(trainBytes.stdout, /a concurrent worker moved the page on the train/, 'the job\'s merge never landed — the concurrent worker\'s bytes stand');
+  assert.equal(gitTry(ctx.repoRoot, ['show', 'train:.job/reviewed-hashes.json']).ok, false, 'the store is not on the train');
+});
+
+test('task 64 FIX-2: a scaffolding removal that cannot run refuses the merge — nothing lands (behavioral)', async (t) => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({
+      command: mockCommand('reviewed-unchanged', ` ${P1}`),
+      reviewerCommand: mockCommand('review-approve-store-checked-lock-worktrees'),
+    }),
+  });
+  t.after(() => ctx.cleanup());
+  writePage(ctx, P1, 'the approved version');
+  commitAll(ctx, 'fixture: the page');
+  approveWithSubjects(ctx, 'j-seed-approver', [P1]);
+  commitAll(ctx, 'fixture: the approving record');
+  writePage(ctx, P1, 'an edit nobody reviewed');
+  commitAll(ctx, 'fixture: later edits');
+  writeQueue(ctx, [{ type: 'repair', title: 'Ratify the reviewed page', subjects: [P1] }]);
+  // The reviewer approves (so the run reaches the merge path) and holds the
+  // job worktree's index lock: the pre-merge scaffolding removal cannot run.
+  // A run whose removal result was IGNORED would merge with `.job/` still on
+  // the branch — the store would land on the train (D8 violated).
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /pre-merge scaffolding removal failed/, ctx.output());
+  assert.match(ctx.output(), /git rm/, 'the reason carries git\'s own refusal');
+  assert.doesNotMatch(ctx.output(), /merged .* into train locally/, 'nothing merged');
+  // Nothing landed: the store is still ONLY on the un-merged job branch.
+  const branch = git(ctx.repoRoot, ['branch', '--list', `job/${res.jobId}`]).trim().replace(/^\*\s*/, '').trim();
+  assert.ok(branch, `the job branch is kept on a failed run: ${ctx.output()}`);
+  assert.equal(gitTry(ctx.repoRoot, ['show', `${branch}:.job/reviewed-hashes.json`]).ok, true, 'the removal never ran — the store is still on the branch, which never landed');
+  assert.equal(gitTry(ctx.repoRoot, ['show', 'train:.job/reviewed-hashes.json']).ok, false, 'the store is not on the train — nothing landed (D8)');
 });
 
 test('task 64: the merge report records the empty-symbol assertion beside the hash assertion (D9 fields)', () => {
@@ -2013,10 +2232,17 @@ test('task 64 (D6, non-regression): the brief carries the tree\'s bytes and prin
     graphIndexId: 'test-index-64',
   });
   assert.ok(brief.includes(raw), 'the brief carries the page\'s bytes as they stand in the tree');
-  assert.equal(
-    reviewedHash(readFileSync(join(dir, P1), 'utf8')),
-    reviewedHashOfFile(join(dir, P1)),
-    'the carried bytes\' reviewed surface is the surface re-derived from the tree',
+  // FIX-5 (task 64): a genuine two-producer assertion. The hash the BRIEF
+  // PRINTS for the page is bound to `reviewedHashOfFile` over the tree's own
+  // bytes — the same page's file — so the printed hash binds the tree and not
+  // itself. (The previous arm compared `reviewedHash(readFileSync(file))`
+  // with `reviewedHashOfFile(file)` — the same computation twice, the exact
+  // tautology class removed from task 63.)
+  const briefHashOfTree = /^Reviewed hash: `([0-9a-f]{64})`/m.exec(brief)?.[1] ?? null;
+  const treeHash = reviewedHashOfFile(join(dir, P1));
+  assert.ok(
+    briefHashOfTree && briefHashOfTree === treeHash,
+    `the brief's printed hash binds the tree's bytes for ${P1}: brief printed ${briefHashOfTree}, tree re-derived ${treeHash}`,
   );
   // Each declared page's hash is printed in ITS invocation's brief, and it is
   // the hash the store binds for that page.

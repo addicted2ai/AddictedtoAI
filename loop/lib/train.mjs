@@ -259,6 +259,7 @@ export function releaseMergeLock(handle) {
  */
 export async function mergeJobBranch(ctx, {
   repo, branch, baseRef, message, tripwireBaseTip, gates, noGates, lockWaitMs, admission,
+  preMergeCheck, baseStandIn,
 }) {
   const lock = await acquireMergeLock({ waitMs: lockWaitMs });
   if (!lock.ok) {
@@ -288,6 +289,26 @@ export async function mergeJobBranch(ctx, {
         return { ok: false, reason: `train held (pre-existing red): ${waiting} merges already wait (limit ${admission.maxMerges}) — this merge is refused and waits for the hold to clear; nothing merged` };
       }
       heldNote = ` (train held: pre-existing red; ${waiting} merge(s) ahead, within the ${admission.maxMerges}-merge limit — this merge waits for the hold to clear)`;
+    }
+    // Task 64 FIX-1: the caller's pre-merge re-measure runs HERE — inside the
+    // locked merge window, immediately before the merge executes, with the
+    // target ref RESOLVED UNDER THE LOCK. A concurrent worker's merge could
+    // move the train between the caller's outer validation and this lock, and
+    // the merged bytes must be the bytes validated, so the re-measure under
+    // the lock is the binding one (the outer check stays as the early, cheaper
+    // refusal). The ref is `baseRef` (the train branch) when it exists — the
+    // check's `git show <ref>:<path>` resolves it to the train tip AT this
+    // moment, under the lock — and `baseStandIn` only where the train still
+    // does not exist (the caller supplies the same stand-in its outer check
+    // resolved). A refusal refuses the merge: plain `{ok:false}` with
+    // `preMergeRefusal` naming the kind, so the caller settles the run
+    // `failed` exactly like its outer check — the reason carries the path.
+    if (typeof preMergeCheck === 'function') {
+      const lockedTargetRef = branchExists(repo, baseRef) ? baseRef : (baseStandIn ?? baseRef);
+      const pre = await preMergeCheck({ repo, branch, targetRef: lockedTargetRef });
+      if (pre && pre.ok === false) {
+        return { ok: false, preMergeRefusal: true, reason: pre.reason ?? 'pre-merge check refused the merge' };
+      }
     }
     if (!noGates && tripwireBaseTip != null) {
       const tipNow = revParse(repo, baseRef);

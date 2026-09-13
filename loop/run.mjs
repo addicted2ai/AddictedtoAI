@@ -666,8 +666,15 @@ export function writeReviewedHashStore({ worktree, jobId, pass, pages, surfaceOf
       reason: `reviewed-hash-store: could not stage ${REVIEWED_HASH_STORE_REL} on the job branch — ${describeGitFailure(add, 'git add')} — failing closed, no review without the committed store`,
     };
   }
+  // FIX-3 (task 64): pathspec-scoped. `git commit <pathspec>` commits the
+  // named paths regardless of staging and leaves everything else in the index
+  // untouched, so only the store is committed here — a staged unrelated file
+  // at assembly time is not swept into the store's commit (measured in a
+  // fixture 2026-09-13: the pathspec commit records the store; the staged
+  // file stays staged and uncommitted).
   const commit = gitTry(worktree, [
     'commit', '--no-verify', '-m', `job ${jobId}: reviewed-surface hash store (pass ${pass})`,
+    '--', REVIEWED_HASH_STORE_REL,
   ]);
   if (!commit.ok && !/nothing to commit|nothing added/i.test(`${commit.stdout}\n${commit.stderr}`)) {
     return {
@@ -722,6 +729,19 @@ export function readReviewedHashStore(repo, ref) {
       ok: false,
       code: 'reviewed-hash-store-malformed',
       reason: `reviewed-hash-store-malformed: ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} is not { version: 1, pages: { <path>: <64-hex sha256> } }`,
+    };
+  }
+  // FIX-4 (task 64): the format is EXACTLY `{ version: 1, pages: {...} }` —
+  // an unexpected top-level key is malformed, never silently ignored. A key
+  // this reader does not understand is a payload no producer of this store
+  // wrote; consuming the rest while it rides along would ratify a shape
+  // nothing defined.
+  const unexpectedKeys = Object.keys(parsed).filter((k) => k !== 'version' && k !== 'pages');
+  if (unexpectedKeys.length) {
+    return {
+      ok: false,
+      code: 'reviewed-hash-store-malformed',
+      reason: `reviewed-hash-store-malformed: ${REVIEWED_HASH_STORE_REL} on ${String(ref).slice(0, 12)} carries unexpected top-level key(s) ${unexpectedKeys.join(', ')} — the format is exactly { version: 1, pages: { <path>: <64-hex sha256> } }`,
     };
   }
   const hashes = {};
@@ -3593,8 +3613,22 @@ export async function runLoop(ctx, opts = {}) {
   // live push or live index write): `opts.declarationReader`,
   // `opts.graphSidecarReader`, `opts.mergeGraphAnalysis` — each defaulting to
   // the history-reading production function (or to absent, for the graph).
+  // FIX-2 (task 64): hoisted out of the reviewed branch below so the pre-merge
+  // scaffolding-removal gate and the merge-time re-measure refusal use the
+  // SAME failure path as every other merge refusal — log, `failed`, note.
+  const failMerge = (reason) => {
+    ctx.log(`${reason} on ${branch} — refusing (no merge)`);
+    outcome = 'failed';
+    result.note = result.note ? `${result.note} — ${reason}` : reason;
+  };
   let mergeSubjects = null;
   let mergeRetirement = null;
+  // FIX-1 (task 64): the BINDING store re-measure, invoked by `mergeJobBranch`
+  // INSIDE the locked merge window, immediately before the merge executes,
+  // with the target ref resolved under the lock — the outer check below is
+  // only the early, cheaper refusal. Set by the reviewed branch; `null` on
+  // every other merge path, which carries no store.
+  let preMergeStoreCheck = null;
   if (outcome === 'approve') {
     const readSource = opts.declarationReader ?? readCommittedJobSource;
     const readSidecar = opts.graphSidecarReader ?? readCommittedGraphSidecar;
@@ -3609,11 +3643,6 @@ export async function runLoop(ctx, opts = {}) {
       .map((e) => String(e?.path ?? '').replace(/\\/g, '/'))
       .filter((p) => p && p !== '.job/brief.md' && !p.startsWith('.job/'));
     const declCheck = declarationMergeDecision(committedSource, contentPaths);
-    const failMerge = (reason) => {
-      ctx.log(`${reason} on ${branch} — refusing (no merge)`);
-      outcome = 'failed';
-      result.note = result.note ? `${result.note} — ${reason}` : reason;
-    };
     const runGraphScope = (unionSubjects, carriedMap, scopeAdvisory) => {
       let resultText = '';
       try {
@@ -3702,28 +3731,65 @@ export async function runLoop(ctx, opts = {}) {
         // the merge creates it at the base (ensureTrainBranch below), so the
         // target tree these pages would land on IS the base tree and the
         // base is the honest stand-in.
+        //
+        // FIX-1 (task 64): THIS check is the early, cheaper refusal — it
+        // runs before the train admission/merge lock, so a concurrent
+        // worker's merge could still move the train target between here and
+        // the merge. The BINDING re-measure is `lockedRecheck` below: it is
+        // invoked by `mergeJobBranch` INSIDE the locked merge window,
+        // immediately before the merge executes, with the target ref
+        // resolved under the lock; the same base stand-in rides along for
+        // the train-does-not-exist case.
         const hashTargetRef = branchExists(ctx.repoRoot, TRAIN_BRANCH) ? TRAIN_BRANCH : mergeBaseSha;
+        // The branch head the outer check validates the store at, PINNED as a
+        // sha: the scaffolding removal below (FIX-2/D8) commits the store's
+        // removal to the branch before the merge, so at lock time the branch
+        // head no longer carries it — the locked re-measure must read the
+        // store from the commit that does, which is exactly the commit whose
+        // content the merge lands. Nothing commits to the branch between this
+        // check and that removal, so the pinned sha is the branch head the
+        // store was validated at.
+        const branchShaAtStoreCheck = gitTry(ctx.repoRoot, ['rev-parse', branch]).stdout.trim();
         const hashChecked = checkReviewedHashStore(ctx.repoRoot, { branch, targetRef: hashTargetRef, paths: reviewedPaths });
         if (!hashChecked.ok) {
           failMerge(hashChecked.reason);
         } else {
-          // The merge report, beside the hash assertion: hash equality per
-          // page, and the empty-symbol graph assertion with the merge-base
-          // argument recorded (changed-symbol count 0, or `no-symbols`, plus
-          // the partial/truncated flags the analysis reports). The graph
-          // output never enters the hash — the two assertions are recorded
-          // side by side, never merged.
-          const graphAssertion = reviewedEmptySymbolAssertion({ mergeBase: mergeBaseSha, analysis: reviewedAnalysis, paths: reviewedPaths });
-          ctx.log(
-            `reviewed-hash: hash equality holds for ${hashChecked.paths.length} page(s) (${hashChecked.paths.join(', ')}) ` +
-            `at the job branch and at the merge target ${hashTargetRef} — the store binds the bytes both refs carry`,
-          );
-          ctx.log(
-            `reviewed-graph: empty-symbol assertion — merge-base ${String(mergeBaseSha).slice(0, 12)}, ` +
-            (graphAssertion.state === 'absent'
-              ? 'graph absent (the assertion could not run; the merge proceeds on the path, hash, and precondition checks alone)'
-              : `changed-symbol count ${graphAssertion.symbolCount} on the declared subject(s), no-symbols: ${graphAssertion.noSymbols.join(', ') || '(none)'}, flags: ${graphAssertion.flags.join('/') || 'none'}`),
-          );
+          // The locked re-measure (FIX-1, the binding one): the merge-report
+          // lines live HERE, beside the hash assertion, because they report
+          // the locked re-measure's outcome — hash equality per page, and
+          // the empty-symbol graph assertion with the merge-base argument
+          // recorded (changed-symbol count 0, or `no-symbols`, plus the
+          // partial/truncated flags the analysis reports). The graph output
+          // never enters the hash — the two assertions are recorded side by
+          // side, never merged. They log only when a merge is actually
+          // about to execute under the lock.
+          const lockedRecheck = ({ targetRef }) => {
+            // The store is read from the PINNED pre-removal head (the branch
+            // head no longer carries it by the time the lock is held), and
+            // the pages are measured at that head AND at the lock-resolved
+            // target — the full both-legs check, under the lock.
+            const locked = checkReviewedHashStore(ctx.repoRoot, { branch: branchShaAtStoreCheck, targetRef, paths: reviewedPaths });
+            if (!locked.ok) return { ok: false, reason: locked.reason };
+            const graphAssertion = reviewedEmptySymbolAssertion({ mergeBase: mergeBaseSha, analysis: reviewedAnalysis, paths: reviewedPaths });
+            ctx.log(
+              `reviewed-hash: hash equality holds for ${locked.paths.length} page(s) (${locked.paths.join(', ')}) ` +
+              `at the job branch and at the merge target ${targetRef} — the store binds the bytes both refs carry`,
+            );
+            ctx.log(
+              `reviewed-graph: empty-symbol assertion — merge-base ${String(mergeBaseSha).slice(0, 12)}, ` +
+              (graphAssertion.state === 'absent'
+                ? 'graph absent (the assertion could not run; the merge proceeds on the path, hash, and precondition checks alone)'
+                : `changed-symbol count ${graphAssertion.symbolCount} on the declared subject(s), no-symbols: ${graphAssertion.noSymbols.join(', ') || '(none)'}, flags: ${graphAssertion.flags.join('/') || 'none'}`),
+            );
+            return { ok: true };
+          };
+          // The task-37 fixture seam: `opts.preMergeCheck` wraps the
+          // production re-measure, receiving the lock-resolved arguments and
+          // the check itself. Absent, the production re-measure runs.
+          preMergeStoreCheck = (args) =>
+            typeof opts.preMergeCheck === 'function'
+              ? opts.preMergeCheck({ ...args, check: lockedRecheck })
+              : lockedRecheck(args);
           // A reviewed outcome BINDS pages: `mergeSubjects` is set EVEN
           // though the diff is empty (and the merge otherwise advisory) — a
           // null here falls back to the diff-derived set below, which is
@@ -3813,17 +3879,61 @@ export async function runLoop(ctx, opts = {}) {
     }
   }
 
+  // FIX-2 (task 64): the pre-merge scaffolding removal is FAIL-CLOSED. Both
+  // results are checked — the `git rm` (which actually removes `.job/` from
+  // the branch's tree) and its commit (which records the removal on the
+  // branch) — and either failure refuses the merge and settles the run
+  // `failed`, naming what failed. The results used to be IGNORED, so a failed
+  // removal let the merge proceed with `.job/` still on the branch and the
+  // task-64 store would land on `train` (D8 is absolute: never lands on ANY
+  // merge path). The hole predates task 64 for `.job/graph.json` too; fixing
+  // it here fixes both. The gate stands ahead of the merge block below, so a
+  // refusal skips the proposal caps, the derived drop, the train admission and
+  // the merge exactly the way every earlier refusal does.
+  //
+  // FIX-3 (task 64): the removal's commit is pathspec-scoped to the
+  // scaffolding, so whatever else the index holds is neither committed nor
+  // disturbed. `git ls-files` names RESULT_FILENAME only when it is TRACKED —
+  // RESULT.md is scaffolding too, and it was missing from the removal list
+  // until j-20260830-01 became the first job to MERGE successfully and carried
+  // it into the repository root, tracked and pushed (every earlier run either
+  // failed or was discarded, so the leak had never had a chance to land — the
+  // bug was as old as the loop and invisible until the first success). In the
+  // ordinary flow RESULT.md is NOT tracked (the executor protocol file is
+  // never committed), and an untracked path in a commit pathspec fails
+  // outright (`pathspec did not match any file(s) known to git`, measured in a
+  // fixture 2026-09-13), which would refuse every merge. So the pathspec
+  // carries `.job` always and RESULT.md only when it is actually tracked —
+  // the exact set the removal below removes.
+  if (outcome === 'approve') {
+    const trackedResult = gitTry(worktree, ['ls-files', '--', RESULT_FILENAME]);
+    const scaffoldPaths = [
+      '.job',
+      ...(trackedResult.ok && trackedResult.stdout.trim() ? [RESULT_FILENAME] : []),
+    ];
+    const rmScaffold = gitTry(worktree, ['rm', '-r', '-q', '--ignore-unmatch', ...scaffoldPaths]);
+    if (!rmScaffold.ok) {
+      failMerge(
+        `pre-merge scaffolding removal failed (${describeGitFailure(rmScaffold, 'git rm')}) — ` +
+        `the job's .job/ scaffolding must never land on any merge path`,
+      );
+    } else {
+      const rmCommit = gitTry(worktree, [
+        'commit', '--no-verify', '-m', `job ${jobId}: remove job scaffolding before merge`,
+        '--', ...scaffoldPaths,
+      ]);
+      if (!rmCommit.ok && !/nothing to commit|nothing added/i.test(`${rmCommit.stdout}\n${rmCommit.stderr}`)) {
+        failMerge(
+          `pre-merge scaffolding-removal commit failed (${describeGitFailure(rmCommit, 'git commit')}) — ` +
+          `the removal must be recorded on the branch before anything merges`,
+        );
+      }
+    }
+  }
+
   if (outcome === 'approve') {
     // Housekeeping so job scaffolding never reaches main; the branch keeps it.
-    //
-    // RESULT.md is scaffolding too, and it was missing from this list until
-    // j-20260830-01 became the first job to MERGE successfully and carried it
-    // into the repository root, tracked and pushed. Every earlier run either
-    // failed or was discarded, so the leak had never had a chance to land —
-    // the bug was as old as the loop and invisible until the first success.
-    // Named from the constant rather than the string so the two cannot drift.
-    gitTry(worktree, ['rm', '-r', '-q', '--ignore-unmatch', '.job', RESULT_FILENAME]);
-    gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: remove job scaffolding before merge`]);
+    // The removal itself is the fail-closed gate just above (FIX-2/FIX-3).
 
     // The proposal caps, the stamp, and the same-type discard (specs/loop).
     //
@@ -3982,9 +4092,23 @@ export async function runLoop(ctx, opts = {}) {
             gates: opts.gates,
             noGates: opts.noGates,
             lockWaitMs: (cfg.train?.lock_wait_seconds ?? 1200) * 1000,
+            // FIX-1 (task 64): the binding store re-measure runs inside the
+            // locked merge window, immediately before the merge, with the
+            // target ref resolved under the lock (the train tip, or the base
+            // stand-in — the same stand-in the outer check resolved — where
+            // the train still does not exist). Null on every path with no
+            // store, where train.mjs skips it.
+            preMergeCheck: preMergeStoreCheck,
+            baseStandIn: mergeBaseSha,
           });
     if (!merged.ok) {
       if (!merged.quiet) ctx.log(`merge failed: ${merged.reason}`);
+      // FIX-1 (task 64): a refusal from the locked re-measure settles the run
+      // exactly like the outer check — the reason, which names the path,
+      // rides the note with it.
+      if (merged.preMergeRefusal) {
+        result.note = result.note ? `${result.note} — ${merged.reason}` : merged.reason;
+      }
       // A tripwire booking survives: `interrupted` is resumable, `failed`
       // is counted. A merge the machine refused (merge-lock expiry) is
       // environmental like any gate refusal — `interrupted`, never a breaker

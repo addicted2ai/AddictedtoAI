@@ -431,6 +431,50 @@ switch (mode) {
     result('done\n');
     break;
 
+  // Task 64 FIX-2 fixture: approves exactly like `review-approve-store-checked`
+  // above, and then holds an `index.lock` in EVERY OTHER worktree's git dir —
+  // the job worktree included. The merge path's first git write in the job
+  // worktree is the pre-merge scaffolding removal, so that removal cannot run:
+  // a failed `git rm` used to be IGNORED, and the merge would have landed with
+  // `.job/` still on the branch. The reviewer's own review worktree (this
+  // process's cwd) is untouched — it is discarded either way — and so is the
+  // main worktree, so the only git operation that must fail is the one the
+  // fail-closed scaffolding gate checks. The fixture resolves the worktrees
+  // from the common git dir, exactly as `merge-main-then-edit` resolves the
+  // target branch's root.
+  case 'review-approve-store-checked-lock-worktrees': {
+    let storeLocked = null;
+    try {
+      storeLocked = JSON.parse(readFileSync(join(cwd, '.job', 'reviewed-hashes.json'), 'utf8'));
+    } catch {
+      storeLocked = null;
+    }
+    const pageMatchL = /^### `(.+)`$/m.exec(brief);
+    const briefHashMatchL = /^Reviewed hash: `([0-9a-f]{64})`/m.exec(brief);
+    const pageL = pageMatchL ? pageMatchL[1].replace(/\\/g, '/').trim() : null;
+    const storedL = storeLocked && storeLocked.pages && typeof storeLocked.pages === 'object' ? storeLocked.pages[pageL] : undefined;
+    if (!(storeLocked && storeLocked.version === 1 && pageL && /^[0-9a-f]{64}$/.test(storedL ?? '') && briefHashMatchL)) {
+      process.stderr.write('MOCK-STORE-MISSING: .job/reviewed-hashes.json absent, malformed, or not binding the reviewed page at dispatch\n');
+      process.exit(1);
+    }
+    const commonDir = resolve(cwd, execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd, encoding: 'utf8' }).trim());
+    const repoRoot = dirname(commonDir);
+    const list = execFileSync('git', ['-C', repoRoot, 'worktree', 'list', '--porcelain'], { encoding: 'utf8' });
+    for (const m of list.matchAll(/^worktree (.+)$/gm)) {
+      const wt = resolve(String(m[1]));
+      if (wt === resolve(cwd) || wt === resolve(repoRoot)) continue;
+      const gd = execFileSync('git', ['-C', wt, 'rev-parse', '--absolute-git-dir'], { encoding: 'utf8' }).trim();
+      writeFileSync(join(gd, 'index.lock'), 'held by the fixture reviewer\n', 'utf8');
+    }
+    writeVerdict({
+      verdict: 'approve',
+      wouldCite: 'A reader checking the reviewed-surface binding would cite the store that binds it.',
+      notes: `store-page: ${pageL}\nstore-hash: ${storedL}\nbrief-hash: ${briefHashMatchL[1]}\nThe store was present at dispatch; the worktree index is now held.`,
+    });
+    result('done\n');
+    break;
+  }
+
   case 'review-approve-carry':
     writeVerdict({
       verdict: 'approve',
