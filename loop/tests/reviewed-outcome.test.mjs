@@ -1439,9 +1439,6 @@ test('task 63 fix H1: both runReview dispatch sites fail closed on clearRefused 
   const perGate = perWindow.indexOf('mergeGate(ctx,');
   assert.ok(perGuard !== -1 && perGate !== -1, 'per-page guard and gate both exist');
   assert.ok(perGuard < perGate, 'the per-page guard runs before mergeGate ever sees the persisting path');
-  // MUTANT COPY: the old theater — the refusal returns but the caller still
-  // gates on the persisting path. Without the guard the stale record parses.
-  assert.equal(perGuard === -1, false, 'production consumes the refusal where the mutant would gate on stale bytes');
   // Single site: dispatch → clearRefused guard → fail with the reason →
   // mergeGate.
   const elseIdx = src.indexOf('// Single-page and non-reviewed paths, unchanged');
@@ -1457,5 +1454,4 @@ test('task 63 fix H1: both runReview dispatch sites fail closed on clearRefused 
   const singleGate = afterDispatch.indexOf('mergeGate(ctx,');
   assert.ok(singleGuard !== -1 && singleGate !== -1, 'single guard and gate both exist');
   assert.ok(singleGuard < singleGate, 'the single guard runs before mergeGate ever sees the persisting path');
-  assert.equal(singleGuard === -1, false, 'production consumes the refusal where the mutant would gate on stale bytes');
 });
