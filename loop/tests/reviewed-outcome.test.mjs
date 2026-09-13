@@ -51,7 +51,15 @@
  *   advisory (empty-diff) branch;
  * - the review brief in reviewed mode carries the surface, the filtered annex
  *   AFTER it, and no fenced diff block at all; without the mode the brief is
- *   unchanged.
+ *   unchanged;
+ * - task 65 (the consolidation row): the brief carries no fenced block beyond
+ *   the three fixed template fences every review brief's form carries (any
+ *   added fence, diff-tagged or bare, is red); `hash(brief bytes) ===
+ *   hash(record binding)` on the same input path, with the stale-copy
+ *   mutation red and a presence-only assertion still green; a graph answer
+ *   reporting `truncated: true` without an ack refuses `graph-incomplete`;
+ *   and with the tool/index absent the merge proceeds on the path, hash, and
+ *   precondition checks across both mandated seams.
  */
 
 import test from 'node:test';
@@ -2254,4 +2262,174 @@ test('task 64 (D6, non-regression): the brief carries the tree\'s bytes and prin
   assert.equal(hashOf(a.brief), reviewedHash(s1), 'page one\'s brief prints page one\'s hash');
   assert.equal(hashOf(b.brief), reviewedHash(s2), 'page two\'s brief prints page two\'s hash');
   assert.notEqual(hashOf(a.brief), hashOf(b.brief), 'the two pages never print one shared hash');
+});
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 65: the consolidation row. Every arm in the authority's letter
+// is either carried by a named test above (tasks 62-64) or added here; the
+// additions are the ones the audit found missing:
+//   - the DIRECT brief-bytes-to-record-binding equality leg (the D10 three-way
+//     test binds brief↔store↔re-derived and the full-run behavioral binds the
+//     record transitively; neither extracts the bytes the brief carries and
+//     hashes them against the record), with Mutation B;
+//   - the any-fence arm (round-1 review: not only ```diff), at the strongest
+//     satisfiable form — see the arm's comment for why literal zero fences is
+//     not satisfiable against production;
+//   - graph arm (b) in its exact `truncated: true` form (the task-62 carrier
+//     stubs `partial: true`; production flags both, so the carrying test
+//     proved the code path but not the letter's input);
+//   - graph arm (b2) as one harness across BOTH mandated seams (the
+//     merge-path graph seam and the task-64 hash store seam), proving the
+//     absent-tool proceed behavior on the path, hash, and precondition checks
+//     together.
+// No production defect was found: every refusal and every proceed measured
+// below matches the letter, so nothing outside this file moves.
+// ---------------------------------------------------------------------------
+
+test('task 65: hash(brief bytes) === hash(record binding) on the same input path, and a stale brief copy fails it while a presence-only assertion still passes (Mutation B)', (t) => {
+  const ctx = reviewCtx63(t);
+  // The page stands in the tree with its current bytes. The brief carries the
+  // tree's bytes (D6, production) and the record binds the tree's bytes
+  // (`writeRecordSubjects` hashes what stands on the tree), so the equality
+  // below is the authority's, read over the SAME input path: the hash of what
+  // the BRIEF carries equals the hash of what the RECORD binds.
+  const current = pageText('an edit nobody reviewed, bound by the record');
+  mkdirSync(dirname(join(ctx.repoRoot, P1)), { recursive: true });
+  writeFileSync(join(ctx.repoRoot, P1), current, 'utf8');
+  const common = {
+    jobId: 'j-20260912-65',
+    job: baseJob63(),
+    diffText: '',
+    pass: 1,
+    findings: '',
+    outPath: `${ctx.reviewsDir}/j-20260912-65.md`,
+    gates: null,
+    sha: '',
+    capMinutes: 30,
+    reviewedOnly: P1,
+    reviewGraphQuery: () => ({ universe: false }),
+    graphIndexId: 'test-index-65',
+  };
+  const brief = assembleReviewBrief(ctx, { ...common, reviewedSurfaceText: current });
+  const p = writeVerdictRecord(ctx, 'j-20260912-65', {
+    verdict: 'approve',
+    wouldCite: 'a reader checking dates would cite the ratified page',
+    notes: 'reviewed as it stands',
+  });
+  const wrote = writeRecordSubjects(p, [P1], { repoRoot: ctx.repoRoot });
+  assert.equal(wrote.ok, true, wrote.why ?? '');
+  const rec = matter(readFileSync(p, 'utf8')).data;
+  assert.ok(rec.reviewed && rec.reviewed[P1], 'the record binds the page by reviewed:');
+  // The bytes the brief carries, extracted from the brief itself — never the
+  // input variable — so the hash is taken over what a reviewer would read.
+  const carriedOf = (text) =>
+    new RegExp(`### \`${P1.replace(/\//g, '\\/')}\`\n\n([\\s\\S]*?)\n\nReviewed hash: `).exec(text)?.[1] ?? null;
+  const carried = carriedOf(brief);
+  assert.ok(carried, 'the brief carries the page surface between its heading and the hash line');
+  // THE EQUALITY: hash(brief bytes) === hash(record binding).
+  assert.equal(reviewedHash(carried), rec.reviewed[P1], `the bytes the brief carries hash to exactly what the record binds for ${P1}`);
+  // The brief's own printed hash agrees with both: the print binds the carried
+  // bytes, never some other measurement of them.
+  assert.equal(/^Reviewed hash: `([0-9a-f]{64})`/m.exec(brief)?.[1] ?? null, rec.reviewed[P1], 'the brief prints the hash the record binds');
+
+  // MUTATION B: the same input path, the brief carrying a STALE copy of the
+  // page — the pre-edit bytes — instead of the tree's current bytes.
+  const stale = pageText('the approved version');
+  const staleBrief = assembleReviewBrief(ctx, { ...common, reviewedSurfaceText: stale });
+  const staleCarried = carriedOf(staleBrief);
+  assert.ok(staleCarried, 'the stale brief still carries A page surface');
+  // The equality assertion FAILS on the stale copy — the exact escape this
+  // outcome was designed against (specs/review: equality, not containment).
+  assert.notEqual(reviewedHash(staleCarried), rec.reviewed[P1], 'the equality assertion fails on a stale brief copy');
+  // …while a presence-only assertion would still PASS on the same input: the
+  // stale copy is a page surface, and presence cannot tell whose bytes.
+  assert.match(staleBrief, /## Reviewed page surface/, 'presence-only: the surface section is present');
+  assert.match(staleBrief, new RegExp(`### \`${P1.replace(/\//g, '\\/')}\``), 'presence-only: the page heading is present');
+  assert.match(staleBrief, /the approved version/, 'presence-only: a page surface is carried, so presence alone still passes');
+});
+
+test('task 65: the reviewed brief carries no fenced block beyond the three fixed template fences — any added fence, diff-tagged or bare, goes red', (t) => {
+  const surface = pageText('fence-free bytes for 65');
+  const { brief } = briefFor63(t, P1, surface);
+  // The authority's "no fenced block at all", enforced at the strongest
+  // satisfiable form. The review brief's ONE template (loop/lib/review.mjs's
+  // assembleReviewBrief) carries exactly three fenced blocks in EVERY brief,
+  // reviewed or not — the proposal template, the carry template, and the
+  // verdict-record template (a literal zero-fence assertion would therefore
+  // be red against production itself, which is not an arm). Everything else —
+  // the diff section above all — must not add one: an added fence moves the
+  // count and goes red, whether it is tagged ```diff or emitted bare.
+  const fences = brief.match(/^```/gm) ?? [];
+  assert.equal(fences.length, 6, `the reviewed brief carries exactly the form's three template fences (6 fence lines); measured ${fences.length}`);
+  assert.doesNotMatch(brief, /```diff/, 'no diff-tagged fence');
+  assert.doesNotMatch(brief, /## The diff under review/, 'no diff section heading');
+  // MUTANT COPY (Mutation A's shape, re-proved on this strengthened arm): the
+  // diff section emitted unconditionally, with its tagged fence.
+  const tagged = `${brief}\n\`\`\`diff\n--- a\n+++ b\n\`\`\`\n`;
+  assert.equal((tagged.match(/^```/gm) ?? []).length, 8, 'the tagged mutant adds a fenced block, so the any-fence arm goes red on it');
+  // MUTANT COPY: the same section emitted with a BARE fence — the tagged-fence
+  // assertion alone would pass on it; the count is what catches it.
+  const bare = `${brief}\n\`\`\`\n--- a\n+++ b\n\`\`\`\n`;
+  assert.doesNotMatch(bare, /```diff/, 'the bare-fence mutant slips past the tagged-fence assertion');
+  assert.equal((bare.match(/^```/gm) ?? []).length, 8, 'the bare-fence mutant adds a fenced block too, so the count arm catches it');
+});
+
+test('task 65: a graph stub reporting truncated: true with no graph-ack entry refuses graph-incomplete rather than ratifying', (t) => {
+  const ctx = mismatchedRepo(t, [P1]);
+  const base = headOf(ctx);
+  const source = sourceOf([P1]);
+  const truncatedAnalysis = {
+    absent: false, partial: false, truncated: true, symbols: [], processes: [],
+    subjects: { [P1]: { universe: true, symbols: [], risk: 'LOW', truncated: true } },
+  };
+  const bare = checkReviewedMerge({
+    repoRoot: ctx.repoRoot, base, source, reviewedPaths: [P1],
+    contentPaths: [], diffPaths: [], resultText: `reviewed: ${P1}\n`, analysis: truncatedAnalysis, sidecar: null,
+  });
+  assert.equal(bare.ok, false, 'a truncated index answer is never ratified');
+  assert.equal(bare.code, 'graph-incomplete');
+  assert.match(bare.reason, new RegExp(`graph:${P1.replace(/\//g, '\\/')}`));
+  assert.match(bare.reason, /truncated/, 'the refusal names the flag');
+  // With a well-formed ack the same stub proceeds: the refusal is about the
+  // unanswered incompleteness, never about truncation itself.
+  const acked = checkReviewedMerge({
+    repoRoot: ctx.repoRoot, base, source, reviewedPaths: [P1],
+    contentPaths: [], diffPaths: [],
+    resultText: `reviewed: ${P1}\n\ngraph-ack:\n  - subject: graph:${P1}\n    state: path-checked\n    evidence: The stub reported truncated with zero symbols; the empty diff was read directly.\n`,
+    analysis: truncatedAnalysis, sidecar: null,
+  });
+  assert.equal(acked.ok, true, acked.reason ?? '');
+});
+
+test('task 65 (b2): with the tool/index absent the merge proceeds on the path, hash, and precondition checks — both mandated seams green in one harness', (t) => {
+  const ctx = mismatchedRepo(t, [P1]);
+  const base = headOf(ctx);
+  // Seam 2 — the task-64 hash store: the store written at assembly binds the
+  // branch's current bytes, and the merge-time check re-measures them equal at
+  // the branch head and the target.
+  const dir = storeWorktree(t, ctx, 'job/store-absent-graph');
+  const wrote = writeReviewedHashStore({
+    worktree: dir,
+    jobId: 'j-20260912-65',
+    pass: 1,
+    pages: [P1],
+    surfaceOf: (p) => readFileSync(join(dir, p), 'utf8'),
+  });
+  assert.equal(wrote.ok, true, wrote.reason ?? '');
+  const store = checkReviewedHashStore(ctx.repoRoot, { branch: 'job/store-absent-graph', targetRef: base, paths: [P1] });
+  assert.equal(store.ok, true, store.reason ?? '');
+  assert.deepEqual(store.paths, [P1], 'the hash check proceeds with the declared path set');
+  // Seam 1 — the merge-path graph seam: the absent analysis warns `graph:
+  // absent` and ratification proceeds, on the hash store just measured and on
+  // the preconditions (the 61b join reads mismatched, the item retires on
+  // reviewed coverage).
+  const checked = checkReviewedMerge({
+    repoRoot: ctx.repoRoot, base, source: sourceOf([P1]), reviewedPaths: [P1],
+    contentPaths: [], diffPaths: [], resultText: `reviewed: ${P1}\n`, analysis: absentAnalysis, sidecar: null,
+  });
+  assert.equal(checked.ok, true, checked.reason ?? '');
+  assert.equal(checked.graphStatus, 'absent');
+  assert.ok(checked.warnings.some((w) => /graph: absent/.test(w)), 'the absent index warns and proceeds');
+  assert.deepEqual(checked.subjects, [P1], 'the path check constitutes the subject set');
+  assert.ok(checked.retirement.retired.some((r) => r.via === 'reviewed'), 'the precondition joins and the item retires on reviewed coverage');
 });
