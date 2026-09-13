@@ -271,8 +271,9 @@ The review gate, bytes-bound review records, the four breakers, reserved paths,
 `STOP`/`HOLD.md` semantics, fail-the-build-don't-warn, the executor contract,
 `runners.yml` as the single swap point, the Pulse's derive step (model-free,
 byte-identical on unchanged state), and the ledger-before-rederive ordering. No
-budget bound moves: upkeep floor 40%, new-writing ceiling 45%, machinery ceiling
-10%.
+budget bound moves: upkeep floor 40%, new-writing ceiling 45%, and the machinery
+bound as stated in `data/config.json` — the JSON is the single source and
+answer 4 below is the decision; no machinery number is restated here.
 
 **The train's publish guarantee is enforced for the machine and procedural for a
 human.** After this change the only in-repository push is the train's, scoped to a
@@ -478,8 +479,8 @@ claims goes in the proposal and not a commit message:
 - **The heading-to-task table was off by one for every Stage-1 row** and the
   numbering had not moved since it was written; the rows are re-derived from
   the tasks' own `Implements`/`Tests` lines and the rule is now stated. Rows
-  for tasks 53 and above were not re-derived; a script that derives the table
-  is the durable fix.
+  naming tasks 53–68 (and 61b/68b/68c) and the intake, one-intake, tracker, desks and mirror rows were hand re-derived 2026-09-12; the remaining rows naming only tasks 69 and above await the deriving script,
+  which is the durable fix.
 - **Two rulings the maintainer may overturn in one line**, made on his behalf
   because both concern brakes and limits he set: breaker 2's Stage-1 trip
   condition (task 49) and the one-worker mechanism (task 35b). Neither blocks

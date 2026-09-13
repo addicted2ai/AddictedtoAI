@@ -1955,8 +1955,10 @@ the brief under `evidence/reviews/`.
       measured maximum of a full gate run is 20.0 minutes,
       `wisdom/tools/orch/orch-gates-only.sh:250`; the train holds the test and
       build locks for the whole set, so its wait must exceed the set), and
-      `workers` 1 (task 35b). Task 54 later raises `workers` and adds the
-      work-order keys; it does not originate these. **This task also writes
+      `workers` 1 (task 35b). Task 54 adds only the work-order keys; it does not
+      originate these train keys and does not touch `workers` — the 1→3 raise
+      is the Stage-3 block's (task 84), after the four concurrency controls are
+      re-derived. **This task also writes
       `.train/manifest.json`** — the merge shas, job ids and subjects of the set
       the bounds admitted — and commits it on `train` as the train's first
       commit, before any gate runs, so the reviewed tree carries it; after any
@@ -1977,7 +1979,7 @@ the brief under `evidence/reviews/`.
       them. The refusal reuses the loop's environmental classification
       (`gates.mjs` `environmentalCondition`: the test-lock and build-lock
       refusals) and is booked `interrupted`, resumable, never a breaker input.
-      `workers` is 1 through Stage 1 and 2; task 54 raises it. Test: with
+      `workers` is 1 through Stage 1 and 2; the 1→3 raise is the Stage-3 block's (task 84). Test: with
       `workers: 1` a second run refuses naming the holder, a stale-pid slot is
       reclaimed, a single run proceeds; **mutation**: skip the slot and confirm
       two runs start.
@@ -1993,7 +1995,8 @@ the brief under `evidence/reviews/`.
       ordering, records-restriction and published-SHA bullets and *The train review is sealed…*'s diff bullet.
       RULED 2026-09-10 (Q-S4, Q-S5, Q-S14, Q-S16): **the counted set is one
       exported helper** (`countedPaths(diff)`: content and code; excluding
-      `data/derived/**` and `.train/**`) used by BOTH the `B_train`/`S_train`
+      `data/derived/**`, `.train/**` and `data/launch.json` — the last because
+      gate runs rewrite it, so a rewrite is not reviewable work) used by BOTH the `B_train`/`S_train`
       measurement and the post-rederive assertion, so the two cannot drift.
       **The records allow-list is a prefix list, machine-checked against the
       records commit's `git diff --name-only`**: `data/ledger.jsonl`,
@@ -2185,11 +2188,15 @@ the brief under `evidence/reviews/`.
       it was*, its new first bullet. Test with a **mutation** making the train retry
       the whole set, which must make the "one re-run of the failing gate"
       assertion fail.
-- [ ] 52. **Stage-1 measurement, and the gate on Stage 2.** Record in
-      `data/launch.json`, with date and method: per-gate seconds per train,
-      evictions and how many were later recorded wrong, `pre-existing` holds,
-      **train-review model-minutes including every re-review after an eviction**,
-      and the per-job brief-commit → merge figure against task 30's baseline.
+- [ ] 52. **Stage-1 measurement, and the gate on Stage 2.** Record, append-only
+      with date and method, in `data/measurements.jsonl` — **never
+      `data/launch.json`, which gate runs rewrite**: `data/launch.json` is
+      excluded from counted/input sets for that reason (a rewrite is not
+      reviewable work), enforced in task 36's exclusion list. Per-gate seconds
+      per train, evictions and how many were later recorded wrong,
+      `pre-existing` holds, **train-review model-minutes including every re-review
+      after an eviction**, and the per-job brief-commit → merge figure against
+      task 30's baseline.
       The four train series are read from the train's own ledger lines (`type:
       'train'`, shape in task 36); the method line names the script that
       folded them (Q-S16, 2026-09-10). The
@@ -2200,62 +2207,221 @@ the brief under `evidence/reviews/`.
       recorded as wrong**, and does not start unless the per-job brief-commit →
       merge overhead has fallen below **1.5 minutes** against task 30's baseline of
       3.85. That threshold is Stage 1's because the train is the mechanism that
-      moves it. **[orchestrator]**
+      moves it. **Calibration, dated:** the method line carries the date of the
+      timing corpus it folds and is re-dated when the corpus moves; the red-train
+      price is restated at current per-gate timings; lock-wait margin and
+      K/B_train headroom are recorded as observations without retuning.
+      **Version boundary:** a machinery fix merged mid-window annotates the next
+      run stale (it lands one run later) and that run is excluded from the
+      twenty-train window — annotation only, no importer code change.
+      **[orchestrator]**
 
 ## Stage 2 — work orders
 
 - [ ] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
       coherence key within the four bounds; it **splits** an over-bound set into
       more work orders and **refuses at selection**, with a recorded reason, an item
-      that alone exceeds the per-subject bound. Implements: *One job is one work
+      that alone exceeds the per-subject bound. A candidate with no path
+      (new-writing types with no existing file to sum) is measured by its
+      declared-subject estimate — the size the candidate's declared metadata gives
+      for the subject, never zero and never a refusal for pathlessness — and in
+      Stage 2 per-candidate subjects come from that declared metadata (queue-entry
+      subjects, proposal front-matter, directive-named paths as structured by the
+      selector; never title/prose matching, per the same requirement's
+      prohibition), grouped by coherence key; pathless candidates cohere on
+      category plus source cohort. Implements: *One job is one work
       order, ending in one merge or one discard*, the coherence, bounds and split
       bullets.
-- [ ] 54. `data/config.json`: add `work_order.max_items` 4, `max_subjects` 4,
-      `max_reviewed_bytes` 60000, `max_reviewed_bytes_per_subject` 30000, and the
-      train's `merges` 5, `minutes` 90, `workers` 3, `max_reviewed_bytes` 150000,
-      `max_subjects` 12. **[orchestrator]**
+- [ ] 54. `data/config.json`, as a diff against the live file: add **only the
+      `work_order` block** — `work_order.max_items` 4, `work_order.max_subjects`
+      4, `work_order.max_reviewed_bytes` 60000,
+      `work_order.max_reviewed_bytes_per_subject` 30000. Top-level `workers` is
+      **not touched here and stays 1 through Stage 2** (task 35b's sentence stays
+      true); the `train.*` keys (`merges` 5, `minutes` 90,
+      `max_reviewed_bytes` 150000, `max_subjects` 12, `lock_wait_seconds` 1200)
+      are already present from task 35 and are not re-stated. Key-path
+      disambiguation: `workers` is the **top-level** key the slot lock reads
+      (`config.workers`); there is no `train.workers`. The 1→3 raise lives in
+      the Stage-3 block (task 84), after the four concurrency controls are
+      re-derived. **[orchestrator]**
 - [ ] 55. `loop/run.mjs`: `.job/source.json` gains `items` and `declared_subjects`,
       committed at selection before any executor runs; a missing or empty
-      declaration is a merge refusal. Implements the same requirement's structured
-      list and empty-declaration bullets.
+      declaration is a merge refusal where the merged diff carries content
+      paths — nothing to bind needs no refusal, so a merge with no content
+      paths binds nothing, logs, and merges (the code-only rule). Implements the same requirement's structured
+      list and empty-declaration bullets. **Transition**: branches selected before
+      this task lands complete under the old single-item contract — no declaration
+      required, and a missing declaration is not a refusal for them; task 68b
+      gates on this rule holding. The committed declaration is the sole subject
+      source the brief's graph annex reads; old-contract branches take no graph
+      arm — no annex, no sidecar, no marker.
 - [ ] 56. **The root fix, and it is one task because it is one defect.**
-      `loop/run.mjs:1674-1690`: the merge's subject set is **constituted** from the
+      `loop/run.mjs`: the merge's subject set is **constituted** from the
       committed `declared_subjects` — on the `reviewed:` outcome, from the
       executor's declared paths intersected with it — and the measured diff is used
       only to **check** it: every diff content path inside the declaration
-      (`scope-violation` otherwise), and every item retired only with a measured
+      (`scope-violation` otherwise) — a declared `data/carried/*.md` path
+      contributes that file's `subject:` front-matter field to the declared
+      union (the file declares its page structurally; the loop reads the
+      field, never prose) — and every item retired only with a measured
       diff on its own subjects or a `reviewed:` declaration covering them.
       Unretired items stay open and the line records the order partially done.
-      Separately, make the empty-set refusal at `:1688` **unconditional** — today it
-      is itself guarded on `subjects.length` (`} else if (subjects.length) {`), so
-      the empty set neither records nor logs. BOTH PINS RE-PINNED 2026-09-09 from
-      the stale `:1577-1594`, which is proposal-cap code and a blank line and
-      contains no subject logic at all; the constitution is `:1674`
-      (`const subjects = joinableSubjects(...)`) and the guard `:1688`. The defect
-      DESCRIPTION above was and is accurate — this was a re-pin, not a re-think. Implements the same requirement's constitution, retirement and
+      Separately, make the missing-or-empty-**declaration** refusal **unconditional**
+      — today it is itself guarded on `subjects.length`
+      (`} else if (subjects.length) {`), so the empty set neither records nor
+      logs — while a **non-empty declaration with no joinable content path** (a
+      code-only merge) binds nothing, logs the no-joinable-path state naming the
+      declaration, and merges rather than refusing. **Anchor on the symbol, not
+      the line, per the task-32 rule**: the block that constitutes `subjects`
+      via `joinableSubjects(...)` in `loop/run.mjs` and the refusal branch
+      guarding it; a worker that
+      finds no such symbol stops and reports rather than editing by line. The
+      merge reads `declared_subjects` from the branch history — the committed
+      `.job/source.json` as written by the `job <id>: brief` commit, read at
+      the scaffolding-removal commit's parent — not from the working tree at
+      merge time, since `.job/` is removed before the merge. The
+      defect DESCRIPTION above was and is accurate — this was a re-pin, not a
+      re-think. Implements the same requirement's constitution, retirement and
       empty-set bullets, and *The executor result protocol…*'s `reviewed:` subject
-      bullet.
+      bullet. Graph scope corroboration rides this gate: run the graph change
+      analysis over the branch diff against the merge base (the `compare` form
+      where a base exists; the `all` form only where this task documents it as
+      equivalent for the fixture), through an injected merge-path graph seam
+      observed inside the callback, and map changed symbols/processes to declared
+      subjects via the same path-to-subject join the diff check uses.
+      Corroborating checks: (a) every changed symbol with a content-path owner
+      lies inside the declaration, else `scope-violation` naming the path — a
+      non-empty declaration with no joinable content path binds nothing, logs,
+      and merges rather than refusing, out of (a)'s quantifier; (b) the
+      `.job/graph.json` sidecar's per-item evidence is present for every item
+      retired on a measured diff — items retired on `reviewed:` coverage are
+      exempt from (b). Acknowledgements use a sibling `graph-ack:` block parsed
+      in `loop/lib/result.mjs`, one entry per `graph:<declared-subject-path>`,
+      each carrying the identifier, exactly one of `noted` / `path-checked` /
+      `deferred`, and one sentence of evidence; presence and well-formedness are
+      mechanised at the gate, truth stays the reviewer's. Absence is three-way
+      and fail-closed: tool or index absent → recorded warning plus a
+      `graph: absent` status on the merge report, merge proceeds on the path
+      checks alone; present-but-incomplete (`partial` / `truncated` / UNKNOWN
+      inside a symbol universe) with no well-formed `graph-ack:` entry →
+      `graph-incomplete` naming the subject and the flag, no merge on the scope
+      side, unretired items stay open; answered → corroboration. Absent is never
+      incomplete and incomplete never absent; `no-symbols` (subject outside any
+      symbol universe) is complete, never `unresolved-graph`; UNKNOWN inside a
+      symbol universe is never an all-clear. Transitive affected processes alone
+      never refuse where every changed content path is inside the declaration —
+      recorded as warnings for the reviewer. Per-item graph evidence: retirement
+      stays keyed on the path-level condition, the graph never retires or
+      unretires alone; `no-symbols` items retire on the path diff alone with the
+      graph recorded summary-only; two items on one shared code file retire only
+      where each item's own evidence supports it — the unattributed item retires
+      only on independent path evidence; contradiction (path diff on a subject
+      whose universe the present index answers with zero symbols) retires
+      nothing — the item stays open and the merge report names the subject, the
+      diff evidence, and the zero-symbol answer. Index: the index lives beside
+      the checked-out tree at the repository root store, never in a job
+      worktree; queries run against the merge-base tree, never uncommitted
+      worktree state; the index is refreshed by an explicit analyze step outside
+      any job — no job writes it, no merge path refreshes it, jobs read it
+      read-only. Additive only: new sidecars, additive ledger/summary keys
+      omitted when empty, no `LEDGER_FIELDS` extension, no new required config
+      key, one new result-file block (`graph-ack:`) with its parser, namespace,
+      and closed states named here, no other result-file shape changes.
+      Old-contract branches (selected before task 55) take no graph arm here and
+      merge or refuse exactly as before.
 - [ ] 57. `loop/tests/work-order.test.mjs`: four repairs on one page bundle into one
       order; a mixed-category pair does not; an undeclared diff path is refused; a
       bundle inside the total but over the per-subject limit is refused; **four
       items declared and one file changed retires one item and leaves three open**;
       a `reviewed:` outcome with an empty diff writes a record binding both declared
-      pages; an empty subject set logs and refuses. **Mutation A**: constitute
-      `subjects` from the diff again and confirm the `reviewed:` case writes no
-      binding. **Mutation B**: drop the per-item measured-diff check and confirm
-      three of four items are wrongly retired. **Mutation C**: derive declared
-      subjects by matching paths in the brief text, and confirm a fixture whose
-      brief says "do NOT touch `pulse/lib/queue.mjs`" then authorises that path.
-      Tests tasks 53, 55, 56.
+      pages; a missing or empty committed declaration logs and refuses, while a
+      non-empty declaration with no joinable content path binds nothing, logs, and
+      merges; a fixture whose brief says "do NOT touch `pulse/lib/queue.mjs`"
+      then forbids that path refuses it (or never authorises it) — the passing
+      arm. **Mutation A**: constitute `subjects` from the diff again and confirm
+      the `reviewed:` case writes no binding. **Mutation B**: drop the per-item
+      measured-diff check and confirm three of four items are wrongly retired.
+      **Mutation C**: derive declared subjects by matching paths in the brief text
+      instead, and confirm the prohibition arm goes red (the forbidden path is
+      authorised). **Task 58's test home is this file**: the merge-gate
+      bound arm — a job whose produced reviewed bytes exceed the total bound is
+      refused, and an empty-diff outcome binding four pages exceeding a
+      four-diff-sized bound is refused. Graph arms (fixture policy: throwaway
+      repository with bare origin in the OS temp directory, real git plumbing,
+      graph spawns stubbed through the injected seams named in tasks 55/56/59,
+      never a live push or live index write; every remote-read assertion reads
+      the fixture's bare origin, every graph-read assertion reads the stub's
+      recorded argv; restoration byte-identical by hash after every mutation).
+      H1 (seam: graph-spawn seam in `brief.mjs`): (a) two declared subjects
+      produce two annex rows quoting the stub's caller/process/risk values
+      verbatim; (b) UNKNOWN inside a symbol universe yields an
+      `unresolved-graph` marker on a row that is not dropped; (b2) a prose
+      subject with no symbol universe yields a complete `no-symbols` row with no
+      marker; (c) a brief-prose prohibition containing a real path authorises
+      nothing; (d) an over-bound annex is cut from the end with the explicit cut
+      marker naming what was cut and no subject row silently dropped; (e) a
+      `reviewed:` brief carries only the reviewed page's row. H2 (seams:
+      merge-path graph seam + declaration-read git seam): (a) undeclared
+      content-path diff refused `scope-violation` with the graph mapping naming
+      the same path, asserting on the spawn that the analysis was invoked with
+      the merge base; (a2) a code-only merge with non-empty declaration and no
+      joinable content path merges, logged; (b) a `partial: true` stub with no
+      acknowledgement refused `graph-incomplete` naming `graph:<path>` and the
+      flag; (c) the same stub with a well-formed `graph-ack:` entry merges; (c2)
+      absent tool/index yields a `graph: absent` warning and the merge proceeds
+      on the path checks. H3 (seam: merge-path graph seam): four items across
+      four subjects with one file changed retires one, leaves three open,
+      records partially-done naming the three, unretired proposals unconsumed;
+      a shared-code-file pair retires only the symbol-evidenced item;
+      `no-symbols` prose retires on the path diff alone; a contradiction
+      (diff-evidenced subject answered with zero symbols) does not retire and
+      names the contradiction. **Mutation D**: skip the annex assembly and
+      confirm H1(a) fails on row absence. **Mutation E**: derive a row from
+      brief-prose matching and confirm H1(c) goes red. **Mutation F**: drop
+      `unresolved-graph` rows silently and confirm H1(b) fails while H1(a)
+      passes. **Mutation G**: constitute subjects from the diff again and
+      confirm the `reviewed:`-with-empty-diff arm writes no binding under the
+      stub. **Mutation H**: ignore `partial`/`truncated` flags and confirm H2(b)
+      merges when it must not. **Mutation I**: delete the history read at the
+      declaration-read git seam with the working-tree declaration diverged from
+      branch history and confirm H2(a) refuses on the wrong source, asserted on
+      the git seam's recorded call. **Mutation J** (split): (J1) drop only the
+      graph corroboration and confirm the four-item arm still passes while the
+      shared-code-file arm fails; (J2) stub zero symbols on the diff-evidenced
+      shared-file subject and confirm the contradiction arm fails. Tests tasks
+      53, 55, 56, 58, including the graph arms tasks 55, 56, 59, 66, 67 add.
 - [ ] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
       work the job produced, and **against the declared pages' reviewed surfaces**
       on the empty-diff outcome. Implements the same requirement's enforced-twice
-      bullet. Test with a **mutation** measuring the empty diff instead, which must
-      let four whole pages through a bound sized for four diffs.
+      bullet. Test in `loop/tests/work-order.test.mjs` (task 57's file, whose
+      Tests line names this task): passing arm as stated there, with a **mutation**
+      measuring the empty diff instead, which must let four whole pages through a
+      bound sized for four diffs (the arm goes red). The graph scope
+      re-measurement rides this same gate moment under task 56's checks and
+      three-way absence; it adds no second gate.
 - [ ] 59. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
       one scope rule, keyed on the governing type, including intake's verification
       results where present. `acceptanceChecksFor` and `checklistFor` read the
-      governing type. Implements the same requirement, brief side.
+      governing type. Implements the same requirement, brief side. Graph annex:
+      `loop/lib/brief.mjs` gains an injected graph-spawn seam (task-12 fixture
+      pattern) and one annex section, "Graph context per declared subject",
+      assembled from the committed declaration and the index only — one upstream
+      impact query per subject, at most one row per declared subject carrying the
+      subject path, queried symbols (or `no-symbols`), direct caller count,
+      affected process count, risk word, and the `unresolved-graph` marker where
+      the tool answers `partial` / `truncated` / UNKNOWN inside a symbol universe
+      (stated verbatim, carried in the `.job/graph.json` sidecar to the merge
+      gate; `no-symbols` never becomes `unresolved-graph`). Rows truncate to a
+      stated width with overflow cut from the end under an explicit cut marker in
+      the `excerptsFor` style naming what was cut — a row is cut and marked, a
+      subject never dropped to fit. The annex counts against the assembled-brief
+      bound. On a `reviewed:` brief the annex is filtered to the one page that
+      invocation reviews and appended after that page's surface, adding no diff
+      section and not altering the per-page invocation split. The sidecar
+      (`.job/graph.json`: per subject, queried names or `no-symbols`,
+      caller/process counts, risk, `partial`/`truncated` flags, index
+      identifier) is committed on the branch beside the brief and consumed at
+      merge/discard, never landing as a live path. No refusal at assembly.
       **NOTE (A2AI-Orch, 2026-09-08; the arithmetic assumes task 7 has landed
       and is meaningless before it).** Two brief-size rules in this change look
       like they conflict and today do not, because they govern DIFFERENT
@@ -2293,57 +2459,184 @@ the brief under `evidence/reviews/`.
 - [ ] 60. `loop/lib/review.mjs` and `loop/lib/verdict.mjs`: `would-cite-for` as a
       list of entries sharing `reads-human-from`'s parser and entry shape; the
       duplicate check per entry across other records; two entries in one record may
-      match; **"prose piece" is the schema's prose kinds**, not any content file.
-      Implements: *The reviewer judges quality with full standing…*.
+      match; **"prose piece" is the schema's prose kinds**, not any content file —
+      the predicate is one exported place both the gate and the test read (home:
+      `loop/lib/specs.mjs`; the commit states with reason whether it reuses
+      `PROSE_TYPES` filtered to prose kinds or replaces that import). The same
+      exported entry shape is read per piece by `scripts/verify-launch.mjs`
+      (which re-applies the rule per piece: a would-cite-for-only record fails
+      every piece it does not answer) and by the train review gate (entries bound
+      within the train's `S_train` 12-subject bound); neither keeps a second list.
+      Implements: *The reviewer judges quality with full standing…*. Train
+      per-subject graph corroboration: `assembleTrainReviewBrief` gains an
+      injected graph-analysis seam and one section — per-subject graph summary
+      over the train's whole diff (changed symbols with content-path owners per
+      subject, affected processes per subject, highest risk word, incomplete
+      flags), derived via the same change analysis task 56 uses run over the
+      train range, from the diff and the manifest's subject set, never from
+      per-job verdict records; the summary contains no verdict text. The seal is
+      redaction plus a separate comparison invocation: the train reviewer runs in
+      a worktree from which the per-job verdict records have been removed and
+      its brief contains none of them. The gate is unchanged in what it
+      requires — the summary is presented beside each piece's entries for
+      judgment within the `S_train` 12-subject bound, adding no piece list.
+      Incomplete flags appear verbatim and never block a train alone. An
+      assembled-into-the-brief summary lives in no tree and is counted by no
+      bound; any persisted summary goes under `.train/**`, and committing a
+      graph summary outside `.train/` is forbidden. Fixture-proved in task 44's
+      file until the first real post-H5 train, which live-proves it; task 68b
+      does not prove this.
 - [ ] 61. `loop/tests/would-cite.test.mjs`: three prose subjects with one
       record-wide field is refused naming the unanswered two; an entry per subject
       passes; two identical entries in one record pass; an entry duplicating
-      another record's statement is refused; a directory row among the subjects
+       another record's statement is refused; a directory row among the subjects
       requires no entry. **Mutation A**: make the duplicate check ignore entries and
       confirm only the cross-record case fails. **Mutation B**: define a prose piece
       as any `content/**.md` and confirm the directory-row case fails. Tests
-      task 60.
+      task 60. Train graph arms (same file): per-piece entries carrying
+      per-subject graph rows are read per piece by `scripts/verify-launch.mjs`
+      (re-applied per piece: a would-cite-for-only record fails every piece it
+      does not answer) and by the train review gate within the `S_train`
+      12-subject bound, neither keeping a second list; a summary derived from
+      verdict text instead of the diff fails the seal arm; an absent
+      train-review record fails closed; incomplete flags appear verbatim without
+      blocking the train; no summary file is committed outside `.train/**`.
+      **Mutation C**: derive the summary from verdict text and confirm the seal
+      arm fails. **Mutation D**: treat an absent record as approval and confirm
+      fail-closed goes green when it must not. Tests task 60 including its train
+      graph entries.
+- [ ] 61b. `loop/lib/review-state.mjs` (new) or equivalent: expose the review-state
+      join to the loop as a named capability answering `missing` / `matched` /
+      `mismatched` for a declared page **pinned at the job's merge base**, with a
+      stated concurrency rule (re-read at merge; never a gate-rewritten file as
+      its source). Task 62's precondition reads this capability and no other
+      source. The graph never answers `missing` / `matched` / `mismatched`.
+      Test: a base that moves between brief assembly and merge moves the
+      answers with it, and a gate-rewritten file is never consulted. Implements:
+      *The executor result protocol is how outcomes are known*, the
+      reviewed-precondition bullets.
 - [ ] 62. `loop/lib/result.mjs`: `reviewed: <path>[, <path>…]` as a fourth first-line
       form, accepted only when every path is in `declared_subjects` **and** already
-      reads `mismatched` at the merge base; `failed` naming the path and the missed
-      precondition otherwise; an empty diff on this outcome is not a failure.
-      Implements: *The executor result protocol is how outcomes are known*.
+      reads `mismatched` at the merge base — read from the task-61b capability as
+      its only source of truth (blocked until 61b merges); `failed` naming the
+      path and the missed precondition otherwise; an empty diff on this outcome is
+      not a failure, while a non-empty diff on a declared subject alongside this
+      outcome is refused, `failed` naming the path. Implements: *The executor
+      result protocol is how outcomes are known*. Graph emptiness corroboration:
+      the change analysis over the branch diff against the merge base, through
+      the merge-path graph seam with the merge-base argument pinned and
+      recorded, must report zero changed symbols on every declared subject where
+      the index answers for that universe — `no-symbols` prose pages are
+      complete on this check; a non-empty symbol set on a declared subject is
+      refused, `failed` naming the path, as a non-empty diff is. The graph
+      output is never a hash input and never a substitute for the task-64 store.
+      Present-but-incomplete where emptiness cannot be established with no
+      well-formed `graph-ack:` entry is refused `graph-incomplete` rather than
+      ratified; absent tool/index yields `graph: absent` and ratification
+      proceeds on the path, hash, and precondition checks. Binds only where a
+      committed declaration exists.
 - [ ] 63. `loop/lib/review.mjs`: the review brief for that outcome carries each
       declared page's **machine-generated** reviewed surface and its hash, **no diff
       section at all**, a gates section stating the gates ran on a tree identical to
       the merge base and are therefore not evidence about the pages, and the
-      checklist for each page's kind. Implements: *A review of unchanged pages is a
+      checklist for each page's kind — assembled **per page** (one review
+      invocation per declared page carrying that page's surface, hash and kind
+      checklist, never a multi-page bundle in one prompt), on the rung and route
+      the record names so a timeout classifies as `interrupted` (resumable, never
+      a breaker input) rather than as absent review; the timeout-prone runner is
+      excluded from reviewed-outcome reviews unless an explicit timeout/interrupted-rate
+      guard is recorded. Implements: *A review of unchanged pages is a
       review of the pages, never of an empty diff*.
 - [ ] 64. `loop/run.mjs`: record each declared page's reviewed-surface hash on the
-      branch at review-brief assembly; re-measure at merge; **the hash the record
-      binds must equal the hash of the bytes the brief carried**, and the merge is
-      refused and the run settled `failed` naming the path where they differ.
-      Implements the same requirement's hash bullets.
+      branch at review-brief assembly — in `.job/reviewed-hashes.json`, committed
+      at assembly before the reviewer runs and consumed with the branch at
+      merge/discard (it never lands on `main`/`train` as a live path); re-measure
+      at merge; **the hash the record binds must equal the hash of the bytes the
+      brief carried**, and the merge is refused and the run settled `failed`
+      naming the path where they differ. Task 65's equality/move arms read this
+      same store. Implements the same requirement's hash bullets. The
+      empty-symbol assertion (changed-symbol count 0 with the merge-base
+      argument recorded, or `no-symbols`, plus flags) is recorded in the merge
+      report beside the hash equality assertion; the graph output never enters
+      the hash.
 - [ ] 65. `loop/tests/reviewed-outcome.test.mjs`: a declared, already-mismatched page
       ratifies and its record binds the current bytes; an undeclared path is
-      refused; a page that was not mismatched is refused; a page moved on `train`
+      refused; a page that was not mismatched is refused; a `reviewed:` outcome
+      with a non-empty diff on a declared subject is refused naming the path; a
+      page moved on `train`
       between brief assembly and merge is refused; and **`hash(brief bytes) ===
       hash(record binding)`** on the same input path. Assert the brief contains no
-      fenced block at all. **Mutation A**: emit the diff section unconditionally and
+       fenced block at all. **Mutation A**: emit the diff section unconditionally and
       confirm the empty-fence assertion fails. **Mutation B**: put a stale copy of
       the page in the brief and confirm the equality assertion fails while a
-      presence-only assertion would still pass. Tests tasks 62–64.
+      presence-only assertion would still pass. Tests tasks 62–64. Graph arms
+      (seams: merge-path graph seam + task-64 hash store seam): (a) a stub
+      reporting one changed symbol with a content-path owner on a declared
+      subject alongside `reviewed:`, with the merge-base argument recorded, is
+      refused naming the path; (b) a stub reporting `truncated: true` with no
+      `graph-ack:` entry is refused `graph-incomplete` rather than ratified;
+      (b2) absent tool/index yields `graph: absent` and ratification proceeds on
+      the path, hash, and precondition checks. **Mutation C**: report zero
+      symbols unconditionally from the stub seam and confirm (a) merges when it
+      must not. Tests tasks 62–64 including the graph arms.
 - [ ] 66. `loop/lib/proposals.mjs` and `loop/run.mjs`: proposal consumption and
-      directive marking run per item, gated on the same per-item evidence task 54
-      requires. Implements: *A proposal a merged job consumed is retired*. Test with
-      a **mutation** consuming both items' proposals when only one item was done,
-      which must leave a proposal wrongly retired.
+      directive marking run per item, gated on the same per-item evidence task 56
+      requires (a measured diff on the item's own subjects or `reviewed:`
+      coverage of them). Implements: *A proposal a merged job consumed is
+      retired*. Test with a **mutation** consuming both items' proposals when only
+      one item was done, which must leave a proposal wrongly retired.
+      Consumption follows the same per-item gate task 56 requires — a proposal
+      belonging to an unretired item is not consumed; the graph never retires or
+      unretires alone.
 - [ ] 67. `loop/lib/ledger.mjs`: the `items` key and the partially-done marker,
       omitted when empty, `LEDGER_FIELDS` unextended. Implements: *The ledger line
       carries the join, as a list, additively*, its `items` bullets. Same additive
-      mutation as task 26.
-- [ ] 68. **Stage-2 measurement, and the decision rule stated in advance.** Record
-      merged items per train, distinct subjects per work order, and **train-review
-      findings present in no per-job record, per subject**. **If that proxy rises
-      with `N` over the first twenty work orders, `N_max` is lowered before any
-      other bound is tuned** — it is the only signal available that batching is
-      costing review coverage, which is the `addictedtoai-zrsg` property.
-      **[orchestrator]**
+      mutation as task 26. The `items` entries gain per-item additive summary
+      keys only (`graph_symbols`, `graph_processes`, `graph_risk`,
+      `graph_incomplete`), omitted when empty; `LEDGER_FIELDS` unextended.
+- [ ] 68. **Stage-2 measurement, and the decision rule stated in advance.** Record,
+      append-only in the task-52 store (never a gate-rewritten file): merged items
+      per train, distinct subjects per work order, **train-review findings present
+      in no per-job record, per subject** — extending task 36's additive `train:`
+      key with the per-subject breakdown rather than a second store, because the
+      count already lands on the train's line via task 44 and the distribution
+      belongs beside it — and the review-minute side (per-job review minutes and
+      train-review model-minutes including every re-review). **Pre-registered
+      estimator:** the per-subject proxy rate against `N` (items per work order)
+      over the first twenty work orders; **rise threshold:** the rate at N≥3
+      exceeds the N=1 rate twofold, or rises monotonically across three
+      represented N-levels; **N-distribution guard:** the window counts only if it
+      spans N=1..4 rather than sitting at one level; **lower-to:** on a rise,
+      `work_order.max_items` (`N_max`) 4→2 (floor 1) before any other bound is
+      tuned. **Zero-findings interpretation, stated in advance:** zero over a
+      guarded window reads as safe batching only while the seal assertion (task
+      44) and the live proving (task 68b) hold; otherwise it reads as sealing
+      failure, not safety. **Version boundary:** a machinery fix merged mid-window
+      annotates the next run stale (it lands one run later) and that run is
+      excluded — annotation only, no importer code change. **Stage-3 gate:**
+      Stage 3 does not start while the proxy rises with `N` across the window —
+       it is the only signal available that batching is costing review coverage,
+      which is the `addictedtoai-zrsg` property. Graph summaries sit beside the
+      proxy rate as corroborating distribution and never enter its numerator; no
+      train is ever blocked on graph incompleteness alone. **[orchestrator]**
+- [ ] 68b. **Live first-contact proving (gates Stage 3).** One N=1 work order then
+      one N=2 work order through the real path — selection, worker, tripwire,
+      train, gates, review, merge — before any live multi-item batching and before
+      Stage 3: including one deliberate `reviewed:` ratification (declared,
+      already-mismatched page, empty diff, record binds the current bytes) and the
+      per-item retirement / partially-done accounting. Proves what the fixture
+      policy stubs out: the bundler, the constitution/retirement checks, the
+      reviewed outcome, and per-subject `would-cite`, running for real with real
+      gates. Blocks: Stage 3 starts only when this is green; pre-task-55 branches
+      complete under the old contract per task 55's transition rule. Tests tasks
+      53, 55, 56, 62, 63, 64. **[orchestrator]**
+- [ ] 68c. **Synthetic-Pulse mid-train proving (Pulse disabled).** In a fixture
+      under the task-37 policy (throwaway repository, bare origin, stubbed spawn
+      seams): advance `main` mid-train while the Pulse is disabled and assert the
+      train merges `main` in again and re-runs its gates rather than widening
+      anything (task 47's path). States the Stage-2 candidate source while down
+      (derived queue plus routed beads, no Pulse probing) and schedules a live
+      re-prove on re-enable. Tests task 47.
 
 ## Stage 3 — intake, the two desks, more than one worker
 
@@ -2474,7 +2767,10 @@ the brief under `evidence/reviews/`.
       wall-clock spend a serial reading of it predicts, which is why the tier-total
       arithmetic and not the per-job cap is what must count reservations.
 - [ ] 84. **Re-derive the four controls the parallel-worker argument leans on,
-      one verdict each, before W is raised above 1.**
+      one verdict each, before W is raised above 1.** **[orchestrator, after the
+      four verdicts]** raise top-level `workers` 1→3 (the design Bounds-table
+      experiment value; the top-level key, not `train.*` — `workers` stays 1
+      through Stages 1–2).
       (a) **Breaker 1 — re-derived, and it was broken.** `loop/lib/budget.mjs:673-683`
       `consecutiveFailures()` walks the ledger backwards and stops at the first
       `done`, so it is a pure function of append order. Replace it with a count over
@@ -2564,7 +2860,8 @@ the brief under `evidence/reviews/`.
       starting value of task 79's share bound, so the bound comes from what the
       drain cost rather than from a choice. Also record filed versus closed per local day, the
       machinery share of inflow, and jobs per train-hour, each against the
-      pre-change figures in `proposal.md`. **[orchestrator]**
+      pre-change figures in `proposal.md` — carrying as the dated baseline upkeep 65.2%, new-writing 24.6%, machinery 9.3% (cheap tier, rolling 30d, measured 2026-09-12). Gates no
+      Stage-2 change on it. **[orchestrator]**
 - [ ] 92. `loop/intake.mjs`, `loop/lib/brief.mjs`, `loop/lib/result.mjs` and
       `loop/lib/review.mjs`: each failed claim gets a **stable identifier**; the
       brief carries the list by identifier with what was checked and what was
@@ -2609,13 +2906,16 @@ the brief under `evidence/reviews/`.
 | `pulse` | 1 | 1 | 0 |
 | **Total** | **14** | **15** | **2** |
 
-**97 checkbox rows** — 95 numbered 1–95 with no gaps, **plus `3b` and `35b`**
-(the latter added 2026-09-10, the one-worker slot lock) — of which the earlier
+**100 checkbox rows** — 95 numbered 1–95 with no gaps, **plus `3b`, `35b`,
+`61b`, `68b` and `68c`**
+(the latter three added 2026-09-12, the review-state join and the two proving
+tasks) — of which the earlier
 count of **38 name a proof by mutation, with 67 bold mutation slots in all**
 (several tasks name an A, a B and a C, where one mutation alone would leave a
 control unmeasured) was taken before 35b and the 2026-09-10 amendments added
 mutation slots; re-derive by the rule below before quoting it. **31 rows are
-ticked, 66 open** (re-derived 2026-09-10 by the counting rule below; the figures
+ticked, 69 open** (re-derived 2026-09-10 by the counting rule below, plus the
+three unticked rows added 2026-09-12; the figures
 read "26 ticked, 70 open" from 2026-09-09 until Stage 0's last five ticks).
 
 THE COUNTING RULE, stated so the figures can be re-derived rather than trusted:
@@ -2649,37 +2949,37 @@ Machine-readable, covering ADDED, MODIFIED **and REMOVED**. Each row is
 
 | Cap | Kind | Requirement heading | Tasks |
 |---|---|---|---|
-| loop | ADDED | One job is one work order, ending in one merge or one discard | 53, 54, 55, 56, 57, 58 |
-| loop | ADDED | Work comes from one intake, and cannot self-amplify | 75, 76, 77, 88 |
+| loop | ADDED | One job is one work order, ending in one merge or one discard | 53, 55, 56, 57, 58, 59, 68b |
+| loop | ADDED | Work comes from one intake, and cannot self-amplify | 76, 77, 78, 89 |
 | loop | ADDED | A job's gates are a tripwire; the full set runs once, on the train | 1, 2, 3, 4, 32, 33, 34 |
 | loop | ADDED | Merges land on an integration branch and main advances only by a green train | 35, 36, 37 |
 | loop | ADDED | A red train is classified before anything is reverted | 38, 39, 40, 43 |
-| loop | ADDED | Intake routes and verifies every candidate before a model is invoked | 72, 73, 74, 91 |
-| loop | ADDED | The front desk and the back desk share an intake and never share a lane | 78, 79 |
+| loop | ADDED | Intake routes and verifies every candidate before a model is invoked | 73, 74, 75, 92 |
+| loop | ADDED | The front desk and the back desk share an intake and never share a lane | 79, 80 |
 | loop | ADDED | The brief carries the requirements the work order names, and nothing else | 5, 6, 7, 8, 9, 11, 12 |
-| loop | ADDED | The chain from intake to train lives in the repository | 26, 80, 81, 82, 83, 84 |
+| loop | ADDED | The chain from intake to train lives in the repository | 27, 81, 82, 83, 85 |
 | loop | ADDED | Runner selection is a declared policy, and escalation is part of it | 19, 20, 22, 23, 24, 25 |
-| loop | ADDED | A deferral becomes its own bead only when it names a subject or a requirement | 16, 17, 18, 69, 87 |
-| loop | MODIFIED | The executor result protocol is how outcomes are known | 55, 61, 64, 91 |
+| loop | ADDED | A deferral becomes its own bead only when it names a subject or a requirement | 16, 17, 18, 70, 88 |
+| loop | MODIFIED | The executor result protocol is how outcomes are known | 56, 57, 61b, 62, 65, 68b, 92 |
 | loop | MODIFIED | Breakers halt the loop, and only the named ones | 49, 83 |
 | loop | MODIFIED | A job's ledger line is written before anything recomputes the queue from it | 50 |
-| loop | MODIFIED | The ledger line carries the join, as a list, additively | 25, 26, 66 |
+| loop | MODIFIED | The ledger line carries the join, as a list, additively | 25, 26, 67 |
 | loop | MODIFIED | A swap has a stated procedure and a conformance check | 21 |
 | loop | MODIFIED | Spending is budgeted in model-minutes with floors and ceilings | 18, 79, 91 |
-| loop | MODIFIED | The machine's work is joinable to the issue tracker | 68, 69, 70, 71 |
+| loop | MODIFIED | The machine's work is joinable to the issue tracker | 69, 70, 71, 72 |
 | loop | MODIFIED | Routine work never touches OpenSpec; beads holds judgment work | 87, 88 |
-| loop | MODIFIED | A proposal a merged job consumed is retired | 65, 76 |
+| loop | MODIFIED | A proposal a merged job consumed is retired | 66 |
 | loop | MODIFIED | A gate failure is retried once, and the record names which kind it was | 51 |
 | loop | MODIFIED | Capacity exhaustion is a pause, and degradation is ordered | 83 |
 | loop | MODIFIED | A runner proven unable to run is refused, and refusal is not a halt | 83 |
 | loop | REMOVED | One job is one outcome with one merge or discard | 52, 54, 55 |
 | loop | REMOVED | Work comes from three sources and cannot self-amplify | 75, 76, 88 |
-| review | ADDED | A review of unchanged pages is a review of the pages, never of an empty diff | 62, 63, 64 |
+| review | ADDED | A review of unchanged pages is a review of the pages, never of an empty diff | 63, 64, 65, 68b |
 | review | ADDED | The train review is sealed from the per-job verdicts and reports what they missed | 36, 41, 42, 43, 44 |
-| review | MODIFIED | The reviewer judges quality with full standing, from a named reason list | 10, 12, 59, 60 |
+| review | MODIFIED | The reviewer judges quality with full standing, from a named reason list | 10, 12, 60, 61 |
 | review | MODIFIED | A reviewer's non-blocking finding reaches work without editing anything | 13, 14, 15, 25 |
-| pulse | ADDED | The derived queue is mirrored into the tracker outside the derive step | 85, 86 |
-| pulse | MODIFIED | The Pulse publishes what it builds | 45, 46, 47, 48 |
+| pulse | ADDED | The derived queue is mirrored into the tracker outside the derive step | 86, 87 |
+| pulse | MODIFIED | The Pulse publishes what it builds | 45, 46, 47, 48, 68c |
 
 Thirty-one rows: 14 ADDED + 15 MODIFIED + 2 REMOVED. Every row names at least
 one task, and the REMOVED rows name the tasks that build the requirements their
@@ -2696,11 +2996,13 @@ were authored against a draft and never re-derived. THE RULE THE CORRECTED ROWS
 FOLLOW, so the table can be re-derived rather than trusted: a task belongs to a
 row when its own text says `Implements: *<heading>*` (or "the same
 requirement's … bullet" under such a line) **or** `Tests task(s) N` where N is
-in the row — test tasks are included, uniformly. Rows for tasks 53 and above
-were NOT re-derived on 2026-09-10; spot checks found one right (`75, 76, 77,
-88`) and at least two suspect (`85, 86` where the mirror step is 86 and its
-test 87; `68, 69, 70, 71` where `beads.mjs` is 69–71 and 68 is a measurement).
-A script that derives this table from the tasks' `Implements`/`Tests` lines
+in the row — test tasks are included, uniformly. Rows naming tasks 53–68 (and
+the new 61b/68b/68c) and the intake, one-intake, tracker, desks and mirror rows were hand re-derived 2026-09-12 by that rule: the swapped 66/67
+are unswapped, the executor-protocol row carries the per-item evidence (56),
+the reviewed precondition source (61b) and the live-proving task (68b) instead of the config task (54), the one-intake row drops 88, the chain row carries 27 instead of 26, and
+config/measurement tasks with no `Implements` line (54, 68, 91) belong to no
+row by it. The remaining rows naming only tasks 69 and above await the deriving
+script. A script that derives this table from the tasks' `Implements`/`Tests` lines
 is the durable fix and is the bead named in the Stage-1 handoff; until it
 exists, task 93's "heading-to-task count" is a hand count.
 
