@@ -2403,7 +2403,7 @@ the brief under `evidence/reviews/`.
       on the empty-diff outcome. Implements the same requirement's enforced-twice
       bullet. Test in `loop/tests/work-order.test.mjs` (task 57's file, whose
       Tests line names this task): passing arm as stated there, with a **mutation**
-      measuring the empty       diff instead, which must let four whole pages through a
+      measuring the empty diff instead, which must let four whole pages through a
       bound sized for four diffs (the arm goes red). The graph scope
       re-measurement rides this same gate moment under task 56's checks and
       three-way absence; it adds no second gate.
