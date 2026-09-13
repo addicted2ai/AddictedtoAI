@@ -571,8 +571,11 @@ runners:
     roles: [author, reviewer]
     model: opencode-go/muse-spark-1.3-contributor
     harness: opencode
-    effort: high
-    command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
+    # Raised from `high` to `xhigh` 2026-09-13 on the maintainer's standing
+    # instruction ("I always want muse to be xhigh"). `effort:` is
+    # descriptive and must equal the rung in this entry's own command.
+    effort: xhigh
+    command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant xhigh --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     # `Session not found` is what THIS CLIENT says when the server on 4096 is
     # down — measured, not assumed, and it is why the three network literals
@@ -593,9 +596,10 @@ runners:
       `opencode/muse-spark-1.3-contributor-free` row is the free tier, and
       the OpenRouter rows are a different lane. The variants this model
       declares are minimal / low / medium / high / xhigh — there is NO
-      `max` here, unlike deepseek-v4-flash, so the template asks for
-      `high`; raise it to `xhigh` in this file if the review gate says the
-      work is thin.
+      `max` here, unlike deepseek-v4-flash. The template asked for `high`
+      when the entry was added; the maintainer raised it to `xhigh`
+      2026-09-13 ("I always want muse to be xhigh") — the command above is
+      current, not this sentence's history.
 
       The template is otherwise the deepseek one verbatim, including the
       load-bearing argument order (message first, `--file` last).
