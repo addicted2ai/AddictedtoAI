@@ -18,7 +18,7 @@
 import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import matter from 'gray-matter';
 import { execFileSync } from 'node:child_process';
-import { join, relative, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { makeContext } from './lib/paths.mjs';
@@ -85,6 +85,7 @@ import { isIssueId, mergeIssueIds } from './lib/issues.mjs';
 import {
   applyProposalMergeRules,
   consumeProposal,
+  perItemConsumptionPlan,
   recordDiscardedAttempt,
   sweepExpiredProposals,
   transcribeNotedProposal,
@@ -201,7 +202,26 @@ export function workOrderItemForCandidate(candidate) {
   const reason = String(
     candidate?.title ?? candidate?.slug ?? candidate?.id ?? type ?? '',
   ).slice(0, 200);
-  return { bead, type, subjects, reason };
+  const item = { bead, type, subjects, reason };
+  // Task 66: the item's own origin, read from the same structured fields
+  // selection dispatched on — never from prose. A proposal candidate's file
+  // pointer is its origin (candidateSubjects deliberately never reads it as a
+  // subject); a directive candidate's line number is its own. Per-item
+  // proposal consumption and directive marking join the item to the work
+  // source through this key alone, so a bundled order can retire one item's
+  // proposal and leave another item's selectable. The path is carried as the
+  // candidate holds it here; the `.job/source.json` write below maps it
+  // repo-relative, the shape resumption reads.
+  if (candidate?.source === 'proposal' && candidate.slug && candidate.path) {
+    item.origin = {
+      kind: 'proposal',
+      slug: candidate.slug,
+      path: normSubjectPath(candidate.path),
+    };
+  } else if (candidate?.source === 'directive' && Number.isInteger(candidate?.lineNumber)) {
+    item.origin = { kind: 'directive', lineNumber: candidate.lineNumber };
+  }
+  return item;
 }
 
 /**
@@ -3406,6 +3426,18 @@ export async function runLoop(ctx, opts = {}) {
     // before `assembleBrief` above): rebuilding it here from the same job is
     // byte-identical by construction, not a second detector.
     const workOrder = buildWorkOrderDeclaration(job);
+    // Task 66: an item's proposal origin is written repo-relative and POSIX,
+    // exactly like the top-level `path` beside it, so a resumed run on
+    // another worktree or machine resolves the same file. What the candidate
+    // carried is untouched in memory (`runWorkOrder`); only the committed
+    // record is normalised.
+    const committedItems = workOrder.items.map((it) => {
+      const o = it?.origin;
+      if (o?.kind === 'proposal' && typeof o.path === 'string' && o.path && isAbsolute(o.path)) {
+        return { ...it, origin: { ...o, path: relative(ctx.repoRoot, o.path).replace(/\\/g, '/') } };
+      }
+      return it;
+    });
     writeFileSync(
       join(worktree, '.job', 'source.json'),
       JSON.stringify(
@@ -3420,7 +3452,7 @@ export async function runLoop(ctx, opts = {}) {
           // must not re-derive them from a directives file the maintainer may
           // have edited in between.
           issues: jobIssues,
-          items: workOrder.items,
+          items: committedItems,
           declared_subjects: workOrder.declared_subjects,
         },
         null,
@@ -4217,7 +4249,8 @@ export async function runLoop(ctx, opts = {}) {
       }
       }
 
-      // RETIRE THE PROPOSAL THIS JOB CONSUMED (observed 2026-08-30).
+      // RETIRE THE PROPOSALS THE MERGED ITEMS CONSUMED (observed 2026-08-30;
+      // per item since task 66).
       //
       // A proposal selected, written, reviewed and merged into a published post
       // stayed in `data/proposals/` and stayed selectable. The next `--dry-run`
@@ -4236,10 +4269,52 @@ export async function runLoop(ctx, opts = {}) {
       // pushes the retirement with the piece it produced; the move is also
       // staged by exact path with the job's records at the foot of this
       // function, which is what commits it on a run that does not publish.
-      if (proposalOrigin) {
+      //
+      // Task 66: consumption runs PER ITEM, gated on the same per-item
+      // evidence task 56 requires (a measured diff on the item's own
+      // subjects, or `reviewed:` coverage of them). A proposal belonging to an
+      // item the merge did not retire is NOT consumed — it stays selectable,
+      // because what would retire it is work the merge never measured. The
+      // graph never retires or unretires alone: it reaches this gate only
+      // through `mergeRetirement`, whose retirements already demand diff or
+      // `reviewed:` evidence. Where the merge computed no per-item retirement
+      // at all (an old-contract branch; a merge that binds nothing with an
+      // empty declaration), the gate is inactive and the whole-job rule stands
+      // exactly as this block left it.
+      const committedItems = Array.isArray(runWorkOrder?.items) ? runWorkOrder.items : [];
+      const originEntries = [];
+      committedItems.forEach((it, index) => {
+        const o = it?.origin;
+        if (o?.kind === 'proposal' && o.slug && o.path) originEntries.push({ index, origin: o });
+        else if (o?.kind === 'directive' && Number.isInteger(o.lineNumber)) {
+          originEntries.push({ index, origin: o });
+        }
+      });
+      // The record's own proposal origin joins when no committed item names
+      // its slug — the shape every selection predating the per-item origin
+      // key left on its branch. Attached to the order's first item: with one
+      // item that is trivially its own; a multi-item record that names a
+      // proposal only at the top level is attributed to its governing item,
+      // and an unattributable index with the gate active fails closed below.
+      if (proposalOrigin && !originEntries.some((e) => e.origin.kind === 'proposal' && e.origin.slug === proposalOrigin.slug)) {
+        originEntries.push({
+          index: 0,
+          origin: { kind: 'proposal', slug: proposalOrigin.slug, path: proposalOrigin.path },
+        });
+      }
+      const perItem = perItemConsumptionPlan(originEntries, mergeRetirement);
+      for (const e of perItem.filter((x) => x.origin.kind === 'proposal')) {
+        const originPath = isAbsolute(e.origin.path) ? e.origin.path : join(ctx.repoRoot, e.origin.path);
+        if (e.open) {
+          ctx.log(
+            `the proposal \`${e.origin.slug}\` was not consumed: its item (${e.index + 1}) did not retire ` +
+              `on the merge's per-item evidence — a proposal belonging to an unretired item stays selectable`,
+          );
+          continue;
+        }
         const consumed = consumeProposal(ctx, {
-          path: proposalOrigin.path,
-          slug: proposalOrigin.slug,
+          path: originPath,
+          slug: e.origin.slug,
           jobId,
           jobType: job.type,
           artifacts: subjects,
@@ -4256,7 +4331,7 @@ export async function runLoop(ctx, opts = {}) {
           // destination leaves the deletion uncommitted and the proposal
           // appears to exist in two places in the history.
           consumedPaths.push(
-            relative(ctx.repoRoot, proposalOrigin.path).replace(/\\/g, '/'),
+            relative(ctx.repoRoot, originPath).replace(/\\/g, '/'),
             relative(ctx.repoRoot, consumed.dest).replace(/\\/g, '/'),
           );
         }
@@ -4302,7 +4377,35 @@ export async function runLoop(ctx, opts = {}) {
       // with main frozen; the TRAIN's scoped push (U5 publishTrain inside
       // finishTrainRun) owns the push. `merged.verified` still drives the honesty logs above.
       publishAfterRecords = false;
-      if (job.source === 'directive' && job.lineNumber) {
+      const directiveMarks = perItem.filter((x) => x.origin.kind === 'directive');
+      if (directiveMarks.length) {
+        // Task 66: marking runs PER ITEM, gated on the same per-item evidence
+        // task 56 requires, exactly as proposal consumption above is. An item
+        // the merge did not retire keeps its directive line open — the order
+        // is recorded partially done (the retirement's note rides the ledger
+        // line) and the work returns to intake by staying unmarked.
+        for (const e of directiveMarks) {
+          if (e.open) {
+            ctx.log(
+              `DIRECTIVES.md line ${e.origin.lineNumber} (item ${e.index + 1}) was not marked: its item did not ` +
+                `retire on the merge's per-item evidence — the directive stays open`,
+            );
+            continue;
+          }
+          // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
+          // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
+          // unattended evening run stamped tomorrow onto it until 2026-08-31.
+          const m = markDirectiveDone(ctx, e.origin.lineNumber, jobId, localDate(now));
+          if (m.changed) {
+            ctx.log(
+              `appended the completion marker to DIRECTIVES.md line ${e.origin.lineNumber} (item ${e.index + 1})`,
+            );
+          }
+        }
+      } else if (job.source === 'directive' && job.lineNumber) {
+        // The whole-job fallback, exactly as it was: a record whose items
+        // predate the per-item origin key carries no line for the per-item
+        // loop to join, so the selection's own line number decides, as before.
         // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
         // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
         // unattended evening run stamped tomorrow onto it until 2026-08-31.

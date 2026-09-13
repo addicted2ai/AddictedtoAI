@@ -521,6 +521,77 @@ export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [
 }
 
 /**
+ * The per-item consumption and marking plan (Stage 2, task 66).
+ *
+ * Proposal consumption and directive marking run PER ITEM of a merged work
+ * order, gated on the SAME per-item evidence task 56 requires: a measured
+ * diff on the item's own subjects, or `reviewed:` (read-and-unchanged)
+ * coverage of them. The gate takes that evidence as it stands — `retirement`,
+ * the object `retireWorkOrderItems` (`loop/run.mjs`) produced for this
+ * merge — and never recomputes or overrides it, so the graph's only role is
+ * the one task 56 gives it inside that function: refining shared-subject
+ * attribution. A graph answer with no measured diff and no reviewed coverage
+ * leaves every item open — so graph evidence alone consumes nothing, and
+ * there is no unretire anywhere: a proposal a plan does consume is retired
+ * by `consumeProposal`'s one-way move, and an already-retired record is
+ * never touched by anything here.
+ *
+ * `originEntries` — `{index, origin}` per entry, from the committed
+ * declaration's items (`items[].origin`, written at selection):
+ * `origin.kind === 'proposal'` with the proposal's `slug` and repo-relative
+ * `path`, or `origin.kind === 'directive'` with the directive's
+ * `lineNumber`. An item carrying neither, or a malformed origin, contributes
+ * nothing — an unattributable origin is never guessed at.
+ *
+ * `retirement === null` means the merge never computed per-item retirement at
+ * all — an old-contract branch, or a merge that binds nothing with an empty
+ * declaration. The per-item gate is INACTIVE there and the whole-job rule
+ * that predates this task stands verbatim: a merged `done` consumes and
+ * marks what the job was selected from, exactly as before.
+ *
+ * @param {Array<{index?: number, origin: object}>} originEntries
+ * @param {{retired: Array<{index: number}>, open: Array, partiallyDone: boolean}|null} retirement
+ * @returns {Array<{index: number|null, origin: object, gated: boolean, open: boolean}>}
+ *   `open: true` — the item is unretired (or, with the gate active, its index
+ *   is unattributable, which fails closed); its proposal is NOT consumed and
+ *   its directive line is NOT marked.
+ */
+export function perItemConsumptionPlan(originEntries, retirement) {
+  const retiredIdx = retirement
+    ? new Set(
+      (Array.isArray(retirement.retired) ? retirement.retired : [])
+        .map((r) => (Number.isInteger(r?.index) ? r.index : null)),
+    )
+    : null;
+  const plan = [];
+  const seen = new Set();
+  for (const e of Array.isArray(originEntries) ? originEntries : []) {
+    const o = e?.origin;
+    if (!o || typeof o !== 'object') continue;
+    let key = null;
+    if (o.kind === 'proposal') {
+      if (typeof o.slug !== 'string' || !o.slug) continue;
+      if (typeof o.path !== 'string' || !o.path) continue;
+      key = `proposal:${o.slug}`;
+    } else if (o.kind === 'directive') {
+      if (!Number.isInteger(o.lineNumber)) continue;
+      key = `directive:${o.lineNumber}`;
+    } else {
+      continue;
+    }
+    if (seen.has(key)) continue; // the same proposal or line named twice moves once
+    seen.add(key);
+    plan.push({
+      index: Number.isInteger(e.index) ? e.index : null,
+      origin: o,
+      gated: retiredIdx !== null,
+      open: retiredIdx !== null ? !retiredIdx.has(Number.isInteger(e.index) ? e.index : null) : false,
+    });
+  }
+  return plan;
+}
+
+/**
  * Record, in the proposal itself, that an attempt at it was discarded.
  *
  * THE DEFECT THIS CLOSES (addictedtoai-z5dj). `consumeProposal` above fires
