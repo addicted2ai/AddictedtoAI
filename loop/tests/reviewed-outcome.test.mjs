@@ -56,8 +56,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -73,6 +73,8 @@ import {
   checkReviewedMerge,
   constituteMergeSubjects,
   emptyDiffFailsOutcome,
+  jobPerPageRecordRelPaths,
+  perPageRecordPathsForPass,
   reviewedPathsFromResultText,
 } from '../run.mjs';
 import { reviewStateForPageAtBase } from '../lib/review-state.mjs';
@@ -94,6 +96,7 @@ import {
   verdictPath,
 } from '../lib/review.mjs';
 import { GRAPH_ANNEX_HEADING } from '../lib/brief.mjs';
+import { transcribeCarriedFindings } from '../lib/carry.mjs';
 import { reviewedHash } from '../../lib/review-hash.mjs';
 import { git, makeRepo } from './helpers.mjs';
 
@@ -747,17 +750,23 @@ test('task 63: the gates section says the gates are evidence the base is green, 
   assert.match(brief, /identical to the merge base/, 'the gates ran on a tree identical to the merge base');
   assert.match(brief, /evidence.*base is green/i, 'the gates are evidence the base is green');
   assert.match(brief, /NOT evidence about the page/, 'and not evidence about the page under review');
-  // Gates that did not run say the same disclaimer, never the normal "nothing verified" implication.
+  // Gates that did not run state there is NO base-green evidence (never the
+  // old "evidence the base is green" claim), while keeping the page disclaimer.
   const { brief: norun } = briefFor63(t, P1, surface, { gates: { ran: false, why: 'the loop was run with --no-gates' } });
-  assert.match(norun, /identical to the merge base/);
+  assert.match(norun, /NO evidence here that the base is green/, 'no gate ran, so no base-green evidence exists');
+  assert.match(norun, /no base-green evidence exists/);
   assert.match(norun, /NOT evidence/);
+  assert.doesNotMatch(norun, /they are evidence the base is green/, 'the ran:false branch never claims base-green evidence');
+  assert.doesNotMatch(norun, /identical to the merge base/, 'no run means no identical-tree measurement to cite');
   assert.doesNotMatch(norun, /## The diff under review/);
   // The dedicated section renders the same disclaimer standalone.
   const sec = reviewedGatesSection({ ran: true, results: [] }, 'abc123def456');
   assert.match(sec, /identical to the merge base/);
   assert.match(sec, /NOT evidence about the page/);
   const sec2 = reviewedGatesSection({ ran: false, why: 'x' }, '');
+  assert.match(sec2, /NO evidence here that the base is green/);
   assert.match(sec2, /NOT evidence/);
+  assert.doesNotMatch(sec2, /they are evidence the base is green/);
 });
 
 test('task 63: the checklist is the page kind, not the job type', (t) => {
@@ -826,32 +835,33 @@ test('task 63: per-page record paths are distinct and siblings share citations',
   // Two per-page siblings may honestly share one sentence (the same trivial
   // correction landing the same way twice), while a sentence recycled from
   // another job is still refused.
-  const other = writeVerdictRecord(ctx, 'j-20260912-99', {
-    verdict: 'approve', wouldCite: 'a shared sentence across jobs', notes: 'other job',
-  });
-  void other;
+  const shared = 'an honest sentence shared by both pages';
   const p0 = reviewedPerPageRecordPath(ctx, jobId, 0, 1);
   writeVerdictRecord(ctx, `${jobId}.reviewed-0`, {
-    verdict: 'approve', wouldCite: 'a shared sentence across jobs', notes: 'page zero',
+    verdict: 'approve', wouldCite: shared, notes: 'page zero',
   });
-  assert.equal(readFileSync(p0, 'utf8').includes('a shared sentence across jobs'), true, 'fixture per-page record carries the sentence');
+  assert.equal(readFileSync(p0, 'utf8').includes(shared), true, 'fixture per-page record carries the sentence');
   const p1 = reviewedPerPageRecordPath(ctx, jobId, 1, 1);
   writeVerdictRecord(ctx, `${jobId}.reviewed-1`, {
-    verdict: 'approve', wouldCite: 'one honest sentence for both pages', notes: 'page one',
+    verdict: 'approve', wouldCite: shared, notes: 'page one',
   });
-  const sibling = reviewedPerPageRecordPath(ctx, jobId, 0, 1);
-  writeFileSync(sibling, readFileSync(sibling, 'utf8'), 'utf8');
-  // The sibling with the identical sentence is excluded by the job exclusion,
-  // so the second page sharing it is not a duplicate.
+  // p1 carries p0's exact sentence: the sibling is excluded by the job
+  // exclusion, so sharing it is not a duplicate.
   const gateSameJob = mergeGate(ctx, {
     jobId, type: 'entry', pass: 1, subjects: [P2], changed: [],
     recordPath: p1,
   });
-  // p1's own sentence is unique so far (only p0 carries the other sentence);
-  // rewrite p1 to share p0's honest sentence and re-judge.
-  const sharedText = readFileSync(p0, 'utf8').match(/would-cite:.*/)?.[0] ?? '';
-  void sharedText;
-  assert.equal(gateSameJob.ok, true, `a per-page record with a fresh sentence passes: ${gateSameJob.reason ?? ''}`);
+  assert.equal(gateSameJob.ok, true, `sibling sentence passes via the job exclusion: ${gateSameJob.reason ?? ''}`);
+  // The same sentence recycled from another job is still refused.
+  writeVerdictRecord(ctx, 'j-20260912-99', {
+    verdict: 'approve', wouldCite: shared, notes: 'other job',
+  });
+  const gateCrossJob = mergeGate(ctx, {
+    jobId, type: 'entry', pass: 1, subjects: [P2], changed: [],
+    recordPath: p1,
+  });
+  assert.equal(gateCrossJob.ok, false, 'a cross-job duplicate must refuse');
+  assert.equal(gateCrossJob.code, 'would-cite-duplicate');
 });
 
 test('task 63: a timeout classifies as interrupted, never as absent review', () => {
@@ -959,4 +969,146 @@ test('task 63 mutation: a brief keyed on the job type fails the kind arm', (t) =
   const mutantList = checklistFor('repair').map((c) => `- ${c}`).join('\n');
   assert.match(mutantList, /Spot-check the changed rows/, 'the mutant assembles the job type list, so the kind arm goes red on it');
   assert.notDeepEqual(brief.includes('Spot-check the changed rows'), mutantList.includes('Spot-check the changed rows'), 'the arm distinguishes the mutant from production');
+});
+
+// ---------------------------------------------------------------------------
+// Stage-2 task 63 FIX (F1-F8): council-adjudicated revise round.
+// ---------------------------------------------------------------------------
+
+test('task 63 fix F1: a multi-page reviewed job stages its per-page records', (t) => {
+  const ctx = reviewCtx63(t);
+  const jobId = 'j-20260912-63';
+  // Two per-page records, no single-page verdict record — the multi-page path.
+  writeVerdictRecord(ctx, `${jobId}.reviewed-0`, {
+    verdict: 'approve', wouldCite: 'a reader checking dates would cite page zero', notes: 'page zero',
+  });
+  writeVerdictRecord(ctx, `${jobId}.reviewed-1`, {
+    verdict: 'approve', wouldCite: 'a reader checking dates would cite page one', notes: 'page one',
+  });
+  assert.equal(existsSync(verdictPath(ctx, jobId, 1)), false, 'the single-page verdict record does not exist on the multi-page path');
+  const rels = jobPerPageRecordRelPaths(ctx, jobId);
+  assert.deepEqual(rels, [
+    relative(ctx.repoRoot, reviewedPerPageRecordPath(ctx, jobId, 0, 1)).replace(/\\/g, '/'),
+    relative(ctx.repoRoot, reviewedPerPageRecordPath(ctx, jobId, 1, 1)).replace(/\\/g, '/'),
+  ]);
+  for (const rel of rels) {
+    assert.ok(existsSync(join(ctx.repoRoot, rel)), `staged by exact path: ${rel}`);
+  }
+  // MUTANT COPY: recordPaths without the per-page extension — the ledger with
+  // none of the records that approved it.
+  const mutantPaths = [
+    relative(ctx.repoRoot, ctx.ledgerPath),
+    relative(ctx.repoRoot, verdictPath(ctx, jobId, 1)),
+    relative(ctx.repoRoot, verdictPath(ctx, jobId, 2)),
+  ].map((p) => p.replace(/\\/g, '/'));
+  const mutantStaged = mutantPaths.filter((p) => existsSync(join(ctx.repoRoot, p)));
+  assert.ok(!mutantStaged.some((p) => p.includes('.reviewed-')), 'the mutant stages no per-page record');
+  assert.notDeepEqual(rels.length, 0, 'production stages what the mutant drops');
+  // Production wires the helper into the records commit, exact paths only.
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /jobPerPageRecordRelPaths\(ctx, jobId\)/);
+  assert.match(src, /\.\.\.perPageRecordRelPaths/);
+  const recIdx = src.indexOf('F1: this job\'s per-page verdict records');
+  assert.ok(recIdx !== -1, 'the per-page records commit is one named block');
+  const recWindow = src.slice(recIdx, recIdx + 2000);
+  assert.match(recWindow, /\.\.\.perPageRecordRelPaths/, 'the per-page records join the exact-path staging list');
+  assert.doesNotMatch(recWindow, /\['add', '-A'\]/, 'the per-page staging stages by exact path, never a bulk add');
+});
+
+test('task 63 fix F2: a discarded per-page job transcribes every page\'s carried findings', (t) => {
+  const ctx = reviewCtx63(t);
+  const jobId = 'j-20260912-63';
+  const carryRecord = (pi, title, subject) => {
+    const perPath = reviewedPerPageRecordPath(ctx, jobId, pi, 1);
+    mkdirSync(dirname(perPath), { recursive: true });
+    writeFileSync(
+      perPath,
+      `---\njob: ${jobId}\nverdict: approve\nwould-cite: "fixture cite ${pi}"\ncarry:\n  - title: ${title}\n    detail: finding detail for ${title}\n    subject: ${subject}\n---\n\nfixture notes ${pi}\n`,
+      'utf8',
+    );
+    return perPath;
+  };
+  // Two per-page records carrying findings that name files the discarded
+  // branch never merged — orphaned on a discard, never transcribed as queue
+  // items pointed at files that never existed.
+  carryRecord(0, 'first page finding', 'content/wiki/model/never-merged-a.md');
+  carryRecord(1, 'second page finding', 'content/wiki/model/never-merged-b.md');
+  // Detected from the verdict plus the records on disk — never from
+  // `mergeSubjects`, which is null on discard.
+  const perPaths = perPageRecordPathsForPass(ctx, jobId, 1);
+  assert.equal(perPaths.length, 2, 'both per-page records are detected for the pass');
+  assert.deepEqual(perPaths, [
+    reviewedPerPageRecordPath(ctx, jobId, 0, 1),
+    reviewedPerPageRecordPath(ctx, jobId, 1, 1),
+  ]);
+  const orphaned = [];
+  for (const perPath of perPaths) {
+    const c = transcribeCarriedFindings(ctx, {
+      jobId, verdictPath: perPath, reviewer: 'r-63', subjectMustExist: true,
+    });
+    orphaned.push(...c.orphaned);
+    assert.deepEqual(c.transcribed, [], 'an orphaned finding is never written as a queue item');
+  }
+  assert.equal(orphaned.length, 2, 'every page\'s carried finding survives the discard');
+  assert.deepEqual(orphaned.map((f) => f.title).sort(), ['first page finding', 'second page finding']);
+  // The old single-record attempt sees nothing on this path — the defect.
+  const single = transcribeCarriedFindings(ctx, {
+    jobId, verdictPath: verdictPath(ctx, jobId, 1), reviewer: 'r-63', subjectMustExist: true,
+  });
+  assert.equal(single.why, 'no verdict record');
+  assert.deepEqual(single.orphaned, []);
+  // Production keys the per-page block on the verdict plus the records.
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /perPageRecordPathsForPass\(ctx, jobId, result\.pass/);
+  assert.match(src, /if \(result\.verdict\)/);
+  assert.doesNotMatch(src, /Array\.isArray\(mergeSubjects\) && mergeSubjects\.length > 1/, 'the discard-blind mergeSubjects key is gone');
+});
+
+test('task 63 fix F4: an unreadable page fails closed before dispatch (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  // Fail-closed guard in the per-page loop: no surface, no review.
+  assert.match(src, /its machine-generated surface could not be read — failing closed, no review without its bytes/);
+  assert.match(src, /if \(surface == null\)/);
+  assert.match(src, /outcome: 'failed', mm, changed, note: reason/);
+  // Ordered: the guard sits between the surface read and the dispatch.
+  const readIdx = src.indexOf('surface = readFileSync(join(worktree, page)');
+  const guardIdx = src.indexOf('if (surface == null)');
+  const dispatchIdx = src.indexOf('const one = await runReview');
+  assert.ok(readIdx !== -1 && guardIdx !== -1 && dispatchIdx !== -1, 'read, guard and dispatch all exist');
+  assert.ok(readIdx < guardIdx && guardIdx < dispatchIdx, 'the guard runs after the read and before any review is dispatched');
+  // MUTANT COPY: the old fall-through — a null surface riding into the brief's
+  // no-surface fallback while the reviewer may still approve.
+  const mutantDispatchesWithoutSurface = guardIdx === -1;
+  assert.equal(mutantDispatchesWithoutSurface, false, 'production fails closed where the mutant would dispatch without bytes');
+  // The task-62 single-page fallback is untouched (out of scope).
+  assert.match(src, /reviewedSurfaceText = null/, 'the single-page fallback still stands');
+});
+
+test('task 63 fix F5: the duplicated bound comment appears once (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const hits = src.match(/THE REVIEW IS WHERE THE BOUND MOST OFTEN BINDS/g) ?? [];
+  assert.equal(hits.length, 1, 'one copy of the duplicated block was dropped');
+});
+
+test('task 63 fix F7: single-page reviewed keeps the single record shape (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  const hits = src.match(/outPathOverride/g) ?? [];
+  assert.equal(hits.length, 1, 'only the per-page branch overrides the record path; the single-page branch keeps verdictPath');
+  const elseIdx = src.indexOf('// Single-page and non-reviewed paths, unchanged');
+  assert.ok(elseIdx !== -1, 'the single-page branch is one named block');
+  const window = src.slice(elseIdx, elseIdx + 6000);
+  assert.match(window, /reviewedOnly/, 'the single-page branch still carries its one page');
+  assert.doesNotMatch(window, /outPathOverride/, 'a future fan-out of a single page goes red here');
+  assert.doesNotMatch(window, /reviewedPerPageRecordPath/, 'a record rename for single-page goes red here');
+});
+
+test('task 63 fix F8: per-page invocation clears its stale record before dispatch (structural)', () => {
+  const src = readFileSync(RUN_LIB, 'utf8');
+  assert.match(src, /F8: clear a stale per-page record/, 'the stale-record clear is one named block');
+  assert.match(src, /unlinkSync\(outPath\)/, 'best-effort unlink of the per-page target record');
+  const outIdx = src.indexOf('const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass)');
+  const unlinkIdx = src.indexOf('unlinkSync(outPath)');
+  const dispatchIdx = src.indexOf('const one = await runReview');
+  assert.ok(outIdx !== -1 && unlinkIdx !== -1 && dispatchIdx !== -1, 'outPath, clear and dispatch all exist');
+  assert.ok(outIdx < unlinkIdx && unlinkIdx < dispatchIdx, 'the clear runs after the outPath is computed and before the review is dispatched');
 });

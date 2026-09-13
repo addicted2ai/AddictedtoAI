@@ -15,7 +15,7 @@
  *   - report that nothing qualified, which is a normal, healthy outcome.
  */
 
-import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import matter from 'gray-matter';
 import { execFileSync } from 'node:child_process';
 import { join, relative, resolve } from 'node:path';
@@ -61,7 +61,7 @@ import {
   withFailingGateRetry,
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
-import { isDiffRefusal, isReissueRefusal, isContentPath, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects, reviewedPerPageRecordPath, classifyReviewedRun, checkReviewedRunnerEligibility, reviewedGateTypeForPage } from './lib/review.mjs';
+import { isDiffRefusal, isReissueRefusal, isContentPath, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects, reviewedPerPageRecordPath, classifyReviewedRun, checkReviewedRunnerEligibility, reviewedGateTypeForPage, isRecordOfJob } from './lib/review.mjs';
 import { normalizeReviewStatePath, reviewStateForPageAtBase } from './lib/review-state.mjs';
 import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, classifyRedTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
 import {
@@ -455,6 +455,65 @@ export function reviewedPathsFromResultText(text) {
   const firstLine = String(text ?? '').split(/\r?\n/, 1)[0].trim();
   const parsed = parseReviewedLine(firstLine);
   return parsed && parsed.ok ? parsed.paths : null;
+}
+
+/**
+ * Per-page verdict record paths for one pass, in page-index order (Stage 2,
+ * task 63 fix F2).
+ *
+ * Probes `reviewedPerPageRecordPath(ctx, jobId, i, pass)` from `i = 0`
+ * upward while the record exists and returns the existing prefix. The
+ * transcription block and its tests share this one reader, so the per-page
+ * set is detected from the records on disk plus `result.verdict` — never
+ * from `mergeSubjects`, which is only ever set on approve and is null on
+ * discard.
+ */
+export function perPageRecordPathsForPass(ctx, jobId, pass) {
+  const out = [];
+  const p = Number(pass) || 1;
+  for (let i = 0; i < 100; i++) {
+    let perPath;
+    try {
+      perPath = reviewedPerPageRecordPath(ctx, jobId, i, p);
+    } catch {
+      break;
+    }
+    let present = false;
+    try {
+      present = existsSync(perPath);
+    } catch {
+      present = false;
+    }
+    if (!present) break;
+    out.push(perPath);
+  }
+  return out;
+}
+
+/**
+ * This job's per-page verdict records as repo-relative paths, any pass
+ * (Stage 2, task 63 fix F1).
+ *
+ * Lists `ctx.reviewsDir` for names where `isRecordOfJob(name, jobId)` is
+ * true and the name carries the per-page `.reviewed-` marker — exact paths
+ * only, never `add -A`. The records-commit and its tests share this one
+ * reader, so a multi-page reviewed job's per-page records travel with the
+ * ledger line that approves them.
+ */
+export function jobPerPageRecordRelPaths(ctx, jobId) {
+  let names;
+  try {
+    names = readdirSync(ctx.reviewsDir);
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const name of names ?? []) {
+    if (!isRecordOfJob(name, jobId)) continue;
+    if (!String(name).includes('.reviewed-')) continue;
+    out.push(relative(ctx.repoRoot, join(ctx.reviewsDir, name)).replace(/\\/g, '/'));
+  }
+  return out.sort();
 }
 
 /**
@@ -1753,14 +1812,6 @@ async function executeJob(ctx, opts) {
     // at all — the merge gate then fails the job at `no-record`, which spends
     // the reviewer's minutes AND loses the work. A stub review is not a cheaper
     // review; it is the same loss with a worse record of why.
-    // THE REVIEW IS WHERE THE BOUND MOST OFTEN BINDS, and where refusing is
-    // least comfortable: the author's work is already on the branch and nothing
-    // merges without an approval, so an abandon here loses that work. It is
-    // still the right answer. The alternative is a review capped at whatever
-    // scraps are left, and a review killed at its cap writes no verdict record
-    // at all — the merge gate then fails the job at `no-record`, which spends
-    // the reviewer's minutes AND loses the work. A stub review is not a cheaper
-    // review; it is the same loss with a worse record of why.
     //
     // Read-and-unchanged per-page split (Stage 2, task 63): on a multi-page
     // `reviewed:` outcome each declared page gets its own review invocation
@@ -1836,14 +1887,32 @@ async function executeJob(ctx, opts) {
         }
         perPageAllowances.push(pageAllowance);
         ctx.log(`review pass ${pass} page ${pi + 1}/${declaredPages.length} (${page}): invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${pageAllowance.capMinutes}-minute cap${capNote(pageAllowance)}`);
+        const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass);
+        perPageOutPaths.push(outPath);
+        // F8: clear a stale per-page record before dispatch (best-effort
+        // unlink, new path only) so a record left by a killed prior run
+        // cannot make a no-write retry classify as `recorded`.
+        try {
+          unlinkSync(outPath);
+        } catch {
+          /* best-effort: absent is the expected case */
+        }
         let surface = null;
         try {
           surface = readFileSync(join(worktree, page), 'utf8');
         } catch {
           surface = null;
         }
-        const outPath = reviewedPerPageRecordPath(ctx, jobId, pi, pass);
-        perPageOutPaths.push(outPath);
+        // F4: fail the page invocation closed before dispatch when its
+        // machine-generated surface cannot be read — task 63 requires each
+        // invocation to carry the page's surface AND its hash, so a page
+        // without its bytes is never sent to the reviewer. Single-page
+        // fallback below (task 62) is untouched.
+        if (surface == null) {
+          const reason = `reviewed: cannot review page ${page}: its machine-generated surface could not be read — failing closed, no review without its bytes`;
+          ctx.log(reason);
+          return finish({ outcome: 'failed', mm, changed, note: reason });
+        }
         const one = await runReview(ctx, {
           jobId,
           job,
@@ -3770,37 +3839,30 @@ export async function runLoop(ctx, opts = {}) {
   // — transcribe noted proposals and carried findings from every per-page
   // record, not just the job's own (which does not exist on this path, so the
   // single-record attempts above quietly note "no verdict record"). Detected
-  // by the ratified set plus the per-page record on disk (the same order the
-  // review loop indexed by), never by any in-memory reviewed list.
+  // from `result.verdict` plus every existing per-page record for this pass
+  // (both approve and discarded carry `result.verdict`) — never from
+  // `mergeSubjects`, which is only ever set on approve and is null on
+  // discard, where the old key silently lost every page's carried findings
+  // and noted proposals.
   {
-    let perPages = null;
+    let perPaths = [];
     try {
-      const subs = Array.isArray(mergeSubjects) && mergeSubjects.length > 1 ? [...mergeSubjects].sort() : null;
-      if (subs && existsSync(reviewedPerPageRecordPath(ctx, jobId, 0, result.pass ?? 1))) {
-        // Only where every page's record exists; a partial set is not a
-        // per-page outcome (single-page and done paths keep their one record).
-        let allExist = true;
-        for (let qi = 0; qi < subs.length; qi++) {
-          if (!existsSync(reviewedPerPageRecordPath(ctx, jobId, qi, result.pass ?? 1))) {
-            allExist = false;
-            break;
-          }
-        }
-        if (allExist) perPages = subs;
+      if (result.verdict) {
+        perPaths = perPageRecordPathsForPass(ctx, jobId, result.pass ?? 1);
       }
     } catch {
-      perPages = null;
+      perPaths = [];
     }
-    if (perPages) {
-      for (let pi = 0; pi < perPages.length; pi++) {
-        const perPath = reviewedPerPageRecordPath(ctx, jobId, pi, result.pass ?? 1);
+    if (perPaths.length) {
+      for (let pi = 0; pi < perPaths.length; pi++) {
+        const perPath = perPaths[pi];
         // Noted proposals, one record at a time (at most one per record by
         // the brief's contract, so N pages yield at most N proposals).
         try {
           const t = transcribeNotedProposal(ctx, { jobId, jobType: job.type, verdictPath: perPath, reviewer: reviewer.id });
           if (t.transcribed) {
             transcribedPaths.push(relative(ctx.repoRoot, t.dest));
-            ctx.log(`transcribed the page ${perPages[pi]} reviewer's noted proposal to ${t.dest}, naming job ${jobId} as its origin`);
+            ctx.log(`transcribed the page ${pi} reviewer's noted proposal to ${t.dest}, naming job ${jobId} as its origin`);
           } else if (t.malformed || (t.why && !/notes no proposal|no verdict record/.test(t.why))) {
             ctx.log(`per-page verdict record ${perPath}'s noted proposal was not transcribed: ${t.why}`);
           }
@@ -3817,10 +3879,10 @@ export async function runLoop(ctx, opts = {}) {
           orphanedFindings.push(...c2.orphaned);
           for (const t of c2.transcribed) {
             transcribedPaths.push(relative(ctx.repoRoot, t.dest));
-            ctx.log(`carried finding transcribed to ${t.dest} from page ${perPages[pi]}: ${JSON.stringify(t.title)}`);
+            ctx.log(`carried finding transcribed to ${t.dest} from page ${pi}: ${JSON.stringify(t.title)}`);
           }
           for (const s of c2.skipped) {
-            ctx.log(`a carried finding was not transcribed from page ${perPages[pi]}: ${s.why}`);
+            ctx.log(`a carried finding was not transcribed from page ${pi}: ${s.why}`);
           }
           for (const w of c2.warnings) {
             ctx.log(`per-page verdict record ${perPath}'s carry: block ${w}`);
@@ -3985,6 +4047,18 @@ export async function runLoop(ctx, opts = {}) {
   /** Only when `rederiveStep` ran AND its inputs are confirmed clean. */
   const derivedCommittable = rederived && Array.isArray(dirtyInputs) && dirtyInputs.length === 0;
 
+  // F1: this job's per-page verdict records (multi-page `reviewed:` path)
+  // travel with the ledger line that approves them — listed from
+  // `ctx.reviewsDir` where `isRecordOfJob` holds, exact paths only, never
+  // `add -A`. Without these the multi-page merge commits the ledger with
+  // NONE of the records that approved it (the two `verdictPath`s do not
+  // exist on that path and the `existsSync` filter below drops them).
+  let perPageRecordRelPaths = [];
+  try {
+    perPageRecordRelPaths = jobPerPageRecordRelPaths(ctx, jobId);
+  } catch {
+    perPageRecordRelPaths = [];
+  }
   const recordPaths = [
     relative(ctx.repoRoot, ctx.ledgerPath),
     relative(ctx.repoRoot, verdictPath(ctx, jobId, 1)),
@@ -4002,6 +4076,8 @@ export async function runLoop(ctx, opts = {}) {
     // came from, or they would sit untracked and the next run would read
     // work nothing in the history explains.
     ...transcribedPaths,
+    // F1: the per-page records themselves (see above).
+    ...perPageRecordRelPaths,
   ].map((p) => p.replace(/\\/g, '/'));
 
   // A no-op on the merge path, which already recorded the outcome before its

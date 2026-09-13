@@ -603,9 +603,8 @@ export function reviewedGatesSection(gates, sha = '') {
   if (!gates || gates.ran === false) {
     return `## What the loop has verified on this branch
 
-The loop did not run its gates this run${gates?.why ? ` (${gates.why})` : ''}. That changes nothing about this review:
-the gates run on a tree identical to the merge base, so they are evidence the base is green and NOT evidence
-about the page under review. Judge the page below on its own, and say in your notes what you ran and what you observed.
+The loop did not run its gates this run${gates?.why ? ` (${gates.why})` : ''}. That means there is NO evidence here that the base is green — no gate ran, so no base-green evidence exists — and NOT evidence
+about the page under review either. Judge the page below on its own, and say in your notes what you ran and what you observed.
 `;
   }
   const lines = (gates.results ?? []).map(
