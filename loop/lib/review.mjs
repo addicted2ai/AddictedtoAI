@@ -39,7 +39,7 @@ import { PROSE_TYPES, isProsePiece, prosePieces, requirementHeadings } from './s
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
-import { GROUND_RULES, formatGraphRow, polaritySection, subjectLines, governingTypeFor } from './brief.mjs';
+import { GROUND_RULES, assembleGraphContext, formatGraphRow, polaritySection, subjectLines, governingTypeFor } from './brief.mjs';
 import { readLedger } from './ledger.mjs';
 import { loadRunners, pickRunner } from './runners.mjs';
 import { corroborationSection } from './lineage.mjs';
@@ -536,10 +536,21 @@ everything spent on it is lost. Do not leave the writing until last.
 /**
  * Assemble the reviewer's brief: the diff and the checklist, and nothing of
  * the author's reasoning.
+ *
+ * Read-and-unchanged mode (Stage 2, task 62): where `reviewedOnly` names the
+ * one page this invocation reviews, the brief carries that page's
+ * machine-supplied surface (`reviewedSurfaceText`, injected — this function
+ * generates no bytes and hashes nothing; the hash store is task 64's) and
+ * the graph annex filtered to that page APPENDED AFTER the surface, and NO
+ * diff section at all. The filter is task 59's `assembleGraphContext` with
+ * the same `reviewedOnly` — reused, never reimplemented — so the row the
+ * reviewer sees is the row the merge gate reads. The per-page invocation
+ * split (one invocation per declared page, never a bundle) is task 63's;
+ * this function renders one page, and callers pass one page.
  */
 export function assembleReviewBrief(
   ctx,
-  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null },
+  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index' },
 ) {
   // Task 59: the review checklist is keyed on the work order's governing type
   // (via the shared `governingTypeFor`), never on an item's own type — the
@@ -554,17 +565,62 @@ export function assembleReviewBrief(
     ? `\n## The rejection index\n\nThis job originated from a proposal. Part of your checklist is the judgment\nhalf of duplicate suppression: confirm this piece is not a differently-worded\nre-tread of an idea already rejected. The mechanical half — exact slug match —\nalready ran and passed. Fuzzy matching is guessing, so this half is yours.\n\n${rejectionIndexText(ctx)}\n`
     : '';
 
+  // Read-and-unchanged tail (task 62): the reviewed page's surface with the
+  // filtered graph annex APPENDED AFTER it, and no diff section at all. The
+  // annex is task 59's filter (`assembleGraphContext` with `reviewedOnly`),
+  // so the merge gate and the reviewer read one row assembled one way. Where
+  // `reviewedOnly` is absent the brief below is byte-identical to before.
+  const reviewedPage = typeof reviewedOnly === 'string' && reviewedOnly.trim()
+    ? reviewedOnly.replace(/\\/g, '/').trim()
+    : null;
+  let reviewedTail = null;
+  if (reviewedPage) {
+    const surface = typeof reviewedSurfaceText === 'string' && reviewedSurfaceText
+      ? reviewedSurfaceText
+      : '(no surface text was supplied for this page — judge nothing from memory; say so in your notes.)';
+    const seam = typeof reviewGraphQuery === 'function'
+      ? reviewGraphQuery
+      : () => ({ absent: true, reason: 'no graph index wired on the review path' });
+    const indexId = typeof graphIndexId === 'string' && graphIndexId.trim() ? graphIndexId.trim() : 'unknown-index';
+    const built = assembleGraphContext({
+      declaredSubjects: [reviewedPage],
+      graphQuery: seam,
+      reviewedOnly: reviewedPage,
+      indexId,
+    });
+    reviewedTail = `## Reviewed page surface
+
+You are judging THIS page, as it stands — not a diff. There is none: the
+executor read these pages, judged them sound, and correctly left them
+unchanged. The absence of a diff is the finding.
+
+### \`${reviewedPage}\`
+
+${surface}
+
+${built.annexText}`;
+  }
+  const diffTail = `## The diff under review
+
+The loop computed this diff itself from the branch state; it is not the
+author's account of what changed.
+
+\`\`\`diff
+${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated at 200 KB]' : diffText}
+\`\`\`
+`;
+
   return `# Review — job ${jobId} (${governing})${pass > 1 ? `, delta review, pass ${pass}` : ''}
 
 You are the reviewer. You have fresh context: you have not seen the author's
-reasoning and you will not get it. You have the diff below and the checklist.
+reasoning and you will not get it. You have ${reviewedTail ? 'the reviewed page surface below' : 'the diff below'} and the checklist.
 You have **no edit rights** — any change you make to this worktree is thrown
 away, so do not try to fix anything. Your only accepted output is the verdict
 record.
 
 ## What this job was asked to do
 
-You are judging the diff against THIS and nothing wider. \`scope-violation\` is
+You are judging ${reviewedTail ? 'the reviewed page against THIS' : 'the diff against THIS'} and nothing wider. \`scope-violation\` is
 one of the verdicts you may return, and this is the outcome the scope is
 measured against — a diff that goes beyond it earns that verdict even if every
 line of it is correct work.
@@ -777,15 +833,7 @@ you observed. Quote the observed output for anything you ran.
 
 ${GROUND_RULES}
 
-## The diff under review
-
-The loop computed this diff itself from the branch state; it is not the
-author's account of what changed.
-
-\`\`\`diff
-${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated at 200 KB]' : diffText}
-\`\`\`
-`;
+${reviewedTail ?? diffTail}`;
 }
 
 /**
@@ -1428,7 +1476,7 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed, workO
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
  *                    branchShaAfter: string, recordWritten: boolean}>}
  */
-export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null }) {
+export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null, workOrder = null, reviewedOnly = null, reviewedSurfaceText = null, reviewGraphQuery = null, graphIndexId = 'unknown-index' }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = verdictPath(ctx, jobId, pass);
   const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}`);
@@ -1455,6 +1503,10 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
     invocations,
     totalMinutes,
     workOrder,
+    reviewedOnly,
+    reviewedSurfaceText,
+    reviewGraphQuery,
+    graphIndexId,
   });
   const run = await runExecutor({
     command: runner.command,

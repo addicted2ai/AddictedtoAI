@@ -35,7 +35,7 @@ import {
   LINEAGE_RESOLVER_GIT,
   selectOutcomeLineage,
 } from './lib/lineage.mjs';
-import { readResult, classifyRun, reviewProducedNothing, parseGraphAck, RESULT_FILENAME } from './lib/result.mjs';
+import { readResult, classifyRun, reviewProducedNothing, parseGraphAck, parseReviewedLine, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
   addWorktree,
@@ -62,6 +62,7 @@ import {
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
 import { isDiffRefusal, isReissueRefusal, isContentPath, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
+import { normalizeReviewStatePath, reviewStateForPageAtBase } from './lib/review-state.mjs';
 import { acquireWorkerSlot, admissionOverlap, assembleTrain, checkoutTrain, classifyRedTrain, ensureTrainBranch, evaluateTriggers, mergeJobBranch, pendingMerges, releaseWorkerSlot, runTrain, runTripwire, trainBounds, TRAIN_BRANCH } from './lib/train.mjs';
 import {
   brakeScan,
@@ -351,12 +352,15 @@ export function declarationMergeDecision(source, contentPaths) {
 // `writeRecordSubjects` (`loop/lib/review.mjs`), `parseGraphAck`
 // (`loop/lib/result.mjs`).
 //
-// What this block does NOT own (later tasks): the `reviewed:` outcome's
-// production wiring (task 62, blocked on task 61b — the helpers below accept
-// executor-declared paths as an argument so that task needs no re-design),
-// the brief-side annex and `.job/graph.json` writer (task 59), per-item
-// proposal consumption (task 66), the ledger `items` key (task 67), and bead
-// closure (task 69 — no module may invoke `bd` before it). Unretired items
+// What this block does NOT own (later tasks): the brief-side annex and
+// `.job/graph.json` writer (task 59 — landed), per-item proposal consumption
+// (task 66), the ledger `items` key (task 67), and bead closure (task 69 —
+// no module may invoke `bd` before it). The `reviewed:` outcome's production
+// wiring (task 62) rides this same block through `checkReviewedMerge` — the
+// helpers below accept executor-declared paths as an argument, which is what
+// lets that gate constitute from the declaration without a re-design.
+// Unretired items are reported open (log + ledger note) and return to intake
+// by staying unretired: nothing here closes or consumes per item.
 // are reported open (log + ledger note) and return to intake by staying
 // unretired: nothing here closes or consumes per item.
 // ---------------------------------------------------------------------------
@@ -415,6 +419,309 @@ export function checkDeclarationSubset(contentPaths, declared) {
     .filter((p) => !allowed.has(p))
     .sort();
   return { ok: undeclared.length === 0, undeclared };
+}
+
+// ---------------------------------------------------------------------------
+// The read-and-unchanged (`reviewed:`) outcome (Stage 2, task 62).
+//
+// The executor's first line names pages it read, judged sound, and left
+// unchanged. The helpers below reuse task 61b's join (the ONLY source of
+// truth for the mismatched precondition — never a derived store, never the
+// change analysis), task 56's constitution/intersection helpers, and task
+// 59's annex filter (which lives in the review brief, not here).
+//
+// Reuse, not reimplementation: `parseReviewedLine` (`loop/lib/result.mjs`),
+// `constituteMergeSubjects` + `resolveCarriedDeclaration` (above),
+// `reviewStateForPageAtBase` (`loop/lib/review-state.mjs`), `isContentPath`
+// (`loop/lib/review.mjs`), `parseGraphAck` (`loop/lib/result.mjs`).
+// ---------------------------------------------------------------------------
+
+/**
+ * Whether an empty branch diff fails the outcome. A `done` outcome with an
+ * empty diff is settled `failed` (nothing was claimed); a `reviewed:`
+ * outcome with an empty diff is the finding itself and is NOT a failure.
+ * Exported so the executor path and the tests share one predicate.
+ */
+export function emptyDiffFailsOutcome(status) {
+  return status !== 'reviewed';
+}
+
+/**
+ * The executor-declared reviewed paths from a result file's text, or null
+ * where the outcome is not a `reviewed:` outcome. Reads the first line
+ * only, through `parseReviewedLine` — the one reader for this shape.
+ */
+export function reviewedPathsFromResultText(text) {
+  const firstLine = String(text ?? '').split(/\r?\n/, 1)[0].trim();
+  const parsed = parseReviewedLine(firstLine);
+  return parsed && parsed.ok ? parsed.paths : null;
+}
+
+/**
+ * The CHECK direction for the reviewed outcome: no diff on a declared
+ * subject may accompany it. Every joinable content path lying inside the
+ * constituted union refuses, `failed` naming the path — an accompanying
+ * diff is work the bounds never measured.
+ *
+ * @returns {{ok: true}|{ok: false, code: 'reviewed-with-diff', reason: string, paths: string[]}}
+ */
+export function checkReviewedDiffEmpty(contentPaths, union) {
+  const allowed = new Set((Array.isArray(union) ? union : []).map(normSubjectPath).filter(Boolean));
+  const offending = [...new Set((Array.isArray(contentPaths) ? contentPaths : []).map(normSubjectPath).filter(Boolean))]
+    .filter((p) => allowed.has(p))
+    .sort();
+  if (!offending.length) return { ok: true };
+  return {
+    ok: false,
+    code: 'reviewed-with-diff',
+    reason:
+      `reviewed-with-diff: the reviewed: outcome carries a non-empty diff on declared subject(s) ${offending.join(', ')} — ` +
+      `a read-and-unchanged outcome binds pages without a diff, so an accompanying diff is refused`,
+    paths: offending,
+  };
+}
+
+/**
+ * Graph emptiness corroboration for the reviewed outcome: the change
+ * analysis over the branch diff against the merge base must report zero
+ * changed symbols on every declared subject where the index answers for
+ * that universe. `no-symbols` prose pages (outside any symbol universe)
+ * are complete on this check; a non-empty symbol set on a declared
+ * subject is refused, `failed` naming the path, as a non-empty diff is.
+ *
+ * The graph output is never a hash input and never a substitute for the
+ * review-state precondition above: it corroborates emptiness, and only
+ * emptiness. Absent tool/index yields `graph: absent` and ratification
+ * proceeds on the path, hash, and precondition checks. Present-but-
+ * incomplete answers are NOT judged here — `checkMergeGraphScope` refuses
+ * those as `graph-incomplete` before this runs, and that refusal stands
+ * rather than ratifying.
+ *
+ * @param {string[]} declared  the constituted union (carried-resolved)
+ * @param {object|null} analysis  the merge-path analysis (or absent)
+ * @returns {{ok: boolean, code?: string, reason?: string, warnings: string[]}}
+ */
+export function checkReviewedGraphEmptiness(declared, analysis) {
+  const warnings = [];
+  const declaredSet = new Set((Array.isArray(declared) ? declared : []).map(normSubjectPath).filter(Boolean));
+  if (!analysis || analysis.absent) {
+    warnings.push(
+      `graph: absent — ${normSubjectPath(analysis?.reason) || 'no graph analysis available on this path'}; ` +
+      `ratification proceeds on the path, hash, and precondition checks alone`,
+    );
+    return { ok: true, warnings };
+  }
+  const symbols = Array.isArray(analysis.symbols) ? analysis.symbols : [];
+  const universes = analysis.subjects && typeof analysis.subjects === 'object' ? analysis.subjects : {};
+  let offender = null;
+  for (const sym of symbols) {
+    const owner = normSubjectPath(sym?.owner);
+    if (!owner) {
+      warnings.push(`graph: changed symbol ${JSON.stringify(sym?.name ?? '?')} carries no owner path — reviewer-only, never a refusal`);
+      continue;
+    }
+    if (!isContentPath(owner)) {
+      warnings.push(`graph: changed symbol ${JSON.stringify(sym?.name ?? '?')} owned by non-content path ${owner} — reviewer-only, never a refusal`);
+      continue;
+    }
+    if (!declaredSet.has(owner)) continue;
+    const entry = universes[owner];
+    if (entry && entry.universe === false) continue;
+    if (offender === null) offender = owner;
+  }
+  if (offender !== null) {
+    return {
+      ok: false,
+      code: 'reviewed-with-symbols',
+      reason:
+        `reviewed-with-symbols: the reviewed: outcome names ${offender} as read-and-unchanged, ` +
+        `but the change analysis reports changed symbol(s) owned by that declared subject — ` +
+        `a non-empty symbol set on a declared subject is refused as a non-empty diff is`,
+      warnings,
+    };
+  }
+  return { ok: true, warnings };
+}
+
+/**
+ * The reviewed merge gate: preconditions, diff emptiness, graph scope, and
+ * graph emptiness in one place, so the merge path and the tests share one
+ * implementation.
+ *
+ * Order, and why: the committed declaration authorises (an executor cannot
+ * widen its own authorisation, so undeclared paths refuse before anything
+ * is read at the base); the task-61b join answers mismatched-or-not at the
+ * pinned base; the diff check refuses accompanying work; the graph scope
+ * (`checkMergeGraphScope`, with the executor's paths as `reviewedPaths`)
+ * refuses incompleteness and scores retirement; emptiness corroborates.
+ *
+ * Binds ONLY where a committed declaration exists: old-contract branches
+ * and missing/empty declarations refuse whatever the first line said.
+ * `subjects` on success is the executor's paths intersected with the
+ * committed union (via `constituteMergeSubjects`) — never the measured
+ * diff, which is empty by construction here. The caller sets
+ * `mergeSubjects` from it EVEN on an otherwise advisory merge: a reviewed
+ * outcome binds pages, so the null path that leaves the record to the
+ * diff-derived fallback (mutation A's defect) must not resurface.
+ *
+ * @returns {{ok: true, subjects: string[], warnings: string[], graphStatus: string, retirement: object} |
+ *            {ok: false, code: string, reason: string, warnings: string[], retirement?: object}}
+ */
+export function checkReviewedMerge({
+  repoRoot,
+  base,
+  source,
+  reviewedPaths,
+  contentPaths = [],
+  diffPaths = [],
+  resultText = '',
+  analysis = undefined,
+  sidecar = null,
+}) {
+  const warnings = [];
+  const paths = [...new Set((Array.isArray(reviewedPaths) ? reviewedPaths : []).map(normSubjectPath).filter(Boolean))].sort();
+  if (!paths.length) {
+    return {
+      ok: false,
+      code: 'reviewed-empty',
+      reason: 'reviewed-empty: the reviewed: outcome names no page path — nothing to ratify',
+      warnings,
+    };
+  }
+  if (isOldContractSource(source)) {
+    return {
+      ok: false,
+      code: 'reviewed-no-declaration',
+      reason:
+        `reviewed-no-declaration: the reviewed: outcome names ${paths.join(', ')} but the branch carries no committed ` +
+        `work-order declaration — a reviewed outcome binds only where a committed declaration exists`,
+      warnings,
+    };
+  }
+  const decl = checkCommittedDeclaration(source);
+  if (!decl.ok) {
+    return {
+      ok: false,
+      code: 'reviewed-no-declaration',
+      reason:
+        `reviewed-no-declaration: the reviewed: outcome names ${paths.join(', ')} but ${decl.reason} — ` +
+        `a reviewed outcome binds only where a committed declaration exists`,
+      warnings,
+    };
+  }
+  const constituted = constituteMergeSubjects(source, { executorPaths: paths });
+  if (!constituted.ok) {
+    return { ok: false, code: constituted.code, reason: constituted.reason, warnings };
+  }
+  // Carried resolution joins the union exactly as the done path does, so a
+  // page declared through a carried finding counts as declared here too.
+  const carried = resolveCarriedDeclaration(constituted.subjects, {
+    readFile: (p) => {
+      try {
+        const r = gitTry(repoRoot, ['show', `${base}:${p}`]);
+        return r.ok ? r.stdout : null;
+      } catch {
+        return null;
+      }
+    },
+  });
+  for (const m of carried.missing) {
+    warnings.push(`carried declaration ${m.path} contributes nothing to the union (${m.why})`);
+  }
+  const union = carried.subjects;
+  const unionSet = new Set(union);
+  if (!constituted.subjects.length) {
+    return {
+      ok: false,
+      code: 'reviewed-undeclared',
+      reason:
+        `reviewed-undeclared: the reviewed: outcome names ${paths.join(', ')} but none lies inside the committed ` +
+        `declared subjects (${union.join(', ') || '(none)'}) — the paths are read from the executor's line but authorised by the loop's committed list`,
+      warnings,
+    };
+  }
+  // Authorisation first: every named path must lie inside the union before
+  // the base is read for any of them.
+  const outside = paths.filter((p) => !unionSet.has(p)).sort();
+  if (outside.length) {
+    return {
+      ok: false,
+      code: 'reviewed-undeclared',
+      reason:
+        `reviewed-undeclared: the reviewed: outcome names ${outside.join(', ')} outside the committed declared ` +
+        `subjects (${union.join(', ')}) — an executor cannot widen its own authorisation`,
+      warnings,
+    };
+  }
+  // The precondition, from the task-61b capability as its ONLY source of
+  // truth: every path must already read `mismatched` at the pinned base.
+  // Re-read here, at merge time — never cached from brief assembly, never a
+  // derived store, never the change analysis.
+  for (const p of paths) {
+    let state = null;
+    let detail = '';
+    try {
+      const r = reviewStateForPageAtBase(repoRoot, base, normalizeReviewStatePath(p));
+      state = r.state;
+      detail = r.record ? ` (record ${r.record})` : '';
+    } catch (e) {
+      state = 'missing';
+      detail = ` (the join could not be read: ${String(e?.message ?? e).slice(0, 120)})`;
+    }
+    if (state !== 'mismatched') {
+      return {
+        ok: false,
+        code: 'reviewed-not-mismatched',
+        reason:
+          `reviewed-not-mismatched: the reviewed: outcome names ${p} but it reads ${state} at the merge base ` +
+          `${String(base).slice(0, 12)}${detail}, not mismatched — only a page already reviewed-then-changed can be ratified as read-and-unchanged`,
+        warnings,
+      };
+    }
+  }
+  const diffCheck = checkReviewedDiffEmpty(contentPaths, union);
+  if (!diffCheck.ok) {
+    return { ok: false, code: diffCheck.code, reason: diffCheck.reason, warnings };
+  }
+  // The universal subset rule (task 56, reused — not a second detector):
+  // every diff content path lies inside the union, or the merge refuses
+  // `scope-violation`. The check above refuses accompanying work on declared
+  // subjects as `reviewed-with-diff`; this one refuses work the order never
+  // declared at all.
+  const subset = checkDeclarationSubset(contentPaths, union);
+  if (!subset.ok) {
+    return {
+      ok: false,
+      code: 'scope-violation',
+      reason:
+        `scope-violation: merged diff touches undeclared content path(s) ${subset.undeclared.join(', ')} — ` +
+        `every diff content path must lie inside the committed declaration`,
+      warnings,
+    };
+  }
+  const scope = checkMergeGraphScope({
+    source,
+    declared: union,
+    contentPaths,
+    diffPaths,
+    reviewedPaths: paths,
+    resultText,
+    analysis,
+    sidecar,
+    carried: carried.resolved,
+    advisoryScope: false,
+  });
+  for (const w of scope.warnings) warnings.push(w);
+  if (!scope.ok) {
+    return { ok: false, code: scope.code, reason: scope.reason, warnings, retirement: scope.retirement };
+  }
+  const emptiness = checkReviewedGraphEmptiness(union, analysis);
+  for (const w of emptiness.warnings) warnings.push(w);
+  if (!emptiness.ok) {
+    return { ok: false, code: emptiness.code, reason: emptiness.reason, warnings, retirement: scope.retirement };
+  }
+  const pathSet = new Set(paths);
+  return { ok: true, subjects: union.filter((s) => pathSet.has(s)).sort(), warnings, graphStatus: scope.graphStatus, retirement: scope.retirement };
 }
 
 /**
@@ -1231,9 +1538,16 @@ async function executeJob(ctx, opts) {
     return finish({ outcome: 'blocked', mm, changed, note: classified.reason });
   }
 
-  if (changed.length === 0) {
+  if (changed.length === 0 && emptyDiffFailsOutcome(classified.status)) {
     ctx.log('the executor reported `done` but the branch diff is empty — nothing to review or merge');
     return finish({ outcome: 'failed', mm, changed, note: 'done with an empty diff' });
+  }
+  if (changed.length === 0) {
+    // A `reviewed:` outcome with an empty diff is the finding itself, not a
+    // failure: the pages were read, judged sound, and correctly left
+    // unchanged. The run proceeds to gates and review; the merge ratifies
+    // the pages against the committed declaration and their review state.
+    ctx.log('the executor reported `reviewed:` with an empty branch diff — the absence of a diff is the finding, proceeding to review');
   }
 
   // Gates. `gateReport` is what the reviewer is told about them — a
@@ -1446,6 +1760,32 @@ async function executeJob(ctx, opts) {
       return finish({ outcome: 'abandoned', mm, changed, note: reviewAllowance.reason });
     }
     ctx.log(`review pass ${pass}: invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${reviewAllowance.capMinutes}-minute cap${capNote(reviewAllowance)}`);
+    // Read-and-unchanged wiring (task 62): where the executor declared a
+    // single reviewed page, this review carries that page's surface with the
+    // filtered graph annex appended after it, and no diff section — the
+    // `reviewedOnly` production plumbing the task-59 deferred note names this
+    // task as its wirer. A multi-page declaration stays one bundled review
+    // until task 63's per-page split lands; that is logged, never silent.
+    let reviewedOnly = null;
+    let reviewedSurfaceText = null;
+    if (classified.status === 'reviewed') {
+      const declared = Array.isArray(classified.paths)
+        ? [...new Set(classified.paths.map(normSubjectPath).filter(Boolean))]
+        : [];
+      if (declared.length === 1) {
+        reviewedOnly = declared[0];
+        try {
+          reviewedSurfaceText = readFileSync(join(worktree, reviewedOnly), 'utf8');
+        } catch {
+          reviewedSurfaceText = null;
+        }
+      } else if (declared.length > 1) {
+        ctx.log(
+          `reviewed: outcome names ${declared.length} pages (${declared.join(', ')}) — ` +
+          `per-page review invocations land in task 63; this review carries the empty diff as one bundled review`,
+        );
+      }
+    }
     const rev = await runReview(ctx, {
       jobId,
       job,
@@ -1459,6 +1799,10 @@ async function executeJob(ctx, opts) {
       // The committed work-order declaration: the review brief keys its
       // checklist on the governing type (task 59), never on an item's type.
       workOrder: workOrder ?? null,
+      reviewedOnly,
+      reviewedSurfaceText,
+      reviewGraphQuery: briefGraphQueryForSubject,
+      graphIndexId: 'review-index:merge-base-tree',
       // The job's spend, not this run's: a resumed job carries what its earlier
       // runs cost, and the reviewer is told the number the ledger would show.
       mmSoFar: spent(),
@@ -2610,7 +2954,68 @@ export async function runLoop(ctx, opts = {}) {
         advisoryScope: scopeAdvisory,
       });
     };
-    if (!declCheck.ok) {
+    // The executor's outcome line, read from the worktree's RESULT.md —
+    // untracked, so never in the branch diff above. A `reviewed:` outcome
+    // takes the read-and-unchanged branch below; anything else takes the
+    // declaration path it always took.
+    let reviewedResultText = '';
+    try {
+      const resultPath = join(worktree, RESULT_FILENAME);
+      if (existsSync(resultPath)) reviewedResultText = readFileSync(resultPath, 'utf8');
+    } catch {
+      reviewedResultText = '';
+    }
+    const reviewedPaths = reviewedPathsFromResultText(reviewedResultText);
+    if (reviewedPaths) {
+      // Read-and-unchanged merge (task 62): the set is the executor's paths
+      // intersected with the committed declaration, every path already
+      // `mismatched` at the merge base (the 61b join, the only source), no
+      // diff on a declared subject, and graph emptiness corroborated — all
+      // inside `checkReviewedMerge`, so this path and the tests share one
+      // implementation. The seam fires before any refusal below, with the
+      // merge base pinned, so the spawn is observed even where the checks
+      // then refuse.
+      const seamDecl = checkCommittedDeclaration(committedSource);
+      const seamSubjects = seamDecl.ok && !seamDecl.oldContract && Array.isArray(seamDecl.declared)
+        ? [...seamDecl.declared]
+        : [...reviewedPaths];
+      let reviewedAnalysis;
+      if (typeof opts.mergeGraphAnalysis === 'function') {
+        reviewedAnalysis = opts.mergeGraphAnalysis({
+          repoRoot: ctx.repoRoot, base: mergeBaseSha, branch, subjects: seamSubjects,
+        });
+      }
+      const checked = checkReviewedMerge({
+        repoRoot: ctx.repoRoot,
+        base: mergeBaseSha,
+        source: committedSource,
+        reviewedPaths,
+        contentPaths,
+        diffPaths: workDiffPaths,
+        resultText: reviewedResultText,
+        analysis: reviewedAnalysis,
+        sidecar: readSidecar(ctx.repoRoot, branch),
+      });
+      for (const w of checked.warnings ?? []) ctx.log(w);
+      if (!checked.ok) {
+        failMerge(checked.reason);
+        if (checked.retirement?.note) ctx.log(checked.retirement.note);
+      } else {
+        // A reviewed outcome BINDS pages: `mergeSubjects` is set EVEN
+        // though the diff is empty (and the merge otherwise advisory) — a
+        // null here falls back to the diff-derived set below, which is
+        // empty by construction, and the record would bind nothing for
+        // pages dispatched to ratify (mutation A's defect on this branch).
+        ctx.log(`reviewed: outcome ratifies ${checked.subjects.length} page(s): ${checked.subjects.join(', ')}`);
+        ctx.log(`merge subjects constituted from declaration ∩ reviewed (${checked.subjects.length}): ${checked.subjects.join(', ') || '(none)'}`);
+        mergeSubjects = [...checked.subjects];
+        mergeRetirement = checked.retirement;
+        if (mergeRetirement?.note) {
+          ctx.log(mergeRetirement.note);
+          result.note = result.note ? `${result.note} — ${mergeRetirement.note}` : mergeRetirement.note;
+        }
+      }
+    } else if (!declCheck.ok) {
       failMerge(declCheck.reason);
     } else if (declCheck.oldContract) {
       ctx.log(`old-contract branch (no committed items/declared_subjects) — completing under the single-item contract, no graph arm`);
@@ -2628,7 +3033,8 @@ export async function runLoop(ctx, opts = {}) {
       const advisory = declCheck.bindsNothing;
       // Task 56 constitution: the set comes from the committed declaration.
       // (On the read-and-unchanged outcome the executor's declared paths are
-      // intersected here — task 62's reader passes them; today: null.)
+      // intersected in the `reviewedPaths` branch above, through
+      // `checkReviewedMerge` — never here, and never from the diff.)
       const constituted = constituteMergeSubjects(committedSource);
       if (!constituted.ok) {
         failMerge(constituted.reason);
@@ -2901,8 +3307,12 @@ export async function runLoop(ctx, opts = {}) {
       //
       // Task 56 (root fix): the record binds the CONSTITUTED declaration, not
       // the measured diff — `mergeSubjects` from the gate above. Old-contract
-      // branches (null) keep the diff-derived set, exactly as before. A merge
-      // that bound nothing records nothing: the join reads the record as the
+      // branches (null) keep the diff-derived set, exactly as before. On a
+      // `reviewed:` outcome that set IS the executor's paths intersected with
+      // the declaration (set in the reviewed branch above, never null there),
+      // so the record binds the reviewed bytes — and the hashes below are
+      // read from the merged tree, never from the graph output (task 62).
+      // A merge that bound nothing records nothing: the join reads the record as the
       // piece(s) reviewed, and there is no piece.
       const subjects = mergeSubjects ?? joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
       const wrote = writeRecordSubjects(verdictPath(ctx, jobId, result.pass ?? 1), subjects, {

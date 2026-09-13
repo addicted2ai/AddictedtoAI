@@ -8,8 +8,10 @@
  *     done
  *     blocked: <one-line reason>
  *     capacity
+ *     reviewed: <path>[, <path>…]
  *
- * Everything else in the file is free-form notes the loop does not parse.
+ * Everything else in the file is free-form notes the loop does not parse,
+ * except for the sibling `graph-ack:` block parsed below.
  *
  * Two rules matter more than they look:
  *
@@ -39,23 +41,77 @@ End by writing a file named \`RESULT.md\` at the root of this worktree. Its
   action). This is a **successful** outcome, recorded as such. Reporting
   blocked is always better than producing something plausible.
 - \`capacity\` — you observed your own provider's limit.
+- \`reviewed: <path>[, <path>…]\` — the declared pages were read, judged sound,
+  and correctly left unchanged. Name every page, comma-separated. This is the
+  read-and-unchanged outcome: the branch diff stays empty, and the merge
+  ratifies the pages against the work order's committed declared subjects and
+  their review state — it never takes your word for which pages count.
 
 Everything after the first line is free-form notes; nothing reads them
-mechanically. Write no other status anywhere: this file is the only channel.
-If \`RESULT.md\` is absent or its first line is not one of the three forms, the
+mechanically except the sibling \`graph-ack:\` block a later section names.
+Write no other status anywhere: this file is the only channel.
+If \`RESULT.md\` is absent or its first line is not one of the four forms, the
 run is recorded as interrupted — the work is kept on the branch and resumed
 later, and no retry is consumed.`;
 
 const BLOCKED_RE = /^blocked:\s*(\S.*)$/;
+
+// ---------------------------------------------------------------------------
+// `reviewed:` — the read-and-unchanged outcome (Stage 2, task 62).
+//
+// Fourth first-line form: `reviewed: <path>[, <path>…]`. The parser below is
+// SYNTACTIC only — it splits the line into paths and normalises slashes. It
+// authorises nothing: the merge decides acceptance from the work order's
+// committed declared subjects and the task-61b review-state join, never from
+// this list alone, so an executor cannot widen its own authorisation.
+//
+// A `reviewed:` line with no path at all is malformed (an interrupted run,
+// like a `blocked:` with no reason), never an acceptance of nothing.
+// ---------------------------------------------------------------------------
+
+const REVIEWED_RE = /^reviewed:\s*(\S.*)$/;
+
+/** Normalise one reviewed path for set joins: POSIX slashes, trimmed. */
+export function normalizeReviewedPath(p) {
+  return String(p ?? '').replace(/\\/g, '/').trim();
+}
+
+/**
+ * Parse a `reviewed:` first line into its declared page paths.
+ *
+ * @param {string} firstLine  the trimmed first line of RESULT.md
+ * @returns {{ok: true, paths: string[]}|{ok: false, why: string}|null}
+ *   `null` where the line is not a `reviewed:` line at all; `ok: false`
+ *   where it starts like one but carries no path.
+ */
+export function parseReviewedLine(firstLine) {
+  const line = String(firstLine ?? '').trim();
+  if (!line.startsWith('reviewed:')) return null;
+  const m = REVIEWED_RE.exec(line);
+  if (!m) return { ok: false, why: '`reviewed:` names no page path' };
+  const paths = [
+    ...new Set(
+      m[1]
+        .split(',')
+        .map(normalizeReviewedPath)
+        .filter(Boolean),
+    ),
+  ];
+  if (!paths.length) return { ok: false, why: '`reviewed:` names no page path' };
+  return { ok: true, paths };
+}
 
 /**
  * Read and classify RESULT.md from the filesystem. Never accepts a status
  * from anywhere else.
  *
  * @param {string} worktree
- * @returns {{status: 'done'|'blocked'|'capacity'|'interrupted',
+ * @returns {{status: 'done'|'blocked'|'capacity'|'reviewed'|'interrupted',
  *            reason: string|null, malformed: boolean, present: boolean,
- *            firstLine: string|null, text: string|null, why: string}}
+ *            firstLine: string|null, text: string|null, why: string,
+ *            paths?: string[]}}
+ *   `paths` is present only on a `reviewed` status: the executor-declared
++ *   page paths, normalised and de-duplicated, in the order named.
  */
 export function readResult(worktree) {
   const path = join(worktree, RESULT_FILENAME);
@@ -90,6 +146,30 @@ export function readResult(worktree) {
       why: 'first line is a well-formed `blocked:` line',
     };
   }
+  const reviewed = parseReviewedLine(firstLine);
+  if (reviewed) {
+    if (!reviewed.ok) {
+      return {
+        status: 'interrupted',
+        reason: null,
+        malformed: true,
+        present: true,
+        firstLine,
+        text,
+        why: `${RESULT_FILENAME} first line is malformed: ${reviewed.why}`,
+      };
+    }
+    return {
+      status: 'reviewed',
+      reason: null,
+      malformed: false,
+      present: true,
+      firstLine,
+      text,
+      why: `first line is a well-formed \`reviewed:\` line naming ${reviewed.paths.length} page(s)`,
+      paths: reviewed.paths,
+    };
+  }
   return {
     status: 'interrupted',
     reason: null,
@@ -116,8 +196,8 @@ function matchingLine(text, pattern) {
  * Precedence, and why:
  *  - A runner's declared `capacity_stderr_pattern` wins over an absent file:
  *    the provider said so in its own words, which is better evidence than
- *    silence. It does NOT override an explicit `done`/`blocked` — if the
- *    executor finished and said something, that is what happened.
+  *    silence. It does NOT override an explicit `done`/`blocked`/`reviewed` — if the
+  *    executor finished and said something, that is what happened.
  *  - Killed at the cap with a well-formed file still honours the file: work
  *    that reported itself before the axe fell reported itself.
  *
@@ -146,6 +226,20 @@ export function classifyRun(run, fileResult, runner) {
     return {
       status: fileResult.status,
       reason: fileResult.reason,
+      evidence: fileResult.why,
+      producedNothing: false,
+      startupFailure: null,
+    };
+  }
+  if (fileResult.status === 'reviewed') {
+    // An explicit read-and-unchanged declaration wins over stderr exactly as
+    // `done`/`blocked` do: the executor finished and said something. The
+    // declared paths ride along so the merge can authorise them against the
+    // committed declaration — `classifyRun` never invents them.
+    return {
+      status: 'reviewed',
+      reason: null,
+      paths: Array.isArray(fileResult.paths) ? [...fileResult.paths] : [],
       evidence: fileResult.why,
       producedNothing: false,
       startupFailure: null,

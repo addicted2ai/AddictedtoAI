@@ -570,10 +570,11 @@ function graphRowBodyFor(result) {
  *   recorded argv, production returns absent where no index is wired.
  * @param {string} [o.reviewedOnly]  on a `reviewed:` brief, the one page that
  *   invocation reviews: the annex filters to that subject only. Production
- *   wiring is task 62's (the per-page reviewed-brief mode appends the filtered
- *   annex after that page's surface): no production caller passes this today,
- *   and none is added before that mode lands — wiring it now would be dead
- *   code. Unit-proved here via the reviewed-only arm.
+ *   callers: the author brief (unit-proved via the reviewed-only arm; no
+ *   author brief passes this in production) and the read-and-unchanged
+ *   review brief (`assembleReviewBrief` in `loop/lib/review.mjs`, task 62's
+ *   wiring — one page per invocation, annex appended after that page's
+ *   surface).
  * @param {string} [o.indexId]  index identifier carried in the sidecar.
  * @returns {{annexText: string, sidecar: object|null, queried: string[]}}
  */
@@ -1563,13 +1564,15 @@ this job type${ex.truncated ? ' (targeted; relevant material was omitted or cut 
     // the work source and before acceptance — by splicing on the acceptance
     // heading, so single-item briefs without work orders keep byte-identical
     // shape (no annex, no splice) and work-order briefs carry it early.
-    // DEFERRED (task 62's reviewed-brief mode): on a `reviewed:` brief the
-    // annex belongs appended after that page's reviewed surface (tasks.md's
-    // "filtered to the one page that invocation reviews and appended after
-    // that page's surface"), not spliced before acceptance. No brief renders
-    // a per-page surface section today, so there is nothing to append after;
-    // the `reviewedOnly` filter above is the half that can be proved now, and
-    // task 62 wires the placement when the mode lands. No behavior change here.
+    // REVIEWED PLACEMENT (task 62, the deferred note's wirer): on a
+    // `reviewed:` review brief the filtered annex belongs appended after that
+    // page's reviewed surface (tasks.md's "filtered to the one page that
+    // invocation reviews and appended after that page's surface"), not spliced
+    // before acceptance — and that placement lives in `assembleReviewBrief`
+    // (`loop/lib/review.mjs`), which renders the surface section the annex
+    // follows. This author brief keeps its splice: its `reviewedOnly` filter
+    // above is unit-proved (H1(e)) and no author brief renders a per-page
+    // surface. No behavior change here.
     const anchor = acceptanceChecksSection(governing);
     if (text.includes(anchor)) {
       text = text.replace(anchor, `${fitted}\n${anchor}`);
