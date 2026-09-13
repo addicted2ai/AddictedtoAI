@@ -843,7 +843,7 @@ function plantedRepo(t, id, list, extraFiles = {}, authorMode = 'done-content-pa
 }
 
 test('task 56 F1: a carried-file declaration plus its page diff merges (carried resolution)', async (t) => {
-  // The reconciliation GLM#1 demanded: the declared carried file's
+  // The reconciliation demanded by review: the declared carried file's
   // `subject:` field joins the union at constitution time (history-pinned at
   // the merge base), so the fixing page diff lies inside the declaration.
   const CARRIED_FIX = 'data/carried/fixture-fix-1.md';
