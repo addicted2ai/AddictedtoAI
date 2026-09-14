@@ -1,0 +1,18 @@
+import { writeFileSync } from 'node:fs';
+const url = 'https://openrouter.ai/api/v1/models';
+const out = [];
+out.push(`run at ${new Date().toString()}`, '');
+const res = await fetch(url);
+const body = await res.text();
+out.push(`=== GET ${url}`, `HTTP ${res.status} date: ${res.headers.get('date')}`, `content-length(chars): ${body.length}`);
+const j = JSON.parse(body);
+const ids = j.data.map((m) => m.id);
+out.push(`top-level keys: ${JSON.stringify(Object.keys(j))}`);
+out.push(`links: ${JSON.stringify(j.links ?? null)}`);
+out.push(`data.length: ${j.data.length}`);
+out.push(`distinct ids: ${new Set(ids).size}`);
+out.push(`every row has string id: ${j.data.every((m) => typeof m.id === 'string')}`);
+out.push('', '--- all ids, in response order ---', ...ids);
+writeFileSync(new URL('./openrouter-body.json', import.meta.url), body);
+writeFileSync(process.argv[2], out.join('\n') + '\n');
+console.log(out.slice(0, 10).join('\n'));
