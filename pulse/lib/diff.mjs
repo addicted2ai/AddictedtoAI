@@ -79,7 +79,7 @@
  * flip by any sign the snapshots carry: `moonshotai/kimi-k2.5` fell from
  * 0.0000006 / 0.000003 to 0.00000045 / 0.00000225 between the 2026-08-30 and
  * 2026-08-31 fetches — exactly 25% on both fields, no `pricing.overrides` — and
- * held that value in all 14 later snapshots. A headline cannot say whose rate it
+ * held that value in all 13 later snapshots. A headline cannot say whose rate it
  * is, so the snapshots alone cannot prove a vendor cut; they can only show it did
  * not oscillate. Either way there is no dated record that it moved, and the
  * catalog column shows the new number with nothing to say it changed.
