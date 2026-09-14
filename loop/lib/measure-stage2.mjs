@@ -6,7 +6,7 @@
  * task-52 store (`data/measurements.jsonl` — append-only, dated, methoded;
  * NEVER `data/launch.json`, which gate runs rewrite) and the rule set that
  * travels with every window it records. The rule's values are the authority's,
- * carried verbatim from `openspec/changes/two-desks-work-orders-and-trains/`
+ * carried verbatim from the open change two-desks-work-orders-and-trains,
  * task 68 (they were written in advance of any data; this file only records
  * and computes against them).
  *
