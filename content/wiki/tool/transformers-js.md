@@ -14,7 +14,7 @@ facts:
     source: cited
     value: "4.2.0"
     source_url: https://registry.npmjs.org/@huggingface/transformers/latest
-    accessed: "2026-08-28"
+    accessed: "2026-09-14"
     volatility: fast
   - field: license
     source: cited
