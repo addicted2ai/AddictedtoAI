@@ -50,8 +50,8 @@ encounter: anyone could open a browser and address a language model directly.
 The interface was the visible part of a specific training pipeline. OpenAI
 started with supervised fine-tuning on conversations in which human trainers
 played both sides. It then collected comparisons of two or more model
-responses, trained a reward model from those rankings, and used that model for
-reinforcement-learning fine-tuning. ChatGPT was fine-tuned from a GPT-3.5-series
+responses, trained a reward model from those rankings, and used that reward
+model to fine-tune the chatbot with Proximal Policy Optimization. ChatGPT was fine-tuned from a GPT-3.5-series
 model whose training had finished in early 2022.
 
 That directness mattered. The interface made generation look conversational,
