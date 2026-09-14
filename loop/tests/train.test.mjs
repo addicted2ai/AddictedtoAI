@@ -59,6 +59,7 @@ import {
   dirtyPaths,
   ensureTrainBranch,
   evaluateTriggers,
+  fastForwardMain,
   MANIFEST_PATH,
   mergeSubjects,
   pendingMerges,
@@ -765,4 +766,86 @@ test('runLoop idle: stale pending with an empty queue and no admission fires the
   assert.equal(res.outcome, 'interrupted', `tripwire environmental books interrupted:\n${ctx.output()}`);
   assert.match(ctx.output(), /idle trigger/, 'the idle trigger fired on stale pending with an empty queue');
   assert.ok(existsSync(join(ctx.repoRoot, '.train', 'manifest.json')), 'assembly ran on the idle trigger');
+});
+
+test('row-68c: main advances mid-train while the Pulse is disabled — the train merges main in and re-runs its gates, nothing widened', async () => {
+  // Synthetic-Pulse mid-train proving (task 68c, gates Stage 3's boundary):
+  // same task-37 fixture policy as K throughout — throwaway repo, real git
+  // plumbing, gate spawns stubbed by injection (the SUT takes the gates
+  // function itself), never a push. "The Pulse's own publish" here is one
+  // gated main commit the fixture makes directly; the arm asserts what
+  // task 47's run-log proves live: the next train merges main for gates
+  // (MAIN_MERGE_MARKER) and re-freezes the manifest instead of widening
+  // anything. The Stage-2 candidate source while the Pulse is down is the
+  // DERIVED QUEUE plus routed beads (no Pulse probe): asserted here as the
+  // queue persisting through the merge window. LIVE re-prove on the
+  // Pulse's re-enable stays the row's own scheduled condition (row text).
+  const { repo, cleanup } = trainRepo();
+  try {
+    // Train 1: one job merge works through the real path.
+    const train1 = happyTrain(repo, ['job-a']);
+    const tr1 = await runTrain(ctxFor(repo), {
+      repo, trainId: train1.asm.manifest.train, manifest: train1.asm.manifest,
+      gates: train1.gates, rederive: train1.rederive, review: train1.review,
+    });
+    assert.equal(tr1.ok, true, tr1.reason ?? 'train-1 refused');
+    // The publish end (rows 45/46): the declared SHA lands on main — the
+    // fixture stands in for the gated publish by the exported instrument.
+    const ff = fastForwardMain(repo, tr1.sha);
+    assert.equal(ff.ok, true, ff.note ?? 'fast-forward refused');
+    // The job-2 branch forks from pre-pulse main, exactly as a real Desk job
+    // forks from the base it was selected at: author the branch BEFORE the
+    // pulse commit moves main, then advance main past it.
+    git(repo, ['checkout', '--quiet', 'main']);
+    git(repo, ['checkout', '--quiet', '-b', 'job/job-b']);
+    mkdirSync(join(repo, 'content'), { recursive: true });
+    writeFileSync(join(repo, 'content', 'b2.md'), '# b2\n', 'utf8');
+    git(repo, ['add', '--', 'content/b2.md']);
+    git(repo, ['commit', '--quiet', '--no-verify', '-m', 'work job-b']);
+    // Bring the forked job onto train the way the intake step does.
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    git(repo, ['merge', '--quiet', '--no-ff', '--no-verify', '-m', 'job job-b (repair): job-b work', 'job/job-b']);
+    appendJobLines(repo, ['job-b']);
+    // Assemble train 2 BEFORE the pulse commit: the same admitted job-merge
+    // set re-fits against pre-advance main (the base it was admitted at) —
+    // the base the ordered run's pre-gate merge then lifts.
+    const asm2 = assembleTrain(repo, { trainId: 't-68c-second', bounds: BOUNDS });
+    assert.equal(asm2.ok, true, asm2.reason ?? 'assembly refused');
+    assert.equal(asm2.manifest.merges.length, 1, 'nothing widened into this train');
+    // The candidate source while down: the derived queue holds work and no
+    // Pulse probe is needed — the queue file persists through the merge.
+    assert.ok(existsSync(join(repo, 'data', 'derived', 'queue.json')), 'the candidate source is the derived queue while the Pulse is down');
+    // Mid-train "Pulse" output: the disabled Pulse's published work lands on
+    // MAIN while the train branch idles (same shape as every proving run's
+    // live line "main is ahead of the train").
+    git(repo, ['checkout', '--quiet', 'main']);
+    mkdirSync(join(repo, 'content'), { recursive: true });
+    writeFileSync(join(repo, 'content', 'pulse-published.md'), '# pulse\n', 'utf8');
+    git(repo, ['add', '--', 'content/pulse-published.md']);
+    git(repo, ['commit', '--quiet', '--no-verify', '-m', 'pulse work (fixture, main-only)']);
+    const mainAfter = git(repo, ['rev-parse', 'main']).trim();
+    assert.notEqual(mainAfter, tr1.sha, 'the pulse commit advanced main past the train tip');
+    // Back onto the train branch: the ordered run executes on the training
+    // branch itself (not on main), which is what makes the pre-gate main
+    // merge (MAIN_MERGE_MARKER) mandatory here.
+    git(repo, ['checkout', '--quiet', TRAIN_BRANCH]);
+    const gates2 = stubGates();
+    const rederive2 = stubRederive();
+    const review2 = stubReview();
+    const tr2 = await runTrain(ctxFor(repo), {
+      repo, trainId: asm2.manifest.train, manifest: asm2.manifest,
+      gates: gates2, rederive: rederive2, review: review2,
+    });
+    assert.equal(tr2.ok, true, tr2.reason ?? 'the post-main-advance train refused');
+    // The pre-gate main merge happened BETWEEN the old tip and train 2's
+    // ordered run, carrying the marker; the manifest was re-frozen over the
+    // merged base; the gates re-ran ONCE per stage as on any train.
+    const log = git(repo, ['log', '--format=%s', TRAIN_BRANCH]).split('\n');
+    assert.match(log.join('\n'), /merge main for gates \(train-main-merge\)/, 'the train merged main for its gates');
+    assert.equal(asm2.manifest.mainTip, mainAfter, 'the manifest re-froze onto the advanced main tip');
+    assert.deepEqual(gates2.calls, [[...TRAIN_GATES], ['build', 'verify-launch', 'verify-surfaces']], 'the gates re-ran the full set, not a widened one');
+    // Nothing widened: same ordered-run shape as the K arm.
+  } finally {
+    cleanup();
+  }
 });
