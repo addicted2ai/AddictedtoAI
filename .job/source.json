@@ -1,0 +1,21 @@
+{
+  "job": "j-20260913-02",
+  "type": "repair",
+  "source": "queue",
+  "slug": null,
+  "path": null,
+  "issues": [],
+  "items": [
+    {
+      "bead": null,
+      "type": "repair",
+      "subjects": [
+        "content/wiki/model/mistralai-codestral-2508-batch.md"
+      ],
+      "reason": "Feed row live again but slug-collides with an entry that does not declare it"
+    }
+  ],
+  "declared_subjects": [
+    "content/wiki/model/mistralai-codestral-2508-batch.md"
+  ]
+}
