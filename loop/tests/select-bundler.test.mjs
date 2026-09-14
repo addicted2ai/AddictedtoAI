@@ -30,6 +30,7 @@ import {
   coherenceKey,
   workOrderBounds,
 } from '../lib/select.mjs';
+import { declarationFromOrder, workOrderItemForCandidate } from '../run.mjs';
 
 /** Minimal config: the category map the coherence key reads, no work_order block. */
 const CFG = {
@@ -386,3 +387,89 @@ test('task 53: max_items 4 and max_subjects 4 bound the bundle; config overrides
     /work_order\.max_items must be a positive number/,
   );
 });
+
+test('row 53 conformance: two proposal-shaped candidates with fm subjects {A,B} and {A,C} cohere on the shared sorted-first subject', () => {
+  // The post-fix emitter shape: the candidate carries its parsed front matter
+  // (proposals.mjs attaches `fm`), and candidateSubjects reads (and SORTS)
+  // fm.subjects — so the shared anchor must sort FIRST in BOTH items' lists
+  // (`content/wiki/event/…` sorts before `content/wiki/model/…`), because the
+  // coherence key reads the normalized list's subjects[0].
+  const proposalWith = (slug, subjects) => ({
+    source: 'proposal',
+    type: 'repair',
+    slug,
+    path: join(tmpdir(), 'atai-proposals', `${slug}.md`),
+    ageDays: 5,
+    expires: '2026-09-14',
+    discardedAttempts: 0,
+    preempts: false,
+    title: `Proposal ${slug}`,
+    detail: `Proposal ${slug}\n\nBody.`,
+    evidence: null,
+    issues: [],
+    fm: { slug, subjects },
+  });
+  const item1 = proposalWith('anchor-defect-b', [
+    'content/wiki/model/defect-b.md',
+    'content/wiki/event/shared-anchor.md',
+  ]);
+  const item2 = proposalWith('anchor-defect-c', [
+    'content/wiki/model/defect-c.md',
+    'content/wiki/event/shared-anchor.md',
+  ]);
+  const cat = { category: 'upkeep' };
+  // The anchor sorts first in BOTH normalized lists — the D6 key's subjects[0].
+  assert.deepEqual(candidateSubjects(item1), [
+    'content/wiki/event/shared-anchor.md',
+    'content/wiki/model/defect-b.md',
+  ]);
+  assert.equal(
+    coherenceKey(item1, cat),
+    `upkeep\nsubject:content/wiki/event/shared-anchor.md`,
+  );
+  assert.deepEqual(coherenceKey(item2, cat), coherenceKey(item1, cat));
+
+  const { orders, refusals } = bundleWorkOrders([item1, item2], {
+    cfg: CFG,
+    measure: (subject) => (subject === 'content/wiki/event/shared-anchor.md' ? 5000 : 8000),
+  });
+  assert.equal(refusals.length, 0);
+  assert.equal(orders.length, 1, 'the pair bundles into ONE work order');
+  assert.equal(orders[0].items.length, 2);
+  // Sorted union of every item's subjects — the O10 contract.
+  assert.deepEqual(orders[0].subjects, [
+    'content/wiki/event/shared-anchor.md',
+    'content/wiki/model/defect-b.md',
+    'content/wiki/model/defect-c.md',
+  ]);
+});
+
+test('row 53 conformance: declarationFromOrder puts proposal fm subjects into items and the sorted union', () => {
+  const candidate = {
+    source: 'proposal',
+    type: 'repair',
+    slug: 'carries-fm',
+    path: join(tmpdir(), 'atai-proposals', 'carries-fm.md'),
+    ageDays: 5,
+    expires: null,
+    discardedAttempts: 0,
+    preempts: false,
+    title: 'Carries fm',
+    detail: 'Body.',
+    evidence: null,
+    issues: [],
+    fm: { slug: 'carries-fm', subjects: ['content/wiki/model/defect-b.md', 'content/wiki/model/shared-anchor.md'] },
+  };
+  const item = workOrderItemForCandidate(candidate);
+  assert.deepEqual(item.subjects, [
+    'content/wiki/model/defect-b.md',
+    'content/wiki/model/shared-anchor.md',
+  ]);
+  assert.deepEqual(item.origin, { kind: 'proposal', slug: 'carries-fm', path: join(tmpdir(), 'atai-proposals', 'carries-fm.md').replace(/\\/g, '/') });
+  const decl = declarationFromOrder({ items: [candidate], governingType: 'repair' });
+  assert.deepEqual(decl.declared_subjects, [
+    'content/wiki/model/defect-b.md',
+    'content/wiki/model/shared-anchor.md',
+  ]);
+});
+

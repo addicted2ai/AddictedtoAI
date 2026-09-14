@@ -40,6 +40,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { readProposals, sweepExpiredProposals, readExpiry, localDate } from '../lib/proposals.mjs';
+import { candidateSubjects } from '../lib/select.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MODULE = pathToFileURL(join(HERE, '..', 'lib', 'proposals.mjs')).href;
@@ -327,4 +328,78 @@ test('localDate is the local calendar day, not the UTC one', () => {
   const d = new Date(2026, 8, 10, 23, 30, 0);
   assert.equal(localDate(d), '2026-09-10');
   assert.match(localDate(new Date()), /^\d{4}-\d{2}-\d{2}$/);
+});
+
+// ---------------------------------------------------------------------------
+// Row 53 conformance (two-desks-work-orders-and-trains): declared front-matter
+// subjects ride the candidate for the work-order machinery to bundle on.
+// ---------------------------------------------------------------------------
+
+test('row 53: declared fm subjects survive readProposals onto the ripe candidate', () => {
+  const t = tree();
+  plant(t.proposalsDir, 'declared-subject-entry', {
+    expires: '2026-09-14',
+    extra: 'subjects:\n  - content/wiki/model/some-model.md\n  - content/wiki/org/some-org.md',
+  });
+
+  const read = readProposals(ctxFor(t));
+  const ripe = read.ripe.find((r) => r.slug === 'declared-subject-entry');
+  assert.ok(ripe, 'the subject-bearing proposal is ripe');
+  // The reader (candidateSubjects, select.mjs) normalizes exactly fm.subjects;
+  // the emitter must not invent anything else.
+  assert.deepEqual(ripe.fm.subjects, [
+    'content/wiki/model/some-model.md',
+    'content/wiki/org/some-org.md',
+  ]);
+  // The surface the machinery actually reads: candidateSubjects' OUTPUT.
+  // An assertion on fm alone cannot see an emission that bypasses it.
+  assert.deepEqual(candidateSubjects(ripe), [
+    'content/wiki/model/some-model.md',
+    'content/wiki/org/some-org.md',
+  ]);
+});
+
+test('row 53: a subject-less proposal carries no subjects key content and stays pathless', () => {
+  const t = tree();
+  plant(t.proposalsDir, 'plain-entry', { expires: '2026-09-14' });
+
+  const read = readProposals(ctxFor(t));
+  const ripe = read.ripe.find((r) => r.slug === 'plain-entry');
+  assert.ok(ripe, 'ripe');
+  assert.deepEqual(ripe.fm.subjects, undefined);
+  assert.deepEqual(candidateSubjects(ripe), []);
+});
+
+test('row 53: subject-like text in the summary/body is never a subject', () => {
+  const t = tree();
+  plant(t.proposalsDir, 'prose-path-entry', {
+    type: 'repair',
+    expires: '2026-09-14',
+    extra: 'summary: >-\n  Fix the missing row on content/wiki/model/prose-named-model.md now.',
+  });
+
+  const read = readProposals(ctxFor(t));
+  const ripe = read.ripe.find((r) => r.slug === 'prose-path-entry');
+  assert.ok(ripe, 'ripe');
+  assert.deepEqual(ripe.fm.subjects, undefined);
+  // THE prohibition surface: whatever text carries a path, the candidate's
+  // OWN subjects output (not just the fm field) stays empty. candidateSubjects'
+  // first branch reads candidate.subjects directly — an emitter that copies
+  // prose there is exactly the defect this assertion exists to catch.
+  assert.deepEqual(candidateSubjects(ripe), []);
+  assert.match(ripe.detail, /content\/wiki\/model\/prose-named-model\.md/, 'the prose is carried as detail only');
+});
+
+test('row 53: the SINGULAR subject: form is carried exactly as documented', () => {
+  const t = tree();
+  plant(t.proposalsDir, 'singular-subject-entry', {
+    expires: '2026-09-14',
+    extra: 'subject: content/wiki/model/singular-model.md',
+  });
+
+  const read = readProposals(ctxFor(t));
+  const ripe = read.ripe.find((r) => r.slug === 'singular-subject-entry');
+  assert.ok(ripe, 'ripe');
+  assert.deepEqual(ripe.fm.subject, 'content/wiki/model/singular-model.md');
+  assert.deepEqual(candidateSubjects(ripe), ['content/wiki/model/singular-model.md']);
 });

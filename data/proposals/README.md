@@ -3,7 +3,13 @@
 The only model-originated source of work (`specs/loop`). One markdown file
 per proposal, front matter declaring a date, a kebab-case `slug`, the job
 type it proposes (from the closed list), a one-paragraph summary, and the
-evidence that prompted it.
+evidence that prompted it. A proposal MAY also declare its subjects
+structurally — `subject:` (one path) or `subjects:` (a list) — which become
+the work-order subjects selection bundles on (row 53: declared front matter
+only; the title, summary and body are never read as subjects, and the
+proposal's own file pointer never counts as one). A proposal that declares
+no subjects stays pathless and coheres on its category plus source cohort,
+exactly as before.
 
 A proposal cools for at least 3 days (file age) before it is selectable,
 unless it declares an `expires:` date, which buys it selection without cooling

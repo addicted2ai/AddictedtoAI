@@ -278,6 +278,14 @@ export function readProposals(ctx) {
       title: p.fm.title ?? p.fm.summary ?? slug,
       detail: `${p.fm.summary ?? ''}\n\n${p.body}`.trim(),
       evidence: p.fm.evidence ?? null,
+      // Row 53 (two-desks-work-orders-and-trains): per-candidate subjects come
+      // from declared front matter. The candidate carries the PARSED
+      // front matter and `candidateSubjects` (select.mjs) normalizes exactly
+      // `fm.subject`/`fm.subjects` — nothing else on it is read, so title,
+      // summary, body and the proposal's own file pointer stay forbidden as
+      // subject sources. A proposal with no declared subject carries whatever
+      // fm it has and stays pathless, cohort-cohering as before.
+      fm: p.fm,
       // Carried to the ledger line the run appends, so "what did the machine
       // ever do about addictedtoai-X" is one grep of one file.
       issues: issues.ids,
