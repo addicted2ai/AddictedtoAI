@@ -2719,13 +2719,23 @@ the brief under `evidence/reviews/`.
       logs impl-s2-68b-run*.log, `data/ledger.jsonl` lines
       j-20260913-01..j-20260913-05, `data/reviews/j-20260913-0[1-5].md`,
       `data/proposals/consumed/`. **[orchestrator]**
-- [ ] 68c. **Synthetic-Pulse mid-train proving (Pulse disabled).** In a fixture
+- [x] 68c. **Synthetic-Pulse mid-train proving (Pulse disabled).** In a fixture
       under the task-37 policy (throwaway repository, bare origin, stubbed spawn
       seams): advance `main` mid-train while the Pulse is disabled and assert the
       train merges `main` in again and re-runs its gates rather than widening
       anything (task 47's path). States the Stage-2 candidate source while down
       (derived queue plus routed beads, no Pulse probing) and schedules a live
       re-prove on re-enable. Tests task 47.
+      - Mechanism + test: the row-68c arm in `loop/tests/train.test.mjs` (landed
+        2026-09-14, commit 24c96f0) drives the ordered run on the train branch
+        while a fixture main commit advances `main`; asserts the pre-gate merge
+        carries MAIN_MERGE_MARKER, the manifest re-freezes onto the advanced main
+        Tip, the gates rerun the full set, and nothing widens. Council round 3/3
+        (Muse root-caused the one transient red as a fixture checkout slip — the
+        ordered run executes ON the train branch; Luna's probe verdict validated
+        the production ordering; no machinery change, no sealed dispatch).
+      - The live re-prove scheduled on the Pulse's re-enable remains the row's
+        own standing condition (row text), fired at the maintainer's flip.
 
 ## Stage 3 — intake, the two desks, more than one worker
 
