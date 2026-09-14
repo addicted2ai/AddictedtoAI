@@ -2058,6 +2058,12 @@
         "file": "content/wiki/concept/openai-daybreak.md"
       },
       {
+        "url": "/wiki/event/hugging-face-agent-intrusion",
+        "title": "The Hugging Face Agent Intrusion",
+        "type": "entry",
+        "file": "content/wiki/event/hugging-face-agent-intrusion.md"
+      },
+      {
         "url": "/wiki/model/openai-gpt-5-4",
         "title": "OpenAI: GPT-5.4",
         "type": "entry",
@@ -2996,6 +3002,12 @@
         "file": "content/wiki/event/gpt-2-staged-release.md"
       },
       {
+        "url": "/wiki/event/hugging-face-agent-intrusion",
+        "title": "The Hugging Face Agent Intrusion",
+        "type": "entry",
+        "file": "content/wiki/event/hugging-face-agent-intrusion.md"
+      },
+      {
         "url": "/wiki/model/openai-gpt-5-4",
         "title": "OpenAI: GPT-5.4",
         "type": "entry",
@@ -3439,6 +3451,12 @@
       }
     ],
     "tool/hugging-face-hub": [
+      {
+        "url": "/wiki/event/hugging-face-agent-intrusion",
+        "title": "The Hugging Face Agent Intrusion",
+        "type": "entry",
+        "file": "content/wiki/event/hugging-face-agent-intrusion.md"
+      },
       {
         "url": "/wiki/event/stable-diffusion-release",
         "title": "The Stable Diffusion Release",

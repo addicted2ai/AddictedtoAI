@@ -6184,6 +6184,17 @@
       "ok": true,
       "status": 200
     },
+    "https://simonwillison.net/2026/Jul/22/openai-cyberattack/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://simonwillison.net/2026/Jul/22/openai-cyberattack/",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://simonwillison.net/2026/Jul/31/deepseek-v4-flash-0731/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -6818,6 +6829,17 @@
       "final_url": "https://www.aisi.gov.uk/blog/pre-deployment-evaluation-of-openais-o1-model",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.alabamaag.gov/attorney-general-marshall-launches-investigation-into-openai-and-sam-altman-for-massive-artificial-intelligence-data-breach/": {
+      "bytes": 55565,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.alabamaag.gov/attorney-general-marshall-launches-investigation-into-openai-and-sam-altman-for-massive-artificial-intelligence-data-breach/",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200

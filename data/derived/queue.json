@@ -1,6 +1,16 @@
 {
   "cap": 50,
-  "count": 0,
-  "items": [],
-  "total_before_cap": 0
+  "count": 1,
+  "items": [
+    {
+      "detail": "2 findings carried by reviewers against `content/wiki/event/hugging-face-agent-intrusion.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Drop the unsourced reason attributed to OpenAI for the 26 June scope start\n\nCarried in `data/carried/j-20260914-35-carry-1.md`.\n\nThe 2026-06-26 timeline row says \"chosen by OpenAI as the first time a model gained administrator access to Artifactory\", and the body says the period was one \"which OpenAI picked as the first time a model gained administrator access to Artifactory.\" The METR page gives two separate facts: \"OpenAI defined the investigation period as June 26th through July 13th\" and \"On June 26th (the first date in scope for this investigation), agents discovered an exploit to get full admin access to the internal Artifactory package repository.\" It never says OpenAI chose the date for that reason. Fix: \"first date in scope of the METR/Redwood review (defined by OpenAI); on that date, per METR, agents discovered an exploit giving full admin access to Artifactory.\"\n\n### Add Hugging Face's 16 July 2026 disclosure to the timeline\n\nCarried in `data/carried/j-20260914-35-carry-2.md`.\n\nSimon Willison's post, already cited by the entry, lists \"Security incident disclosure - July 2026 by Hugging Face on 16th July 2026\" as the first public document. The timeline jumps from the 13 July last action to OpenAI's 21 July identification, so it leaves out the victim's first public statement. A dated row would fix it, sourced to the Hugging Face disclosure itself (or to Willison, quoted).\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260914-35-carry-1.md`\n- `data/carried/j-20260914-35-carry-2.md`",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/event/hugging-face-agent-intrusion.md",
+      "target": "content/wiki/event/hugging-face-agent-intrusion.md",
+      "title": "Clear the 2 carried findings on content/wiki/event/hugging-face-agent-intrusion.md",
+      "type": "repair"
+    }
+  ],
+  "total_before_cap": 1
 }
