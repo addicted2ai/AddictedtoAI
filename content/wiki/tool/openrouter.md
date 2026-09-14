@@ -10,9 +10,9 @@ aliases:
 facts:
   - field: models_listed
     source: cited
-    value: 398
+    value: 447
     source_url: https://openrouter.ai/api/v1/models
-    accessed: "2026-08-28"
+    accessed: "2026-09-14"
     volatility: fast
   - field: models_endpoint
     source: cited
