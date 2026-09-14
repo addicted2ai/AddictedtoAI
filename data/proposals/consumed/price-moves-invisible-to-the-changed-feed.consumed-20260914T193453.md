@@ -16,3 +16,18 @@ Measured in this branch's worktree on 2026-08-31 by reading the two committed sn
 ## Origin
 
 Transcribed by the loop from the verdict record for job j-20260831-04 (`j-20260831-04.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a proposal it noticed reaches the work sources only by being written in its record and copied here. The reviewing job is named above as its origin.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-14
+- job: j-20260914-33 (machinery)
+- merged as: `337dcff9806015230326a2e1720634925f6459d2`
+- produced: (the merge produced no joinable artifact)
+- was: `price-moves-invisible-to-the-changed-feed.md` (slug `price-moves-invisible-to-the-changed-feed`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
