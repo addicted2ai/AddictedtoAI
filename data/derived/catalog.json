@@ -2497,7 +2497,7 @@
       "context_window": "262144",
       "created": 1773695685,
       "display_name": "Mistral: Mistral Small 4 (batch)",
-      "entry_id": null,
+      "entry_id": "model/mistralai-mistral-small-2603-batch",
       "expiration_date": null,
       "price_input": "0.000000075",
       "price_output": "0.0000003",

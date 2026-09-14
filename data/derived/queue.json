@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 7,
+  "count": 6,
   "items": [
-    {
-      "detail": "openrouter-models row \"mistralai/mistral-small-2603:batch\" is present in the latest snapshot; its slug would land on content/wiki/model/mistralai-mistral-small-2603-batch.md (model/mistralai-mistral-small-2603-batch, status retired), which does not declare it — minting refuses to overwrite an existing entry, so this row mints nothing and the refusal repeats every run. If the entry covers the same subject, restore its feeds: binding; if this is a genuine collision between two different subjects, resolve it (rename the entry, or otherwise disambiguate) rather than leaving the row permanently unminted.",
-      "rank": 82,
-      "reason": "slug-collision",
-      "subject": "openrouter-models:mistralai/mistral-small-2603:batch",
-      "target": "content/wiki/model/mistralai-mistral-small-2603-batch.md",
-      "title": "Feed row live again but slug-collides with an entry that does not declare it",
-      "type": "repair"
-    },
     {
       "detail": "accessed 2026-08-28, 3d past its 14d fast interval",
       "rank": 65,
@@ -62,5 +53,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 7
+  "total_before_cap": 6
 }

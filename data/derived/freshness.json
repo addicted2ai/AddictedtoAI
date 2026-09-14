@@ -99,11 +99,11 @@
   ],
   "date": "2026-09-14",
   "link_check": {
-    "checked": 3,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 10,
     "drifted": 0,
-    "due": 3,
+    "due": 0,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 20,
@@ -841,15 +841,7 @@
     }
   ],
   "reference_drift": [],
-  "slug_collisions": [
-    {
-      "entry_id": "model/mistralai-mistral-small-2603-batch",
-      "entry_status": "retired",
-      "path": "content/wiki/model/mistralai-mistral-small-2603-batch.md",
-      "row_id": "mistralai/mistral-small-2603:batch",
-      "source": "openrouter-models"
-    }
-  ],
+  "slug_collisions": [],
   "sources": [
     {
       "days_since_change": 6,
