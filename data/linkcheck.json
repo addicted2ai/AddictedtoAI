@@ -3544,6 +3544,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/NousResearch/Hermes-4-70B": {
+      "bytes": 281572,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/NousResearch/Hermes-4-70B",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/NousResearch/Hermes-4.3-36B/raw/main/README.md": {
       "bytes": 9666,
       "consecutive_failures": 0,
@@ -4622,6 +4633,17 @@
       "ok": true,
       "status": 200
     },
+    "https://nousresearch.com/releases": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://nousresearch.com/releases",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/1904": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4990,6 +5012,28 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-pro:free/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/nousresearch/hermes-4-405b/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/nousresearch/hermes-4-405b/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/nousresearch/hermes-4-70b/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/nousresearch/hermes-4-70b/endpoints",
       "last_checked": "2026-09-14",
       "last_ok": "2026-09-14",
       "meta_refresh": null,
@@ -5377,6 +5421,17 @@
       "final_url": "https://openrouter.ai/nousresearch/hermes-4-405b",
       "last_checked": "2026-09-07",
       "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nousresearch/hermes-4-70b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nousresearch/hermes-4-70b",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200

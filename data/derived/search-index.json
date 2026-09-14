@@ -3871,7 +3871,7 @@
       "s": "active",
       "i": "model/nousresearch-hermes-4-70b",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/nvidia-nemotron-3-5-content-safety",
