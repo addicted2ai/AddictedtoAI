@@ -3831,7 +3831,7 @@
       "s": "active",
       "i": "model/nex-agi-nex-n2-pro",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/nousresearch-hermes-3-llama-3-1-405b",

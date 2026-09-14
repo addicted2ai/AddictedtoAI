@@ -4127,11 +4127,33 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/nex-agi/Nex-N2-Pro": {
+      "bytes": 264982,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/nex-agi/Nex-N2-Pro",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/nex-agi/Nex-N2-mini": {
       "bytes": 261005,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://huggingface.co/nex-agi/Nex-N2-mini",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/nex-agi/Nex-N2.5-Pro": {
+      "bytes": 420155,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/nex-agi/Nex-N2.5-Pro",
       "last_checked": "2026-09-14",
       "last_ok": "2026-09-14",
       "meta_refresh": null,
@@ -4941,11 +4963,33 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/nex-agi/nex-n2-pro/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/nex-agi/nex-n2-pro/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-mini:free/endpoints": {
       "bytes": null,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-mini:free/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-pro:free/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-pro:free/endpoints",
       "last_checked": "2026-09-14",
       "last_ok": "2026-09-14",
       "meta_refresh": null,
@@ -5276,6 +5320,17 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://openrouter.ai/nex-agi/nex-n2-mini",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nex-agi/nex-n2-pro": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nex-agi/nex-n2-pro",
       "last_checked": "2026-09-14",
       "last_ok": "2026-09-14",
       "meta_refresh": null,

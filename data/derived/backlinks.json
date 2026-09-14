@@ -1726,6 +1726,14 @@
         "file": "content/wiki/model/nex-agi-nex-n2-mini.md"
       }
     ],
+    "model/nex-agi-nex-n2-5-pro-free": [
+      {
+        "url": "/wiki/model/nex-agi-nex-n2-pro",
+        "title": "Nex AGI: Nex-N2-Pro",
+        "type": "entry",
+        "file": "content/wiki/model/nex-agi-nex-n2-pro.md"
+      }
+    ],
     "model/nousresearch-hermes-3-llama-3-1-405b": [
       {
         "url": "/wiki/org/nous-research",
