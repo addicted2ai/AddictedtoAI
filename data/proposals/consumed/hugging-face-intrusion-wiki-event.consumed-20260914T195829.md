@@ -73,3 +73,18 @@ bigger omission on its own — the company hosts a large share of the open-weigh
 ecosystem the rest of the corpus references constantly, and the site currently
 knows it only as a directory listing.
 </content>
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-14
+- job: j-20260914-35 (entry)
+- merged as: `c839597d61288e2f4c4e214329838244177a637e`
+- produced: `content/wiki/event/hugging-face-agent-intrusion.md`
+- was: `hugging-face-intrusion-wiki-event.md` (slug `hugging-face-intrusion-wiki-event`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
