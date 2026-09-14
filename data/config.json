@@ -1,5 +1,5 @@
 {
-  "publish": false,
+  "publish": true,
   "budget": {
     "window_days": 30,
     "categories": {
