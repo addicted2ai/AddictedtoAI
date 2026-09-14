@@ -1,15 +1,7 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 1,
   "items": [
-    {
-      "detail": "openrouter-models z-ai/glm-4.5v status: deprecated -> active on 2026-09-09",
-      "rank": 50,
-      "reason": "uninterpreted-status-change",
-      "subject": "openrouter-models|c445d17afde865af|5881134797f7ecd5|z-ai/glm-4.5v|status",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
     {
       "detail": "The new body paragraph says OpenAI \"used that model for reinforcement-learning fine-tuning\". The cited archived post names the algorithm outright — \"Using these reward models, we can fine-tune the model using Proximal Policy Optimization\" — so the specific mechanism specs/editorial asks for is available at zero sourcing cost and was generalised away. Replacing the phrase with \"fine-tuned it with Proximal Policy Optimization\" would fix it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260908-15 (`j-20260908-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -20,5 +12,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 1
 }
