@@ -16,7 +16,7 @@ facts:
     source: cited
     value: "1.29.0"
     source_url: https://registry.npmjs.org/onnxruntime-web/latest
-    accessed: "2026-08-28"
+    accessed: "2026-09-14"
     volatility: fast
   - field: license
     source: cited
