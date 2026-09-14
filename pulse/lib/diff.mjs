@@ -63,6 +63,27 @@
  * artifacts are large (a 60% clock flip, a 14.7x routing flip) and a genuine
  * 2% repricing is small. A threshold suppresses the news and passes the noise.
  *
+ * ### What the flag costs today, measured rather than assumed
+ *
+ * The trade was made as a gap, not a destination (addictedtoai-8ho): the
+ * replacement is `vendorPriceChanges` below, keyed to a vendor-posted rate, and
+ * it emits only for a source that declares a `companion`. **No source in the
+ * registry declares one** — measured 2026-09-14 (job j-20260914-33), so that
+ * path returns `[]` on every run, and the changed feed carries NO price event of
+ * any kind. The 16 price lines in `data/changes.jsonl` are all dated 2026-08-29,
+ * written before the flag landed.
+ *
+ * Replaying every committed `previous.json`/`latest.json` pair through this
+ * function (17 distinct pairs, 2026-08-28 to 2026-09-14): 285 price lines would
+ * have emitted with `event: false` cleared, 0 did. One of them was not a routing
+ * flip by any sign the snapshots carry: `moonshotai/kimi-k2.5` fell from
+ * 0.0000006 / 0.000003 to 0.00000045 / 0.00000225 between the 2026-08-30 and
+ * 2026-08-31 fetches — exactly 25% on both fields, no `pricing.overrides` — and
+ * held that value in all 14 later snapshots. A headline cannot say whose rate it
+ * is, so the snapshots alone cannot prove a vendor cut; they can only show it did
+ * not oscillate. Either way there is no dated record that it moved, and the
+ * catalog column shows the new number with nothing to say it changed.
+ *
  * ## Clock-scheduled values (`schedule_rule`)
  *
  * A source may republish a figure on a **timetable**, so two fetches at
@@ -661,10 +682,18 @@ export function isNonEventField(registry, sourceId, field) {
  * *definitions*: this asks the registry the same question `diffSnapshots` asks,
  * so a field is an event in one place or in neither.
  *
- * That is also what keeps `addictedtoai-ak9` cheap. When price events are
- * re-keyed to vendor posted rates and become trustworthy, ak9 clears `event:
- * false` in the registry and interpretation returns here by itself — with no
- * second switch to find. For the same reason the price fields deliberately
+ * This paragraph used to say that `addictedtoai-ak9` would clear `event: false`
+ * once price events were re-keyed, and interpretation would return here by
+ * itself. **ak9 shipped the other way, and the consequence is a trap for whoever
+ * declares the first companion.** The headline keeps `event: false` (the fixture
+ * in `pulse/tests/diff.test.mjs` declares it exactly as the registry does), and a
+ * `vendorPriceChanges` line reuses the SAME `source` and `field` — `price_input`
+ * on `openrouter-models`. So `isNonEventField` answers `true` for a vendor-bound
+ * line too, and it is dropped below exactly like the headline noise it replaced.
+ * Measured 2026-09-14 (job j-20260914-33): one vendor-bound `price_input` line
+ * on `openrouter-models`, dated today, gives 0 uninterpreted changes with the
+ * real registry and 1 without it. Unreachable until a companion is declared,
+ * because none is. For the same reason the price fields deliberately
  * stay in `INTERPRET_FIELDS`: dropping them would delete the capability rather
  * than gate it, and would also silence a *different* source's price field that
  * nobody has any complaint about.
