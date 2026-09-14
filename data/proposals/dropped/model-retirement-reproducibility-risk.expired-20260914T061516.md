@@ -123,3 +123,19 @@ exist to prevent. It is filed unflagged, on its merits.
   reproducibility problem — inference stacks, quantisations and sampling defaults
   move too — and `content/learn/why-the-same-request-gives-different-answers.md`
   already carries that argument and should be linked rather than restated.
+
+
+---
+
+## Swept: the expiry it declared has arrived
+
+- date: 2026-09-14
+- expires: 2026-09-14
+- swept on: 2026-09-14 (the LOCAL date of the machine that swept it)
+- was: `model-retirement-reproducibility-risk.md` (slug `model-retirement-reproducibility-risk`)
+- failed test: not selected before its declared expiry (mechanical sweep; no model invoked, no inference spent)
+- refile when: new developments make the story current again and it outranks the derived queue
+
+An expiring proposal is selectable without cooling and stops being selectable at its expiry. This one was not selected in time, so it was swept here mechanically — no model was invoked and no inference was spent. Nothing anywhere treats this as a failure: it is what keeps the candidate directory from becoming a backlog of stories whose evidence has stopped being current.
+
+`data/proposals/dropped/` is a record, never a block. This slug does not feed the rejection index, so the story may be refiled when its refile condition arrives.
