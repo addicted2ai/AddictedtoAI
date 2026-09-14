@@ -1752,6 +1752,12 @@
     ],
     "model/nousresearch-hermes-4-405b": [
       {
+        "url": "/wiki/model/nousresearch-hermes-4-70b",
+        "title": "Nous: Hermes 4 70B",
+        "type": "entry",
+        "file": "content/wiki/model/nousresearch-hermes-4-70b.md"
+      },
+      {
         "url": "/wiki/org/nous-research",
         "title": "Nous Research",
         "type": "entry",
