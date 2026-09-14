@@ -1,6 +1,16 @@
 {
   "cap": 50,
-  "count": 0,
-  "items": [],
-  "total_before_cap": 0
+  "count": 1,
+  "items": [
+    {
+      "detail": "pulse/lib/diff.mjs says kimi-k2.5 \"held that value in all 14 later snapshots\". Reading every committed openrouter-models/latest.json by `date` gives 2026-09-01..09-12 and 2026-09-14 after 2026-08-31, which is 13 distinct dates (no 09-13), or 14 counting 08-31 itself. The value did hold in every one of them. Say \"13 later snapshots\", or \"every snapshot from 2026-08-31 to 2026-09-14\", whichever the author's instrument actually counted.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260914-33 (`j-20260914-33.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "pulse/lib/diff.mjs",
+      "target": "pulse/lib/diff.mjs",
+      "title": "Recount the \"14 later snapshots\" figure in the diff.mjs finding",
+      "type": "repair"
+    }
+  ],
+  "total_before_cap": 1
 }
