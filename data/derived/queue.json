@@ -1,15 +1,7 @@
 {
   "cap": 50,
-  "count": 6,
+  "count": 5,
   "items": [
-    {
-      "detail": "accessed 2026-08-28, 3d past its 14d fast interval",
-      "rank": 65,
-      "reason": "overdue-fact-fast",
-      "subject": "tool/onnx-runtime-web#latest_release",
-      "target": "content/wiki/tool/onnx-runtime-web.md",
-      "type": "verify"
-    },
     {
       "detail": "accessed 2026-08-28, 3d past its 14d fast interval",
       "rank": 65,
@@ -53,5 +45,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 6
+  "total_before_cap": 5
 }
