@@ -99,11 +99,11 @@
   ],
   "date": "2026-09-14",
   "link_check": {
-    "checked": 2,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 10,
     "drifted": 0,
-    "due": 2,
+    "due": 0,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 20,
