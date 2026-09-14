@@ -1,15 +1,7 @@
 {
   "cap": 50,
-  "count": 5,
+  "count": 4,
   "items": [
-    {
-      "detail": "accessed 2026-08-28, 3d past its 14d fast interval",
-      "rank": 65,
-      "reason": "overdue-fact-fast",
-      "subject": "tool/openrouter#models_listed",
-      "target": "content/wiki/tool/openrouter.md",
-      "type": "verify"
-    },
     {
       "detail": "accessed 2026-08-28, 3d past its 14d fast interval",
       "rank": 65,
@@ -45,5 +37,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 5
+  "total_before_cap": 4
 }

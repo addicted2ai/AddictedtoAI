@@ -571,16 +571,6 @@
       "accessed": "2026-08-28",
       "age_days": 17,
       "days_overdue": 3,
-      "entry_id": "tool/openrouter",
-      "field": "models_listed",
-      "interval_days": 14,
-      "path": "content/wiki/tool/openrouter.md",
-      "volatility": "fast"
-    },
-    {
-      "accessed": "2026-08-28",
-      "age_days": 17,
-      "days_overdue": 3,
       "entry_id": "tool/transformers-js",
       "field": "version",
       "interval_days": 14,
