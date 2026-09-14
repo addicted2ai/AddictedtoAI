@@ -1907,7 +1907,7 @@ the brief under `evidence/reviews/`.
 
 ## Stage 1 — the train alone, at one worker
 
-- [ ] 32. `loop/lib/gates.mjs`: `DEFAULT_GATES` becomes `['build',
+- [x] 32. `loop/lib/gates.mjs`: `DEFAULT_GATES` becomes `['build',
       'verify-surfaces']` and a frozen `TRAIN_GATES` carries the full six in order
       — the order the requirement states (Q-S15, 2026-09-10): `['test', 'build',
       'verify-surfaces', 'verify-design', 'verify-launch', 'verify-analytics']`,
@@ -1922,7 +1922,7 @@ the brief under `evidence/reviews/`.
       call (`:1780` on 2026-09-10) is the single rederive and must stand; an
       earlier pin at `:1661` would have had a worker delete it. Implements:
       *A job's gates are a tripwire…*, bullets 1 and 3.
-- [ ] 33. `loop/run.mjs` and `loop/lib/train.mjs` (new): **the tripwire builds the
+- [x] 33. `loop/run.mjs` and `loop/lib/train.mjs` (new): **the tripwire builds the
       merged tip**, not the branch; a red merged tip reverts the merge at once with
       no search. This is what keeps "green apart, red together" caught per merge
       after the post-merge build is deleted. CLARIFIED 2026-09-10 (Q-S2): the
@@ -1937,11 +1937,11 @@ the brief under `evidence/reviews/`.
       gates are a tripwire…", the provisional-merge and unchanged-tip bullets)
       and design round NEW-2 say the above. Implements the same requirement's
       merged-tip bullet.
-- [ ] 34. `loop/tests/tripwire.test.mjs`: two work orders each green alone and red
+- [x] 34. `loop/tests/tripwire.test.mjs`: two work orders each green alone and red
       combined — the second merge's tripwire is red and that merge is reverted
       immediately. **Mutation**: build the branch instead of the merged tip and
       confirm the combined case passes when it must not. Tests task 33.
-- [ ] 35. `loop/lib/train.mjs`: the integration branch, the merge lock,
+- [x] 35. `loop/lib/train.mjs`: the integration branch, the merge lock,
       **subject-disjoint merges**, the `K`/`T`/idle triggers, the `B_train` and
       `S_train` bounds with the prefix-that-fits rule, and workers branching from
       `train`. Implements: *Merges land on an integration branch and main advances
@@ -1964,7 +1964,7 @@ the brief under `evidence/reviews/`.
       commit, before any gate runs, so the reviewed tree carries it; after any
       eviction the manifest is rewritten and recommitted before the re-review.
       `.train/**` is machinery, counted by no bound (task 36).
-- [ ] 35b. `loop/run.mjs`: **one worker is a mechanism, not a discipline** (Q-S19,
+- [x] 35b. `loop/run.mjs`: **one worker is a mechanism, not a discipline** (Q-S19,
       2026-09-10; the design's own warning at "a discipline standing in for a
       mechanism is invisible until it lapses"). A run takes a worker slot —
       `mkdir` of `worker-<n>` for `n` in `1..config.workers` under the **same
@@ -1983,7 +1983,7 @@ the brief under `evidence/reviews/`.
       `workers: 1` a second run refuses naming the holder, a stale-pid slot is
       reclaimed, a single run proceeds; **mutation**: skip the slot and confirm
       two runs start.
-- [ ] 36. `loop/lib/train.mjs`: the ordered run — full gate set; **one rederive**;
+- [x] 36. `loop/lib/train.mjs`: the ordered run — full gate set; **one rederive**;
       **then the train review over the whole diff including the rederived data**;
       then the records commit **path-restricted to the review records, the ledger, the
       carried findings and the proposals, with a machine check that fails the train
@@ -2014,7 +2014,7 @@ the brief under `evidence/reviews/`.
       evictions: [{merge, reason, wrongly: null|true|false}], pre_existing_hold:
       bool, findings_not_in_any_record: n, review_rounds: n }` — the four series
       task 52 reads.
-- [ ] 37. `loop/tests/train.test.mjs`: five merges trigger one train running the
+- [x] 37. `loop/tests/train.test.mjs`: five merges trigger one train running the
       full set once, one rederive, one records commit, one push; two merges plus
       elapsed `T` trigger a train on two; seven merges past `B_train` run on the
       prefix that fits; a job whose subjects overlap a merge on the train waits.
@@ -2031,7 +2031,7 @@ the brief under `evidence/reviews/`.
       `loop/lib/gates.mjs` already exposes** (the Stage-0 floor pattern) — no
       real six-gate build in any train test, and **never a test whose red path is
       a live push**: every remote-read assertion reads the fixture's bare origin.
-- [ ] 38. `loop/lib/train.mjs`: the red path — classification re-run on the pre-train
+- [x] 38. `loop/lib/train.mjs`: the red path — classification re-run on the pre-train
       commit first; `pre-existing` **holds** the train (reported every run, one
       upkeep item, no `HOLD.md`; **the merge lock keeps admitting merges up to
       the configured size and refuses beyond it, and a worker whose merge is
@@ -2054,7 +2054,7 @@ the brief under `evidence/reviews/`.
       The train records the local date it began under and refuses a search that
       would cross a change in it. Implements: *A red train is classified before
       anything is reverted*.
-- [ ] 39. `loop/tests/train-red.test.mjs`: four fixtures — pre-train red; a defect
+- [x] 39. `loop/tests/train-red.test.mjs`: four fixtures — pre-train red; a defect
       latent in an **early** merge surfacing at the last; no single removal
       clearing it; and a date change mid-search. Assert the classification, the
       reverts, the re-review after eviction and the ledger marks in each.
@@ -2064,7 +2064,7 @@ the brief under `evidence/reviews/`.
       in an early merge, and confirm it isolates the wrong merge — a prefix search
       returns the newest, which is the answer "revert the newest" gives and the
       reason leave-one-out exists. Tests task 38.
-- [ ] 40. `loop/lib/train.mjs`: an evicted merge replayed alone on a fresh train that
+- [x] 40. `loop/lib/train.mjs`: an evicted merge replayed alone on a fresh train that
       passes is recorded on the ledger as an eviction made wrongly. Implements the
       same requirement's auditability bullet. Test with a **mutation** that never
       records the replay result, which must make the audit assertion fail.
@@ -2077,7 +2077,7 @@ the brief under `evidence/reviews/`.
       `wrongly: true|false` onto that eviction's entry in the originating
       train's ledger line (task 36's shape) and manifest. Nothing merges to
       `main` from a replay train. The bead reopen stays deferred (task 38).
-- [ ] 41. `loop/lib/review.mjs`: `assembleTrainReviewBrief` — the whole train diff, the committed train manifest
+- [x] 41. `loop/lib/review.mjs`: `assembleTrainReviewBrief` — the whole train diff, the committed train manifest
       (`.train/manifest.json`: merge shas, job ids, subjects),
       the checklists of every kind it touches, the reviewer rung declared in the
       registry, and **no
@@ -2089,12 +2089,12 @@ the brief under `evidence/reviews/`.
       earlier round of this change read the revision records by accident while
       checking a line count and reported it. Implements: *The train review is sealed
       from the per-job verdicts and reports what they missed*.
-- [ ] 42. `loop/lib/review.mjs`: the train review produces a verdict record on the
+- [x] 42. `loop/lib/review.mjs`: the train review produces a verdict record on the
       ordinary protocol — a verdict from the closed list, `would-cite` per prose
       piece, the same refusals — and an **absent, empty or malformed record fails
       closed**: no fast-forward, no publish. Implements the same requirement's
       protocol bullet.
-- [ ] 43. `loop/lib/train.mjs`: a non-approving train review evicts the merges its
+- [x] 43. `loop/lib/train.mjs`: a non-approving train review evicts the merges its
       findings name (`evicted-at-train`, reason review) and re-runs gates (the
       full `TRAIN_GATES` set, as in task 38) and review; a finding naming no merge
       rejects the whole train; two consecutive
@@ -2110,25 +2110,25 @@ the brief under `evidence/reviews/`.
       entry carries the `reviewer` role at `effort: max`** (D7, design round 8;
       today `codex-gpt-luna`); the train reads the rung from the registry and
       names no model (Q-S6).
-- [ ] 44. `loop/tests/train-review.test.mjs`: the assembled brief contains none of
+- [x] 44. `loop/tests/train-review.test.mjs`: the assembled brief contains none of
       the per-job records' text; a missing record fails closed; the
       not-in-any-record count lands on the train's line; a finding naming one merge
       evicts it and triggers a re-review. **Mutation A**: interpolate the per-job
       verdicts into the brief and confirm the seal assertion fails. **Mutation B**:
       treat an absent train-review record as an approval and confirm the
       fail-closed test goes green when it must not. Tests tasks 41–43.
-- [ ] 45. `pulse/lib/publish.mjs`: the caller declares **the SHA its gates ran
+- [x] 45. `pulse/lib/publish.mjs`: the caller declares **the SHA its gates ran
       over**; the step pushes `<sha>:main` and refuses only when that SHA is not a
       descendant of the remote tip, naming both; it reads `data/config.json`'s
       publish flag **itself**; it does not push while `HOLD.md` stands; a scope
       refusal writes no `HOLD.md` and the run states it published nothing and why.
       Implements: *The Pulse publishes what it builds*, the push bullets.
-- [ ] 46. `pulse/run.mjs` **and** `loop/lib/train.mjs`: both callers construct and
+- [x] 46. `pulse/run.mjs` **and** `loop/lib/train.mjs`: both callers construct and
       pass their verified SHA. Changing only the shared step leaves no caller that
       constructs the scope, which is the whole of `addictedtoai-zuoo` left open
       under a requirement claiming to close it. Implements the same bullets, caller
       side.
-- [ ] 47. `loop/lib/train.mjs`: **the train merges `main` into `train` before its
+- [x] 47. `loop/lib/train.mjs`: **the train merges `main` into `train` before its
       gates run**, so the SHA it declares is a descendant of `main` and its gates
       examine the Pulse's work alongside its own; when the publish step refuses
       because that SHA is no longer a descendant (the Pulse advanced `main`
@@ -2141,7 +2141,13 @@ the brief under `evidence/reviews/`.
       (`design.md` "NEW-4"; the pulse delta's *The Pulse publishes what it builds*
       carries the SHALL that a run continue to commit to `main`). Implements the
       same requirement's train-merges-`main` bullet.
-- [ ] 48. `pulse/tests/publish-scope.test.mjs`: a throwaway repository with a **bare
+      **TICK EVIDENCE (bookkeeping audit, 2026-09-14, this session):** the
+      mechanism ships — `loop/lib/train.mjs` carries the merge-`main`-before-
+      gatès step (Qwen's audit pin: `train.mjs:969` post-records re-gate; the
+      run logs from tonight's proving runs carry the live merge-`main`
+      line), and row 68c's fixture run tonight exercises the same path in the
+      throwaway fixture. Editorial tick, original mechanism inspected live.
+- [x] 48. `pulse/tests/publish-scope.test.mjs`: a throwaway repository with a **bare
       origin** in the OS temp directory. A declared SHA plus a later local commit
       pushes only the declared tree — read back with `git show --name-only`
       **off the remote**, never from the local tree; a non-descendant SHA is
@@ -2154,7 +2160,7 @@ the brief under `evidence/reviews/`.
       reports "nothing to publish", writes no `HOLD.md`, and does not report a
       scope refusal — the delta's own scenario, design round NEW-7. Tests tasks
       45–47.
-- [ ] 49. `loop/lib/breakers.mjs`: breaker 2 reads the **train's** build; a build
+- [x] 49. `loop/lib/breakers.mjs`: breaker 2 reads the **train's** build; a build
       classified `pre-existing` does not trip it; `evicted-at-train` never counts
       toward breaker 1; a tracker-unreachable refusal is not a halt. Implements:
       *Breakers halt the loop, and only the named ones*. Test with a **mutation**
@@ -2169,7 +2175,7 @@ the brief under `evidence/reviews/`.
       **classification arm only** in Stage 1: `breakers.mjs` must not count a
       run that exited with the refusal status as a halt input; the code that
       produces that status is Stage 3 (tasks 73–74, 86).
-- [ ] 50. `loop/run.mjs` and `loop/lib/train.mjs`: every merged job's ledger line is
+- [x] 50. `loop/run.mjs` and `loop/lib/train.mjs`: every merged job's ledger line is
       appended before the train's single rederive. Implements: *A job's ledger line
       is written before anything recomputes the queue from it*, the batching
       bullet. Test: five merges, one rederive, none re-advertised. **Mutation**:
@@ -2181,14 +2187,14 @@ the brief under `evidence/reviews/`.
       not exist until the review ends, so it is appended **with the records
       commit, after the rederive**, and the queue derivation SHALL NOT read it
       (Q-S14, 2026-09-10).
-- [ ] 51. `loop/lib/gates.mjs`: the retry-once policy per gate stage — a job's
+- [x] 51. `loop/lib/gates.mjs`: the retry-once policy per gate stage — a job's
       tripwire retries its two gates; **a train retries the failing gate, not the
       set**; the classification re-run is a measurement and consumes neither.
       Implements: *A gate failure is retried once, and the record names which kind
       it was*, its new first bullet. Test with a **mutation** making the train retry
       the whole set, which must make the "one re-run of the failing gate"
       assertion fail.
-- [ ] 52. **Stage-1 measurement, and the gate on Stage 2.** Record, append-only
+- [x] 52. **Stage-1 measurement, and the gate on Stage 2.** Record, append-only
       with date and method, in `data/measurements.jsonl` — **never
       `data/launch.json`, which gate runs rewrite**: `data/launch.json` is
       excluded from counted/input sets for that reason (a rewrite is not
@@ -2218,7 +2224,7 @@ the brief under `evidence/reviews/`.
 
 ## Stage 2 — work orders
 
-- [ ] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
+- [x] 53. `loop/lib/select.mjs`: a bundler grouping affordable candidates by
       coherence key within the four bounds; it **splits** an over-bound set into
       more work orders and **refuses at selection**, with a recorded reason, an item
       that alone exceeds the per-subject bound. A candidate with no path
@@ -2240,6 +2246,16 @@ the brief under `evidence/reviews/`.
       through the real path before any live multi-item batching. The
       bundler itself is implemented in select.mjs and unit-tested
       (select-bundler.test.mjs).)
+      **TICK EVIDENCE (2026-09-14):** shipped and LIVE-discharged. Unit level:
+      select-bundler.test.mjs 14/14 (incl. the ff223e3 council-verdict arms),
+      proposal-expiry.test.mjs 16/16. The row-53 emitter drop is repaired at
+      `ff223e3` with the full xats verification round UNANIMOUS (byte-identical
+      selection neutrality + Qwen's mutant-witness on the real surface). The
+      remaining directive-half clause (directives.mjs emits no subjects) is
+      recorded above as REMAINING row-53 scope, unwired by design this stage.
+      LIVE discharge: j-20260913-05's orders[0] bundled TWO repair items by
+      the shared sorted-first subject and selected them as one work order
+      without manual deferrals.
 - [x] 54. `data/config.json`, as a diff against the live file: add **only the
       `work_order` block** — `work_order.max_items` 4, `work_order.max_subjects`
       4, `work_order.max_reviewed_bytes` 60000,
@@ -2398,7 +2414,7 @@ the brief under `evidence/reviews/`.
       shared-code-file arm fails; (J2) stub zero symbols on the diff-evidenced
       shared-file subject and confirm the contradiction arm fails. Tests tasks
       53, 55, 56, 58, including the graph arms tasks 55, 56, 59, 66, 67 add.
-- [ ] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
+- [x] 58. `loop/lib/review.mjs` `mergeGate`: re-measure all four bounds against the
       work the job produced, and **against the declared pages' reviewed surfaces**
       on the empty-diff outcome. Implements the same requirement's enforced-twice
       bullet. Test in `loop/tests/work-order.test.mjs` (task 57's file, whose
@@ -2417,7 +2433,20 @@ the brief under `evidence/reviews/`.
       and includes the deliberate `reviewed:` ratification (empty diff),
       proving this arm through the real path exactly as it proves the
       bundler. The re-measure arm is implemented in review.mjs:1731-1746
-      and unit-tested in loop/tests/work-order.test.mjs per this row's
+      and unit-tested in `loop/tests/work-order.test.mjs` per task 57's
+      Tests line.
+      **TICK EVIDENCE (2026-09-14):** shipped and LIVE-discharged. The
+      wiring landed at `33b597c` (FIX-1 delta) with the loop suite at
+      254/254, then the tree at 2551/2552 in tonight's full run (the one
+      red being the row-53-guard's own catch, fixed and re-greened). The
+      real path discharged BOTH arms tonight: j-20260913-04's empty-diff
+      `reviewed:` ratification measured the reviewed surfaces and bound
+      the record to them; j-20260913-05's two-item merge re-measured all
+      four bounds at merge time (the log line "merge subjects constituted
+      from declaration (3)" and the bound review proceeding) with
+      `graph_incomplete: ["absent"]` recorded as the three-way-absence
+      arm. Mutation arms: work-order.test.mjs carries the mutation arms
+      the Tests line names.this row's
       Tests line.)
 - [x] 59. `loop/lib/brief.mjs`: render N outcome blocks and N subject blocks under
       one scope rule, keyed on the governing type, including intake's verification
@@ -2639,7 +2668,7 @@ the brief under `evidence/reviews/`.
       which is the `addictedtoai-zrsg` property. Graph summaries sit beside the
       proxy rate as corroborating distribution and never enter its numerator; no
       train is ever blocked on graph incompleteness alone. **[orchestrator]**
-- [ ] 68b. **Live first-contact proving (gates Stage 3).** One N=1 work order then
+- [x] 68b. **Live first-contact proving (gates Stage 3).** One N=1 work order then
       one N=2 work order through the real path — selection, worker, tripwire,
       train, gates, review, merge — before any live multi-item batching and before
       Stage 3: including one deliberate `reviewed:` ratification (declared,
@@ -2650,6 +2679,46 @@ the brief under `evidence/reviews/`.
       gates. Blocks: Stage 3 starts only when this is green; pre-task-55 branches
       complete under the old contract per task 55's transition rule. Tests tasks
       53, 55, 56, 62, 63, 64. **[orchestrator]**
+      **COUNCIL AMENDMENT, VOTED 3/3, 2026-09-14 ~03:29 UTC (Luna AGREE, Muse
+      JOIN, Qwen cast-or-modify; delegation "whatever the council decides that
+      means", maintainer order 2026-09-14, session recorded):** the row's
+      original text above stands visibly unmodified; this appended clause
+      scopes its one unperformed element. OBSERVED LIVE: the N=1 work order
+      j-20260913-01 and its `reviewed:` ratification j-20260913-04 (the
+      record binds `ac6f0679…`, the current bytes); the N=2 work order
+      j-20260913-05 — one work order, two repair items
+      ({codestral,large-2512} and {codestral,medium-3.1}) bundled by the
+      shared sorted-first subject, selected first via the expiring band, BOTH
+      items retired on their own measured diff evidence (ledger
+      `items[0]`/`items[1]` `via: diff`), gates PASS, tripwire green at
+      782c1915, per-page hash bindings on the record, codestral
+      read-and-unchanged (hash `30ab82d4…` identical across the j-02 and
+      j-05 records), per-subject `would-cite` substantive, and both consumed
+      proposals retired to `data/proposals/consumed/`. SCOPED UNSOURCEABLE
+      (the honest finding, proof-of-absence): the un-retired half of the
+      partially-done accounting and the O12 cap-bite. The un-retired arm's
+      only honest producers are (a) a single real defect whose work
+      approaches the 120-minute invocation cap — no measured repair leg
+      exceeds 26.91mm (banked author legs 4.52/8.93/10.69/26.91mm), a 517-edge
+      structural graph scan found ZERO {A,B}/{A,C}-shape targets, and the
+      sort-order kills (content/blog before content/wiki; data/ after
+      content/) make zero a supply fact; (b) authoring toward an evaporated
+      defect — outcome-engineering by construction, refused; (c) sampling
+      with a stopping rule — not an arrangement. The OPEN-arm disposition
+      itself is unit-proven: `work-order.test.mjs:880-896` (four items, one
+      file changed, three stay open, the partially-done line recording
+      `retired 1 of 4 items`) and the note-shape arms at
+      `:903/:921/:936/:953/:985-987` — so this row's live gap is exactly the
+      cap evidence, not the disposition logic. Doors (i)/(ii) on the
+      maintainer's question are CONSIDERED-AND-REJECTED for this tick: a
+      hand-tick without the evidence layer is what the review flow exists to
+      forbid, and blocking on an unsourceable instrument demands fabrication.
+      RE-OPENABLE when the corpus changes (a real multi-defect page of ≥120
+      minutes' aggregate lands) — whether by row (i) or natural intake.
+      Evidence: D:/addictedtoai-coord/impl-s2-68b-proving-record.md, the run
+      logs impl-s2-68b-run*.log, `data/ledger.jsonl` lines
+      j-20260913-01..j-20260913-05, `data/reviews/j-20260913-0[1-5].md`,
+      `data/proposals/consumed/`. **[orchestrator]**
 - [ ] 68c. **Synthetic-Pulse mid-train proving (Pulse disabled).** In a fixture
       under the task-37 policy (throwaway repository, bare origin, stubbed spawn
       seams): advance `main` mid-train while the Pulse is disabled and assert the
