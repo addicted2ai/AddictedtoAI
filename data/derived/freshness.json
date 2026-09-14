@@ -566,18 +566,7 @@
       "url": "https://wandb.ai/site"
     }
   ],
-  "overdue_facts": [
-    {
-      "accessed": "2026-08-28",
-      "age_days": 17,
-      "days_overdue": 3,
-      "entry_id": "tool/transformers-js",
-      "field": "version",
-      "interval_days": 14,
-      "path": "content/wiki/tool/transformers-js.md",
-      "volatility": "fast"
-    }
-  ],
+  "overdue_facts": [],
   "redirected_links": [
     {
       "bytes": 140588,
