@@ -99,15 +99,15 @@
   ],
   "date": "2026-09-14",
   "link_check": {
-    "checked": 0,
+    "checked": 3,
     "confirm_after_failures": 2,
     "declined": 10,
     "drifted": 0,
-    "due": 0,
+    "due": 3,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 19,
-    "total": 730
+    "redirected": 20,
+    "total": 733
   },
   "listings": [
     {
@@ -729,6 +729,18 @@
       "last_checked": "2026-09-05",
       "meta_refresh": null,
       "url": "https://openrouter.ai/qwen/qwen3.8-max",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/model/openai-gpt-latest.md"
+      ],
+      "final_url": "https://openrouter.ai/~openai/gpt-sol-latest",
+      "kind": "same-site-move",
+      "last_checked": "2026-09-14",
+      "meta_refresh": null,
+      "url": "https://openrouter.ai/~openai/gpt-latest",
       "verdict_recorded": true
     },
     {

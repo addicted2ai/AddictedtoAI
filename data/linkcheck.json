@@ -5095,6 +5095,17 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/~openai/gpt-latest/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/~openai/gpt-latest/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/providers": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -5190,6 +5201,17 @@
       "final_url": "https://openrouter.ai/docs/guides/routing/model-variants/free",
       "last_checked": "2026-09-07",
       "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/docs/guides/routing/routers/latest-resolution": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/docs/guides/routing/routers/latest-resolution",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5597,6 +5619,17 @@
       "final_url": "https://openrouter.ai/z-ai/glm-5.3-flash",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/~openai/gpt-latest": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/~openai/gpt-sol-latest",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200

@@ -4775,7 +4775,7 @@
       "s": "active",
       "i": "model/openai-gpt-latest",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/openai-gpt-luna-latest",
