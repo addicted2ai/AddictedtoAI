@@ -2319,26 +2319,6 @@
       ]
     },
     {
-      "name": "Hugging Face agent intrusion",
-      "linkable": true,
-      "claimed_by": [
-        {
-          "id": "event/hugging-face-agent-intrusion",
-          "class": "exclusive"
-        }
-      ]
-    },
-    {
-      "name": "Hugging Face breach",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "event/hugging-face-agent-intrusion",
-          "class": "shared"
-        }
-      ]
-    },
-    {
       "name": "Hunyuan",
       "linkable": false,
       "claimed_by": [
@@ -7434,16 +7414,6 @@
       "claimed_by": [
         {
           "id": "event/eliza",
-          "class": "shared"
-        }
-      ]
-    },
-    {
-      "name": "the Hugging Face incident",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "event/hugging-face-agent-intrusion",
           "class": "shared"
         }
       ]

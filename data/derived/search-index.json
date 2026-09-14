@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 696,
+  "count": 695,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -1594,20 +1594,6 @@
         "GPT-2 staged release",
         "staged release",
         "GPT-2"
-      ],
-      "b": false
-    },
-    {
-      "u": "/wiki/event/hugging-face-agent-intrusion",
-      "t": "The Hugging Face Agent Intrusion",
-      "k": "entry",
-      "d": "event",
-      "s": "dead",
-      "i": "event/hugging-face-agent-intrusion",
-      "a": [
-        "Hugging Face agent intrusion",
-        "the Hugging Face incident",
-        "Hugging Face breach"
       ],
       "b": false
     },
