@@ -2820,6 +2820,12 @@
         "title": "Anthropic and Google each shipped one model in two safeguard tiers in three days, and OpenAI promised the second tier without shipping it. Two of the three describe the permissive cyber tier in the future tense.",
         "type": "post",
         "file": "content/blog/same-weights-two-access-envelopes.md"
+      },
+      {
+        "url": "/blog/weathernext-3-operational-weatherbench",
+        "title": "Brightband says WeatherNext 3 is the new leader on its live Operational WeatherBench",
+        "type": "post",
+        "file": "content/blog/weathernext-3-operational-weatherbench.md"
       }
     ],
     "org/meta-superintelligence-labs": [
