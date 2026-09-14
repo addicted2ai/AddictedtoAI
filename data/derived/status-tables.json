@@ -3723,121 +3723,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://ornith.ai/ornith_1_5.html"
-    },
-    {
-      "date": "2026-08-14",
-      "display_name": "Alibaba ships open weights for Qwen3.8-27B",
-      "excerpt": {
-        "description": "Alibaba (Qwen) - Alibaba published Qwen3.8-27B on Hugging Face under Apache 2.0 — the single-GPU open sibling of Qwen3.8-Max. A 27B dense, hybrid-attention model with a native 262K context (extendable to 1M via YaRN) and multimodal (text/image/video) input, promoting the earlier announced-only entry to generally available.",
-        "guid": "9c8305f7-e613-4570-8d2c-d00813a1b685",
-        "link": "https://llm-releases.com/models/qwen3-8-27b",
-        "pubDate": "Fri, 14 Aug 2026 00:00:00 GMT",
-        "source_name": "Alibaba (Qwen)",
-        "source_url": "https://huggingface.co/Qwen/Qwen3.8-27B",
-        "title": "Alibaba ships open weights for Qwen3.8-27B"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/qwen3-8-27b",
-      "key": "seed|llm-releases|9c8305f7-e613-4570-8d2c-d00813a1b685",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "9c8305f7-e613-4570-8d2c-d00813a1b685",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://huggingface.co/Qwen/Qwen3.8-27B"
-    },
-    {
-      "date": "2026-08-14",
-      "display_name": "Dots Studio open-weights Dots3-Note Preview",
-      "excerpt": {
-        "description": "Dots Studio (rednote-hilab) - Dots Studio (rednote-hilab), the AI lab of Xiaohongshu (RedNote), released Dots3-Note Preview, a ~280B / ~16B-active MoE with a 512K context and text+vision+audio input, under Apache-2.0. Introduces TEMPO, an RL method for long-horizon agents that checkpoint their own progress.",
-        "guid": "90ea7f41-aa7c-4aac-a4db-89d984ac1997",
-        "link": "https://llm-releases.com/models/dots3-note-preview",
-        "pubDate": "Fri, 14 Aug 2026 00:00:00 GMT",
-        "source_name": "Dots Studio (rednote-hilab)",
-        "source_url": "https://huggingface.co/dots-studio/dots3-note-prev",
-        "title": "Dots Studio open-weights Dots3-Note Preview"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/dots3-note-preview",
-      "key": "seed|llm-releases|90ea7f41-aa7c-4aac-a4db-89d984ac1997",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "90ea7f41-aa7c-4aac-a4db-89d984ac1997",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://huggingface.co/dots-studio/dots3-note-prev"
-    },
-    {
-      "date": "2026-08-14",
-      "display_name": "Z.ai releases GLM-5.3",
-      "excerpt": {
-        "description": "Z.ai (Zhipu AI) - Z.ai released GLM-5.3, a 743B coding model reusing the GLM-5.2 base with expanded post-training, keeping the 1M-token context and 128K output. Launched via the GLM Coding Plan and ZCode; open weights held back pending a safety review (~2 weeks out).",
-        "guid": "662adf1b-df69-4b07-94e7-4ed842f1d137",
-        "link": "https://llm-releases.com/models/glm-5-3",
-        "pubDate": "Fri, 14 Aug 2026 00:00:00 GMT",
-        "source_name": "Z.ai (Zhipu AI)",
-        "source_url": "https://decrypt.co/375684/china-z-ai-glm-5-3-top-open-weight-coding-model",
-        "title": "Z.ai releases GLM-5.3"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/glm-5-3",
-      "key": "seed|llm-releases|662adf1b-df69-4b07-94e7-4ed842f1d137",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "662adf1b-df69-4b07-94e7-4ed842f1d137",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://decrypt.co/375684/china-z-ai-glm-5-3-top-open-weight-coding-model"
-    },
-    {
-      "date": "2026-08-14",
-      "display_name": "Alibaba ships open weights for Qwen3.8-Max",
-      "excerpt": {
-        "description": "Alibaba (Qwen) - Alibaba published the open weights of its Qwen3.8-Max flagship on Hugging Face and ModelScope as Qwen3.8-2.4T-A95B under Apache 2.0 — the same 2.4T-total / ~95B-active MoE, now downloadable with a 262K context extendable to 1M via YaRN, alongside the smaller Qwen3.8-27B.",
-        "guid": "53c7a6e5-c9e3-4077-9700-29ddeb135ec0",
-        "link": "https://llm-releases.com/models/qwen3-8-max",
-        "pubDate": "Fri, 14 Aug 2026 00:00:00 GMT",
-        "source_name": "Alibaba (Qwen)",
-        "source_url": "https://the-decoder.com/alibabas-qwen-team-releases-qwen-3-8-models-with-open-weights-under-the-apache-2-0-license/",
-        "title": "Alibaba ships open weights for Qwen3.8-Max"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/qwen3-8-max",
-      "key": "seed|llm-releases|53c7a6e5-c9e3-4077-9700-29ddeb135ec0",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "53c7a6e5-c9e3-4077-9700-29ddeb135ec0",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://the-decoder.com/alibabas-qwen-team-releases-qwen-3-8-models-with-open-weights-under-the-apache-2-0-license/"
-    },
-    {
-      "date": "2026-08-13",
-      "display_name": "Google DeepMind releases Gemini 3.7 Flash",
-      "excerpt": {
-        "description": "Google DeepMind - Google released Gemini 3.7 Flash, a fast, low-cost workhorse tuned for coding and agents: 1M-token context, 65K output, multimodal input, and $0.75/$3.75 per Mtok introductory pricing through 2026-12-31. Reported DeepSWE v1.1 jumped to 65.3% from 49.0% on Gemini 3.6 Flash.",
-        "guid": "3a0a128a-02f3-4d25-8979-e53df8b07fd9",
-        "link": "https://llm-releases.com/models/gemini-3-7-flash",
-        "pubDate": "Thu, 13 Aug 2026 00:00:00 GMT",
-        "source_name": "Google DeepMind",
-        "source_url": "https://datanorth.ai/news/google-releases-gemini-3-7-flash",
-        "title": "Google DeepMind releases Gemini 3.7 Flash"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/gemini-3-7-flash",
-      "key": "seed|llm-releases|3a0a128a-02f3-4d25-8979-e53df8b07fd9",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "3a0a128a-02f3-4d25-8979-e53df8b07fd9",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://datanorth.ai/news/google-releases-gemini-3-7-flash"
     }
   ],
   "deprecations": [
@@ -3870,7 +3755,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-12",
+  "generated_on": "2026-09-14",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",

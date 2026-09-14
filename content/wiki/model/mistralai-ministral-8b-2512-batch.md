@@ -38,4 +38,8 @@ timeline:
     event: "relisted in the OpenRouter model catalog"
     source_url: "https://openrouter.ai/api/v1/models"
 mentions: []
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---

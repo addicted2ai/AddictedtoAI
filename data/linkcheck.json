@@ -2083,6 +2083,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2609.03582v1": {
+      "bytes": 47358,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2609.03582v1",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/html/2009.03300": {
       "bytes": 228495,
       "consecutive_failures": 0,
@@ -2318,6 +2329,28 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://brightband.com/benchmarks": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.brightband.com/benchmarks",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://brightband.com/company/news/weathernext-3-on-operational-weatherbench": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.brightband.com/company/news/weathernext-3-on-operational-weatherbench",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -2626,6 +2659,17 @@
       "ok": true,
       "status": 200
     },
+    "https://deepmind.google/science/weathernext/": {
+      "bytes": 145510,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepmind.google/science/weathernext/",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://deploymentsafety.openai.com/gpt-6-astra": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2644,6 +2688,28 @@
       "final_url": "https://deploymentsafety.openai.com/gpt-6-astra/aggregate-monitorability-findings",
       "last_checked": "2026-09-07",
       "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.google.com/weathernext": {
+      "bytes": 94910,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.google.com/weathernext",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.google.com/weathernext/guides/benefits-limitations": {
+      "bytes": 62564,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.google.com/weathernext/guides/benefits-limitations",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2723,6 +2789,17 @@
       "final_url": "https://digitaleconomy.stanford.edu/app/uploads/2025/11/CanariesintheCoalMine_Nov25.pdf",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://docs.inceptionlabs.ai/get-started/models": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://docs.inceptionlabs.ai/get-started/models",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4754,6 +4831,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/inception/mercury-2.5-preview-20260831/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/inception/mercury-2.5-preview-20260831/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/inception/mercury-2.5-preview/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/inception/mercury-2.5-preview/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/models/microsoft/phi-4/endpoints": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -6063,6 +6162,17 @@
       "ok": true,
       "status": 200
     },
+    "https://techcrunch.com/2026/09/03/googles-latest-ai-weather-model-gives-you-no-excuse-to-forget-your-umbrella/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://techcrunch.com/2026/09/03/googles-latest-ai-weather-model-gives-you-no-excuse-to-forget-your-umbrella/",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://techcrunch.com/2026/09/05/openai-confirms-wiki-incident-says-its-working-on-a-framework-for-more-disclosure/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -6888,17 +6998,6 @@
       "ok": true,
       "status": 200
     },
-    "https://www.ecmwf.int/en/about/media-centre/news/2025/ecmwfs-ai-forecasts-become-operational": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://www.ecmwf.int/en/about/media-centre/news/2025/ecmwfs-ai-forecasts-become-operational",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://www.fast.ai/posts/2018-08-10-fastai-diu-imagenet.html": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -7016,6 +7115,17 @@
       "final_url": "https://www.inceptionlabs.ai/about",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.inceptionlabs.ai/blog/introducing-mercury-2-5": {
+      "bytes": 278604,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.inceptionlabs.ai/blog/introducing-mercury-2-5",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -7412,6 +7522,17 @@
       "final_url": "https://www.theglobeandmail.com/business/international-business/us-business/article-openai-5-stake-trump-administration-us-government/",
       "last_checked": "2026-09-08",
       "last_ok": "2026-09-08",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.theguardian.com/technology/2018/oct/10/amazon-hiring-ai-gender-bias-recruiting-engine": {
+      "bytes": 65528,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.theguardian.com/technology/2018/oct/10/amazon-hiring-ai-gender-bias-recruiting-engine",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200

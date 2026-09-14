@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 694,
+  "count": 695,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -175,6 +175,16 @@
     {
       "u": "/blog/three-accounts-hugging-face-intrusion",
       "t": "Three accounts of the Hugging Face intrusion, and they begin on three different dates",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/weathernext-3-operational-weatherbench",
+      "t": "Brightband says WeatherNext 3 is the new leader on its live Operational WeatherBench",
       "k": "post",
       "d": null,
       "s": null,
@@ -3432,7 +3442,7 @@
       "t": "Mistral: Codestral 2508 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "retired",
+      "s": "active",
       "i": "model/mistralai-codestral-2508-batch",
       "a": [],
       "b": true
@@ -3482,7 +3492,7 @@
       "t": "Mistral: Ministral 3 8B 2512 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "retired",
+      "s": "active",
       "i": "model/mistralai-ministral-8b-2512-batch",
       "a": [],
       "b": true
@@ -3522,7 +3532,7 @@
       "t": "Mistral: Mistral Large 3 2512 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "retired",
+      "s": "active",
       "i": "model/mistralai-mistral-large-2512-batch",
       "a": [],
       "b": true
@@ -3552,7 +3562,7 @@
       "t": "Mistral: Mistral Medium 3.1 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "retired",
+      "s": "active",
       "i": "model/mistralai-mistral-medium-3-1-batch",
       "a": [],
       "b": true
