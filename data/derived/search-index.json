@@ -3821,7 +3821,7 @@
       "s": "active",
       "i": "model/nex-agi-nex-n2-mini",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/nex-agi-nex-n2-pro",

@@ -1718,6 +1718,14 @@
         "file": "content/wiki/org/moonshot-ai.md"
       }
     ],
+    "model/nex-agi-nex-n2-5-mini-free": [
+      {
+        "url": "/wiki/model/nex-agi-nex-n2-mini",
+        "title": "Nex AGI: Nex-N2-Mini",
+        "type": "entry",
+        "file": "content/wiki/model/nex-agi-nex-n2-mini.md"
+      }
+    ],
     "model/nousresearch-hermes-3-llama-3-1-405b": [
       {
         "url": "/wiki/org/nous-research",

@@ -3335,6 +3335,17 @@
       "ok": true,
       "status": 200
     },
+    "https://github.com/nex-agi/Nex-N2.5": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/nex-agi/Nex-N2.5",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://github.com/ollama/ollama": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4112,6 +4123,28 @@
       "final_url": "https://huggingface.co/moonshotai/Kimi-K3/blob/main/LICENSE",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/nex-agi/Nex-N2-mini": {
+      "bytes": 261005,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/nex-agi/Nex-N2-mini",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/nex-agi/Nex-N2.5-mini": {
+      "bytes": 261491,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/nex-agi/Nex-N2.5-mini",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4897,6 +4930,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/nex-agi/nex-n2-mini/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/nex-agi/nex-n2-mini/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-mini:free/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/nex-agi/nex-n2.5-mini:free/endpoints",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/models/openai/gpt-6-astra/endpoints": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -5212,6 +5267,17 @@
       "final_url": "https://openrouter.ai/moonshotai/kimi-k3",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nex-agi/nex-n2-mini": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nex-agi/nex-n2-mini",
+      "last_checked": "2026-09-14",
+      "last_ok": "2026-09-14",
       "meta_refresh": null,
       "ok": true,
       "status": 200
